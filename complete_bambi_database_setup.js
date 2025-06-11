@@ -2,14 +2,18 @@
 /**
  * COMPLETE BAMBI SLEEP DATABASE SETUP SCRIPT
  * ==========================================
- * 
- * This comprehensive script combines all Bambi Sleep content addition functionality:
+ * * This comprehensive script combines all Bambi Sleep content addition functionality:
  * 1. Official Bambi Sleep creators and content from bambisleep.info
- * 2. Community creators from Patreon and other platforms * 3. Bambi Daddi SoundCloud tracks
+ * 2. Community creators from Patreon and other platforms
+ * 3. Bambi Daddi SoundCloud tracks
  * 4. Complete Tomtame video collection from HypnoTube
- * 5. Crystal Cloud Podcast YouTube videos
+ * 5. Crystal Cloud Podcast YouTube videos (requires manual addition)
  * 6. Additional Bambi Sleep community creators
- *  * Usage: node complete_bambi_database_setup.js [section]
+ * 
+ * NOTE: YouTube video data cannot be automatically fetched due to API limitations.
+ * Crystal Cloud Podcast videos must be manually added to the crystalCloudVideos array.
+ * 
+ * Usage: node complete_bambi_database_setup.js [section]
  * Sections: official, community, audio, videos, podcasts, all (default)
  */
 
@@ -152,16 +156,7 @@ const communityCreators = [
             youtube: "https://youtube.com/channel/UCRu1zkNh9xSme2aU9urnOJw",
             instagram: "https://www.instagram.com/bambisleep.chat",
             tiktok: "https://tiktok.com/@bambisleep.chat"
-        }
-    },
-    {
-        name: "Bambi Prime",
-        title: "Bambi Prime - Original Bambi Sleep Creator",
-        url: "https://www.patreon.com/bambiprime",
-        description: "Original creator of the Bambi Sleep hypnosis series. The foundational content that started the entire Bambi Sleep community and movement.",
-        platform: "patreon",
-        category: "creator"
-    },
+        }    },
     {
         name: "Shibby Says",
         title: "Shibby Says - Hypnosis & Audio Content",
@@ -595,26 +590,19 @@ const allTomtameVideos = [
         views: "1523678",
         quality: "HD",
         platform: "hypnotube",
-        category: "video",
-        creator: "Tomtame"    }
+        category: "video",        creator: "Tomtame"
+    }
 ];
 
 // ================================
 // CRYSTAL CLOUD PODCAST YOUTUBE VIDEOS
 // ================================
+// NOTE: YouTube videos require manual addition due to API limitations
+// The fetch from YouTube only returns consent pages, not actual video data
+// To add videos, manually inspect the channel and add entries in this format:
 
 const crystalCloudVideos = [
-    {
-        title: "Crystal Cloud Podcast - Introduction to Bambi Sleep",
-        url: "https://www.youtube.com/@CrystalCloudPodcast/videos",
-        description: "Crystal Cloud Podcast discussing Bambi Sleep hypnosis and community topics",
-        platform: "youtube",
-        category: "video",
-        creator: "Crystal Cloud Podcast",
-        contentType: "podcast"
-    }
-    // TODO: Add specific video URLs from https://www.youtube.com/@CrystalCloudPodcast/videos
-    // Example format:
+    // Example format for manual addition:
     // {
     //     title: "Episode Title",
     //     url: "https://www.youtube.com/watch?v=VIDEO_ID",
@@ -626,6 +614,17 @@ const crystalCloudVideos = [
     //     duration: "XX:XX",
     //     publishedDate: "2025-XX-XXTXX:XX:XXZ"
     // }
+    
+    // Placeholder entry for the channel itself
+    {
+        title: "Crystal Cloud Podcast Channel",
+        url: "https://www.youtube.com/@CrystalCloudPodcast",
+        description: "Crystal Cloud Podcast YouTube channel - contains discussions about Bambi Sleep hypnosis and community topics. Individual videos need to be added manually.",
+        platform: "youtube",
+        category: "creator",
+        creator: "Crystal Cloud Podcast",
+        contentType: "podcast"
+    }
 ];
 
 // ================================
@@ -734,9 +733,10 @@ async function runDatabaseSetup(section = 'all') {
                 totalSuccess += videoResults.successCount;
                 totalFailure += videoResults.failureCount;
                 break;
-                
-            case 'podcasts':
-                const podcastResults = await addContentBatch(crystalCloudVideos, 'Crystal Cloud Podcast Videos');
+                  case 'podcasts':
+                console.log('🎙️  Note: Crystal Cloud Podcast videos require manual addition');
+                console.log('   Current section only contains channel placeholder.');
+                const podcastResults = await addContentBatch(crystalCloudVideos, 'Crystal Cloud Podcast Channel');
                 totalSuccess += podcastResults.successCount;
                 totalFailure += podcastResults.failureCount;
                 break;
@@ -752,15 +752,15 @@ async function runDatabaseSetup(section = 'all') {
                 const results2 = await addContentBatch(communityCreators, 'Community Creators');
                 totalSuccess += results2.successCount;
                 totalFailure += results2.failureCount;
-                
-                const results3 = await addContentBatch(bambiDaddiAudio, 'Bambi Daddi SoundCloud Tracks');
+                  const results3 = await addContentBatch(bambiDaddiAudio, 'Bambi Daddi SoundCloud Tracks');
                 totalSuccess += results3.successCount;
                 totalFailure += results3.failureCount;
-                  const results4 = await addContentBatch(allTomtameVideos, 'Complete Tomtame HypnoTube Collection');
+                
+                const results4 = await addContentBatch(allTomtameVideos, 'Complete Tomtame HypnoTube Collection');
                 totalSuccess += results4.successCount;
                 totalFailure += results4.failureCount;
                 
-                const results5 = await addContentBatch(crystalCloudVideos, 'Crystal Cloud Podcast Videos');
+                const results5 = await addContentBatch(crystalCloudVideos, 'Crystal Cloud Podcast Channel');
                 totalSuccess += results5.successCount;
                 totalFailure += results5.failureCount;
                 break;
