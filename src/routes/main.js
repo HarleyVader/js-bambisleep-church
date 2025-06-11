@@ -159,14 +159,17 @@ Help the community by voting on content quality:
             res.status(500).json({ error: 'Could not fetch metadata' });
         }
     });
-    
-    // Link management
+      // Link management
     router.post('/links', linkController.addLink.bind(linkController));
     router.get('/links/:id', linkController.getLinkById.bind(linkController));
-    
-    // Voting
+    router.post('/api/links/:id/view', linkController.trackView ? linkController.trackView.bind(linkController) : (req, res) => {
+        res.json({ success: true, message: 'View tracking not implemented yet', views: 0 });
+    });
+      // Voting
     router.post('/vote', voteController.castVote.bind(voteController));
+    router.post('/api/votes', voteController.castVote.bind(voteController));
     router.get('/votes/:linkId', voteController.getVotes.bind(voteController));
+    router.get('/api/votes/:linkId', voteController.getVoteStats.bind(voteController));
     
     // Comments
     router.post('/api/comments', commentController.addComment.bind(commentController));
