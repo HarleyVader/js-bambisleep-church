@@ -165,6 +165,11 @@ Help the community by voting on content quality:
     router.post('/api/links/:id/view', linkController.trackView ? linkController.trackView.bind(linkController) : (req, res) => {
         res.json({ success: true, message: 'View tracking not implemented yet', views: 0 });
     });
+    
+    // Creator view tracking
+    router.post('/api/creators/:id/view', creatorController.trackView ? creatorController.trackView.bind(creatorController) : (req, res) => {
+        res.json({ success: true, message: 'Creator view tracking not implemented yet', views: 0 });
+    });
       // Voting
     router.post('/vote', voteController.castVote.bind(voteController));
     router.post('/api/votes', voteController.castVote.bind(voteController));

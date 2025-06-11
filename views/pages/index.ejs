@@ -802,6 +802,90 @@
                 loadPlatformCategories(); // Reload platform categories to reorganize by views
             });
         }
+
+        // Track clicks on all URLs on the root page
+        function initializeClickTracking() {
+            // Track clicks on content links (videos, audios, images, platform content)
+            document.querySelectorAll('.content-link').forEach(link => {
+                link.addEventListener('click', (event) => {
+                    const linkElement = event.currentTarget;
+                    const voteEmoji = linkElement.querySelector('.vote-emoji[data-type="link"]');
+                    
+                    if (voteEmoji && voteEmoji.dataset.id) {
+                        const linkId = voteEmoji.dataset.id;
+                        trackLinkView(linkId);
+                    }
+                });
+            });
+
+            // Track clicks on creator links
+            document.querySelectorAll('.creator-link').forEach(link => {
+                link.addEventListener('click', (event) => {
+                    const linkElement = event.currentTarget;
+                    const voteEmoji = linkElement.querySelector('.vote-emoji[data-type="creator"]');
+                    
+                    if (voteEmoji && voteEmoji.dataset.id) {
+                        const creatorId = voteEmoji.dataset.id;
+                        trackCreatorView(creatorId);
+                    }
+                });
+            });
+        }
+
+        // Track link view using existing API
+        async function trackLinkView(linkId) {
+            try {
+                const response = await fetch(`/api/links/${linkId}/view`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    // Update view count in UI if element exists
+                    const viewElement = document.querySelector(`[data-id="${linkId}"]`)?.closest('.creator-info')?.querySelector('.vote-stats-right span');
+                    if (viewElement) {
+                        viewElement.textContent = `👁 ${data.views}`;
+                    }
+                }
+            } catch (error) {
+                console.error('Error tracking link view:', error);
+            }
+        }        // Track creator view using dedicated creator API
+        async function trackCreatorView(creatorId) {
+            try {
+                const response = await fetch(`/api/creators/${creatorId}/view`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    // Update view count in UI if element exists
+                    const viewElement = document.querySelector(`[data-id="${creatorId}"]`)?.closest('.creator-info')?.querySelector('.vote-stats-right span');
+                    if (viewElement) {
+                        viewElement.textContent = `👁 ${data.views}`;
+                    }
+                }
+            } catch (error) {
+                console.error('Error tracking creator view:', error);
+            }
+        }
+
+        // Initialize click tracking when DOM is ready and after platform categories load
+        document.addEventListener('DOMContentLoaded', initializeClickTracking);
+        
+        // Re-initialize click tracking after platform categories are loaded
+        const originalRenderPlatformCategories = renderPlatformCategories;
+        renderPlatformCategories = function(platforms) {
+            originalRenderPlatformCategories(platforms);
+            // Re-add event listeners after DOM update
+            setTimeout(initializeClickTracking, 100);
+        };
     </script>
 </body>
 </html>

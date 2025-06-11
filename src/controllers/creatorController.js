@@ -178,6 +178,34 @@ class CreatorController {
             return ResponseUtils.error(res, 'Error retrieving creator');
         }
     }
+
+    // Track creator views
+    async trackView(req, res) {
+        const creatorId = parseInt(req.params.id);
+        
+        try {
+            const creator = this.db.findById('creators', creatorId);
+            if (!creator) {
+                return res.status(404).json({ 
+                    success: false, 
+                    message: 'Creator not found' 
+                });
+            }
+            
+            // Increment view count
+            const updatedCreator = this.db.update('creators', creatorId, { views: (creator.views || 0) + 1 });
+            
+            res.json({ 
+                success: true, 
+                views: updatedCreator.views 
+            });
+        } catch (error) {
+            res.status(500).json({ 
+                success: false, 
+                message: 'Error tracking view' 
+            });
+        }
+    }
 }
 
 module.exports = CreatorController;
