@@ -170,12 +170,14 @@ Help the community by voting on content quality:
     router.post('/api/votes', voteController.castVote.bind(voteController));
     router.get('/votes/:linkId', voteController.getVotes.bind(voteController));
     router.get('/api/votes/:linkId', voteController.getVoteStats.bind(voteController));
-    
-    // Comments
+      // Comments
     router.post('/api/comments', commentController.addComment.bind(commentController));
     router.get('/api/comments/:linkId', commentController.getComments.bind(commentController));
     router.post('/api/comments/:commentId/vote', commentController.voteOnComment.bind(commentController));
     router.delete('/api/comments/:commentId', commentController.deleteComment.bind(commentController));
+    
+    // Creator voting
+    router.post('/api/creators/:id/vote', creatorController.voteForCreator.bind(creatorController));
 
     app.use('/', router);
 }
