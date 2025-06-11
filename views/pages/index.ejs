@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bambi Sleep Church - Unified Platform Hub</title>
+    <link rel="stylesheet" href="/css/style.css">    <style>
+        .unified-homepage {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .hero-section {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: var(--color-text-secondary);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        
+        /* Categories View */
+        .categories-view {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 0.3rem;
+            grid-auto-rows: min-content;
+            align-items: start;
+            margin-bottom: 2rem;
+        }
+        
+        .category-card {
+            background: rgba(var(--color-bg-secondary-rgb), 0.8);
+            border: 2px solid var(--color-primary-cyan);
+            border-radius: 1rem;
+            padding: 0.3rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease, height 0.5s ease, min-height 0.5s ease;
+            position: relative;
+            overflow: hidden;
+            min-height: 200px;
+            height: auto;
+        }
+        
+        .category-card:hover {
+            border-color: var(--color-primary-magenta);
+            border-width: 3px;
+            box-shadow: 0 0 30px rgba(var(--color-primary-magenta-rgb), 0.5);
+            transform: translateY(-8px);
+            background: rgba(var(--color-bg-secondary-rgb), 0.95);
+        }
+        
+        .category-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--color-primary-cyan), var(--color-primary-magenta));
+        }
+        
+        .category-card h2 {
+            margin-bottom: 0.2rem;
+            color: var(--color-primary-cyan);
+            display: flex;
+            align-items: center;
+            gap: 0.2rem;
+            font-size: 1.0rem;
+        }
+        
+        .category-icon {
+            font-size: 1.0rem;
+        }
+        
+        .category-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            font-size: 0.8rem;
+        }
+        
+        .category-list li {
+            padding: 0.1rem 0;
+            border-bottom: 1px solid rgba(var(--color-primary-cyan-rgb), 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .category-list li:hover {
+            padding-left: 0.25rem;
+            background: rgba(var(--color-primary-cyan-rgb), 0.05);
+        }
+        
+        .category-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .creator-info {
+            flex: 1;
+        }
+        
+        .creator-main-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.05rem;
+        }
+        
+        .creator-name-main {
+            font-weight: 600;
+            color: var(--color-text-primary);
+            font-size: 0.8rem;
+        }
+        
+        .creator-subtitle {
+            font-size: 0.6rem;
+            color: var(--color-text-secondary);
+            line-height: 1.0;
+            margin-bottom: 0.05rem;
+        }
+        
+        .vote-count-inline {
+            font-size: 0.6rem;
+            color: var(--color-primary-yellow);
+            display: flex;
+            align-items: center;
+            gap: 0.1rem;
+            white-space: nowrap;
+        }
+        
+        .content-link, .creator-link {
+            color: var(--color-text-primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: block;
+            width: 100%;
+        }
+        
+        .content-link:hover, .creator-link:hover {
+            color: var(--color-primary-cyan);
+        }
+          /* Platform Categories Container - Similar to Main Categories */
+        .platform-categories-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 0.3rem;
+            grid-auto-rows: min-content;
+            align-items: start;
+            margin-top: 2rem;
+        }
+        
+        .platform-category-card {
+            background: rgba(var(--color-bg-secondary-rgb), 0.8);
+            border: 2px solid var(--color-primary-cyan);
+            border-radius: 1rem;
+            padding: 0.3rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease, height 0.5s ease, min-height 0.5s ease;
+            position: relative;
+            overflow: hidden;
+            min-height: 200px;
+            height: auto;
+            cursor: pointer;
+        }
+        
+        .platform-category-card:hover {
+            border-color: var(--color-primary-magenta);
+            border-width: 3px;
+            box-shadow: 0 0 30px rgba(var(--color-primary-magenta-rgb), 0.5);
+            transform: translateY(-8px);
+            background: rgba(var(--color-bg-secondary-rgb), 0.95);
+        }
+        
+        .platform-category-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--color-primary-cyan), var(--color-primary-magenta));
+        }          .platform-favicon {
+            width: 1.0rem;
+            height: 1.0rem;
+            border-radius: 2px;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 0.1rem;
+            object-fit: contain;
+        }
+        
+        .platform-favicon.fallback {
+            background: var(--color-primary-cyan);
+            color: var(--color-bg-primary);
+            text-align: center;
+            line-height: 1.0rem;
+            font-size: 0.6rem;
+            font-weight: 600;
+            border: 1px solid rgba(var(--color-primary-cyan-rgb), 0.3);
+        }
+          
+        @media (max-width: 768px) {
+            .unified-homepage {
+                padding: 1rem;
+            }
+            
+            .categories-view {
+                grid-template-columns: 1fr;
+            }
+            
+            .platform-categories-container {
+                grid-template-columns: 1fr;
+            }
+        }        /* Voting System - Single Row Layout */
+        .vote-stats {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.6rem;
+            margin-bottom: 0.1rem;
+        }
+        
+        .vote-stats-left {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        
+        .vote-stats-right {
+            display: flex;
+            align-items: center;
+            gap: 0.1rem;
+        }
+        
+        .vote-emojis {
+            display: flex;
+            gap: 0.2rem;
+            align-items: center;
+        }
+        
+        .vote-emoji {
+            font-size: 0.6rem;
+            cursor: pointer;
+            opacity: 0.5;
+            transition: all 0.3s ease;
+            user-select: none;
+            margin-left: 0.2rem;
+        }
+        
+        .vote-emoji:hover {
+            opacity: 1;
+            transform: scale(1.2);
+        }
+        
+        .vote-emoji.active {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <%- include('../partials/header') %>
+    
+    <main>
+        <div class="unified-homepage">
+            <!-- Hero Section -->
+            <div class="hero-section">
+                <h1 class="neon-text scan-line">Bambi Sleep Church</h1>
+            </div>
+            
+            <!-- Top Categories -->
+            <div class="categories-view">
+                <!-- Creators Card -->
+                <div class="category-card">
+                    <h2><span class="category-icon">👥</span>Top Creators</h2>
+                    <ul class="category-list">
+                        <% if (creators && creators.length > 0) { %>
+                            <% creators.slice(0, 15).forEach(creator => { %>
+                                <li>
+                                    <a href="<%= creator.url %>" target="_blank" class="creator-link">
+                                        <div class="creator-info">                                            <div class="creator-main-row">                                                <span class="creator-name-main">
+                                                    <% 
+                                                    const fullName = creator.title || creator.name;
+                                                    const parts = fullName.split(' - ');
+                                                    const mainName = parts[0];
+                                                    %>                                                    <%= mainName.length > 45 ? mainName.substring(0, 45) + '...' : mainName %>
+                                                </span>
+                                            </div>
+                                            <div class="vote-stats">
+                                                <div class="vote-stats-left">
+                                                    <span>⭐ <%= creator.votes || 0 %></span>
+                                                    <div class="vote-emojis">
+                                                        <span class="vote-emoji upvote" data-type="creator" data-id="<%= creator.id %>" onclick="castVote(event, 'creator', '<%= creator.id %>', 'up')">✅</span>
+                                                        <span class="vote-emoji downvote" data-type="creator" data-id="<%= creator.id %>" onclick="castVote(event, 'creator', '<%= creator.id %>', 'down')">❌</span>
+                                                    </div>
+                                                </div>
+                                                <div class="vote-stats-right">
+                                                    <span>👁 <%= creator.views || 0 %></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </li>
+                            <% }); %>
+                        <% } else { %>
+                            <li style="color: var(--color-text-secondary);">No creators yet</li>
+                        <% } %>
+                    </ul>
+                </div>                <!-- Videos Card -->
+                <div class="category-card">
+                    <h2><span class="category-icon">📺</span>Top Videos</h2>
+                    <ul class="category-list">
+                        <% if (links && links.length > 0) { %>
+                            <% const videos = links.filter(link => link.category === 'videos').slice(0, 15); %>
+                            <% if (videos.length > 0) { %>
+                                <% videos.forEach(link => { %>
+                                    <li>
+                                        <a href="<%= link.url %>" target="_blank" class="content-link">
+                                            <div class="creator-info">                                                <div class="creator-main-row">
+                                                    <span class="creator-name-main">
+                                                        <% 
+                                                        const fullTitle = link.title;
+                                                        const parts = fullTitle.split(' - ');
+                                                        const mainName = parts[0];
+                                                        %>                                                        <%= mainName.length > 45 ? mainName.substring(0, 45) + '...' : mainName %>
+                                                    </span>
+                                                </div>
+                                                <div class="vote-stats">
+                                                    <div class="vote-stats-left">
+                                                        <span>⭐ <%= link.votes || 0 %></span>
+                                                        <div class="vote-emojis">
+                                                            <span class="vote-emoji upvote" data-type="link" data-id="<%= link.id %>" onclick="castVote(event, 'link', '<%= link.id %>', 'up')">✅</span>
+                                                            <span class="vote-emoji downvote" data-type="link" data-id="<%= link.id %>" onclick="castVote(event, 'link', '<%= link.id %>', 'down')">❌</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="vote-stats-right">
+                                                        <span>👁 <%= link.views || 0 %></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </li>
+                                <% }); %>
+                            <% } else { %>
+                                <li style="color: var(--color-text-secondary);">No videos yet</li>
+                            <% } %>
+                        <% } %>
+                    </ul>
+                </div>                <!-- Audio Card -->
+                <div class="category-card">
+                    <h2><span class="category-icon">🎵</span>Top Audios</h2>
+                    <ul class="category-list">
+                        <% if (links && links.length > 0) { %>
+                            <% const audios = links.filter(link => link.category === 'audio').slice(0, 15); %>
+                            <% if (audios.length > 0) { %>
+                                <% audios.forEach(link => { %>
+                                    <li>
+                                        <a href="<%= link.url %>" target="_blank" class="content-link">
+                                            <div class="creator-info">                                                <div class="creator-main-row">
+                                                    <span class="creator-name-main">
+                                                        <% 
+                                                        const fullTitle = link.title;
+                                                        const parts = fullTitle.split(' - ');
+                                                        const mainName = parts[0];
+                                                        %>                                                        <%= mainName.length > 45 ? mainName.substring(0, 45) + '...' : mainName %>
+                                                    </span>
+                                                </div>
+                                                <div class="vote-stats">
+                                                    <div class="vote-stats-left">
+                                                        <span>⭐ <%= link.votes || 0 %></span>
+                                                        <div class="vote-emojis">
+                                                            <span class="vote-emoji upvote" data-type="link" data-id="<%= link.id %>" onclick="castVote(event, 'link', '<%= link.id %>', 'up')">✅</span>
+                                                            <span class="vote-emoji downvote" data-type="link" data-id="<%= link.id %>" onclick="castVote(event, 'link', '<%= link.id %>', 'down')">❌</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="vote-stats-right">
+                                                        <span>👁 <%= link.views || 0 %></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </li>
+                                <% }); %>
+                            <% } else { %>
+                                <li style="color: var(--color-text-secondary);">No audios yet</li>
+                            <% } %>
+                        <% } %>
+                    </ul>
+                </div>                <!-- Images Card -->
+                <div class="category-card">
+                    <h2><span class="category-icon">🖼️</span>Top Images</h2>
+                    <ul class="category-list">
+                        <% if (links && links.length > 0) { %>
+                            <% const images = links.filter(link => link.category && link.category !== 'audio' && link.category !== 'videos').slice(0, 15); %>
+                            <% if (images.length > 0) { %>
+                                <% images.forEach(link => { %>
+                                    <li>
+                                        <a href="<%= link.url %>" target="_blank" class="content-link">
+                                            <div class="creator-info">                                                <div class="creator-main-row">
+                                                    <span class="creator-name-main">
+                                                        <% 
+                                                        const fullTitle = link.title;
+                                                        const parts = fullTitle.split(' - ');
+                                                        const mainName = parts[0];
+                                                        %>                                                        <%= mainName.length > 45 ? mainName.substring(0, 45) + '...' : mainName %>
+                                                    </span>
+                                                </div><div class="vote-stats">
+                                                    <div class="vote-stats-left">
+                                                        <span>⭐ <%= link.votes || 0 %></span>
+                                                        <div class="vote-emojis">
+                                                            <span class="vote-emoji upvote" data-type="link" data-id="<%= link.id %>" onclick="castVote(event, 'link', '<%= link.id %>', 'up')">✅</span>
+                                                            <span class="vote-emoji downvote" data-type="link" data-id="<%= link.id %>" onclick="castVote(event, 'link', '<%= link.id %>', 'down')">❌</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="vote-stats-right">
+                                                        <span>👁 <%= link.views || 0 %></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </li>
+                                <% }); %>
+                            <% } else { %>
+                                <li style="color: var(--color-text-secondary);">No images yet</li>
+                            <% } %>
+                        <% } %>
+                    </ul>
+                </div>
+            </div>            
+            <!-- Platform Categories (organized like main categories) -->
+            <div class="platform-categories-container" id="platformCategoriesContainer">
+                <div style="grid-column: 1 / -1; text-align: center; color: var(--color-text-secondary); font-size: 0.7rem; padding: 1rem;">
+                    Loading platforms...
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <%- include('../partials/footer') %>
+    
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        let allPlatforms = [];
+        
+        // Platform categories for filtering
+        const platformCategories = {
+            video: ['youtube', 'vimeo', 'dailymotion', 'twitch'],
+            audio: ['soundcloud', 'spotify', 'bandcamp', 'anchor'],
+            creator: ['patreon', 'ko-fi', 'onlyfans', 'subscribestar', 'gumroad', 'etsy'],
+            hypno: ['bambicloud', 'hypnotube'],
+            adult: ['pornhub', 'xvideos', 'xhamster'],
+            social: ['twitter', 'reddit'],
+            storage: ['google-drive', 'dropbox', 'mega']
+        };        document.addEventListener('DOMContentLoaded', () => {
+            loadPlatformCategories();
+            initializeVoteButtons();
+        });
+
+        async function loadPlatformCategories() {
+            try {
+                const response = await fetch('/api/platforms');
+                const data = await response.json();
+                
+                if (data.success && data.platforms) {
+                    allPlatforms = data.platforms;
+                    renderPlatformCategories(data.platforms);
+                } else {
+                    showPlatformCategoriesError('Failed to load platforms');
+                }
+            } catch (error) {
+                console.error('Error loading platform categories:', error);
+                showPlatformCategoriesError('Error loading platforms');
+            }
+        }        function renderPlatformCategories(platforms) {
+            const container = document.getElementById('platformCategoriesContainer');
+            
+            if (!platforms || platforms.length === 0) {
+                container.innerHTML = '<div style="grid-column: 1 / -1; color: var(--color-text-secondary); font-size: 0.7rem; text-align: center; padding: 1rem;">No platforms yet</div>';
+                return;
+            }
+            
+            // Sort by total platform views (totalViews) in descending order
+            const sortedPlatforms = platforms.sort((a, b) => 
+                (b.totalViews || 0) - (a.totalViews || 0)
+            );
+            
+            container.innerHTML = '';
+            
+            sortedPlatforms.forEach(platform => {
+                const categoryCard = createPlatformCategoryCard(platform);
+                container.appendChild(categoryCard);
+            });
+            
+            // Initialize vote button states after rendering platform categories
+            initializeVoteButtons();
+        }
+
+        function createPlatformCategoryCard(platform) {
+            const card = document.createElement('div');
+            card.className = 'category-card platform-category-card';
+            
+            const faviconUrl = getPlatformFavicon(platform.platform);
+              // Create favicon element with better error handling
+            const faviconElement = faviconUrl ? 
+                `<img src="${faviconUrl}" alt="${platform.platform}" class="platform-favicon" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';" style="display: inline-block;">
+                 <span class="platform-favicon fallback" style="display: none;">${platform.platform.charAt(0).toUpperCase()}</span>` :
+                `<span class="platform-favicon fallback">${platform.platform.charAt(0).toUpperCase()}</span>`;
+            
+            // Get top 15 items from this platform, sorted by engagement
+            const sortedItems = platform.items
+                .sort((a, b) => ((b.votes || 0) * 10 + (b.views || 0)) - ((a.votes || 0) * 10 + (a.views || 0)))
+                .slice(0, 15);
+            
+            card.innerHTML = `
+                <h2>
+                    <span class="category-icon">${faviconElement}</span>
+                    ${platform.platform.charAt(0).toUpperCase() + platform.platform.slice(1)} (${platform.items.length})
+                </h2>
+                <ul class="category-list">
+                    ${sortedItems.map(item => `
+                        <li>
+                            <a href="${item.url || item.link}" target="_blank" class="content-link">
+                                <div class="creator-info">
+                                    <div class="creator-main-row">                                        <span class="creator-name-main">
+                                            ${getTruncatedTitle(item.title || item.name || 'Untitled')}
+                                        </span>
+                                    </div>                                    <div class="vote-stats">
+                                        <div class="vote-stats-left">
+                                            <span>⭐ ${item.votes || 0}</span>
+                                            <div class="vote-emojis">
+                                                <span class="vote-emoji upvote" data-type="${item.linkId ? 'link' : 'creator'}" data-id="${item.id || item.linkId}" onclick="castVote(event, '${item.linkId ? 'link' : 'creator'}', '${item.id || item.linkId}', 'up')">✅</span>
+                                                <span class="vote-emoji downvote" data-type="${item.linkId ? 'link' : 'creator'}" data-id="${item.id || item.linkId}" onclick="castVote(event, '${item.linkId ? 'link' : 'creator'}', '${item.id || item.linkId}', 'down')">❌</span>
+                                            </div>
+                                        </div>
+                                        <div class="vote-stats-right">
+                                            <span>👁 ${item.views || 0}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                    `).join('')}
+                    ${platform.items.length > 15 ? `
+                        <li style="color: var(--color-text-secondary); font-style: italic; text-align: center; padding: 0.2rem;">
+                            ...and ${platform.items.length - 15} more items
+                        </li>
+                    ` : ''}
+                    ${platform.items.length === 0 ? `
+                        <li style="color: var(--color-text-secondary);">No content yet</li>
+                    ` : ''}
+                </ul>
+            `;
+            
+            // Add click handler to navigate to platform feed
+            card.addEventListener('click', (e) => {
+                // Only navigate if not clicking on a link
+                if (!e.target.closest('a')) {
+                    window.location.href = `/platforms/${platform.platform}`;
+                }
+            });
+            
+            return card;
+        }        function getTruncatedTitle(title) {
+            const parts = title.split(' - ');
+            const mainTitle = parts[0];
+            return mainTitle.length > 45 ? mainTitle.substring(0, 45) + '...' : mainTitle;
+        }function getPlatformFavicon(platform) {
+            // Use Google's favicon service for reliable favicon fetching
+            const platformDomains = {
+                'youtube': 'youtube.com',
+                'soundcloud': 'soundcloud.com',
+                'vimeo': 'vimeo.com',
+                'patreon': 'patreon.com',
+                'reddit': 'reddit.com',
+                'twitter': 'twitter.com',
+                'spotify': 'spotify.com',
+                'bandcamp': 'bandcamp.com',
+                'pornhub': 'pornhub.com',
+                'xvideos': 'xvideos.com',
+                'ko-fi': 'ko-fi.com',
+                'onlyfans': 'onlyfans.com',
+                'twitch': 'twitch.tv',
+                'dailymotion': 'dailymotion.com',
+                'anchor': 'anchor.fm',
+                'subscribestar': 'subscribestar.com',
+                'gumroad': 'gumroad.com',
+                'etsy': 'etsy.com',
+                'xhamster': 'xhamster.com',
+                'dropbox': 'dropbox.com',
+                'mega': 'mega.nz',
+                'google-drive': 'drive.google.com',
+                'bambicloud': null, // Custom platform, no standard favicon
+                'hypnotube': null // Custom platform, no standard favicon
+            };
+            
+            const domain = platformDomains[platform.toLowerCase()];
+            if (domain) {
+                return `https://www.google.com/s2/favicons?domain=${domain}&sz=16`;
+            }
+            
+            return null;
+        }function showPlatformCategoriesError(message) {
+            const container = document.getElementById('platformCategoriesContainer');
+            container.innerHTML = `<div style="grid-column: 1 / -1; color: var(--color-primary-yellow); font-size: 0.7rem; text-align: center; padding: 1rem;">${message}</div>`;
+        }        // Voting functionality
+        function castVote(event, type, id, voteType) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            const emoji = event.target;
+            const itemContainer = emoji.closest('.creator-info');
+            const upvoteEmoji = itemContainer.querySelector('.upvote');
+            const downvoteEmoji = itemContainer.querySelector('.downvote');            const voteStats = itemContainer.querySelector('.vote-stats');
+            const voteCountSpan = voteStats.querySelector('.vote-stats-left span');
+            
+            const upvoteCookieKey = `voted_${type}_${id}_up`;
+            const downvoteCookieKey = `voted_${type}_${id}_down`;
+            
+            // Check current vote state
+            const hasUpvoted = hasVoted(upvoteCookieKey);
+            const hasDownvoted = hasVoted(downvoteCookieKey);
+            
+            // Get bambi name
+            let bambiName = localStorage.getItem('bambiName');
+            if (!bambiName) {
+                bambiName = prompt('Enter your Bambi name:');
+                if (!bambiName) return;
+                localStorage.setItem('bambiName', bambiName);
+            }
+            
+            // Determine the action to take
+            let action = '';
+            let newVoteValue = 0;
+            
+            if (voteType === 'up') {
+                if (hasUpvoted) {
+                    // Remove upvote
+                    action = 'remove_upvote';
+                    newVoteValue = -1;
+                    removeVotingCookie(upvoteCookieKey);
+                    upvoteEmoji.classList.remove('active');
+                } else {
+                    // Add upvote (remove downvote if exists)
+                    action = 'add_upvote';
+                    newVoteValue = hasDownvoted ? 2 : 1; // +2 if switching from downvote, +1 if neutral
+                    if (hasDownvoted) {
+                        removeVotingCookie(downvoteCookieKey);
+                        downvoteEmoji.classList.remove('active');
+                    }
+                    createVotingCookie(upvoteCookieKey, bambiName);
+                    upvoteEmoji.classList.add('active');
+                }
+            } else if (voteType === 'down') {
+                if (hasDownvoted) {
+                    // Remove downvote
+                    action = 'remove_downvote';
+                    newVoteValue = 1;
+                    removeVotingCookie(downvoteCookieKey);
+                    downvoteEmoji.classList.remove('active');
+                } else {
+                    // Add downvote (remove upvote if exists)
+                    action = 'add_downvote';
+                    newVoteValue = hasUpvoted ? -2 : -1; // -2 if switching from upvote, -1 if neutral
+                    if (hasUpvoted) {
+                        removeVotingCookie(upvoteCookieKey);
+                        upvoteEmoji.classList.remove('active');
+                    }
+                    createVotingCookie(downvoteCookieKey, bambiName);
+                    downvoteEmoji.classList.add('active');
+                }
+            }
+            
+            // Update vote count immediately for better UX
+            const currentVotes = parseInt(voteCountSpan.textContent.replace('⭐ ', '')) || 0;
+            voteCountSpan.textContent = `⭐ ${currentVotes + newVoteValue}`;
+            
+            // Cast vote to server
+            const endpoint = type === 'creator' ? `/api/creators/${id}/vote` : `/api/votes`;
+            const payload = type === 'creator' ? { voteType, action } : { linkId: id, userId: bambiName, voteType, action };
+            
+            fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success || data.message) {
+                    // Success - emojis already updated above
+                    console.log('Vote cast successfully:', action);
+                    
+                    // Reload platform categories to reflect changes
+                    setTimeout(() => {
+                        loadPlatformCategories();
+                    }, 1000);
+                } else {
+                    throw new Error(data.error || 'Voting failed');
+                }
+            })
+            .catch(error => {
+                console.error('Error voting:', error);
+                
+                // Revert changes on error
+                voteCountSpan.textContent = `⭐ ${currentVotes}`;
+                
+                if (voteType === 'up') {
+                    if (action === 'add_upvote') {
+                        upvoteEmoji.classList.remove('active');
+                        removeVotingCookie(upvoteCookieKey);
+                        if (newVoteValue === 2) {
+                            downvoteEmoji.classList.add('active');
+                            createVotingCookie(downvoteCookieKey, bambiName);
+                        }
+                    } else {
+                        upvoteEmoji.classList.add('active');
+                        createVotingCookie(upvoteCookieKey, bambiName);
+                    }
+                } else {
+                    if (action === 'add_downvote') {
+                        downvoteEmoji.classList.remove('active');
+                        removeVotingCookie(downvoteCookieKey);
+                        if (newVoteValue === -2) {
+                            upvoteEmoji.classList.add('active');
+                            createVotingCookie(upvoteCookieKey, bambiName);
+                        }
+                    } else {
+                        downvoteEmoji.classList.add('active');
+                        createVotingCookie(downvoteCookieKey, bambiName);
+                    }
+                }
+                
+                alert('Error casting vote: ' + error.message);
+            });
+        }
+          function createVotingCookie(cookieKey, bambiName) {
+            const expiryDate = new Date();
+            expiryDate.setMinutes(expiryDate.getMinutes() + 60); // 60 minutes from now
+            
+            const cookieValue = JSON.stringify({
+                voted: true,
+                bambiname: bambiName,
+                timestamp: new Date().toISOString()
+            });
+            
+            document.cookie = `${cookieKey}=${encodeURIComponent(cookieValue)}; expires=${expiryDate.toUTCString()}; path=/`;
+        }
+        
+        function removeVotingCookie(cookieKey) {
+            document.cookie = `${cookieKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`;
+        }
+        
+        function hasVoted(cookieKey) {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                const [name, value] = cookie.trim().split('=');
+                if (name === cookieKey) {
+                    try {
+                        const voteData = JSON.parse(decodeURIComponent(value));
+                        return voteData.voted === true;
+                    } catch (e) {
+                        return false;
+                    }
+                }
+            }
+            return false;
+        }
+          function initializeVoteButtons() {
+            // Check and update vote emoji states on page load
+            document.querySelectorAll('.creator-info').forEach(itemContainer => {
+                const upvoteEmoji = itemContainer.querySelector('.upvote');
+                const downvoteEmoji = itemContainer.querySelector('.downvote');
+                
+                if (upvoteEmoji && downvoteEmoji) {
+                    const type = upvoteEmoji.dataset.type;
+                    const id = upvoteEmoji.dataset.id;
+                    
+                    const upvoteCookieKey = `voted_${type}_${id}_up`;
+                    const downvoteCookieKey = `voted_${type}_${id}_down`;
+                    
+                    if (hasVoted(upvoteCookieKey)) {
+                        upvoteEmoji.classList.add('active');
+                    }
+                    
+                    if (hasVoted(downvoteCookieKey)) {
+                        downvoteEmoji.classList.add('active');
+                    }
+                }
+            });
+        }
+
+        // Listen for new content via WebSocket and reorganize platforms
+        if (typeof io !== 'undefined') {
+            const socket = io();
+            socket.on('newContent', (data) => {
+                console.log('New content received:', data);
+                loadPlatformCategories(); // Reload platform categories to reorganize by views
+            });
+        }
+    </script>
+</body>
+</html>

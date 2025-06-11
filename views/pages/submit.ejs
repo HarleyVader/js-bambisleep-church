@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Content - Bambi Sleep Church</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .unified-submit {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .submit-card {
+            background: rgba(var(--color-bg-secondary-rgb), 0.9);
+            border: 1px solid var(--color-primary-cyan);
+            border-radius: 1rem;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--color-primary-cyan);
+            font-weight: 600;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(var(--color-bg-primary-rgb), 0.8);
+            border: 1px solid var(--color-primary-cyan);
+            border-radius: 0.5rem;
+            color: var(--color-text-primary);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--color-primary-magenta);
+            box-shadow: 0 0 10px rgba(var(--color-primary-magenta-rgb), 0.3);
+        }
+
+        .url-validation {
+            margin-top: 0.5rem;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            display: none;
+        }
+
+        .url-validation.validating {
+            display: block;
+            background: rgba(var(--color-primary-cyan-rgb), 0.1);
+            border: 1px solid var(--color-primary-cyan);
+            color: var(--color-primary-cyan);
+        }
+
+        .url-validation.valid {
+            display: block;
+            background: rgba(var(--color-primary-green-rgb), 0.1);
+            border: 1px solid var(--color-primary-green);
+            color: var(--color-primary-green);
+        }
+
+        .url-validation.invalid {
+            display: block;
+            background: rgba(var(--color-primary-yellow-rgb), 0.1);
+            border: 1px solid var(--color-primary-yellow);
+            color: var(--color-primary-yellow);
+        }
+
+        .metadata-preview {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(var(--color-bg-secondary-rgb), 0.5);
+            border-radius: 0.5rem;
+            border: 1px solid var(--color-primary-cyan);
+        }
+
+        .metadata-preview h4 {
+            margin: 0 0 0.5rem 0;
+            color: var(--color-primary-cyan);
+        }
+
+        .metadata-grid {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .metadata-label {
+            color: var(--color-text-secondary);
+            font-weight: 600;
+        }
+
+        .metadata-value {
+            color: var(--color-text-primary);
+        }
+
+        .platform-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            background: rgba(var(--color-primary-magenta-rgb), 0.1);
+            border: 1px solid var(--color-primary-magenta);
+            border-radius: 0.75rem;
+            color: var(--color-primary-magenta);
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .quality-score {
+            float: right;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .quality-score.high {
+            background: rgba(var(--color-primary-green-rgb), 0.1);
+            color: var(--color-primary-green);
+        }
+
+        .quality-score.medium {
+            background: rgba(var(--color-primary-yellow-rgb), 0.1);
+            color: var(--color-primary-yellow);
+        }
+
+        .quality-score.low {
+            background: rgba(255, 0, 0, 0.1);
+            color: #ff4444;
+        }
+
+        .submit-button {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--color-primary-magenta), var(--color-primary-cyan));
+            border: none;
+            border-radius: 0.5rem;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .submit-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(var(--color-primary-magenta-rgb), 0.3);
+        }
+
+        .submit-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 0.5rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error-message, .success-message {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+            font-weight: 600;
+        }
+
+        .error-message {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid #ff4444;
+            color: #ff4444;
+        }
+
+        .success-message {
+            background: rgba(var(--color-primary-green-rgb), 0.1);
+            border: 1px solid var(--color-primary-green);
+            color: var(--color-primary-green);
+        }
+    </style>
+</head>
+<body>
+    <%- include('../partials/header') %>
+    
+    <main>
+        <div class="unified-submit">
+            <h1 class="neon-text scan-line">Submit Content</h1>
+            <p class="subtitle">Add any URL - we'll automatically detect the platform and organize it</p>
+            
+            <div class="submit-card">
+                <form id="unifiedSubmitForm">
+                    <div class="form-group">
+                        <label for="url">Content URL *</label>
+                        <input type="url" id="url" name="url" class="form-input" 
+                               placeholder="https://youtube.com/watch?v=... or https://patreon.com/creator or any supported URL"
+                               required>
+                        
+                        <div id="urlValidation" class="url-validation">
+                            <div class="spinner"></div>
+                            Checking URL and extracting metadata...
+                        </div>
+                        
+                        <div id="metadataPreview" class="metadata-preview" style="display: none;">
+                            <h4>Detected Content <span id="qualityScore" class="quality-score"></span></h4>
+                            <div id="metadataGrid" class="metadata-grid"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="title">Title (optional - will use detected title if empty)</label>
+                        <input type="text" id="title" name="title" class="form-input" 
+                               placeholder="Leave empty to use automatically detected title">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description (optional - will use detected description if empty)</label>
+                        <textarea id="description" name="description" class="form-input" rows="3"
+                                  placeholder="Leave empty to use automatically detected description"></textarea>
+                    </div>
+
+                    <div id="messageContainer"></div>
+
+                    <button type="submit" id="submitButton" class="submit-button" disabled>
+                        Submit Content
+                    </button>
+                </form>
+            </div>
+        </div>
+    </main>    <%- include('../partials/footer') %>
+    <script src="/js/unified-submit.js"></script>
+</body>
+</html>

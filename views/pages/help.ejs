@@ -1,0 +1,155 @@
+<%- include('../partials/header') %>
+
+<main>
+    <div class="container">
+        <section class="help-section">
+            <% if (typeof isMarkdown !== 'undefined' && isMarkdown) { %>
+                <div class="markdown-content">
+                    <%- htmlContent %>
+                </div>
+            <% } else { %>
+                <h2>Help & Documentation</h2>
+                <div class="help-content">
+                    
+                    <div class="help-item">
+                        <h3>📝 How to Submit Content</h3>
+                        <p>Use the <strong>Submit</strong> page to add new links or creator profiles to the community.</p>
+                        <ul>
+                            <li>Fill out all required fields</li>
+                            <li>Choose the appropriate category</li>
+                            <li>Add a clear description</li>
+                            <li>Submit for community review</li>
+                        </ul>
+                    </div>
+
+                    <div class="help-item">
+                        <h3>📊 Understanding Stats</h3>
+                        <p>The <strong>Stats</strong> page shows community metrics and popular content.</p>
+                        <ul>
+                            <li>View top-voted content</li>
+                            <li>See community growth trends</li>
+                            <li>Check platform statistics</li>
+                        </ul>
+                    </div>
+
+                    <div class="help-item">
+                        <h3>🏠 Navigation</h3>
+                        <p>Use the main navigation to explore different sections:</p>
+                        <ul>
+                            <li><strong>Home</strong> - Overview and featured content</li>
+                            <li><strong>Feed</strong> - Latest community submissions</li>
+                            <li><strong>Submit</strong> - Add new content</li>
+                            <li><strong>Stats</strong> - Community metrics</li>
+                            <li><strong>Help</strong> - This documentation</li>
+                        </ul>
+                    </div>
+
+                    <div class="help-item">
+                        <h3>🗳️ Voting System</h3>
+                        <p>Help the community by voting on content quality:</p>
+                        <ul>
+                            <li>Upvote quality content</li>
+                            <li>Help surface the best submissions</li>
+                            <li>Contribute to community curation</li>
+                        </ul>                    </div>
+
+                <div class="help-item">
+                    <h3>📱 Platform Support</h3>
+                    <p>We support content from various platforms:</p>
+                    <ul>
+                        <li>YouTube creators and videos</li>
+                        <li>Discord communities</li>
+                        <li>Reddit posts and communities</li>
+                        <li>General web links</li>
+                    </ul>
+                </div>
+
+                </div>
+            <% } %>
+        </section>
+    </div>
+</main>
+
+<style>
+.help-section {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.help-content {
+    display: grid;
+    gap: 2rem;
+}
+
+.help-item {
+    background: var(--card-background, #1a1a2e);
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color, #333);
+}
+
+.help-item h3 {
+    margin-top: 0;
+    color: var(--primary-color, #ff6b9d);
+    font-size: 1.25rem;
+}
+
+.help-item ul {
+    margin-left: 1rem;
+}
+
+.help-item li {
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+}
+
+/* Markdown content styling */
+.markdown-content {
+    background: var(--card-background, #1a1a2e);
+    padding: 2rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color, #333);
+    line-height: 1.6;
+}
+
+.markdown-content h1, .markdown-content h2, .markdown-content h3 {
+    color: var(--primary-color, #ff6b9d);
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.markdown-content h1:first-child, .markdown-content h2:first-child {
+    margin-top: 0;
+}
+
+.markdown-content ul {
+    margin-left: 1rem;
+    margin-bottom: 1rem;
+}
+
+.markdown-content li {
+    margin-bottom: 0.5rem;
+}
+
+.markdown-content p {
+    margin-bottom: 1rem;
+}
+
+.markdown-content code {
+    background: var(--code-background, #2a2a2a);
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+}
+
+.markdown-content pre {
+    background: var(--code-background, #2a2a2a);
+    padding: 1rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 1rem 0;
+}
+</style>
+
+<%- include('../partials/footer') %>

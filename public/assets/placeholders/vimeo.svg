@@ -1,0 +1,5 @@
+<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <rect width="120" height="120" fill="#1ab7ea" rx="8"/>
+  <polygon points="45,30 45,90 85,60" fill="white"/>
+  <text x="60" y="108" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="10" font-weight="bold">Vimeo</text>
+</svg>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bambi Sleep - Stats</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <%- include('../partials/header') %>
+    
+    <div class="container">
+        <h1 class="neon-text">Community Statistics</h1>
+        
+        <div class="stats-container">
+            <!-- Overall Stats -->
+            <div class="stats-card">
+                <h2>📊 Overall Stats</h2>
+                <div class="stat-row">
+                    <span class="stat-label">Total Links:</span>
+                    <span class="stat-value" id="total-links">-</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Total Votes:</span>
+                    <span class="stat-value" id="total-votes">-</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Total Views:</span>
+                    <span class="stat-value" id="total-views">-</span>
+                </div>
+            </div>
+
+            <!-- Category Stats -->
+            <div class="stats-card">
+                <h2>📂 Category Breakdown</h2>
+                <div id="category-stats"></div>
+            </div>
+
+            <!-- Top Links -->
+            <div class="stats-card">
+                <h2>🏆 Top Voted Links</h2>
+                <div id="top-links"></div>
+            </div>
+        </div>
+    </div>
+
+    <%- include('../partials/footer') %>
+    <script src="/js/main.js"></script>
+    <script src="/js/stats.js"></script>
+</body>
+</html>
