@@ -7,11 +7,19 @@
 
 ## 🎮 Project Overview
 
-**BambiSleep.church** is a cutting-edge community platform featuring an **endless stream feed** with real-time voting, comments, metadata enhancement, and embedded media players. The application combines modern web technologies with a stunning cyberpunk neonwave theme that adapts beautifully across all devices.
+**BambiSleep.church** is a cutting-edge community platform featuring an **endless stream feed** with real-time voting, comments, metadata enhancement, and embedded media players. The application combines modern web technologies with a stunning cyberpunk neonwave theme and includes a **standalone Model Context Protocol (MCP) server** for automated content management.
 
 **🌐 Repository**: https://github.com/HarleyVader/js-bambisleep-church
 
 ## ✨ Key Features
+
+### 🤖 **MCP Server Integration**
+
+- **Standalone MCP Server**: No SDK dependencies, pure JSON-RPC 2.0 implementation
+- **URL Fetching**: Automated content fetching with metadata extraction
+- **Data Management**: Full CRUD operations on all application data
+- **Platform Detection**: Smart detection of YouTube, SoundCloud, Vimeo, and more
+- **Content Processing**: Automatic title, description, and thumbnail extraction
 
 ### 📡 **Live Stream Feed System**
 
@@ -277,31 +285,26 @@ See `SCRIPTS_DOCUMENTATION.md` for detailed usage instructions.
 ### Installation
 
 1. Clone the repository:
-
    ```bash
    git clone https://github.com/HarleyVader/js-bambisleep-church.git
    ```
 
 2. Navigate to the project directory:
-
    ```bash
    cd js-bambisleep-church
    ```
 
 3. Install dependencies:
-
    ```bash
    npm install
    ```
 
 4. Start the application:
-
    ```bash
    npm start
    ```
 
 5. Open your browser and visit:
-
    - **Local**: http://localhost:8888
    - **Feed**: http://localhost:8888/feed  
    - **Submit**: http://localhost:8888/submit
@@ -310,6 +313,27 @@ See `SCRIPTS_DOCUMENTATION.md` for detailed usage instructions.
 ### Development Mode
 
 For development with auto-restart:
+```bash
+npm run dev
+```
+
+### MCP Server
+
+Run the standalone MCP server:
+```bash
+npm run mcp
+```
+
+Test the MCP server:
+```bash
+npm run test:mcp
+```
+
+Run MCP demonstrations:
+```bash
+npm run demo:mcp
+npm run example:mcp
+```
 
 ```bash
 npm run dev

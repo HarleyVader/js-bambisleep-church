@@ -493,5 +493,17 @@
     },
     "createdAt": "2025-06-11T21:04:57.429Z",
     "id": 19
+  },
+  {
+    "id": "creator-mcp-1749682430600",
+    "name": "MCP Demo Creator",
+    "description": "A creator added via MCP server",
+    "links": [
+      "mcp-demo-1749682430478"
+    ],
+    "metadata": {
+      "addedVia": "mcp-server",
+      "verified": false
+    }
   }
 ]

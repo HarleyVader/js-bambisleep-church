@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "bambi-sleep-standalone": {
+      "command": "node",
+      "args": ["src/mcp/standaloneMcpServer.js"],
+      "cwd": "f:/js-bambisleep-church",
+      "env": {}
+    }
+  }
+}

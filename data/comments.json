@@ -1,1 +1,11 @@
-[]
+[
+  {
+    "id": "comment-mcp-1749682430539",
+    "linkId": "mcp-demo-1749682430478",
+    "text": "This is a test comment added via the MCP server!",
+    "timestamp": "2025-06-11T22:53:50.539Z",
+    "metadata": {
+      "addedVia": "mcp-server"
+    }
+  }
+]

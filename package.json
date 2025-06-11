@@ -10,17 +10,16 @@
   "bugs": {
     "url": "https://github.com/HarleyVader/js-bambisleep-church/issues"
   },
-  "homepage": "https://github.com/HarleyVader/js-bambisleep-church#readme",
-  "scripts": {
+  "homepage": "https://github.com/HarleyVader/js-bambisleep-church#readme",  "scripts": {
     "start": "node src/app.js",
-    "dev": "nodemon src/app.js"
-  },
-  "dependencies": {
-    "axios": "^1.9.0",
-    "cheerio": "^1.1.0",
+    "dev": "nodemon src/app.js",
+    "mcp": "node src/mcp/standaloneMcpServer.js",
+    "test:mcp": "node tests/test-mcp.js",
+    "demo:mcp": "node tests/demo-mcp.js",
+    "example:mcp": "node tests/example-mcp.js"
+  },  "dependencies": {
     "ejs": "^3.1.10",
     "express": "^5.1.0",
-    "marked": "^15.0.12",
     "socket.io": "^4.8.1"
   },
   "keywords": [

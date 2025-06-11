@@ -846,5 +846,61 @@
     },
     "createdAt": "2025-06-11T17:52:48.856Z",
     "id": 33
+  },
+  {
+    "id": "test-1749682355326",
+    "title": "Test Link",
+    "url": "http://example.com",
+    "type": "website",
+    "timestamp": "2025-06-11T22:52:35.326Z"
+  },
+  {
+    "id": "demo-1749682373232",
+    "title": "Demo Link from MCP",
+    "url": "https://httpbin.org/json",
+    "type": "website",
+    "description": "A test link added via MCP server",
+    "timestamp": "2025-06-11T22:52:53.232Z",
+    "votes": {
+      "up": 0,
+      "down": 0
+    }
+  },
+  {
+    "id": "mcp-demo-1749682430478",
+    "title": "MCP Demo Link",
+    "url": "https://example.com/mcp-demo",
+    "type": "website",
+    "description": "A link added via MCP server demonstration",
+    "timestamp": "2025-06-11T22:53:50.478Z",
+    "votes": {
+      "up": 0,
+      "down": 0
+    },
+    "metadata": {
+      "addedVia": "mcp-server",
+      "demo": true
+    }
+  },
+  {
+    "id": "test-1749683064545",
+    "title": "Test Link",
+    "url": "http://example.com",
+    "type": "website",
+    "timestamp": "2025-06-11T23:04:24.545Z"
+  },
+  {
+    "id": "test-1749683242570",
+    "title": "Test Link",
+    "url": "http://example.com",
+    "type": "website",
+    "timestamp": "2025-06-11T23:07:22.570Z"
+  },
+  {
+    "id": "test-1749683351668",
+    "title": "Test Link",
+    "url": "http://example.com",
+    "type": "website",
+    "timestamp": "2025-06-11T23:09:11.669Z"
   }
 ]
