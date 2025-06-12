@@ -13,7 +13,6 @@
   "homepage": "https://github.com/HarleyVader/js-bambisleep-church#readme",  "scripts": {
     "start": "node src/mcp/McpServer.js & node src/app.js",
     "test": "node universal-info.test.js",
-    "crawler": "node run-crawler.js",
     "mcp": "node src/mcp/McpServer.js",
     "agentic": "node src/mcp/bambisleep-crawler-agent.js"
   },

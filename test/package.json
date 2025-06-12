@@ -1,0 +1,20 @@
+{
+  "name": "bambisleep-church-tests",
+  "version": "1.0.0",
+  "description": "Test suite for BambiSleep Church application",
+  "scripts": {
+    "test": "mocha test/**/*.test.js",
+    "test:watch": "mocha test/**/*.test.js --watch",
+    "test:coverage": "nyc mocha test/**/*.test.js",
+    "test:unit": "mocha test/unit/**/*.test.js",
+    "test:integration": "mocha test/integration/**/*.test.js",
+    "test:agents": "mocha test/agents/**/*.test.js"
+  },
+  "devDependencies": {
+    "mocha": "^10.2.0",
+    "chai": "^4.3.7",
+    "sinon": "^15.0.4",
+    "nyc": "^15.1.0",
+    "supertest": "^6.3.3"
+  }
+}

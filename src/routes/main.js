@@ -1164,6 +1164,144 @@ A: Yes! Community feedback is welcome for platform improvements.
             res.status(500).json({
                 success: false,
                 error: error.message
+            });        }
+    });
+
+    // =================== ERROR MONITORING ROUTES ===================
+    
+    // Error tracking statistics
+    router.get('/api/errors/stats', (req, res) => {
+        try {
+            const { errorTracker } = require('../middleware/errorTracking');
+            const stats = errorTracker.getErrorStats();
+            res.json({
+                success: true,
+                data: stats
+            });
+        } catch (error) {
+            console.error('Error fetching error stats:', error);
+            res.status(500).json({
+                success: false,
+                error: 'Failed to fetch error statistics'
+            });
+        }
+    });
+
+    // Recent errors for monitoring dashboard
+    router.get('/api/errors/recent', (req, res) => {
+        try {
+            const limit = parseInt(req.query.limit) || 20;
+            const { errorTracker } = require('../middleware/errorTracking');
+            const recentErrors = errorTracker.getRecentErrors(limit);
+            res.json({
+                success: true,
+                data: recentErrors
+            });
+        } catch (error) {
+            console.error('Error fetching recent errors:', error);
+            res.status(500).json({
+                success: false,
+                error: 'Failed to fetch recent errors'
+            });
+        }
+    });
+
+    // Manual error reporting endpoint
+    router.post('/api/errors/report', (req, res) => {
+        try {
+            const { message, context } = req.body;
+            const { trackCustomError } = require('../middleware/errorTracking');
+            
+            const error = new Error(message || 'Manual error report');
+            trackCustomError(error, {
+                ...context,
+                userReported: true,
+                ip: req.ip,
+                userAgent: req.get('User-Agent')
+            }).then(errorId => {
+                res.json({
+                    success: true,
+                    errorId: errorId,
+                    message: 'Error reported successfully'
+                });
+            });
+        } catch (error) {
+            console.error('Error reporting error:', error);
+            res.status(500).json({
+                success: false,
+                error: 'Failed to report error'
+            });
+        }    });
+
+    // Database health check endpoint
+    router.get('/api/database/health', async (req, res) => {
+        try {
+            const enhancedDb = require('../utils/enhancedDatabaseService');
+            const health = await enhancedDb.healthCheck();
+            res.json({
+                success: true,
+                data: health
+            });
+        } catch (error) {
+            console.error('Database health check failed:', error);
+            res.status(500).json({
+                success: false,
+                error: 'Database health check failed',
+                details: error.message
+            });
+        }    });
+
+    // Configuration management endpoints
+    router.get('/api/config', (req, res) => {
+        try {
+            const configManager = require('../utils/configManager');
+            const config = configManager.export();
+            res.json({
+                success: true,
+                data: config
+            });
+        } catch (error) {
+            console.error('Error fetching configuration:', error);
+            res.status(500).json({
+                success: false,
+                error: 'Failed to fetch configuration'
+            });
+        }
+    });
+
+    router.get('/api/config/section/:section', (req, res) => {
+        try {
+            const { section } = req.params;
+            const configManager = require('../utils/configManager');
+            const sectionConfig = configManager.getSection(section);
+            res.json({
+                success: true,
+                section: section,
+                data: sectionConfig
+            });
+        } catch (error) {
+            console.error('Error fetching configuration section:', error);
+            res.status(500).json({
+                success: false,
+                error: `Failed to fetch configuration section: ${req.params.section}`
+            });
+        }
+    });
+
+    router.post('/api/config/reload', (req, res) => {
+        try {
+            const configManager = require('../utils/configManager');
+            configManager.reload();
+            res.json({
+                success: true,
+                message: 'Configuration reloaded successfully'
+            });
+        } catch (error) {
+            console.error('Error reloading configuration:', error);
+            res.status(500).json({
+                success: false,
+                error: 'Failed to reload configuration',
+                details: error.message
             });
         }
     });

@@ -27,6 +27,8 @@ function setupLegacyFormHandlers() {
     }
 }
 
+// Legacy form functionality - wrapped in DOMContentLoaded to prevent syntax errors
+document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('unifiedSubmitForm');
     const urlInput = document.getElementById('url');
     const titleInput = document.getElementById('title');
@@ -378,16 +380,15 @@ function setupLegacyFormHandlers() {
             'generic': '🌐'
         };
         return icons[platform] || '🔗';
-    }
-
-    // Truncate text
+    }    // Truncate text
     function truncateText(text, maxLength) {
         if (text.length <= maxLength) return text;
         return text.substring(0, maxLength) + '...';
-    }    // ===============================
+    }
+});    // ===============================
     // CRAWL FETCH AGENT FUNCTIONALITY
     // ===============================
-    
+document.addEventListener('DOMContentLoaded', () => {
     const crawlForm = document.getElementById('crawlFetchForm');
     const crawlUrlsInput = document.getElementById('crawlUrls');
     const crawlSubmitButton = document.getElementById('crawlSubmitButton');
@@ -1348,8 +1349,7 @@ function setupLegacyFormHandlers() {
             clearInterval(statsUpdateInterval);
             statsUpdateInterval = null;
         }
-        
-        const finalElapsed = Date.now() - crawlStats.startTime;
+          const finalElapsed = Date.now() - crawlStats.startTime;
         console.log(`\n🎉 Crawl Complete!`);
         console.log(`Total Time: ${formatTime(finalElapsed)}`);
         console.log(`URLs Processed: ${crawlStats.completedUrls}/${crawlStats.totalUrls}`);
