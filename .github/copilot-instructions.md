@@ -1,88 +1,50 @@
 # GitHub Copilot Instructions - AI Framework
-
 # **IMPORTANT: DO NOT CHANGE THIS FILE**
 
-## Core Rule: KEEP IT SIMPLE
+## Core Rules: 
+- **Function over form.** 
+- **Working code over perfect code.**
+- **Less is more.**
 
-**Function over form. Working code over perfect code. Less is more.**
-
-## LMStudio Model Context Protocol (MCP) Orchestration
-
-**Primary Model**: `llama-3.2-3b-claude-3.7-sonnet-reasoning-distilled@q4_0`
-- **Purpose**: Orchestrate MCP server tools with advanced reasoning
-- **Endpoint**: http://192.168.0.69:7777/v1/chat/completions
-- **Capabilities**: Tool selection, workflow orchestration, adaptive learning
-- **Framework**: LMStudio MCP Framework (src/mcp/lmstudioMcpFramework.js)
-
-### MCP Integration Guidelines
-1. **Always use LMStudio for tool orchestration** - Let the AI reason about which tools to use
-2. **Leverage the framework's orchestration capabilities** - Don't manually chain tools
-3. **Use structured output** - Configure response_format for JSON when needed
-4. **Enable learning** - Allow the framework to learn from execution outcomes
-5. **Respect the protocol** - Follow MCP JSON-RPC 2.0 specifications
-
-## Core Methodology: Enhanced 4-State Work Loop
+## Core Methodology: KEEP IT SIMPLE => 3 STEPS AGENT LOOP | MK-XII 
 
 ### 1. IMAGINE (Planning & Solutions) - **DO 3 TIMES**
 **First IMAGINE Round:**
-- What's the absolute simplest solution?
-- What's the minimal viable approach?
-- What can I avoid doing entirely?
+- Fetch **<build_task_name>.md** tasks [IF] <doesnt_exist> ignore.
+- What's the absolute minimum I need to write?
+- What's the minimal viable code approach?
+- What must I avoid touching entirely?
+- Can I solve this with existing code or tools?
 
 **Second IMAGINE Round:**
-- Are there even simpler alternatives?
-- Can I reuse something that already exists?
-- What would require zero or minimal code changes?
+- Fetch required **.github/codebase-inventory.md** files.
+- What code structure will I use with the least words?
+- What files do I need to touch to keep coding to a minimum?
+- What configurations do I need to know to successfully implement this?
+- What is the least amount of work I can do to get this done correctly?
+- Create a **<build_task_name>.md** file with the task description and requirements.
 
 **Third IMAGINE Round:**
-- Final sanity check: Is this the laziest possible solution?
-- Can I solve this with configuration instead of code?
-- What's the absolute minimum I need to touch?
+### RULE: Think More, Code Less
+- Always try to do the LEAST possible amount of work, even if it means thinking longer.
+- Final sanity check: Is this the laziest yet correct possible solution?
+- Can I reuse something that already exists?
+- Update **<build_task_name>.md** with [%COMPLETION%] percentage checkmark.
 
 ### 2. CREATION (Single Implementation) - **LOOP UNTIL 100 PERSENT BUILT ACHIEVED**
 - Implement ONLY the solution from the 3x IMAGINE phase
 - Write the absolute minimum code required
-- No "while we're here" improvements
 - One function, one purpose, done
 - Check percentage of completion every itertation
 - If not 100% complete, go back to **Third IMAGINE Round:**
 
-### 3. DEPLOY (Test Until Working, Then STOP)
-- Test the minimum viable solution
-- Fix ONLY what's broken
-- Confirm it works
-- If it works, **STOP** - no further changes
-- If it doesn't work, go back to **Third IMAGINE Round:**
-- **IMMEDIATELY STOP** - No improvements, no polish, no "just one more thing"
+**IMPORTANT: DO NOT FORGET TO THINK BEFORE DOING THIS**
 
-### 4. FINALIZE (Review & Confirm)
-- Review the solution
-- Confirm it meets the requirements
-- Ensure it works as intended
-- cleanup any temporary files or code
+### 3. COMPACT (Consolidation & Cleanup) - **DO 3 TIMES**
+- Review the code for unnecessary complexity
+- Remove any redundant logic or unused variables
+- Simplify the implementation without changing functionality
+- Ensure the code is as concise as possible
+- Update **.github/codebase-inventory.md** with any new or modified files
 
 **CRITICAL: When task is complete, STOP. Don't add features, don't improve, don't optimize.**
-
-**IMPORTANT: DO NOT FORGET TO THINK BEFORE DOING THIS**
-
-### RULE: Think More, Code Less
-
-**Always try to do the LEAST possible amount of work, even if it means thinking longer.**
-
-<!-- DEPLOYMENT DISABLED - MK-XII Development Branch -->
-<!-- 
-- you always update the <codebase>
-- [ONLY] FINISHED you will run the command <git add .>
-- [ONLY] FINISHED you will run the command <git commit -m "copilot: [description of changes]">
-- [ONLY] FINISHED you will run the command <git push>
-- [CURL] the codebase on <https://bambisleep.chat> to check if the changes are live
-- [ONLY] <ssh brandynette@192.168.0.72> `cd /home/brandynette/web/bambisleep.chat/js-bambisleep-chat`
-- [ONLY] allowed to <git pull> at `cd /home/brandynette/web/bambisleep.chat/js-bambisleep-chat`
-- [INTERACTIVE] sudo password request
--->
-<!-- END DEPLOYMENT DISABLED -->
-
-**IMPORTANT: DO NOT FORGET TO THINK BEFORE DOING THIS**
-
-### RULE: Think More, Code Less
-**Always try to do the LEAST possible amount of work, even if it means thinking longer.**

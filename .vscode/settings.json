@@ -1,0 +1,38 @@
+{
+  "github.copilot.enable": {
+    "*": true,
+    "yaml": true,
+    "plaintext": true,
+    "markdown": true,
+    "json": true,
+    "javascript": true,
+    "typescript": true,
+    "python": true,
+    "shell": true,
+  },
+  "github.copilot.advanced": {
+    "debug.overrideEngine": "codex",
+    "length": 1000,
+    "temperature": 0.1,
+    "listCount": 3,
+    "inlineSuggestEnable": true
+  },  
+  "github.copilot.chat.instructions": [
+    {
+      "file": ".github/copilot-instructions.md",
+      "description": "Instructions for using GitHub Copilot"
+    },
+    {
+      "file": ".github/model-context-protocol.md",
+      "description": "Model Context Protocol requirements for the AI model"
+    },
+    {
+      "file": ".github/codebase-inventory.md",
+      "description": "File inventory with [%] completion of the codebase"
+    },
+    {
+      "file": ".github/copilot-ssh-agent.md",
+      "description": "SSH agent configuration for bambisleep.chat, bambisleep.church, fickdichselber.com"
+    }
+  ]
+}

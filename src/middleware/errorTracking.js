@@ -3,7 +3,7 @@
  * Integrates centralized error tracking with HTTP requests
  */
 
-const errorTracker = require('./errorTracker');
+const errorTracker = require('../utils/errorTracker');
 
 /**
  * Express error handling middleware
