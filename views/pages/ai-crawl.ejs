@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Girlfriend Agent - Robust Content Discovery</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .crawler-interface {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .input-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .url-input {
+            width: 100%;
+            min-height: 120px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .option-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .option-group label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .option-group input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .crawl-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .crawl-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .crawl-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .results-section {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            display: none;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .metric {
+            display: inline-block;
+            background: #e9ecef;
+            padding: 8px 16px;
+            border-radius: 20px;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <%- include('../partials/header') %>
+    
+    <div class="crawler-interface">
+        <h1>💖 AI Girlfriend Agent</h1>
+        <p class="subtitle">Advanced Content Discovery with Robust Crawler Architecture</p>
+        
+        <div class="input-section">
+            <h3>🎯 Seed URLs</h3>
+            <textarea id="urlInput" class="url-input" placeholder="Enter URLs (one per line):
+https://bambisleep.info/
+https://example.com/content
+https://another-site.com/page"></textarea>
+            
+            <div class="options-grid">
+                <div class="option-group">
+                    <label for="maxDepth">Max Depth</label>
+                    <input type="number" id="maxDepth" value="2" min="1" max="5">
+                </div>
+                <div class="option-group">
+                    <label for="maxPages">Max Pages</label>
+                    <input type="number" id="maxPages" value="50" min="10" max="200">
+                </div>
+                <div class="option-group">
+                    <label for="crawlDelay">Delay (ms)</label>
+                    <input type="number" id="crawlDelay" value="2000" min="500" max="10000" step="500">
+                </div>
+                <div class="option-group">
+                    <label for="maxConcurrency">Concurrency</label>
+                    <input type="number" id="maxConcurrency" value="3" min="1" max="10">
+                </div>
+            </div>
+            
+            <button id="startCrawl" class="crawl-button">
+                🚀 Start Advanced Discovery
+            </button>
+        </div>
+        
+        <div id="results" class="results-section">
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <h3>🕷️ AI Girlfriend Agent is discovering content...</h3>
+                <p>This may take 2-5 minutes depending on the scope</p>
+            </div>
+            
+            <div id="completed" style="display: none;">
+                <h3>✨ Discovery Complete!</h3>
+                <div id="metrics"></div>
+                <div id="content-results"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const startButton = document.getElementById('startCrawl');
+        const urlInput = document.getElementById('urlInput');
+        const resultsSection = document.getElementById('results');
+        const loadingDiv = document.getElementById('loading');
+        const completedDiv = document.getElementById('completed');
+        
+        startButton.addEventListener('click', async () => {
+            const urls = urlInput.value.trim().split('\n')
+                .map(url => url.trim())
+                .filter(url => url.length > 0);
+            
+            if (urls.length === 0) {
+                alert('Please enter at least one URL');
+                return;
+            }
+            
+            const options = {
+                maxDepth: parseInt(document.getElementById('maxDepth').value),
+                maxPages: parseInt(document.getElementById('maxPages').value),
+                crawlDelay: parseInt(document.getElementById('crawlDelay').value),
+                maxConcurrency: parseInt(document.getElementById('maxConcurrency').value)
+            };
+            
+            // Show loading
+            startButton.disabled = true;
+            startButton.textContent = '🔄 Crawling...';
+            resultsSection.style.display = 'block';
+            loadingDiv.style.display = 'block';
+            completedDiv.style.display = 'none';
+            
+            try {
+                const response = await fetch('/api/ai-crawl', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        seedUrls: urls,
+                        options: options
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Show success message
+                    loadingDiv.style.display = 'none';
+                    completedDiv.style.display = 'block';
+                    
+                    document.getElementById('metrics').innerHTML = `
+                        <div class="success">
+                            ✅ Crawl initiated successfully! 
+                            Crawl ID: ${result.crawlId}
+                        </div>
+                        <p>Check the <a href="/crawl-status">Crawl Status</a> page for real-time updates.</p>
+                    `;
+                    
+                } else {
+                    throw new Error(result.error || 'Unknown error');
+                }
+                
+            } catch (error) {
+                console.error('Crawl error:', error);
+                loadingDiv.style.display = 'none';
+                completedDiv.style.display = 'block';
+                
+                document.getElementById('metrics').innerHTML = `
+                    <div class="error">
+                        ❌ Error: ${error.message}
+                    </div>
+                `;
+            } finally {
+                startButton.disabled = false;
+                startButton.textContent = '🚀 Start Advanced Discovery';
+            }
+        });
+    </script>
+    
+    <%- include('../partials/footer') %>
+</body>
+</html>

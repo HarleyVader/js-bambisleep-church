@@ -1,7 +1,12 @@
 // Unified Submit Form JavaScript - Single form with automatic metadata validation
 document.addEventListener('DOMContentLoaded', () => {
-    // Polyfill for crypto.randomUUID if not available
-    if (!crypto.randomUUID) {
+    // Enhanced polyfill for crypto.randomUUID if not available
+    if (typeof crypto === 'undefined' || !crypto.randomUUID) {
+        // Create crypto object if it doesn't exist
+        if (typeof crypto === 'undefined') {
+            window.crypto = {};
+        }
+        
         crypto.randomUUID = function() {
             return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
                 const r = Math.random() * 16 | 0;
@@ -100,9 +105,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     showValidationState('invalid', `✗ ${validation.reason}`);
                     hideMetadataPreview();
                     disableSubmission();
-                }
-            } else {
+                }            } else {
                 const error = await response.json();
+                console.error('Metadata fetch failed with status:', response.status, error);
                 isValidUrl = false;
                 showValidationState('invalid', `✗ ${error.error || 'Failed to fetch metadata'}`);
                 hideMetadataPreview();
@@ -322,10 +327,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Redirect after success
                 setTimeout(() => {
                     window.location.href = '/platforms';
-                }, 2000);
-            } else {
+                }, 2000);            } else {
                 const error = await response.json();
-                showMessage(`✗ ${error.message}`, 'error');
+                console.error('Submit failed with status:', response.status, error);
+                showMessage(`✗ Submission failed: ${error.message || 'Unknown error'}`, 'error');
                 if (error.details) {
                     console.error('Submission error details:', error.details);
                 }
@@ -486,6 +491,9 @@ document.addEventListener('DOMContentLoaded', () => {
         crawlSubmitButton.innerHTML = '<div class="spinner"></div>' + 
             (isAdvanced ? 'Advanced Crawling...' : 'Crawling...');
 
+        // Initialize stats tracking
+        initializeCrawlStats(urls);
+
         try {
             if (isAdvanced) {
                 await processAdvancedCrawl(urls, options);
@@ -497,6 +505,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showCrawlMessage('Crawl operation failed: ' + error.message, 'error');        } finally {
             crawlSubmitButton.disabled = false;
             crawlSubmitButton.textContent = '🚀 Start Crawl & Generate Feed';
+            finalizeCrawlStats();
         }
     }
 
@@ -558,12 +567,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateProgress((completedUrls / totalUrls) * 100, `Crawling ${url}...`);
 
                 const result = await crawlSingleUrl(url, options);
-                
-                if (result.success) {
+                  if (result.success) {
                     crawlData.push(...result.items);
                     logCrawlMessage(`✅ Found ${result.items.length} items from ${url}`);
+                    updateCrawlStats(completedUrls + 1, result.items.length);
                 } else {
                     logCrawlMessage(`❌ Failed to crawl ${url}: ${result.error}`);
+                    updateCrawlStats(completedUrls + 1, 0);
                 }
 
                 completedUrls++;
@@ -571,11 +581,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     `Completed ${completedUrls}/${totalUrls} URLs`);
 
                 // Respectful delay
-                await new Promise(resolve => setTimeout(resolve, 1000));
-
-            } catch (error) {
+                await new Promise(resolve => setTimeout(resolve, 1000));            } catch (error) {
                 logCrawlMessage(`💥 Error crawling ${url}: ${error.message}`);
                 completedUrls++;
+                updateCrawlStats(completedUrls, 0);
             }
         }
 
@@ -1034,4 +1043,127 @@ document.addEventListener('DOMContentLoaded', () => {
         // Open URL in new tab for preview
         window.open(item.url, '_blank');
     };
+
+    // Enhanced Stats Tracking
+    let crawlStats = {
+        totalUrls: 0,
+        completedUrls: 0,
+        newlyAddedItems: 0,
+        startTime: null,
+        estimatedEndTime: null,
+        avgProcessingTime: 0
+    };
+
+    let statsUpdateInterval = null;
+
+    function initializeCrawlStats(urls) {
+        crawlStats = {
+            totalUrls: urls.length,
+            completedUrls: 0,
+            newlyAddedItems: 0,
+            startTime: Date.now(),
+            estimatedEndTime: null,
+            avgProcessingTime: 0
+        };
+        
+        // Start timer updates
+        statsUpdateInterval = setInterval(updateStatsDisplay, 1000);
+        updateStatsDisplay();
+    }
+
+    function updateCrawlStats(completed, newItems) {
+        crawlStats.completedUrls = completed;
+        crawlStats.newlyAddedItems += newItems;
+        
+        // Calculate average processing time
+        const elapsed = Date.now() - crawlStats.startTime;
+        crawlStats.avgProcessingTime = elapsed / Math.max(completed, 1);
+        
+        // Estimate remaining time
+        const remaining = crawlStats.totalUrls - completed;
+        if (remaining > 0 && crawlStats.avgProcessingTime > 0) {
+            crawlStats.estimatedEndTime = Date.now() + (remaining * crawlStats.avgProcessingTime);
+        }
+        
+        updateStatsDisplay();
+    }
+
+    function updateStatsDisplay() {
+        // Update completed count
+        document.getElementById('completedCount').textContent = crawlStats.completedUrls;
+        
+        // Update newly added count
+        document.getElementById('newlyAddedCount').textContent = crawlStats.newlyAddedItems;
+        
+        // Update remaining count
+        const remaining = crawlStats.totalUrls - crawlStats.completedUrls;
+        document.getElementById('remainingCount').textContent = remaining;
+        
+        // Update elapsed time
+        const elapsed = Date.now() - crawlStats.startTime;
+        document.getElementById('elapsedTimer').textContent = formatTime(elapsed);
+        
+        // Update estimated remaining time
+        if (crawlStats.estimatedEndTime && remaining > 0) {
+            const estimatedRemaining = crawlStats.estimatedEndTime - Date.now();
+            document.getElementById('estimatedTimer').textContent = 
+                estimatedRemaining > 0 ? formatTime(estimatedRemaining) : '00:00';
+        } else {
+            document.getElementById('estimatedTimer').textContent = remaining > 0 ? '--:--' : '00:00';
+        }
+        
+        // Update progress percentage
+        const percent = crawlStats.totalUrls > 0 ? (crawlStats.completedUrls / crawlStats.totalUrls) * 100 : 0;
+        document.getElementById('progressTextOverlay').textContent = `${Math.round(percent)}%`;
+        
+        // Terminal output for stats
+        logTerminalStats();
+    }
+
+    function formatTime(milliseconds) {
+        const seconds = Math.floor(milliseconds / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
+
+    function logTerminalStats() {
+        if (crawlStats.totalUrls === 0) return;
+        
+        const elapsed = Date.now() - crawlStats.startTime;
+        const percent = (crawlStats.completedUrls / crawlStats.totalUrls) * 100;
+        const remaining = crawlStats.totalUrls - crawlStats.completedUrls;
+        
+        // Create progress bar for terminal
+        const barLength = 30;
+        const filledLength = Math.round((percent / 100) * barLength);
+        const progressBar = '█'.repeat(filledLength) + '░'.repeat(barLength - filledLength);
+        
+        // Format terminal stats line
+        const statsLine = `[${formatTime(elapsed)}] ` +
+            `Completed: ${crawlStats.completedUrls} | ` +
+            `New: ${crawlStats.newlyAddedItems} | ` +
+            `[${progressBar}] ${Math.round(percent)}% | ` +
+            `Remaining: ${remaining} | ` +
+            `ETA: ${document.getElementById('estimatedTimer').textContent}`;
+        
+        // Only log if there's actual progress to avoid spam
+        if (crawlStats.completedUrls > 0) {
+            console.log(statsLine);
+        }
+    }
+
+    function finalizeCrawlStats() {
+        if (statsUpdateInterval) {
+            clearInterval(statsUpdateInterval);
+            statsUpdateInterval = null;
+        }
+        
+        const finalElapsed = Date.now() - crawlStats.startTime;
+        console.log(`\n🎉 Crawl Complete!`);
+        console.log(`Total Time: ${formatTime(finalElapsed)}`);
+        console.log(`URLs Processed: ${crawlStats.completedUrls}/${crawlStats.totalUrls}`);
+        console.log(`Items Found: ${crawlStats.newlyAddedItems}`);
+        console.log(`Avg Processing Time: ${formatTime(crawlStats.avgProcessingTime)}`);
+    }
 });

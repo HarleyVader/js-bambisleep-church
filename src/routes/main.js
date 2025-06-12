@@ -1,4 +1,3 @@
-
 const express = require('express');
 const LinkController = require('../controllers/linkController');
 const VoteController = require('../controllers/voteController');
@@ -7,6 +6,8 @@ const FeedController = require('../controllers/feedController');
 const CommentController = require('../controllers/commentController');
 const MainController = require('../controllers/mainController');
 const MetadataService = require('../utils/metadataService');
+const AIGirlfriendAgent = require('../agents/aiGirlfriendAgent');
+const crawlStatusTracker = require('../utils/crawlStatusTracker');
 
 const router = express.Router();
 const linkController = new LinkController();
@@ -64,7 +65,9 @@ function setRoutes(app) {
     // 4. STATS ROUTE
     router.get('/stats', (req, res) => {
         res.render('pages/stats');
-    });    // 5. HELP ROUTE
+    });
+
+    // 5. HELP ROUTE
     router.get('/help', async (req, res) => {
         try {
             const fs = require('fs');
@@ -129,10 +132,91 @@ Help the community by voting on content quality:
                 htmlContent: '<p>Error loading help content</p>', 
                 title: 'Help', 
                 isMarkdown: false 
+            });        }
+    });
+
+    // 6. CRAWL STATUS ROUTE  
+    router.get('/crawl-status', async (req, res) => {
+        try {
+            const activeCrawls = crawlStatusTracker.getAllActiveCrawls();
+            const crawlHistory = crawlStatusTracker.getCrawlHistory();
+            const overallStats = crawlStatusTracker.getOverallStats();
+            
+            // Get recently discovered content
+            const links = linkController.db.read('links');
+            const recentContent = links
+                .sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt))
+                .slice(0, 20);
+
+            res.render('pages/crawl-status', { 
+                activeCrawls: activeCrawls,
+                crawlHistory: crawlHistory.slice(0, 10), // Last 10 crawls
+                overallStats: overallStats,
+                recentContent: recentContent,
+                formatTimeRemaining: crawlStatusTracker.formatTimeRemaining.bind(crawlStatusTracker)
             });
+        } catch (error) {
+            console.error('Error loading crawl status:', error);
+            res.render('pages/crawl-status', { 
+                activeCrawls: [],
+                crawlHistory: [],
+                overallStats: { activeCrawls: 0, totalContentFound: 0, totalBambisleepFound: 0, totalIframes: 0 },
+                recentContent: [],
+                formatTimeRemaining: () => 'Unknown'
+            });
+        }    });
+    
+    // 7. AI GIRLFRIEND AGENT ROUTE
+    router.get('/ai-crawl', async (req, res) => {
+        try {
+            res.render('pages/ai-crawl', {
+                title: 'AI Girlfriend Agent - Advanced Content Discovery'
+            });
+        } catch (error) {
+            console.error('Error loading AI crawl page:', error);
+            res.status(500).send('Error loading AI crawl interface');
         }
     });
 
+    // 8. AI GIRLFRIEND AGENT API ENDPOINT
+    router.post('/api/ai-crawl', async (req, res) => {
+        try {
+            const AIGirlfriendAgent = require('../agents/aiGirlfriendAgent');
+            const { seedUrls, options } = req.body;
+            
+            const agent = new AIGirlfriendAgent({
+                maxDepth: options?.maxDepth || 2,
+                maxPages: options?.maxPages || 50,
+                crawlDelay: options?.crawlDelay || 2000,
+                maxConcurrency: options?.maxConcurrency || 3
+            });
+            
+            // Start crawl in background
+            const crawlPromise = agent.discoverContent(seedUrls || [], options || {});
+            
+            // Return crawl ID for status tracking
+            res.json({
+                success: true,
+                message: 'AI Girlfriend Agent crawl started',
+                crawlId: options?.crawlId || 'auto-generated',
+                estimatedTime: '2-5 minutes'
+            });
+            
+            // Handle crawl completion in background
+            crawlPromise.then(report => {
+                console.log('✨ AI Girlfriend Agent crawl completed:', report.summary);
+            }).catch(error => {
+                console.error('💥 AI Girlfriend Agent crawl failed:', error);
+            });
+            
+        } catch (error) {
+            console.error('Error starting AI crawl:', error);
+            res.status(500).json({
+                success: false,
+                error: error.message
+            });
+        }
+    });
     // =================== API ROUTES ===================
     
     // Feed API
@@ -464,7 +548,290 @@ Help the community by voting on content quality:
                 message: error.message 
             });
         }
-    });    app.use('/', router);
+    });
+
+    // AI Girlfriend Agent API Routes
+    router.post('/api/ai-girlfriend/discover', async (req, res) => {
+        try {
+            const { urls, options = {} } = req.body;
+            
+            if (!urls) {
+                return res.status(400).json({ 
+                    error: 'URLs required for content discovery' 
+                });
+            }
+
+            console.log('💖 AI Girlfriend Agent: Starting content discovery...');
+            
+            const agent = new AIGirlfriendAgent({
+                maxDepth: options.maxDepth || 2,
+                maxPages: options.maxPages || 50,
+                crawlDelay: options.crawlDelay || 1000,
+                maxConcurrency: options.maxConcurrency || 3
+            });
+
+            const report = await agent.discoverContent(urls, options);
+            
+            res.json({
+                success: true,
+                report: report,
+                message: `Discovered ${report.summary.bambisleepPages} Bambisleep pages with ${report.summary.iframesGenerated} iframes`
+            });
+
+        } catch (error) {
+            console.error('💥 AI Girlfriend Agent error:', error);
+            res.status(500).json({ 
+                error: 'Content discovery failed', 
+                message: error.message 
+            });
+        }
+    });
+
+    // Generate iframes from URLs
+    router.post('/api/ai-girlfriend/generate-iframes', async (req, res) => {
+        try {
+            const { urls } = req.body;
+            
+            if (!urls || !Array.isArray(urls)) {
+                return res.status(400).json({ 
+                    error: 'URLs array is required' 
+                });
+            }
+
+            console.log('🎬 Generating iframes for provided URLs...');
+            
+            const agent = new AIGirlfriendAgent();
+            const iframes = [];
+            
+            for (const url of urls) {
+                const platform = agent.detectPlatform(url);
+                if (platform) {
+                    const iframe = agent.generatePlatformIframe(url, platform);
+                    const responsive = agent.makeResponsive(iframe);
+                    
+                    iframes.push({
+                        url,
+                        platform,
+                        iframe,
+                        responsive
+                    });
+                }
+            }
+            
+            res.json({
+                success: true,
+                iframes: iframes,
+                count: iframes.length
+            });
+
+        } catch (error) {
+            console.error('💥 Iframe generation error:', error);
+            res.status(500).json({ 
+                error: 'Iframe generation failed', 
+                message: error.message 
+            });
+        }
+    });
+
+    // Parse URL arguments
+    router.post('/api/ai-girlfriend/parse-urls', async (req, res) => {
+        try {
+            const { urls } = req.body;
+            
+            if (!urls || !Array.isArray(urls)) {
+                return res.status(400).json({ 
+                    error: 'URLs array is required' 
+                });
+            }
+
+            console.log('🔍 Parsing URL arguments...');
+            
+            const agent = new AIGirlfriendAgent();
+            const parsedUrls = [];
+            
+            for (const url of urls) {
+                const args = agent.parseUrlArguments(url);
+                const shouldSkip = agent.shouldSkipUrl(url, args);
+                const isBambisleep = agent.isBambisleepUrl(url);
+                
+                parsedUrls.push({
+                    url,
+                    arguments: args,
+                    shouldSkip,
+                    isBambisleep,
+                    argumentCount: Object.keys(args).length
+                });
+            }
+            
+            res.json({
+                success: true,
+                urls: parsedUrls,
+                summary: {
+                    total: parsedUrls.length,
+                    withArguments: parsedUrls.filter(u => u.argumentCount > 0).length,
+                    bambisleepUrls: parsedUrls.filter(u => u.isBambisleep).length,
+                    skipRecommended: parsedUrls.filter(u => u.shouldSkip).length
+                }
+            });
+
+        } catch (error) {
+            console.error('💥 URL parsing error:', error);
+            res.status(500).json({ 
+                error: 'URL parsing failed', 
+                message: error.message 
+            });
+        }
+    });
+
+    // Get Bambisleep content specifically
+    router.get('/api/ai-girlfriend/bambisleep-content', async (req, res) => {
+        try {
+            console.log('🌟 Discovering Bambisleep content...');
+            
+            const agent = new AIGirlfriendAgent({
+                maxDepth: 2,
+                maxPages: 30,
+                crawlDelay: 1500
+            });
+
+            const report = await agent.discoverContent([], { bambisleepOnly: true });
+            
+            // Filter for Bambisleep content only
+            const bambisleepContent = report.bambisleepContent.map(content => ({
+                ...content,
+                iframes: report.iframes.filter(iframe => iframe.url === content.url)
+            }));
+            
+            res.json({
+                success: true,
+                content: bambisleepContent,
+                summary: {
+                    pages: bambisleepContent.length,
+                    iframes: report.summary.iframesGenerated,
+                    platforms: Object.keys(report.platformStats)
+                }
+            });
+
+        } catch (error) {
+            console.error('💥 Bambisleep content discovery error:', error);
+            res.status(500).json({ 
+                error: 'Bambisleep content discovery failed', 
+                message: error.message 
+            });        }
+    });
+
+    // Real-time Crawl Status API Routes
+    router.get('/api/crawl-status/active', (req, res) => {
+        try {
+            const activeCrawls = crawlStatusTracker.getAllActiveCrawls();
+            const overallStats = crawlStatusTracker.getOverallStats();
+            
+            res.json({
+                success: true,
+                activeCrawls: activeCrawls,
+                overallStats: overallStats,
+                timestamp: Date.now()
+            });
+        } catch (error) {
+            res.status(500).json({ 
+                error: 'Failed to get active crawl status', 
+                message: error.message 
+            });
+        }
+    });
+
+    router.get('/api/crawl-status/history', (req, res) => {
+        try {
+            const history = crawlStatusTracker.getCrawlHistory();
+            
+            res.json({
+                success: true,
+                history: history.slice(0, 20), // Last 20 crawls
+                count: history.length
+            });
+        } catch (error) {
+            res.status(500).json({ 
+                error: 'Failed to get crawl history', 
+                message: error.message 
+            });
+        }
+    });
+
+    router.get('/api/crawl-status/:crawlId', (req, res) => {
+        try {
+            const { crawlId } = req.params;
+            const crawlStatus = crawlStatusTracker.getCrawlStatus(crawlId);
+            
+            if (!crawlStatus) {
+                return res.status(404).json({ 
+                    error: 'Crawl not found', 
+                    crawlId: crawlId 
+                });
+            }
+            
+            res.json({
+                success: true,
+                crawl: crawlStatus,
+                timeRemaining: crawlStatusTracker.formatTimeRemaining(crawlStatus.estimatedTimeRemaining)
+            });
+        } catch (error) {
+            res.status(500).json({ 
+                error: 'Failed to get crawl status', 
+                message: error.message 
+            });
+        }
+    });
+
+    // Start new crawl
+    router.post('/api/crawl-status/start', async (req, res) => {
+        try {
+            const { urls, options = {} } = req.body;
+            
+            if (!urls || !Array.isArray(urls) || urls.length === 0) {
+                return res.status(400).json({ 
+                    error: 'URLs array is required' 
+                });
+            }
+
+            console.log('🚀 Starting new AI Girlfriend Agent crawl...');
+            
+            const agent = new AIGirlfriendAgent({
+                maxDepth: options.maxDepth || 2,
+                maxPages: options.maxPages || 50,
+                crawlDelay: options.crawlDelay || 1000,
+                maxConcurrency: options.maxConcurrency || 3
+            });
+
+            // Start crawl in background
+            const crawlId = crawlStatusTracker.generateCrawlId();
+            
+            // Return crawl ID immediately
+            res.json({
+                success: true,
+                crawlId: crawlId,
+                message: 'Crawl started successfully',
+                urls: urls.length
+            });
+
+            // Start crawling in background
+            agent.discoverContent(urls, { ...options, crawlId })
+                .then(report => {
+                    console.log(`✅ Crawl ${crawlId} completed successfully`);
+                })
+                .catch(error => {
+                    console.error(`💥 Crawl ${crawlId} failed:`, error);
+                });
+
+        } catch (error) {
+            console.error('💥 Failed to start crawl:', error);
+            res.status(500).json({ 
+                error: 'Failed to start crawl', 
+                message: error.message 
+            });
+        }
+    });
+
+    app.use('/', router);
 
     // Helper functions for content type mapping
     function mapTypeToCategory(type) {

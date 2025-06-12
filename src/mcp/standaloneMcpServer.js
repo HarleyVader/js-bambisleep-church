@@ -290,10 +290,16 @@ class StandaloneMcpServer {
     async fetchUrl(args) {
         const { url, saveToFile, extractData } = args;
         
-        return new Promise((resolve, reject) => {
-            const client = url.startsWith('https:') ? https : http;
+        return new Promise((resolve, reject) => {            const client = url.startsWith('https:') ? https : http;
             
-            client.get(url, (res) => {
+            const request = client.get(url, {
+                headers: {
+                    'User-Agent': 'BambiSleep-MCP-Agent/1.0',
+                    'Accept': 'text/html,application/xhtml+xml',
+                    'Connection': 'keep-alive'
+                },
+                timeout: 30000
+            }, (res) => {
                 let data = '';
                 
                 res.on('data', (chunk) => {
@@ -321,9 +327,14 @@ class StandaloneMcpServer {
                         resolve(result);
                     } catch (error) {
                         reject(error);
-                    }
-                });
-            }).on('error', reject);
+                    }                });
+            });
+            
+            request.on('error', reject);
+            request.on('timeout', () => {
+                request.destroy();
+                reject(new Error('Request timeout'));
+            });
         });
     }
 

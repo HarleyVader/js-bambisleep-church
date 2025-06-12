@@ -1,7 +1,12 @@
 // This file contains the main JavaScript logic for the client-side application.
 
-// Polyfill for crypto.randomUUID if not available
-if (!crypto.randomUUID) {
+// Enhanced polyfill for crypto.randomUUID if not available
+if (typeof crypto === 'undefined' || !crypto.randomUUID) {
+    // Create crypto object if it doesn't exist
+    if (typeof crypto === 'undefined') {
+        window.crypto = {};
+    }
+    
     crypto.randomUUID = function() {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
             const r = Math.random() * 16 | 0;

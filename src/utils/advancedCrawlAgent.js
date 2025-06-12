@@ -41,7 +41,18 @@ class AdvancedCrawlAgent {
             /conditioning/i,
             /spiral/i,
             /trance/i,
-            /hypnosis/i
+            /hypnosis/i,
+            /brainwash/i,
+            /brain/i,
+            /program/i,
+            /reprogram/i,
+            /indoctrinate/i,
+            /bimbofy/i,
+            /hypnotize/i,
+            /hypnotic/i,
+            /hypnos/i,
+            /binaural/i,
+            /brainwave/i
         ];
         
         // Content type detection
@@ -79,6 +90,9 @@ class AdvancedCrawlAgent {
                 
                 // Respectful delay
                 await this.delay(this.crawlDelay);
+                
+                // Log progress
+                this.logCrawlProgress(url);
             }
 
             this.crawlStats.endTime = new Date();
@@ -88,16 +102,16 @@ class AdvancedCrawlAgent {
             console.error('❌ Crawl failed:', error);
             throw error;
         }
-    }
-
-    /**
+    }    /**
      * Process a single URL and extract links
      */
     async processSingleUrl(url, depth, parent, crawlQueue, options) {
         try {
-            console.log(`📡 Processing: ${url} (depth: ${depth})`);
             this.visitedUrls.add(url);
             this.crawlStats.processedUrls++;
+            
+            // Log progress stats to terminal
+            this.logCrawlProgress(url);
 
             // Check robots.txt if enabled
             if (this.respectRobots && !await this.checkRobotsPermission(url)) {
@@ -699,6 +713,49 @@ class AdvancedCrawlAgent {
 
     delay(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    /**
+     * Log detailed terminal stats during crawl
+     */
+    logCrawlProgress(currentUrl = null) {
+        const elapsed = Date.now() - this.crawlStats.startTime;
+        const percent = this.crawlStats.totalUrls > 0 ? 
+            (this.crawlStats.processedUrls / this.crawlStats.totalUrls) * 100 : 0;
+        const remaining = this.crawlStats.totalUrls - this.crawlStats.processedUrls;
+        
+        // Create progress bar for terminal
+        const barLength = 30;
+        const filledLength = Math.round((percent / 100) * barLength);
+        const progressBar = '█'.repeat(filledLength) + '░'.repeat(barLength - filledLength);
+        
+        // Calculate ETA
+        const avgTime = elapsed / Math.max(this.crawlStats.processedUrls, 1);
+        const eta = remaining > 0 ? this.formatTime(remaining * avgTime) : '00:00';
+        
+        // Format stats line
+        const statsLine = `[${this.formatTime(elapsed)}] ` +
+            `Completed: ${this.crawlStats.processedUrls} | ` +
+            `New: ${this.crawlStats.bambisleepFound} | ` +
+            `[${progressBar}] ${Math.round(percent)}% | ` +
+            `Remaining: ${remaining} | ` +
+            `ETA: ${eta}`;
+        
+        console.log(statsLine);
+        
+        if (currentUrl) {
+            console.log(`   📡 Processing: ${currentUrl}`);
+        }
+    }
+
+    /**
+     * Format time duration
+     */
+    formatTime(milliseconds) {
+        const seconds = Math.floor(milliseconds / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
     }
 }
 

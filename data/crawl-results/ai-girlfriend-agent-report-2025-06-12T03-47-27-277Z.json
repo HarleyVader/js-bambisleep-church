@@ -1,0 +1,26 @@
+{
+  "summary": {
+    "totalPages": 2,
+    "bambisleepPages": 2,
+    "iframesGenerated": 0,
+    "urlsWithArguments": 0,
+    "timestamp": "2025-06-12T03:47:27.276Z"
+  },
+  "bambisleepContent": [
+    {
+      "url": "https://bambisleep.chat",
+      "title": "BambiSleep.Chat - Hypnotic AI Chat",
+      "description": "BambiSleep.Chat will reinstall your OS if you let her",
+      "arguments": {}
+    },
+    {
+      "url": "https://bambisleep.info/",
+      "title": "Bambi Sleep Wiki Page",
+      "description": "Bambi Sleep hypnosis content from the official wiki",
+      "arguments": {}
+    }
+  ],
+  "platformStats": {},
+  "iframes": [],
+  "urlArguments": {}
+}

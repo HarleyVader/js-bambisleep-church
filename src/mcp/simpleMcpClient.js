@@ -12,7 +12,13 @@ class SimpleMcpClient {
         this.server = null;
         this.responses = new Map();
         this.initialized = false;
+        this.reconnectAttempts = 0;
+        this.maxReconnectAttempts = 3;
+        this.isConnecting = false;
     }    async connect() {
+        if (this.isConnecting) return;
+        this.isConnecting = true;
+
         const serverPath = path.join(__dirname, 'standaloneMcpServer.js');
         this.server = spawn('node', [serverPath], {
             stdio: ['pipe', 'pipe', 'pipe']
@@ -28,21 +34,42 @@ class SimpleMcpClient {
                             this.responses.set(response.id, response);
                         }
                     } catch (error) {
-                        // Ignore parse errors
+                        // Ignore parse errors for robustness
                     }
                 }
             }
         });
 
         this.server.stderr.on('data', (data) => {
-            console.error('Server error:', data.toString());
+            console.error('MCP Server error:', data.toString());
+        });
+
+        this.server.on('exit', (code) => {
+            console.warn(`MCP Server exited with code ${code}`);
+            this.initialized = false;
+            this.server = null;
+            this.isConnecting = false;
+            
+            // Auto-reconnect on unexpected exit
+            if (code !== 0 && this.reconnectAttempts < this.maxReconnectAttempts) {
+                this.reconnectAttempts++;
+                console.log(`Attempting reconnection ${this.reconnectAttempts}/${this.maxReconnectAttempts}...`);
+                setTimeout(() => this.connect(), 1000 * this.reconnectAttempts);
+            }
         });
 
         // Wait for server to start
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, 500));
 
         // Initialize the connection
-        await this.initialize();
+        try {
+            await this.initialize();
+            this.reconnectAttempts = 0; // Reset on successful connection
+            this.isConnecting = false;
+        } catch (error) {
+            this.isConnecting = false;
+            throw error;
+        }
     }
 
     async initialize() {
@@ -148,12 +175,21 @@ class SimpleMcpClient {
 
     async readResource(uri) {
         return await this.sendMessage('resources/read', { uri });
-    }
-
-    disconnect() {
+    }    disconnect() {
         if (this.server) {
-            this.server.kill();
+            this.server.removeAllListeners();
+            this.server.kill('SIGTERM');
+            
+            // Force kill if it doesn't exit gracefully
+            setTimeout(() => {
+                if (this.server && !this.server.killed) {
+                    this.server.kill('SIGKILL');
+                }
+            }, 5000);
+            
             this.server = null;
+            this.initialized = false;
+            this.responses.clear();
         }
     }
 }

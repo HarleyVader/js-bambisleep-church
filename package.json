@@ -10,21 +10,22 @@
   "bugs": {
     "url": "https://github.com/HarleyVader/js-bambisleep-church/issues"
   },
-  "homepage": "https://github.com/HarleyVader/js-bambisleep-church#readme",  "scripts": {
+  "homepage": "https://github.com/HarleyVader/js-bambisleep-church#readme",
+  "scripts": {
     "start": "node src/app.js",
-    "dev": "nodemon src/app.js",    "mcp": "node src/mcp/standaloneMcpServer.js",
+    "dev": "nodemon src/app.js",
+    "mcp": "node src/mcp/standaloneMcpServer.js",
     "mcp:lmstudio": "node src/mcp/lmstudioWorker.js",
-    "crawl:bambisleep": "node tests/crawl-bambisleep.js",
-    "test:mcp": "node tests/test-mcp.js",
-    "test:lmstudio": "node tests/test-lmstudio.js",
-    "demo:mcp": "node tests/demo-mcp.js",
-    "example:mcp": "node tests/example-mcp.js",
     "setup:enhanced-fetch": "node scripts/setup-enhanced-fetch.js",
-    "test:enhanced-fetch": "node tests/test-enhanced-fetch.js",
-    "fetch:python": "python src/mcp/python_fetch_server.py"
-  },"dependencies": {
+    "fetch:python": "python src/mcp/python_fetch_server_fixed.py"
+  },
+  "dependencies": {
+    "axios": "^1.9.0",
+    "cheerio": "^1.1.0",
     "ejs": "^3.1.10",
     "express": "^5.1.0",
+    "marked": "^12.0.0",
+    "p-limit": "^6.2.0",
     "socket.io": "^4.8.1"
   },
   "keywords": [
