@@ -487,6 +487,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Extract domain from URL
+    function extractDomainFromUrl(url) {
+        try {
+            const urlObj = new URL(url);
+            return urlObj.hostname;
+        } catch (error) {
+            return 'Unknown Site';
+        }
+    }
+
     // Update URL status display
     function updateUrlStatus(status, data = {}) {
         const statusIndicator = document.querySelector('.agent-status-indicator');
@@ -513,6 +523,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 default:
                     statusText.textContent = 'Idle';
                     break;
+            }
+            
+            // Update current site display
+            if (data.currentSite) {
+                const siteEl = document.getElementById('currentSiteDisplay');
+                if (siteEl) siteEl.textContent = data.currentSite;
             }
             
             // Update URL counts if provided
@@ -570,13 +586,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (rawUrls.length === 0) {
             showCrawlMessage('Please enter at least one URL to crawl', 'error');
             return;
-        }
-
-        // Filter out file URLs (not content URLs)
+        }        // Filter out file URLs (not content URLs)
         const filteredUrls = filterUrlList(rawUrls);
         const foundCount = rawUrls.length;
         const filteredCount = foundCount - filteredUrls.length;
         const addedCount = filteredUrls.length;
+
+        // Extract primary site being crawled
+        const primarySite = filteredUrls.length > 0 ? extractDomainFromUrl(filteredUrls[0]) : 'Unknown';
 
         // Update status display
         updateUrlStatus('filtering', {
@@ -586,7 +603,8 @@ document.addEventListener('DOMContentLoaded', () => {
             totalUrls: addedCount,
             finishedUrls: 0,
             remainingUrls: addedCount,
-            currentUrl: 'Initializing...'
+            currentUrl: 'Initializing...',
+            currentSite: primarySite
         });
 
         if (filteredUrls.length === 0) {
@@ -695,19 +713,21 @@ document.addEventListener('DOMContentLoaded', () => {
         let completedUrls = 0;
 
         updateProgress(0, `Starting crawl of ${totalUrls} URLs...`);
-        logCrawlMessage(`🚀 Starting batch crawl of ${totalUrls} URLs`);
-
-        for (const url of urls) {
+        logCrawlMessage(`🚀 Starting batch crawl of ${totalUrls} URLs`);        for (const url of urls) {
             try {
+                // Extract domain for current URL status
+                const currentSite = extractDomainFromUrl(url);
+                
                 // Update current URL status
                 updateUrlStatus('crawling', {
                     currentUrl: url,
+                    currentSite: currentSite,
                     finishedUrls: completedUrls,
                     remainingUrls: totalUrls - completedUrls
                 });
 
-                logCrawlMessage(`🕷️ Crawling: ${url}`);
-                updateProgress((completedUrls / totalUrls) * 100, `Crawling ${url}...`);
+                logCrawlMessage(`🕷️ Crawling: ${url} (${currentSite})`);
+                updateProgress((completedUrls / totalUrls) * 100, `Crawling ${currentSite}...`);
 
                 const result = await crawlSingleUrl(url, options);
                   if (result.success) {
@@ -721,10 +741,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 completedUrls++;
                 updateProgress((completedUrls / totalUrls) * 100, 
-                    `Completed ${completedUrls}/${totalUrls} URLs`);
-
-                // Update finished URLs status
+                    `Completed ${completedUrls}/${totalUrls} URLs`);                // Update finished URLs status with current site
                 updateUrlStatus('crawling', {
+                    currentSite: currentSite,
                     finishedUrls: completedUrls,
                     remainingUrls: totalUrls - completedUrls
                 });
@@ -734,18 +753,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 logCrawlMessage(`💥 Error crawling ${url}: ${error.message}`);
                 completedUrls++;
                 updateCrawlStats(completedUrls, 0);
-                
-                // Update error status
+                  // Update error status with current site
                 updateUrlStatus('crawling', {
+                    currentSite: currentSite,
                     finishedUrls: completedUrls,
                     remainingUrls: totalUrls - completedUrls
                 });
             }
-        }
-
-        // Complete - set to idle status
+        }        // Complete - set to idle status
         updateUrlStatus('idle', {
             currentUrl: 'Crawl completed',
+            currentSite: 'All sites processed',
             finishedUrls: completedUrls,
             remainingUrls: 0
         });

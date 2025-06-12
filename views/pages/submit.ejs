@@ -256,13 +256,37 @@
             color: var(--color-text-secondary);
             text-transform: uppercase;
             letter-spacing: 0.5px;
-        }
-
-        .current-url-display {
+        }        .current-url-display {
             background: rgba(var(--color-bg-secondary-rgb), 0.4);
             border: 1px solid rgba(var(--color-primary-cyan-rgb), 0.3);
             border-radius: 0.5rem;
             padding: 1rem;
+        }
+
+        .current-site-display {
+            background: rgba(var(--color-bg-secondary-rgb), 0.6);
+            border: 1px solid rgba(var(--color-primary-magenta-rgb), 0.4);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .current-site-label {
+            font-size: 0.875rem;
+            color: var(--color-primary-magenta);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .current-site-value {
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            color: var(--color-text-primary);
+            font-weight: 600;
+            padding: 0.5rem;
+            background: rgba(var(--color-bg-primary-rgb), 0.3);
+            border-radius: 0.25rem;
+            border-left: 3px solid var(--color-primary-magenta);
         }
 
         .current-url-label {
@@ -893,8 +917,7 @@
 
             <!-- Crawl Progress & Feed Results -->
             <div id="crawlProgress" class="crawl-progress" style="display: none;">
-                <h3>🔄 Crawl Progress</h3>
-                  <!-- URL Status Display -->
+                <h3>🔄 Crawl Progress</h3>                <!-- URL Status Display -->
                 <div class="crawl-status-container">
                     <div class="crawl-status-header">
                         <h4>🎯 Agent Status</h4>
@@ -904,6 +927,12 @@
                         </div>
                     </div>
                     
+                    <!-- Current Site Being Crawled -->
+                    <div class="current-site-display">
+                        <div class="current-site-label">🌐 Current Site:</div>
+                        <div class="current-site-value" id="currentSiteDisplay">No site being crawled</div>
+                    </div>
+                    
                     <div class="url-tracking-grid">
                         <div class="url-status-box">
                             <div class="status-number" id="foundUrlsCount">0</div>
@@ -911,11 +940,11 @@
                         </div>
                         <div class="url-status-box">
                             <div class="status-number" id="filteredUrlsCount">0</div>
-                            <div class="status-label">Filtered URLs</div>
+                            <div class="status-label">URLs Discarded</div>
                         </div>
                         <div class="url-status-box">
                             <div class="status-number" id="addedUrlsCount">0</div>
-                            <div class="status-label">Added URLs</div>
+                            <div class="status-label">URLs Will Add</div>
                         </div>
                         <div class="url-status-box">
                             <div class="status-number" id="totalUrlsCount">0</div>
@@ -923,16 +952,16 @@
                         </div>
                         <div class="url-status-box">
                             <div class="status-number" id="finishedUrlsCount">0</div>
-                            <div class="status-label">Finished URLs</div>
+                            <div class="status-label">URLs Processed</div>
                         </div>
                         <div class="url-status-box">
                             <div class="status-number" id="remainingUrlsCount">0</div>
-                            <div class="status-label">Remaining URLs</div>
+                            <div class="status-label">URLs Remaining</div>
                         </div>
                     </div>
                     
                     <div class="current-url-display">
-                        <div class="current-url-label">Current URL:</div>
+                        <div class="current-url-label">🔗 Currently Processing:</div>
                         <div class="current-url-value" id="currentUrlDisplay">No URL being processed</div>
                     </div>
                 </div>
