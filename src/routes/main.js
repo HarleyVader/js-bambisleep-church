@@ -1,3 +1,4 @@
+
 const express = require('express');
 const LinkController = require('../controllers/linkController');
 const VoteController = require('../controllers/voteController');
@@ -182,9 +183,310 @@ Help the community by voting on content quality:
     router.delete('/api/comments/:commentId', commentController.deleteComment.bind(commentController));
     
     // Creator voting
-    router.post('/api/creators/:id/vote', creatorController.voteForCreator.bind(creatorController));
+    router.post('/api/creators/:id/vote', creatorController.voteForCreator.bind(creatorController));    // Crawl Fetch Agent API Routes
+    router.post('/api/crawl-batch', async (req, res) => {
+        try {
+            const { urls, options } = req.body;
+            
+            if (!urls || !Array.isArray(urls) || urls.length === 0) {
+                return res.status(400).json({ error: 'URLs array is required' });
+            }
 
-    app.use('/', router);
+            console.log('🕷️ Processing crawl batch for:', urls);
+            const results = [];
+            
+            for (const url of urls) {
+                try {
+                    console.log(`📡 Fetching metadata for: ${url}`);
+                    
+                    // Use the existing metadata service
+                    const metadata = await metadataService.fetchMetadata(url);
+                    
+                    if (metadata && metadata.title) {
+                        const item = {
+                            title: metadata.title,
+                            url: url,
+                            description: metadata.description || '',
+                            type: metadata.type || 'content',
+                            platform: metadata.platform || 'unknown',
+                            uploader: metadata.uploader || metadata.author,
+                            embedUrl: metadata.embedUrl,
+                            duration: metadata.duration,
+                            thumbnailUrl: metadata.thumbnailUrl
+                        };
+                        
+                        results.push(item);
+                        console.log(`✅ Successfully processed: ${metadata.title}`);
+                    } else {
+                        console.log(`⚠️ No metadata found for: ${url}`);
+                    }
+                    
+                    // Respectful delay between requests
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    
+                } catch (error) {
+                    console.error(`❌ Error processing ${url}:`, error.message);
+                    
+                    // Create a fallback item even if metadata extraction fails
+                    results.push({
+                        title: `Content from ${new URL(url).hostname}`,
+                        url: url,
+                        description: 'Metadata could not be extracted',
+                        type: 'content',
+                        platform: 'unknown',
+                        uploader: null,
+                        embedUrl: null
+                    });
+                }
+            }
+
+            console.log(`🎉 Crawl batch completed with ${results.length} items`);
+            
+            res.json({
+                success: true,
+                items: results.slice(0, options?.maxResults || 25)
+            });
+
+        } catch (error) {
+            console.error('Crawl batch error:', error);
+            res.status(500).json({ 
+                error: 'Failed to crawl URLs',
+                message: error.message 
+            });
+        }
+    });
+
+    // Advanced Crawl with Sitemap Generation
+    router.post('/api/crawl-advanced', async (req, res) => {
+        try {
+            const { urls, options } = req.body;
+            
+            if (!urls || !Array.isArray(urls) || urls.length === 0) {
+                return res.status(400).json({ error: 'URLs array is required' });
+            }
+
+            console.log('🕷️ Starting advanced crawl with sitemap generation...');
+            
+            const AdvancedCrawlAgent = require('../utils/advancedCrawlAgent');
+            const crawler = new AdvancedCrawlAgent({
+                maxDepth: options.maxDepth || 2,
+                maxPages: options.maxPages || 50,
+                respectRobots: options.respectRobots !== false,
+                crawlDelay: options.crawlDelay || 1000
+            });
+
+            // Start the crawl
+            const report = await crawler.crawlWithSitemap(urls, options);
+            
+            // Auto-index discovered bambisleep content
+            if (report.bambisleepContent && report.bambisleepContent.length > 0) {
+                console.log(`🌙 Auto-indexing ${report.bambisleepContent.length} bambisleep items...`);
+                
+                for (const item of report.bambisleepContent) {
+                    try {
+                        // Add to database
+                        const savedLink = linkController.db.create('links', item);
+                        
+                        // Broadcast new content via Socket.IO
+                        if (req.app.get('io')) {
+                            req.app.get('io').emit('newContent', savedLink);
+                        }
+                        
+                        console.log(`✅ Auto-indexed: ${item.title}`);
+                    } catch (error) {
+                        console.error(`❌ Failed to index ${item.title}:`, error.message);
+                    }
+                }
+            }
+
+            console.log(`🎉 Advanced crawl completed: ${report.summary.totalUrls} pages, ${report.summary.bambisleepContent} bambisleep items found`);
+            
+            res.json({
+                success: true,
+                crawlReport: report,
+                autoIndexed: report.bambisleepContent.length
+            });
+
+        } catch (error) {
+            console.error('Advanced crawl error:', error);
+            res.status(500).json({ 
+                error: 'Advanced crawl failed',
+                message: error.message 
+            });
+        }
+    });
+
+    // Generate Sitemap for existing content
+    router.post('/api/generate-sitemap', async (req, res) => {
+        try {
+            const { domain, format = 'json' } = req.body;
+            
+            if (!domain) {
+                return res.status(400).json({ error: 'Domain is required' });
+            }
+
+            console.log(`🗺️ Generating sitemap for domain: ${domain}`);
+            
+            // Get all links from database for the domain
+            const allLinks = linkController.db.read('links');
+            const domainLinks = allLinks.filter(link => {
+                try {
+                    return new URL(link.url).hostname.includes(domain);
+                } catch {
+                    return false;
+                }
+            });
+
+            // Build sitemap structure
+            const sitemap = {
+                domain: domain,
+                generatedAt: new Date().toISOString(),
+                totalPages: domainLinks.length,
+                format: format,
+                pages: domainLinks.map(link => ({
+                    url: link.url,
+                    title: link.title,
+                    lastModified: link.submittedAt || new Date().toISOString(),
+                    changeFreq: 'weekly',
+                    priority: link.bambisleepScore ? (link.bambisleepScore / 100) : 0.5
+                }))
+            };
+
+            if (format === 'xml') {
+                // Generate XML sitemap
+                const xmlContent = generateXMLSitemap(sitemap);
+                res.set('Content-Type', 'application/xml');
+                res.send(xmlContent);
+            } else {
+                res.json({
+                    success: true,
+                    sitemap: sitemap
+                });
+            }
+
+        } catch (error) {
+            console.error('Sitemap generation error:', error);
+            res.status(500).json({ 
+                error: 'Failed to generate sitemap',
+                message: error.message 
+            });
+        }    });
+
+    // Helper function to generate XML sitemap
+    function generateXMLSitemap(sitemap) {
+        let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+        xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+        
+        for (const page of sitemap.pages) {
+            xml += '  <url>\n';
+            xml += `    <loc>${escapeXml(page.url)}</loc>\n`;
+            xml += `    <lastmod>${page.lastModified}</lastmod>\n`;
+            xml += `    <changefreq>${page.changeFreq}</changefreq>\n`;
+            xml += `    <priority>${page.priority}</priority>\n`;
+            xml += '  </url>\n';
+        }
+        
+        xml += '</urlset>';
+        return xml;
+    }
+    
+    function escapeXml(unsafe) {
+        return unsafe.replace(/[<>&'"]/g, function (c) {
+            switch (c) {
+                case '<': return '&lt;';
+                case '>': return '&gt;';
+                case '&': return '&amp;';
+                case '\'': return '&apos;';
+                case '"': return '&quot;';
+            }
+        });
+    }
+
+    router.post('/api/bulk-submit', async (req, res) => {
+        try {
+            const { items } = req.body;
+            
+            if (!items || !Array.isArray(items) || items.length === 0) {
+                return res.status(400).json({ error: 'Items array is required' });
+            }
+
+            const submittedItems = [];
+            
+            for (const item of items) {
+                try {
+                    // Create a new link entry
+                    const newLink = {
+                        id: Date.now() + Math.random(),
+                        title: item.title,
+                        url: item.url,
+                        description: item.description || '',
+                        type: item.type || 'content',
+                        category: mapTypeToCategory(item.type),
+                        platform: item.platform,
+                        submittedBy: 'Crawl-Fetch-Agent',
+                        submittedAt: new Date().toISOString(),
+                        votes: 0,
+                        views: 0,
+                        metadata: {
+                            platform: item.platform,
+                            type: item.type,
+                            uploader: item.uploader,
+                            isEmbeddable: !!item.embedUrl,
+                            embedUrl: item.embedUrl,
+                            playerType: getPlayerType(item.type, item.platform)
+                        }
+                    };
+
+                    // Add to database
+                    const savedLink = linkController.db.create('links', newLink);
+                    submittedItems.push(savedLink);
+
+                    // Broadcast new content via Socket.IO
+                    if (req.app.get('io')) {
+                        req.app.get('io').emit('newContent', savedLink);
+                    }
+
+                } catch (error) {
+                    console.error('Error submitting item:', error);
+                }
+            }
+
+            res.json({
+                success: true,
+                count: submittedItems.length,
+                items: submittedItems
+            });
+
+        } catch (error) {
+            console.error('Bulk submit error:', error);
+            res.status(500).json({ 
+                error: 'Failed to submit items',
+                message: error.message 
+            });
+        }
+    });    app.use('/', router);
+
+    // Helper functions for content type mapping
+    function mapTypeToCategory(type) {
+        const mapping = {
+            'video': 'videos',
+            'audio': 'audio', 
+            'image': 'images',
+            'creator': 'creators',
+            'playlist': 'content'
+        };
+        return mapping[type] || 'content';
+    }
+
+    function getPlayerType(type, platform) {
+        if (type === 'video') {
+            if (platform === 'youtube') return 'youtube';
+            if (platform === 'vimeo') return 'vimeo';
+            return 'video';
+        }
+        if (type === 'audio') return 'audio';
+        return 'external';
+    }
 }
 
 module.exports = setRoutes;

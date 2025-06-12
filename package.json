@@ -18,8 +18,11 @@
     "test:mcp": "node tests/test-mcp.js",
     "test:lmstudio": "node tests/test-lmstudio.js",
     "demo:mcp": "node tests/demo-mcp.js",
-    "example:mcp": "node tests/example-mcp.js"
-  },  "dependencies": {
+    "example:mcp": "node tests/example-mcp.js",
+    "setup:enhanced-fetch": "node scripts/setup-enhanced-fetch.js",
+    "test:enhanced-fetch": "node tests/test-enhanced-fetch.js",
+    "fetch:python": "python src/mcp/python_fetch_server.py"
+  },"dependencies": {
     "ejs": "^3.1.10",
     "express": "^5.1.0",
     "socket.io": "^4.8.1"

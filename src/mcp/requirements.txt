@@ -1,0 +1,6 @@
+# Enhanced MCP Fetch Server Dependencies
+httpx>=0.25.0
+markdownify>=0.11.0
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
+html5lib>=1.1

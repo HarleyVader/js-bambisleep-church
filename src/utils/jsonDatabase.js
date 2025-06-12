@@ -46,12 +46,11 @@ class JSONDatabase {
     add(collection, item) {
         try {
             const data = this.read(collection);
-            
-            // Check for duplicates based on URL for creators and links
+              // Check for duplicates based on URL for creators and links
             if (collection === 'creators' || collection === 'links') {
                 const existingItem = data.find(existing => existing.url === item.url);
                 if (existingItem) {
-                    console.log(`Duplicate ${collection} URL found: ${item.url}`);
+                    // Silently skip duplicate entries
                     return null; // Don't add duplicate
                 }
             }

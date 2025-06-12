@@ -10,7 +10,7 @@ class LMStudioMcpIntegration {
         this.mcpServer = mcpServer;
         this.worker = new LMStudioWorker({
             model: 'llama-3.2-3b-claude-3.7-sonnet-reasoning-distilled@q4_0',
-            baseUrl: 'http://localhost:1234'
+            baseUrl: 'http://192.168.0.69:7777'
         });
         
         this.setupMcpTools();

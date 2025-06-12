@@ -1,1 +1,29 @@
-[]
+[
+  {
+    "title": "Welcome to Bambi Sleep - Bambi Sleep",
+    "url": "https://bambisleep.info",
+    "description": "Bambi Sleep hypnosis content from the official wiki",
+    "category": "creators",
+    "subCategory": "other",
+    "platform": "bambisleep.info",
+    "contentType": "creator",
+    "votes": 1,
+    "views": 10,
+    "metadata": {
+      "type": "creator",
+      "platform": "bambisleep.info",
+      "title": "Bambi Sleep Wiki Page",
+      "description": "Bambi Sleep hypnosis content from the official wiki",
+      "thumbnail": "/assets/placeholders/bambisleep.svg",
+      "embedUrl": null,
+      "playerType": "external",
+      "isEmbeddable": false,
+      "uploader": "Bambi Sleep Community",
+      "autoCategory": "creators",
+      "hasRichMetadata": true
+    },
+    "createdAt": "2025-06-12T01:11:45.331Z",
+    "id": 1,
+    "updatedAt": "2025-06-12T01:12:15.485Z"
+  }
+]

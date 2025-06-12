@@ -39,6 +39,7 @@ const path = require('path');
 const https = require('https');
 const http = require('http');
 const fs = require('fs').promises;
+const EnhancedFetchAgent = require('./enhancedFetchAgent');
 
 class LMStudioWorker {    constructor(options = {}) {
         this.model = options.model || 'llama-3.2-3b-claude-3.7-sonnet-reasoning-distilled@q4_0';
@@ -46,6 +47,13 @@ class LMStudioWorker {    constructor(options = {}) {
         this.apiKey = options.apiKey || 'lm-studio';
         this.messageId = 1;
         this.initialized = false;
+        
+        // Initialize Enhanced Fetch Agent
+        this.fetchAgent = new EnhancedFetchAgent({
+            userAgent: 'BambiSleep-Church-LMStudio/1.0',
+            maxRetries: 3,
+            timeout: 30000
+        });
         
         // Web crawling state
         this.crawlQueue = new Set();
@@ -121,8 +129,7 @@ class LMStudioWorker {    constructor(options = {}) {
                     required: ['url']
                 }
             }],
-            
-            ['schedule_exploration', {
+              ['schedule_exploration', {
                 name: 'schedule_exploration',
                 description: 'Schedule URLs for future insight\'s flight',
                 inputSchema: {
@@ -135,8 +142,7 @@ class LMStudioWorker {    constructor(options = {}) {
                     required: ['urls']
                 }
             }],
-            
-            ['query_llm', {
+              ['query_llm', {
                 name: 'query_llm',
                 description: 'Consult the LMStudio mind with reasoning divine',
                 inputSchema: {
@@ -148,12 +154,60 @@ class LMStudioWorker {    constructor(options = {}) {
                     },
                     required: ['prompt']
                 }
+            }],
+            
+            ['enhanced_fetch', {
+                name: 'enhanced_fetch',
+                description: 'Fetch URLs with Python-powered precision and bambisleep detection',
+                inputSchema: {
+                    type: 'object',
+                    properties: {
+                        url: { type: 'string', description: 'URL to fetch with enhanced capabilities' },
+                        maxLength: { type: 'number', default: 5000, description: 'Maximum content length to return' },
+                        startIndex: { type: 'number', default: 0, description: 'Starting character index for content' },
+                        raw: { type: 'boolean', default: false, description: 'Return raw content without processing' },
+                        ignoreRobots: { type: 'boolean', default: false, description: 'Ignore robots.txt restrictions' }
+                    },
+                    required: ['url']
+                }
+            }],
+            
+            ['enhanced_fetch_multiple', {
+                name: 'enhanced_fetch_multiple',
+                description: 'Fetch multiple URLs concurrently with enhanced processing',
+                inputSchema: {
+                    type: 'object',
+                    properties: {
+                        urls: { type: 'array', items: { type: 'string' }, description: 'Array of URLs to fetch' },
+                        concurrency: { type: 'number', default: 3, description: 'Number of concurrent requests' },
+                        maxLength: { type: 'number', default: 5000, description: 'Maximum content length per URL' },
+                        ignoreRobots: { type: 'boolean', default: false, description: 'Ignore robots.txt restrictions' }
+                    },
+                    required: ['urls']
+                }
+            }],
+            
+            ['fetch_bambisleep_content', {
+                name: 'fetch_bambisleep_content',
+                description: 'Specialized fetching for bambisleep content with enhanced metadata',
+                inputSchema: {
+                    type: 'object',
+                    properties: {
+                        url: { type: 'string', description: 'Bambisleep URL to fetch and analyze' },
+                        maxLength: { type: 'number', default: 8000, description: 'Maximum content length for detailed analysis' }
+                    },
+                    required: ['url']
+                }
             }]
         ]);
     }    async initialize() {
         if (this.initialized) return;
         
         try {
+            // Initialize Enhanced Fetch Agent
+            console.log('🐍 Initializing Enhanced Fetch Agent...');
+            await this.fetchAgent.initialize();
+            
             // Test connection to LMStudio API by fetching models
             console.log('🔍 Testing LMStudio API connection...');
             const models = await this.makeApiRequest('/v1/models', 'GET');
@@ -171,9 +225,10 @@ class LMStudioWorker {    constructor(options = {}) {
             console.log('🎭 LMStudio Worker initialized with poetic grace');
             console.log('📚 Model:', this.model);
             console.log('🌐 Base URL:', this.baseUrl);
+            console.log('🚀 Enhanced Fetch Agent ready');
             
             this.initialized = true;
-            return { status: 'initialized', model: this.model };
+            return { status: 'initialized', model: this.model, fetchAgent: 'ready' };
         } catch (error) {
             throw new Error(`Failed to initialize LMStudio Worker: ${error.message}`);
         }
@@ -182,9 +237,7 @@ class LMStudioWorker {    constructor(options = {}) {
     async handleToolCall(toolName, args) {
         if (!this.tools.has(toolName)) {
             throw new Error(`Unknown tool: ${toolName}`);
-        }
-
-        switch (toolName) {
+        }        switch (toolName) {
             case 'ethical_crawl':
                 return await this.ethicalCrawl(args);
             case 'extract_metadata':
@@ -197,6 +250,12 @@ class LMStudioWorker {    constructor(options = {}) {
                 return await this.scheduleExploration(args);
             case 'query_llm':
                 return await this.queryLLM(args);
+            case 'enhanced_fetch':
+                return await this.enhancedFetch(args);
+            case 'enhanced_fetch_multiple':
+                return await this.enhancedFetchMultiple(args);
+            case 'fetch_bambisleep_content':
+                return await this.fetchBambisleepContent(args);
             default:
                 throw new Error(`Tool not implemented: ${toolName}`);
         }
@@ -238,26 +297,66 @@ class LMStudioWorker {    constructor(options = {}) {
                 url
             };
         }
-    }
-
-    async extractMetadata(args) {
+    }    async extractMetadata(args) {
         const { content, url } = args;
         
-        // Simple metadata extraction (in reality, you'd use a proper HTML parser)
-        const titleMatch = content.match(/<title>(.*?)<\/title>/i);
-        const descMatch = content.match(/<meta name="description" content="(.*?)"/i);
-        const links = [...content.matchAll(/<a href="(.*?)">/g)].map(match => match[1]);
-        const images = [...content.matchAll(/<img src="(.*?)"/g)].map(match => match[1]);
+        console.log(`🔍 Extracting metadata from ${url}`);
+        console.log(`📄 Content length: ${content.length} characters`);
+        
+        // Enhanced metadata extraction with better regex patterns
+        const titleMatch = content.match(/<title[^>]*>(.*?)<\/title>/is);
+        const descMatch = content.match(/<meta\s+name=["']description["']\s+content=["'](.*?)["']/i) ||
+                         content.match(/<meta\s+content=["'](.*?)["']\s+name=["']description["']/i);
+        
+        // Extract links more carefully
+        const linkMatches = [...content.matchAll(/<a[^>]+href=["'](.*?)["'][^>]*>/gi)];
+        const links = linkMatches.map(match => match[1]).filter(link => link && !link.startsWith('#'));
+        
+        // Extract images more carefully  
+        const imageMatches = [...content.matchAll(/<img[^>]+src=["'](.*?)["'][^>]*>/gi)];
+        const images = imageMatches.map(match => match[1]).filter(img => img);
+        
+        // Better title extraction for bambisleep.info
+        let extractedTitle = 'Untitled Digital Realm';
+        if (titleMatch && titleMatch[1]) {
+            extractedTitle = titleMatch[1].trim();
+            console.log(`📖 Found title: "${extractedTitle}"`);
+        } else {
+            // Try to extract from H1 tags if no title
+            const h1Match = content.match(/<h1[^>]*>(.*?)<\/h1>/is);
+            if (h1Match && h1Match[1]) {
+                extractedTitle = h1Match[1].replace(/<[^>]*>/g, '').trim();
+                console.log(`📖 Found H1 title: "${extractedTitle}"`);
+            } else {
+                console.log('⚠️ No title found, using default');
+            }
+        }
+        
+        // Better description extraction
+        let extractedDesc = 'A page in the vast web';
+        if (descMatch && descMatch[1]) {
+            extractedDesc = descMatch[1].trim();
+            console.log(`📝 Found description: "${extractedDesc}"`);
+        } else {
+            // Try to extract from first paragraph if no meta description
+            const pMatch = content.match(/<p[^>]*>(.*?)<\/p>/is);
+            if (pMatch && pMatch[1]) {
+                extractedDesc = pMatch[1].replace(/<[^>]*>/g, '').trim().substring(0, 200);
+                console.log(`📝 Found paragraph description: "${extractedDesc}"`);
+            }
+        }
         
         const metadata = {
-            title: titleMatch ? titleMatch[1] : 'Untitled Digital Realm',
-            description: descMatch ? descMatch[1] : 'A page in the vast web',
+            title: extractedTitle,
+            description: extractedDesc,
             links,
             images,
             url,
             extractedAt: new Date().toISOString(),
             bambisleepContent: this.identifyBambisleepContent(content)
         };
+
+        console.log(`✅ Metadata extracted: "${metadata.title}" with ${links.length} links and ${images.length} images`);
 
         // Store in sitemap
         if (url) {
@@ -573,18 +672,185 @@ class LMStudioWorker {    constructor(options = {}) {
             } else {
                 bambisleepContent.files.push(link);
             }
-        });
-
-        return bambisleepContent;
+        });        return bambisleepContent;
     }
 
-    getStatus() {
+    // ═══════════════════════════════════════════════════════════════════════════════════
+    // Enhanced Fetch Methods using Python MCP Server
+    // ═══════════════════════════════════════════════════════════════════════════════════
+
+    /**
+     * Enhanced fetch using Python MCP server
+     */
+    async enhancedFetch(args) {
+        const { url, maxLength, startIndex, raw, ignoreRobots } = args;
+        
+        console.log(`🐍 Enhanced fetching: ${url}`);
+        
+        try {
+            const result = await this.fetchAgent.fetch(url, {
+                maxLength,
+                startIndex,
+                raw,
+                ignoreRobots
+            });
+            
+            if (result.success) {
+                return {
+                    status: 'success',
+                    url: result.url,
+                    content: result.content,
+                    metadata: result.metadata,
+                    message: `Successfully fetched ${result.url} (${result.metadata.length} chars)`
+                };
+            } else {
+                return {
+                    status: 'error',
+                    url: url,
+                    error: result.error,
+                    message: `Failed to fetch ${url}: ${result.error}`
+                };
+            }
+            
+        } catch (error) {
+            console.error(`💥 Enhanced fetch error for ${url}:`, error.message);
+            return {
+                status: 'error',
+                url: url,
+                error: error.message,
+                message: `Enhanced fetch failed: ${error.message}`
+            };
+        }
+    }
+
+    /**
+     * Enhanced fetch multiple URLs concurrently
+     */
+    async enhancedFetchMultiple(args) {
+        const { urls, concurrency, maxLength, ignoreRobots } = args;
+        
+        console.log(`🐍 Enhanced fetching ${urls.length} URLs with concurrency ${concurrency}`);
+        
+        try {
+            const results = await this.fetchAgent.fetchMultiple(urls, {
+                concurrency,
+                maxLength,
+                ignoreRobots
+            });
+            
+            const successful = results.filter(r => r.success).length;
+            const failed = results.length - successful;
+            
+            return {
+                status: 'completed',
+                totalUrls: urls.length,
+                successful,
+                failed,
+                results,
+                message: `Batch fetch completed: ${successful} successful, ${failed} failed`
+            };
+            
+        } catch (error) {
+            console.error(`💥 Enhanced batch fetch error:`, error.message);
+            return {
+                status: 'error',
+                error: error.message,
+                message: `Batch fetch failed: ${error.message}`
+            };
+        }
+    }
+
+    /**
+     * Specialized bambisleep content fetching
+     */
+    async fetchBambisleepContent(args) {
+        const { url, maxLength = 8000 } = args;
+        
+        console.log(`🌙 Fetching bambisleep content: ${url}`);
+        
+        try {
+            const result = await this.fetchAgent.fetchBambisleepContent(url, {
+                maxLength
+            });
+            
+            if (result.success) {
+                // Add to bambisleep catalog if it's bambisleep content
+                if (result.bambisleep && result.bambisleep.isBambisleepContent) {
+                    this.addToBambisleepCatalog(result);
+                }
+                
+                return {
+                    status: 'success',
+                    url: result.url,
+                    content: result.content,
+                    metadata: result.metadata,
+                    bambisleep: result.bambisleep,
+                    message: `Successfully analyzed bambisleep content from ${result.url}`
+                };
+            } else {
+                return {
+                    status: 'error',
+                    url: url,
+                    error: result.error,
+                    message: `Failed to fetch bambisleep content: ${result.error}`
+                };
+            }
+            
+        } catch (error) {
+            console.error(`💥 Bambisleep fetch error for ${url}:`, error.message);
+            return {
+                status: 'error',
+                url: url,
+                error: error.message,
+                message: `Bambisleep fetch failed: ${error.message}`
+            };
+        }
+    }
+
+    /**
+     * Add fetched content to bambisleep catalog
+     */
+    addToBambisleepCatalog(result) {
+        const { url, bambisleep } = result;
+        
+        const catalogEntry = {
+            url,
+            title: result.content.substring(0, 100).replace(/\n/g, ' ').trim(),
+            platform: bambisleep.platform,
+            contentType: bambisleep.contentType,
+            creator: bambisleep.creator,
+            sessionType: bambisleep.sessionType,
+            tags: bambisleep.tags,
+            qualityScore: bambisleep.qualityScore,
+            fetchedAt: new Date().toISOString()
+        };
+        
+        // Categorize based on content type
+        switch (bambisleep.contentType) {
+            case 'audio_file':
+            case 'audio_platform':
+                this.bambisleepCatalog.audios.push(catalogEntry);
+                break;
+            case 'video_file':
+            case 'video_platform':
+                this.bambisleepCatalog.videos.push(catalogEntry);
+                break;
+            case 'wiki':
+                this.bambisleepCatalog.files.push(catalogEntry);
+                break;
+            default:
+                this.bambisleepCatalog.files.push(catalogEntry);
+        }
+        
+        console.log(`📦 Added to bambisleep catalog: ${bambisleep.contentType} from ${bambisleep.platform}`);
+    }    getStatus() {
         return {
             initialized: this.initialized,
             model: this.model,
             queueSize: this.crawlQueue.size,
             visitedUrls: this.visitedUrls.size,
             sitemapEntries: this.sitemap.size,
+            fetchAgent: this.fetchAgent ? this.fetchAgent.getStatus() : null,
             bambisleepCatalog: {
                 files: this.bambisleepCatalog.files.length,
                 images: this.bambisleepCatalog.images.length,
