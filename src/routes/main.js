@@ -6,7 +6,8 @@ const FeedController = require('../controllers/feedController');
 const CommentController = require('../controllers/commentController');
 const MainController = require('../controllers/mainController');
 const MetadataService = require('../utils/metadataService');
-const AIGirlfriendAgent = require('../agents/aiGirlfriendAgent');
+// AIGirlfriendAgent removed during cleanup - using bambisleep-knowledge-agent instead
+const BambisleepKnowledgeAgent = require('../agents/bambisleep-knowledge-agent');
 const crawlStatusTracker = require('../utils/crawlStatusTracker');
 
 const router = express.Router();
@@ -181,10 +182,10 @@ Help the community by voting on content quality:
     // 8. AI GIRLFRIEND AGENT API ENDPOINT
     router.post('/api/ai-crawl', async (req, res) => {
         try {
-            const AIGirlfriendAgent = require('../agents/aiGirlfriendAgent');
+            // Use the knowledge agent instead of removed aiGirlfriendAgent
             const { seedUrls, options } = req.body;
             
-            const agent = new AIGirlfriendAgent({
+            const agent = new BambisleepKnowledgeAgent({
                 maxDepth: options?.maxDepth || 2,
                 maxPages: options?.maxPages || 50,
                 crawlDelay: options?.crawlDelay || 2000,
@@ -361,15 +362,14 @@ Help the community by voting on content quality:
 
             // Start the crawl
             const report = await crawler.crawlWithSitemap(urls, options);
-            
-            // Auto-index discovered bambisleep content
+              // Auto-index discovered bambisleep content
             if (report.bambisleepContent && report.bambisleepContent.length > 0) {
                 console.log(`🌙 Auto-indexing ${report.bambisleepContent.length} bambisleep items...`);
                 
                 for (const item of report.bambisleepContent) {
                     try {
                         // Add to database
-                        const savedLink = linkController.db.create('links', item);
+                        const savedLink = linkController.db.add('links', item);
                         
                         // Broadcast new content via Socket.IO
                         if (req.app.get('io')) {
@@ -519,10 +519,8 @@ Help the community by voting on content quality:
                             embedUrl: item.embedUrl,
                             playerType: getPlayerType(item.type, item.platform)
                         }
-                    };
-
-                    // Add to database
-                    const savedLink = linkController.db.create('links', newLink);
+                    };                    // Add to database
+                    const savedLink = linkController.db.add('links', newLink);
                     submittedItems.push(savedLink);
 
                     // Broadcast new content via Socket.IO
@@ -559,11 +557,9 @@ Help the community by voting on content quality:
                 return res.status(400).json({ 
                     error: 'URLs required for content discovery' 
                 });
-            }
-
-            console.log('💖 AI Girlfriend Agent: Starting content discovery...');
+            }            console.log('💖 AI Girlfriend Agent: Starting content discovery...');
             
-            const agent = new AIGirlfriendAgent({
+            const agent = new BambisleepKnowledgeAgent({
                 maxDepth: options.maxDepth || 2,
                 maxPages: options.maxPages || 50,
                 crawlDelay: options.crawlDelay || 1000,
@@ -599,8 +595,7 @@ Help the community by voting on content quality:
             }
 
             console.log('🎬 Generating iframes for provided URLs...');
-            
-            const agent = new AIGirlfriendAgent();
+              const agent = new BambisleepKnowledgeAgent();
             const iframes = [];
             
             for (const url of urls) {
@@ -645,8 +640,7 @@ Help the community by voting on content quality:
             }
 
             console.log('🔍 Parsing URL arguments...');
-            
-            const agent = new AIGirlfriendAgent();
+              const agent = new BambisleepKnowledgeAgent();
             const parsedUrls = [];
             
             for (const url of urls) {
@@ -685,10 +679,9 @@ Help the community by voting on content quality:
 
     // Get Bambisleep content specifically
     router.get('/api/ai-girlfriend/bambisleep-content', async (req, res) => {
-        try {
-            console.log('🌟 Discovering Bambisleep content...');
+        try {            console.log('🌟 Discovering Bambisleep content...');
             
-            const agent = new AIGirlfriendAgent({
+            const agent = new BambisleepKnowledgeAgent({
                 maxDepth: 2,
                 maxPages: 30,
                 crawlDelay: 1500
@@ -791,11 +784,9 @@ Help the community by voting on content quality:
                 return res.status(400).json({ 
                     error: 'URLs array is required' 
                 });
-            }
-
-            console.log('🚀 Starting new AI Girlfriend Agent crawl...');
+            }            console.log('🚀 Starting new AI Girlfriend Agent crawl...');
             
-            const agent = new AIGirlfriendAgent({
+            const agent = new BambisleepKnowledgeAgent({
                 maxDepth: options.maxDepth || 2,
                 maxPages: options.maxPages || 50,
                 crawlDelay: options.crawlDelay || 1000,

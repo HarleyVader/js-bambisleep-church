@@ -6,7 +6,22 @@
 
 **Function over form. Working code over perfect code. Less is more.**
 
-## Core Methodology: Enhanced 3-State Work Loop
+## LMStudio Model Context Protocol (MCP) Orchestration
+
+**Primary Model**: `llama-3.2-3b-claude-3.7-sonnet-reasoning-distilled@q4_0`
+- **Purpose**: Orchestrate MCP server tools with advanced reasoning
+- **Endpoint**: http://192.168.0.69:7777/v1/chat/completions
+- **Capabilities**: Tool selection, workflow orchestration, adaptive learning
+- **Framework**: LMStudio MCP Framework (src/mcp/lmstudioMcpFramework.js)
+
+### MCP Integration Guidelines
+1. **Always use LMStudio for tool orchestration** - Let the AI reason about which tools to use
+2. **Leverage the framework's orchestration capabilities** - Don't manually chain tools
+3. **Use structured output** - Configure response_format for JSON when needed
+4. **Enable learning** - Allow the framework to learn from execution outcomes
+5. **Respect the protocol** - Follow MCP JSON-RPC 2.0 specifications
+
+## Core Methodology: Enhanced 4-State Work Loop
 
 ### 1. IMAGINE (Planning & Solutions) - **DO 3 TIMES**
 **First IMAGINE Round:**

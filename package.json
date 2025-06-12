@@ -10,14 +10,12 @@
   "bugs": {
     "url": "https://github.com/HarleyVader/js-bambisleep-church/issues"
   },
-  "homepage": "https://github.com/HarleyVader/js-bambisleep-church#readme",
-  "scripts": {
+  "homepage": "https://github.com/HarleyVader/js-bambisleep-church#readme",  "scripts": {
     "start": "node src/app.js",
     "dev": "nodemon src/app.js",
-    "mcp": "node src/mcp/standaloneMcpServer.js",
-    "mcp:lmstudio": "node src/mcp/lmstudioWorker.js",
-    "setup:enhanced-fetch": "node scripts/setup-enhanced-fetch.js",
-    "fetch:python": "python src/mcp/python_fetch_server_fixed.py"
+    "mcp": "node src/mcp/McpServer.js",
+    "mcp:standalone": "node src/mcp/McpServer.js --standalone",
+    "mcp:agent": "node src/agents/bambisleep-knowledge-agent.js"
   },
   "dependencies": {
     "axios": "^1.9.0",

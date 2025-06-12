@@ -1,0 +1,20 @@
+{
+  "extends": [
+    "development"
+  ],
+  "hints": {
+    "axe/name-role-value": [
+      "default",
+      {
+        "button-name": "off"
+      }
+    ],
+    "meta-viewport": "off",
+    "no-inline-styles": "off"
+  },
+  "browserslist": [
+    "defaults",
+    "not ie 11",
+    "not safari <= 18.5"
+  ]
+}

@@ -1,0 +1,146 @@
+{
+  "name": "LMStudio MCP Framework Configuration",
+  "version": "1.0.0",
+  "lmstudio": {
+    "model": "llama-3.2-3b-claude-3.7-sonnet-reasoning-distilled@q4_0",
+    "baseUrl": "http://192.168.0.69:7777",
+    "apiPath": "/v1/chat/completions",
+    "maxTokens": 2000,
+    "temperature": 0.7,
+    "timeout": 30000
+  },
+  "mcp": {
+    "protocolVersion": "2024-11-05",
+    "capabilities": {
+      "tools": {
+        "enabled": true,
+        "maxConcurrent": 5
+      },
+      "resources": {
+        "enabled": true,
+        "subscriptions": true
+      },
+      "prompts": {
+        "enabled": true,
+        "templates": true
+      },
+      "sampling": {
+        "enabled": true
+      }
+    },
+    "transport": {
+      "type": "stdio",
+      "options": {
+        "bufferSize": 8192,
+        "encoding": "utf8"
+      }
+    }
+  },
+  "orchestration": {
+    "maxTaskHistory": 100,
+    "parallelExecution": true,
+    "rollbackOnError": true,
+    "learningEnabled": true,
+    "adaptiveToolSelection": true
+  },
+  "bambisleep": {
+    "dataPath": "./data",
+    "resourceUriPrefix": "bambisleep://",
+    "supportedDataTypes": ["links", "creators", "comments", "votes"],
+    "autoBackup": true,
+    "backupInterval": 3600000
+  },
+  "security": {
+    "validateInputs": true,
+    "sanitizeOutputs": true,
+    "rateLimiting": {
+      "enabled": true,
+      "maxRequestsPerMinute": 60
+    },
+    "allowedDomains": ["bambisleep.chat", "bambisleep.church", "bambisleep.info"],
+    "corsEnabled": false
+  },
+  "logging": {
+    "level": "info",
+    "enableConsole": true,
+    "enableFile": false,
+    "filePath": "./logs/mcp-framework.log",
+    "includeTimestamp": true,
+    "includeContext": true
+  },
+  "tools": {
+    "core": {
+      "orchestrate_tools": {
+        "enabled": true,
+        "maxSubTasks": 10,
+        "timeoutMs": 60000
+      },
+      "manage_resources": {
+        "enabled": true,
+        "allowWrite": true,
+        "backupBeforeWrite": true
+      },
+      "process_content": {
+        "enabled": true,
+        "maxContentLength": 50000,
+        "supportedFormats": ["json", "text", "structured"]
+      }
+    },
+    "bambisleep": {
+      "fetch_url_smart": {
+        "enabled": true,
+        "respectRobots": true,
+        "maxRetries": 3,
+        "timeout": 10000
+      },
+      "manage_bambisleep_data": {
+        "enabled": true,
+        "allowWrite": true,
+        "validateSchema": true
+      },
+      "generate_insights": {
+        "enabled": true,
+        "maxDataSize": 100000,
+        "cacheResults": true
+      }
+    },
+    "orchestration": {
+      "break_down_task": {
+        "enabled": true,
+        "maxSubTasks": 20,
+        "validateDependencies": true
+      },
+      "execute_workflow": {
+        "enabled": true,
+        "maxSteps": 50,
+        "allowParallel": true
+      },
+      "learn_from_execution": {
+        "enabled": true,
+        "storePatterns": true,
+        "maxHistorySize": 1000
+      },
+      "select_optimal_tools": {
+        "enabled": true,
+        "considerHistory": true,
+        "adaptiveSelection": true
+      }
+    }
+  },
+  "resources": {
+    "bambisleep": {
+      "autoRegister": true,
+      "watchForChanges": true,
+      "enableSubscriptions": true,
+      "maxResourceSize": 10485760
+    }
+  },
+  "prompts": {
+    "templates": {
+      "taskBreakdown": "Break down this task: {{task}} with context: {{context}}",
+      "toolSelection": "Select optimal tools for: {{task}} from available: {{tools}}",
+      "contentAnalysis": "Analyze this content for {{purpose}}: {{content}}",
+      "insightGeneration": "Generate {{type}} insights from: {{data}}"
+    }
+  }
+}
