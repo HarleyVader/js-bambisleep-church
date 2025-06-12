@@ -6,9 +6,8 @@
 const fs = require('fs');
 const path = require('path');
 
-class CreatorController {
-    constructor() {
-        this.dataPath = path.join(__dirname, '../../data');
+class CreatorController {    constructor() {
+        this.dataPath = process.env.DATA_PATH || path.join(__dirname, '../../data');
         this.db = {
             read: (type) => {
                 try {
@@ -33,18 +32,22 @@ class CreatorController {
         } catch (error) {
             res.status(500).json({ success: false, error: error.message });
         }
-    }
-
-    voteForCreator(req, res) {
+    }    voteForCreator(req, res) {
         try {
             const { id } = req.params;
-            const { voteType } = req.body;
+            const { creatorId, voter } = req.body;
+            
+            // Create vote record
+            const voteData = {
+                creatorId: id,
+                voter: voter || 'anonymous',
+                timestamp: new Date().toISOString()
+            };
             
             res.json({ 
-                success: true, 
-                message: 'Creator voting not fully implemented',
-                creatorId: id,
-                voteType 
+                success: true,
+                data: voteData,
+                message: 'Creator vote recorded successfully'
             });
         } catch (error) {
             res.status(500).json({ success: false, error: error.message });

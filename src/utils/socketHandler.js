@@ -15,11 +15,10 @@ function socketHandler(io) {
         socket.on('disconnect', () => {
             console.log('👤 Client disconnected:', socket.id);
         });
-        
-        // Handle real-time content updates
+          // Handle real-time content updates
         socket.on('newContent', (data) => {
             console.log('📢 Broadcasting new content:', data);
-            socket.broadcast.emit('contentUpdate', data);
+            io.to('general').emit('contentUpdate', data);
         });
         
         // Handle template data updates
@@ -37,16 +36,14 @@ function socketHandler(io) {
             console.log('📊 Broadcasting stats update');
             io.to('general').emit('statsUpdate', data);
         });
-        
-        // Handle voting updates
+          // Handle voting updates
         socket.on('voteUpdate', (data) => {
             console.log('🗳️ Broadcasting vote update:', data);
-            socket.broadcast.emit('voteUpdate', data);
-        });
-          // Handle comment updates
+            io.to('general').emit('voteUpdate', data);
+        });        // Handle comment updates
         socket.on('commentUpdate', (data) => {
             console.log('💬 Broadcasting comment update:', data);
-            socket.broadcast.emit('commentUpdate', data);
+            io.to('general').emit('commentUpdate', data);
         });
 
         // Agent-specific event handlers
@@ -62,11 +59,9 @@ function socketHandler(io) {
         socket.on('submit-link', (data) => {
             console.log('📰 Link submitted:', data);
             socket.emit('link-moderated', { approved: true, ...data });
-        });
-        
-        socket.on('refresh-feed', () => {
+        });          socket.on('refresh-feed', () => {
             console.log('📰 Feed refresh requested');
-            socket.emit('feed-update', { refreshed: true, timestamp: Date.now() });
+            io.to('general').emit('feed-refreshed', { refreshed: true, timestamp: Date.now() });
         });
         
         // Stats Agent events

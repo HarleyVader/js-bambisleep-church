@@ -12,7 +12,9 @@
   },
   "homepage": "https://github.com/HarleyVader/js-bambisleep-church#readme",  "scripts": {
     "start": "node src/mcp/McpServer.js & node src/app.js",
-    "test": "cd test && npm test",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
     "mcp": "node src/mcp/McpServer.js",
     "agentic": "node src/mcp/bambisleep-crawler-agent.js",
     "cleanup": "node cleanup-agent.js"
@@ -34,5 +36,11 @@
     "church"
   ],
   "author": "melkanea",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "jest": "^30.0.0",
+    "socket.io-client": "^4.8.1",
+    "supertest": "^7.1.1"
+  }
 }

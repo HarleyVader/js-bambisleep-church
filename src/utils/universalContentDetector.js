@@ -369,17 +369,20 @@ class UniversalContentDetector {
 
     /**
      * Platform detection
-     */
-    detectPlatform(url) {
-        if (!url) return 'unknown';
+     */    detectPlatform(url) {
+        if (!url || typeof url !== 'string') return null;
 
-        for (const [platform, pattern] of Object.entries(this.platformPatterns)) {
-            if (pattern.test(url)) {
-                return platform;
+        try {
+            for (const [platform, pattern] of Object.entries(this.platformPatterns)) {
+                if (pattern.test(url)) {
+                    return platform;
+                }
             }
+        } catch (error) {
+            return null;
         }
 
-        return 'generic';
+        return null;
     }
 
     /**
@@ -391,13 +394,29 @@ class UniversalContentDetector {
         return this.detectionPatterns.bambisleep.some(pattern => 
             textLower.includes(pattern.toLowerCase())
         );
-    }
-
-    getFileExtension(url) {
+    }    getFileExtension(url) {
+        if (!url || typeof url !== 'string') return '';
+        
         try {
-            const pathname = new URL(url).pathname;
-            const extension = pathname.split('.').pop();
-            return extension ? `.${extension.toLowerCase()}` : '';
+            // Handle simple file paths without URL
+            if (!url.includes('://')) {
+                const parts = url.split('.');
+                if (parts.length > 1) {
+                    return `.${parts.pop().toLowerCase()}`;
+                }
+                return '';
+            }
+            
+            // Handle full URLs
+            const urlObj = new URL(url);
+            const pathname = urlObj.pathname;
+            const parts = pathname.split('.');
+            
+            if (parts.length > 1) {
+                return `.${parts.pop().toLowerCase()}`;
+            }
+            
+            return '';
         } catch {
             return '';
         }

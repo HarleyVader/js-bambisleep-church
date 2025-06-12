@@ -6,9 +6,8 @@
 const fs = require('fs');
 const path = require('path');
 
-class VoteController {
-    constructor() {
-        this.dataPath = path.join(__dirname, '../../data');
+class VoteController {    constructor() {
+        this.dataPath = process.env.DATA_PATH || path.join(__dirname, '../../data');
         this.db = {
             read: (type) => {
                 try {
@@ -20,15 +19,19 @@ class VoteController {
                 } catch (error) {
                     return [];
                 }
-            },
-            add: (type, data) => {
+            },            add: (type, data) => {
                 try {
-                    const existing = this.read(type);
-                    const newData = { id: Date.now(), ...data, createdAt: new Date().toISOString() };
+                    const existing = this.db.read(type);
+                    const newData = { 
+                        id: Date.now() + Math.random(), 
+                        ...data, 
+                        timestamp: new Date().toISOString()
+                    };
                     existing.push(newData);
-                    this.write(type, existing);
+                    this.db.write(type, existing);
                     return newData;
                 } catch (error) {
+                    console.error('Database add error:', error);
                     return null;
                 }
             },
@@ -44,7 +47,38 @@ class VoteController {
     }    castVote(req, res) {
         try {
             const voteData = req.body;
+            
+            // Validate required fields
+            if (!voteData.linkId && !voteData.itemId) {
+                return res.status(400).json({ 
+                    success: false, 
+                    error: 'linkId or itemId is required' 
+                });
+            }
+            
+            if (!voteData.type) {
+                return res.status(400).json({ 
+                    success: false, 
+                    error: 'vote type is required' 
+                });
+            }
+            
+            if (!voteData.voter) {
+                return res.status(400).json({ 
+                    success: false, 
+                    error: 'voter is required' 
+                });
+            }
+            
             const newVote = this.db.add('votes', voteData);
+            
+            // Check if vote addition failed
+            if (!newVote) {
+                return res.status(500).json({ 
+                    success: false, 
+                    error: 'Failed to add vote to database' 
+                });
+            }
             
             // Broadcast vote update via Socket.IO for real-time rendering
             if (global.socketIO) {
