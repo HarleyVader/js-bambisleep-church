@@ -138,7 +138,51 @@ curl -X POST http://localhost:8888/api/comments \
 
 ## 📊 API Reference
 
-### Core Endpoints
+### Navigation Routes
+
+```http
+GET /           # Homepage with featured content and statistics
+GET /feed       # Real-time community feed with filtering options
+GET /submit     # Content submission interface with validation
+GET /stats      # Comprehensive analytics and community metrics
+GET /docs       # Platform documentation (AI-generated and maintained)
+GET /help       # User help and platform guidance
+```
+
+### Core Data Management APIs
+
+#### Link Management
+
+```http
+POST /api/links         # Submit new content links
+GET  /api/links/:id     # Retrieve specific link details
+PUT  /api/links/:id     # Update link information
+DELETE /api/links/:id   # Remove links (moderation)
+```
+
+#### Creator Management
+
+```http
+POST /api/creators      # Register new creator profiles
+GET  /api/creators/:id  # Get creator information
+PUT  /api/creators/:id  # Update creator profiles
+```
+
+#### Voting System
+
+```http
+POST /api/votes         # Submit votes on content
+GET  /api/votes/stats   # Get voting statistics
+```
+
+#### Comments System
+
+```http
+POST /api/comments      # Add comments to content
+GET  /api/comments/:linkId # Get comments for specific content
+```
+
+### Platform & Analytics APIs
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -147,20 +191,17 @@ curl -X POST http://localhost:8888/api/comments \
 | `POST` | `/api/vote` | Cast votes |
 | `GET` | `/api/platforms` | Get platform statistics |
 | `GET` | `/api/stats` | Get overall statistics |
-
-### Platform Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
 | `GET` | `/api/platforms/:platform` | Get content by platform |
 | `POST` | `/api/metadata` | Extract URL metadata |
 
-### Comments Endpoints
+### MCP Integration APIs
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/comments/:linkId` | Get comments for content |
-| `POST` | `/api/comments` | Add new comment |
+```http
+POST /api/mcp/query          # Query the AI knowledge base
+POST /api/mcp/analyze        # Analyze content with AI
+POST /api/mcp/insights       # Generate community insights
+POST /api/mcp/documentation  # Regenerate platform documentation
+```
 
 ## 🔧 Configuration
 

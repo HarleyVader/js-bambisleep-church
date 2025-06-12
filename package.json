@@ -10,10 +10,12 @@
   "bugs": {
     "url": "https://github.com/HarleyVader/js-bambisleep-church/issues"
   },
-  "homepage": "https://github.com/HarleyVader/js-bambisleep-church#readme",
-  "scripts": {
+  "homepage": "https://github.com/HarleyVader/js-bambisleep-church#readme",  "scripts": {
     "start": "node src/mcp/McpServer.js & node src/app.js",
-    "test": "node universal-info.test.js"
+    "test": "node universal-info.test.js",
+    "crawler": "node run-crawler.js",
+    "mcp": "node src/mcp/McpServer.js",
+    "agentic": "node src/mcp/bambisleep-crawler-agent.js"
   },
   "dependencies": {
     "axios": "^1.9.0",
