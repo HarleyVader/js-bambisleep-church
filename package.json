@@ -12,9 +12,11 @@
   },
   "homepage": "https://github.com/HarleyVader/js-bambisleep-church#readme",  "scripts": {
     "start": "node src/app.js",
-    "dev": "nodemon src/app.js",
-    "mcp": "node src/mcp/standaloneMcpServer.js",
+    "dev": "nodemon src/app.js",    "mcp": "node src/mcp/standaloneMcpServer.js",
+    "mcp:lmstudio": "node src/mcp/lmstudioWorker.js",
+    "crawl:bambisleep": "node tests/crawl-bambisleep.js",
     "test:mcp": "node tests/test-mcp.js",
+    "test:lmstudio": "node tests/test-lmstudio.js",
     "demo:mcp": "node tests/demo-mcp.js",
     "example:mcp": "node tests/example-mcp.js"
   },  "dependencies": {
