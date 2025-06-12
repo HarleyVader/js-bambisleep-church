@@ -157,15 +157,129 @@
         .setting-row .form-input {
             flex: 0 0 150px;
             margin-left: 1rem;
-        }
-
-        .crawl-progress {
+        }        .crawl-progress {
             background: rgba(var(--color-bg-secondary-rgb), 0.9);
             border: 1px solid var(--color-primary-cyan);
             border-radius: 1rem;
             padding: 2rem;
             margin-top: 2rem;
             backdrop-filter: blur(10px);
+        }
+
+        .crawl-status-container {
+            background: rgba(var(--color-bg-primary-rgb), 0.3);
+            border: 1px solid var(--color-primary-cyan);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .crawl-status-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .crawl-status-header h4 {
+            margin: 0;
+            color: var(--color-primary-cyan);
+        }
+
+        .agent-status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(var(--color-bg-secondary-rgb), 0.5);
+            border-radius: 1rem;
+            border: 1px solid var(--color-primary-cyan);
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #666;
+            animation: pulse 2s infinite;
+        }
+
+        .agent-status-indicator.active .status-dot {
+            background: var(--color-primary-green);
+        }
+
+        .agent-status-indicator.crawling .status-dot {
+            background: var(--color-primary-cyan);
+        }
+
+        .agent-status-indicator.filtering .status-dot {
+            background: var(--color-primary-magenta);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .url-tracking-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .url-status-box {
+            background: rgba(var(--color-bg-secondary-rgb), 0.6);
+            border: 1px solid var(--color-primary-cyan);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .url-status-box:hover {
+            border-color: var(--color-primary-magenta);
+            box-shadow: 0 0 10px rgba(var(--color-primary-magenta-rgb), 0.2);
+        }
+
+        .status-number {
+            display: block;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--color-primary-cyan);
+            margin-bottom: 0.25rem;
+            text-shadow: 0 0 5px var(--color-primary-cyan);
+        }
+
+        .status-label {
+            font-size: 0.7rem;
+            color: var(--color-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .current-url-display {
+            background: rgba(var(--color-bg-secondary-rgb), 0.4);
+            border: 1px solid rgba(var(--color-primary-cyan-rgb), 0.3);
+            border-radius: 0.5rem;
+            padding: 1rem;
+        }
+
+        .current-url-label {
+            font-size: 0.875rem;
+            color: var(--color-primary-cyan);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .current-url-value {
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            color: var(--color-text-primary);
+            word-break: break-all;
+            padding: 0.5rem;
+            background: rgba(var(--color-bg-primary-rgb), 0.3);
+            border-radius: 0.25rem;
         }
 
         .crawl-stats-grid {
@@ -780,7 +894,49 @@
             <!-- Crawl Progress & Feed Results -->
             <div id="crawlProgress" class="crawl-progress" style="display: none;">
                 <h3>🔄 Crawl Progress</h3>
-                
+                  <!-- URL Status Display -->
+                <div class="crawl-status-container">
+                    <div class="crawl-status-header">
+                        <h4>🎯 Agent Status</h4>
+                        <div class="agent-status-indicator" id="agentStatus">
+                            <span class="status-dot"></span>
+                            <span id="agentStatusText">Idle</span>
+                        </div>
+                    </div>
+                    
+                    <div class="url-tracking-grid">
+                        <div class="url-status-box">
+                            <div class="status-number" id="foundUrlsCount">0</div>
+                            <div class="status-label">URLs Found</div>
+                        </div>
+                        <div class="url-status-box">
+                            <div class="status-number" id="filteredUrlsCount">0</div>
+                            <div class="status-label">Filtered URLs</div>
+                        </div>
+                        <div class="url-status-box">
+                            <div class="status-number" id="addedUrlsCount">0</div>
+                            <div class="status-label">Added URLs</div>
+                        </div>
+                        <div class="url-status-box">
+                            <div class="status-number" id="totalUrlsCount">0</div>
+                            <div class="status-label">Total URLs</div>
+                        </div>
+                        <div class="url-status-box">
+                            <div class="status-number" id="finishedUrlsCount">0</div>
+                            <div class="status-label">Finished URLs</div>
+                        </div>
+                        <div class="url-status-box">
+                            <div class="status-number" id="remainingUrlsCount">0</div>
+                            <div class="status-label">Remaining URLs</div>
+                        </div>
+                    </div>
+                    
+                    <div class="current-url-display">
+                        <div class="current-url-label">Current URL:</div>
+                        <div class="current-url-value" id="currentUrlDisplay">No URL being processed</div>
+                    </div>
+                </div>
+
                 <!-- Enhanced Stats Display -->
                 <div class="crawl-stats-grid">
                     <div class="stat-box">

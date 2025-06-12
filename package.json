@@ -12,6 +12,7 @@
   },
   "homepage": "https://github.com/HarleyVader/js-bambisleep-church#readme",  "scripts": {
     "start": "node src/app.js",
+    "start:full": "pwsh -c \"Start-Job { node src/mcp/McpServer.js } | Out-Null; node src/app.js\"",
     "dev": "nodemon src/app.js",
     "mcp": "node src/mcp/McpServer.js",
     "mcp:standalone": "node src/mcp/McpServer.js --standalone",

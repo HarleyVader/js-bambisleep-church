@@ -818,6 +818,31 @@ Help the community by voting on content quality:
             res.status(500).json({ 
                 error: 'Failed to start crawl', 
                 message: error.message 
+            });        }
+    });
+
+    // =================== MCP SERVER STATUS ROUTE ===================
+    router.get('/api/mcp/status', async (req, res) => {
+        try {
+            const BambisleepMcpServer = require('../mcp/McpServer');
+            const mcpServer = new BambisleepMcpServer();
+            
+            // Check if MCP server is initialized and get status
+            const status = mcpServer.getStatus();
+            
+            res.json({
+                success: true,
+                status: 'connected',
+                ...status,
+                timestamp: new Date().toISOString()
+            });
+        } catch (error) {
+            console.error('MCP status check failed:', error);
+            res.status(503).json({
+                success: false,
+                status: 'error',
+                error: error.message,
+                timestamp: new Date().toISOString()
             });
         }
     });

@@ -454,13 +454,151 @@ document.addEventListener('DOMContentLoaded', () => {
     // Export feed
     document.getElementById('exportFeed').addEventListener('click', () => {
         exportCrawlResults();
-    });    async function startCrawlOperation() {
-        const urls = crawlUrlsInput.value.trim().split('\n').filter(url => url.trim());
+    });    // URL filtering function to remove file extensions (not content)
+    function filterUrlList(urls) {
+        const fileExtensions = [
+            '.pdf', '.doc', '.docx', '.txt', '.rtf', '.odt',
+            '.xls', '.xlsx', '.csv', '.ppt', '.pptx',
+            '.zip', '.rar', '.7z', '.tar', '.gz',
+            '.mp3', '.wav', '.flac', '.m4a', '.ogg',
+            '.mp4', '.avi', '.mkv', '.mov', '.wmv',
+            '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.svg',
+            '.exe', '.msi', '.dmg', '.pkg', '.deb', '.rpm'
+        ];
         
-        if (urls.length === 0) {
+        return urls.filter(url => {
+            try {
+                const urlObj = new URL(url.trim());
+                const pathname = urlObj.pathname.toLowerCase();
+                
+                // Check if URL ends with a file extension
+                const hasFileExtension = fileExtensions.some(ext => pathname.endsWith(ext));
+                
+                if (hasFileExtension) {
+                    logCrawlMessage('Filtered file URL: ' + url);
+                    return false;
+                }
+                
+                return true;
+            } catch (error) {
+                logCrawlMessage('Invalid URL filtered: ' + url);
+                return false;
+            }
+        });
+    }
+
+    // Update URL status display
+    function updateUrlStatus(status, data = {}) {
+        const statusIndicator = document.querySelector('.agent-status-indicator');
+        const statusText = document.getElementById('agentStatusText');
+        
+        if (statusIndicator && statusText) {
+            // Update status indicator
+            statusIndicator.className = 'agent-status-indicator';
+            
+            switch (status) {
+                case 'filtering':
+                    statusIndicator.classList.add('filtering');
+                    statusText.textContent = 'Filtering URLs';
+                    break;
+                case 'crawling':
+                    statusIndicator.classList.add('crawling');
+                    statusText.textContent = 'Agent Tools Crawling';
+                    break;
+                case 'active':
+                    statusIndicator.classList.add('active');
+                    statusText.textContent = 'Processing';
+                    break;
+                case 'idle':
+                default:
+                    statusText.textContent = 'Idle';
+                    break;
+            }
+            
+            // Update URL counts if provided
+            if (data.foundUrls !== undefined) {
+                const el = document.getElementById('foundUrlsCount');
+                if (el) el.textContent = data.foundUrls;
+            }
+            if (data.filteredUrls !== undefined) {
+                const el = document.getElementById('filteredUrlsCount');
+                if (el) el.textContent = data.filteredUrls;
+            }
+            if (data.addedUrls !== undefined) {
+                const el = document.getElementById('addedUrlsCount');
+                if (el) el.textContent = data.addedUrls;
+            }
+            if (data.totalUrls !== undefined) {
+                const el = document.getElementById('totalUrlsCount');
+                if (el) el.textContent = data.totalUrls;
+            }
+            if (data.finishedUrls !== undefined) {
+                const el = document.getElementById('finishedUrlsCount');
+                if (el) el.textContent = data.finishedUrls;
+            }
+            if (data.remainingUrls !== undefined) {
+                const el = document.getElementById('remainingUrlsCount');
+                if (el) el.textContent = data.remainingUrls;
+            }
+            if (data.currentUrl) {
+                const el = document.getElementById('currentUrlDisplay');
+                if (el) el.textContent = data.currentUrl;
+            }
+        }
+    }
+
+    // Test MCP server connection
+    async function testMcpConnection() {
+        try {
+            const response = await fetch('/api/mcp/status');
+            if (response.ok) {
+                logCrawlMessage('MCP Server: Connected and ready');
+                return true;
+            } else {
+                logCrawlMessage('MCP Server: Warning - Not responding');
+                return false;
+            }
+        } catch (error) {
+            logCrawlMessage('MCP Server: Error - ' + error.message);
+            return false;
+        }
+    }
+
+    async function startCrawlOperation() {
+        const rawUrls = crawlUrlsInput.value.trim().split('\n').filter(url => url.trim());
+        
+        if (rawUrls.length === 0) {
             showCrawlMessage('Please enter at least one URL to crawl', 'error');
             return;
         }
+
+        // Filter out file URLs (not content URLs)
+        const filteredUrls = filterUrlList(rawUrls);
+        const foundCount = rawUrls.length;
+        const filteredCount = foundCount - filteredUrls.length;
+        const addedCount = filteredUrls.length;
+
+        // Update status display
+        updateUrlStatus('filtering', {
+            foundUrls: foundCount,
+            filteredUrls: filteredCount,
+            addedUrls: addedCount,
+            totalUrls: addedCount,
+            finishedUrls: 0,
+            remainingUrls: addedCount,
+            currentUrl: 'Initializing...'
+        });
+
+        if (filteredUrls.length === 0) {
+            showCrawlMessage('All URLs were filtered out (likely file downloads). Please provide content URLs like web pages, videos, or playlists.', 'error');
+            updateUrlStatus('idle');
+            return;
+        }
+
+        logCrawlMessage('URL Processing: Found ' + foundCount + ', Filtered ' + filteredCount + ', Processing ' + addedCount);
+
+        // Test MCP connection first
+        await testMcpConnection();
 
         const options = {
             respectRobots: document.getElementById('respectRobots').checked,
@@ -492,13 +630,13 @@ document.addEventListener('DOMContentLoaded', () => {
             (isAdvanced ? 'Advanced Crawling...' : 'Crawling...');
 
         // Initialize stats tracking
-        initializeCrawlStats(urls);
+        initializeCrawlStats(filteredUrls);
 
         try {
             if (isAdvanced) {
-                await processAdvancedCrawl(urls, options);
+                await processAdvancedCrawl(filteredUrls, options);
             } else {
-                await processCrawlBatch(urls, options);
+                await processCrawlBatch(filteredUrls, options);
             }
         } catch (error) {
             console.error('Crawl operation failed:', error);
@@ -552,9 +690,7 @@ document.addEventListener('DOMContentLoaded', () => {
             logCrawlMessage(`❌ Advanced crawl error: ${error.message}`);
             throw error;
         }
-    }
-
-    async function processCrawlBatch(urls, options) {
+    }    async function processCrawlBatch(urls, options) {
         const totalUrls = urls.length;
         let completedUrls = 0;
 
@@ -563,6 +699,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         for (const url of urls) {
             try {
+                // Update current URL status
+                updateUrlStatus('crawling', {
+                    currentUrl: url,
+                    finishedUrls: completedUrls,
+                    remainingUrls: totalUrls - completedUrls
+                });
+
                 logCrawlMessage(`🕷️ Crawling: ${url}`);
                 updateProgress((completedUrls / totalUrls) * 100, `Crawling ${url}...`);
 
@@ -580,15 +723,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateProgress((completedUrls / totalUrls) * 100, 
                     `Completed ${completedUrls}/${totalUrls} URLs`);
 
+                // Update finished URLs status
+                updateUrlStatus('crawling', {
+                    finishedUrls: completedUrls,
+                    remainingUrls: totalUrls - completedUrls
+                });
+
                 // Respectful delay
                 await new Promise(resolve => setTimeout(resolve, 1000));            } catch (error) {
                 logCrawlMessage(`💥 Error crawling ${url}: ${error.message}`);
                 completedUrls++;
                 updateCrawlStats(completedUrls, 0);
+                
+                // Update error status
+                updateUrlStatus('crawling', {
+                    finishedUrls: completedUrls,
+                    remainingUrls: totalUrls - completedUrls
+                });
             }
         }
 
-        // Complete
+        // Complete - set to idle status
+        updateUrlStatus('idle', {
+            currentUrl: 'Crawl completed',
+            finishedUrls: completedUrls,
+            remainingUrls: 0
+        });
+
         updateProgress(100, `Crawl completed! Found ${crawlData.length} items`);
         logCrawlMessage(`🎉 Crawl completed with ${crawlData.length} total items found`);
 
