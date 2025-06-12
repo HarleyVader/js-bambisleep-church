@@ -35,7 +35,7 @@ class BambisleepMcpServer {
             },
             ...config
         };
-        
+
         this.tools = new Map();
         this.resources = new Map();
         this.prompts = new Map();
@@ -50,22 +50,22 @@ class BambisleepMcpServer {
     async initialize() {
         try {
             console.log('🚀 Initializing Bambisleep MCP Server...');
-            
+
             // Test LMStudio connection
             await this.testLMStudioConnection();
-            
+
             // Load bambisleep knowledge base
             await this.loadKnowledgeBase();
-            
+
             // Register all tools
             await this.registerAllTools();
-            
+
             // Setup protocol handlers
             this.setupProtocolHandlers();
-            
+
             this.initialized = true;
             console.log('✅ Bambisleep MCP Server initialized successfully');
-            
+
             return { success: true, message: 'MCP Server initialized' };
         } catch (error) {
             console.error('❌ Failed to initialize MCP Server:', error.message);
@@ -81,14 +81,14 @@ class BambisleepMcpServer {
                 console.warn('⚠️ LMStudio connection skipped - axios not available');
                 return false;
             }
-            
+
             const response = await axios.post(this.config.baseUrl, {
                 model: this.config.model,
                 messages: [{ role: 'user', content: 'Hello' }],
                 max_tokens: 5,
                 temperature: 0
             }, { timeout: 5000 });
-            
+
             console.log('✅ LMStudio connection successful');
             return true;
         } catch (error) {
@@ -102,20 +102,20 @@ class BambisleepMcpServer {
      */
     async loadKnowledgeBase() {
         const dataTypes = ['links', 'creators', 'comments', 'votes'];
-        
+
         for (const type of dataTypes) {
             try {
                 const filePath = path.join(this.config.dataPath, `${type}.json`);
                 const data = await fs.readFile(filePath, 'utf8');
                 this.knowledgeBase.set(type, JSON.parse(data));
-                
+
                 // Register as resource
                 this.resources.set(`bambisleep://data/${type}`, {
                     data: JSON.parse(data),
                     metadata: { type: 'knowledge', category: type },
                     lastUpdated: new Date()
                 });
-                
+
                 console.log(`📚 Loaded ${type}: ${JSON.parse(data).length} items`);
             } catch (error) {
                 console.warn(`⚠️ Could not load ${type}.json:`, error.message);
@@ -215,7 +215,7 @@ class BambisleepMcpServer {
      */
     async handleQueryKnowledge(params) {
         const { query, dataTypes = ['links', 'creators', 'comments', 'votes'], analysisDepth = 'basic' } = params;
-        
+
         try {
             // Gather relevant data
             const relevantData = {};
@@ -256,10 +256,10 @@ Please provide insights based on the available data. If specific data is needed 
      */
     async handleAnalyzeContent(params) {
         const { content, analysisType, context = {} } = params;
-        
+
         try {
             let aiPrompt = '';
-            
+
             switch (analysisType) {
                 case 'categorize':
                     aiPrompt = `Categorize this bambisleep content: "${content}"
@@ -267,21 +267,21 @@ Please provide insights based on the available data. If specific data is needed 
 Categories to consider: audio, video, script, discussion, creator profile, community post
 Please provide the most appropriate category and confidence level.`;
                     break;
-                    
+
                 case 'extract_entities':
                     aiPrompt = `Extract entities from this bambisleep content: "${content}"
                     
 Look for: creator names, content titles, platforms (YouTube, SoundCloud, etc.), tags, themes
 Return as structured data.`;
                     break;
-                    
+
                 case 'sentiment':
                     aiPrompt = `Analyze the sentiment of this bambisleep content: "${content}"
                     
 Consider: community reception, content quality, user engagement
 Provide sentiment score and reasoning.`;
                     break;
-                    
+
                 case 'trends':
                     aiPrompt = `Analyze trends in this bambisleep content: "${content}"
                     
@@ -312,7 +312,7 @@ Provide trend analysis and predictions.`;
      */
     async handleManageData(params) {
         const { action, dataType, data, query } = params;
-        
+
         try {
             const currentData = this.knowledgeBase.get(dataType) || [];
             let result;
@@ -321,7 +321,7 @@ Provide trend analysis and predictions.`;
                 case 'read':
                     result = query ? this.searchData(currentData, query) : currentData;
                     break;
-                    
+
                 case 'create':
                     if (data) {
                         const newItem = { id: Date.now(), timestamp: new Date().toISOString(), ...data };
@@ -330,7 +330,7 @@ Provide trend analysis and predictions.`;
                         result = newItem;
                     }
                     break;
-                    
+
                 case 'update':
                     if (data && data.id) {
                         const index = currentData.findIndex(item => item.id === data.id);
@@ -341,7 +341,7 @@ Provide trend analysis and predictions.`;
                         }
                     }
                     break;
-                    
+
                 case 'delete':
                     if (query && query.id) {
                         const index = currentData.findIndex(item => item.id === query.id);
@@ -352,7 +352,7 @@ Provide trend analysis and predictions.`;
                         }
                     }
                     break;
-                    
+
                 case 'search':
                     result = this.searchData(currentData, query);
                     break;
@@ -369,7 +369,7 @@ Provide trend analysis and predictions.`;
      */
     async handleCrawlAndAnalyze(params) {
         const { url, extractType = 'all', saveToKnowledge = true } = params;
-        
+
         try {
             // Basic URL analysis (would need actual crawling implementation)
             const analysisResult = {
@@ -416,7 +416,7 @@ Provide recommendations for data extraction and categorization.`;
      */
     async handleGenerateInsights(params) {
         const { insightType, timeframe = 'all time', outputFormat = 'summary' } = params;
-        
+
         try {
             // Gather all relevant data
             const allData = {};
@@ -459,9 +459,9 @@ Please provide detailed insights based on the available data.`;
      */
     searchData(data, query) {
         if (!query || !Array.isArray(data)) return data;
-        
+
         const searchTerm = query.search?.toLowerCase() || '';
-        return data.filter(item => 
+        return data.filter(item =>
             JSON.stringify(item).toLowerCase().includes(searchTerm)
         );
     }
@@ -486,14 +486,14 @@ Please provide detailed insights based on the available data.`;
             const filePath = path.join(this.config.dataPath, `${type}.json`);
             await fs.writeFile(filePath, JSON.stringify(data, null, 2));
             this.knowledgeBase.set(type, data);
-            
+
             // Update resource
             this.resources.set(`bambisleep://data/${type}`, {
                 data,
                 metadata: { type: 'knowledge', category: type },
                 lastUpdated: new Date()
             });
-            
+
             console.log(`💾 Saved ${type}: ${data.length} items`);
         } catch (error) {
             console.error(`❌ Failed to save ${type}:`, error.message);
@@ -508,7 +508,7 @@ Please provide detailed insights based on the available data.`;
             if (!axios) {
                 return 'AI analysis unavailable - axios not available. Please install axios with: npm install axios';
             }
-            
+
             const response = await axios.post(this.config.baseUrl, {
                 model: this.config.model,
                 messages,
@@ -616,15 +616,15 @@ Please provide detailed insights based on the available data.`;
     async start() {
         try {
             await this.initialize();
-            
+
             // Setup stdio for JSON-RPC communication
             this.setupStdioHandler();
-            
+
             console.log('🎯 Bambisleep MCP Server ready for connections');
             console.log(`📊 Knowledge base loaded: ${Array.from(this.knowledgeBase.values()).reduce((sum, arr) => sum + arr.length, 0)} total items`);
             console.log(`🔧 Tools available: ${this.tools.size}`);
             console.log(`📚 Resources available: ${this.resources.size}`);
-            
+
         } catch (error) {
             console.error('❌ Failed to start MCP server:', error);
             process.exit(1);
@@ -636,15 +636,15 @@ Please provide detailed insights based on the available data.`;
      */
     setupStdioHandler() {
         let buffer = '';
-        
+
         process.stdin.on('data', async (chunk) => {
             buffer += chunk.toString();
-            
+
             let newlineIndex;
             while ((newlineIndex = buffer.indexOf('\n')) !== -1) {
                 const line = buffer.slice(0, newlineIndex);
                 buffer = buffer.slice(newlineIndex + 1);
-                
+
                 if (line.trim()) {
                     try {
                         const message = JSON.parse(line);
@@ -676,7 +676,7 @@ Please provide detailed insights based on the available data.`;
      */
     async handleRequest(request) {
         const { id, method, params } = request;
-        
+
         try {
             const handler = this.protocolHandlers[method];
             if (!handler) {
@@ -708,7 +708,7 @@ Please provide detailed insights based on the available data.`;
     sendError(id, code, message, data = null) {
         const error = { code, message };
         if (data) error.data = data;
-        
+
         this.sendResponse({ id, error });
     }
 
@@ -750,7 +750,7 @@ Please provide detailed insights based on the available data.`;
 
         process.stdin.on('data', (chunk) => {
             buffer += chunk.toString();
-            
+
             // Process complete JSON-RPC messages
             let lines = buffer.split('\n');
             buffer = lines.pop(); // Keep incomplete line in buffer
@@ -776,7 +776,7 @@ Please provide detailed insights based on the available data.`;
         try {
             const request = JSON.parse(message);
             const response = await this.handleJsonRpcRequest(request);
-            
+
             if (response) {
                 this.sendJsonRpcResponse(response);
             }
@@ -814,12 +814,12 @@ Please provide detailed insights based on the available data.`;
                         throw new Error(`Tool not found: ${name}`);
                     }
                     const result = await tool.handler(args);
-                    return { 
-                        jsonrpc: '2.0', 
-                        id, 
-                        result: { 
-                            content: [{ type: 'text', text: JSON.stringify(result) }] 
-                        } 
+                    return {
+                        jsonrpc: '2.0',
+                        id,
+                        result: {
+                            content: [{ type: 'text', text: JSON.stringify(result) }]
+                        }
                     };
 
                 case 'resources/list':
@@ -837,16 +837,16 @@ Please provide detailed insights based on the available data.`;
                     if (!resource) {
                         throw new Error(`Resource not found: ${uri}`);
                     }
-                    return { 
-                        jsonrpc: '2.0', 
-                        id, 
-                        result: { 
-                            contents: [{ 
-                                uri, 
+                    return {
+                        jsonrpc: '2.0',
+                        id,
+                        result: {
+                            contents: [{
+                                uri,
                                 mimeType: resource.mimeType || 'application/json',
-                                text: JSON.stringify(resource.data) 
-                            }] 
-                        } 
+                                text: JSON.stringify(resource.data)
+                            }]
+                        }
                     };
 
                 default:
@@ -891,7 +891,7 @@ Please provide detailed insights based on the available data.`;
 // Start the server if run directly
 if (require.main === module) {
     const server = new BambisleepMcpServer();
-    
+
     // Check for standalone JSON-RPC mode
     if (process.argv.includes('--standalone') || process.argv.includes('--stdio')) {
         server.startStandalone().catch(console.error);
