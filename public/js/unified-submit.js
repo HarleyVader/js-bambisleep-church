@@ -368,11 +368,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function truncateText(text, maxLength) {
         if (text.length <= maxLength) return text;
         return text.substring(0, maxLength) + '...';
-    }
-
-    // ===============================
+    }    // ===============================
     // CRAWL FETCH AGENT FUNCTIONALITY
-    // ===============================    const crawlForm = document.getElementById('crawlFetchForm');
+    // ===============================
+    
+    const crawlForm = document.getElementById('crawlFetchForm');
     const crawlUrlsInput = document.getElementById('crawlUrls');
     const crawlSubmitButton = document.getElementById('crawlSubmitButton');
     const crawlProgress = document.getElementById('crawlProgress');
@@ -494,11 +494,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (error) {
             console.error('Crawl operation failed:', error);
-            showCrawlMessage('Crawl operation failed: ' + error.message, 'error');
-        } finally {
+            showCrawlMessage('Crawl operation failed: ' + error.message, 'error');        } finally {
             crawlSubmitButton.disabled = false;
             crawlSubmitButton.textContent = '🚀 Start Crawl & Generate Feed';
-        }    }
+        }
+    }
 
     async function processAdvancedCrawl(urls, options) {
         updateProgress(0, 'Initializing advanced crawl...');
@@ -621,9 +621,10 @@ document.addEventListener('DOMContentLoaded', () => {
             return {
                 success: false,
                 error: error.message
-            };
-        }
-    }    function displayCrawlResults() {
+            };        }
+    }
+
+    function displayCrawlResults() {
         // Update stats
         document.getElementById('totalFound').textContent = crawlData.length;
         document.getElementById('mediaCount').textContent = crawlData.filter(item => 
