@@ -148,8 +148,7 @@ class BambiSleepDiscoveryAgent {
 
         // Get selected content types
         const contentTypes = this.getSelectedContentTypes();
-        
-        this.logMessage(`🚀 Starting BambiSleep discovery scan of ${urls.length} URLs`);
+          this.logMessage(`🚀 Starting BambiSleep discovery scan of ${urls.length} URLs`);
         this.updateDetectionStatus('Initializing deep content analysis...', 'scanning');
 
         // Reset stats
@@ -157,6 +156,18 @@ class BambiSleepDiscoveryAgent {
 
         // Show progress section
         this.showProgressSection();
+        
+        // Show progression bar if available
+        if (typeof window.progressionManager !== 'undefined') {
+            window.progressionManager.show();
+            
+            // Initialize progression with URLs
+            urls.forEach(url => {
+                window.progressionManager.addDomain(url, 'cued');
+            });
+            
+            window.progressionManager.update(urls.length, urls.length, 0);
+        }
 
         try {
             await this.performDeepDiscovery(urls, contentTypes);
@@ -178,11 +189,15 @@ class BambiSleepDiscoveryAgent {
 
     async performDeepDiscovery(urls, contentTypes) {
         const totalUrls = urls.length;
-        let processedUrls = 0;
-
-        for (const url of urls) {
+        let processedUrls = 0;        for (const url of urls) {
             try {
                 this.updateScanProgress(processedUrls, totalUrls, `Analyzing: ${url}`);
+                
+                // Update progression bar if available
+                if (typeof window.progressionManager !== 'undefined') {
+                    window.progressionManager.updateCurrent(url);
+                    window.progressionManager.update(totalUrls, totalUrls - processedUrls, processedUrls);
+                }
                 
                 const result = await this.analyzeSingleUrl(url, contentTypes);
                 
@@ -199,10 +214,20 @@ class BambiSleepDiscoveryAgent {
                     await this.saveToBambiSleepKnowledgeBase(result);
                 } else {
                     this.logMessage(`⚪ No BambiSleep content: ${url}`);
-                }
-
-                this.discoveryStats.totalScanned++;
+                }                this.discoveryStats.totalScanned++;
                 processedUrls++;
+                
+                // Mark URL as done in progression bar
+                if (typeof window.progressionManager !== 'undefined') {
+                    // Update the domain entry to show completion
+                    const domainData = window.progressionManager.domains?.get?.(url);
+                    if (domainData && domainData.element) {
+                        const statusEl = domainData.element.querySelector('.domain-status');
+                        if (statusEl) {
+                            statusEl.textContent = '✅'; // Done
+                        }
+                    }
+                }
 
             } catch (error) {
                 this.logMessage(`💥 Error analyzing ${url}: ${error.message}`);

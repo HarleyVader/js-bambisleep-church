@@ -150,13 +150,166 @@
             background: rgba(var(--color-primary-green-rgb), 0.1);
             border: 1px solid var(--color-primary-green);
             color: var(--color-primary-green);
-        }
-
-        .form-hint {
+        }        .form-hint {
             font-size: 0.75rem;
             color: var(--color-text-secondary);
             margin-top: 0.25rem;
             opacity: 0.8;
+        }
+
+        /* Progression Bar Styles */
+        .progression-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .time-display {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(var(--color-bg-primary-rgb), 0.6);
+            border: 1px solid var(--color-primary-cyan);
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+        }
+
+        .time-label {
+            font-size: 0.875rem;
+            color: var(--color-primary-cyan);
+            font-weight: 600;
+        }
+
+        .time-value {
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            color: var(--color-text-primary);
+            font-weight: 700;
+            letter-spacing: 1px;
+            background: rgba(var(--color-primary-magenta-rgb), 0.1);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+        }
+
+        .url-counters {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .counter-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(var(--color-bg-primary-rgb), 0.6);
+            border: 1px solid var(--color-primary-cyan);
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            min-width: 80px;
+        }
+
+        .counter-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--color-primary-cyan);
+            text-shadow: 0 0 5px var(--color-primary-cyan);
+        }
+
+        .counter-label {
+            font-size: 0.75rem;
+            color: var(--color-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 0.25rem;
+        }
+
+        .domain-breakdown {
+            margin-top: 2rem;
+        }
+
+        .domain-breakdown h4 {
+            color: var(--color-primary-cyan);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .domain-list {
+            background: rgba(var(--color-bg-primary-rgb), 0.4);
+            border: 1px solid rgba(var(--color-primary-cyan-rgb), 0.3);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .domain-entry {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            background: rgba(var(--color-bg-secondary-rgb), 0.3);
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+        }
+
+        .domain-status {
+            font-size: 1.2rem;
+            min-width: 24px;
+            text-align: center;
+        }
+
+        .domain-info {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--color-text-primary);
+        }
+
+        .domain-separator {
+            color: var(--color-text-secondary);
+            opacity: 0.6;
+        }
+
+        .current-processing {
+            margin-top: 1.5rem;
+            background: rgba(var(--color-bg-primary-rgb), 0.6);
+            border: 1px solid var(--color-primary-magenta);
+            border-radius: 0.5rem;
+            padding: 1rem;
+        }
+
+        .processing-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .processing-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .processing-label {
+            color: var(--color-primary-magenta);
+            font-weight: 600;
+            min-width: 120px;
+        }
+
+        .processing-value {
+            font-family: 'Courier New', monospace;
+            color: var(--color-text-primary);
+            background: rgba(var(--color-bg-secondary-rgb), 0.5);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            flex: 1;
+            margin-left: 0.5rem;
+            word-break: break-all;
         }
 
         .crawl-options {
@@ -868,12 +1021,118 @@
     </style>
 </head>
 <body>
-    <%- include('../partials/header') %>      <main>
-        <!-- BambiSleep Content Discovery Agent -->
-        <div class="discovery-agent">
-            <div class="agent-header">
+    <%- include('../partials/header') %>      <main>        <!-- BambiSleep Content Discovery Agent -->
+        <div class="discovery-agent">            <div class="agent-header">
                 <h1 class="agent-title">🌙 BambiSleep Discovery Agent</h1>
                 <p class="agent-subtitle">Intelligent content detection for scripts, audios, videos, and images</p>
+            </div>
+
+            <!-- Progression Bar Section -->
+            <div id="progressionSection" class="discovery-card" style="display: none;">
+                <h3>📊 Crawl Progress</h3>
+                
+                <!-- Time and URL Counters -->
+                <div class="progression-header">
+                    <div class="time-display">
+                        <span class="time-label">Time Elapsed:</span>
+                        <span id="timeProgress" class="time-value">[00%00%0000]</span>
+                    </div>
+                    <div class="url-counters">
+                        <div class="counter-item">
+                            <span class="counter-number" id="urlsAdded">0</span>
+                            <span class="counter-label">Added</span>
+                        </div>
+                        <div class="counter-item">
+                            <span class="counter-number" id="urlsRemaining">0</span>
+                            <span class="counter-label">Remaining</span>
+                        </div>
+                        <div class="counter-item">
+                            <span class="counter-number" id="urlsFinished">0</span>
+                            <span class="counter-label">Finished</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="progress-bar">
+                    <div id="progressFillBar" class="progress-fill"></div>
+                    <div class="progress-text-overlay">
+                        <span id="progressPercentage">0%</span>
+                    </div>
+                </div>
+
+                <!-- Domain Breakdown -->
+                <div class="domain-breakdown">
+                    <h4>🌐 Domain Analysis</h4>
+                    <div id="domainList" class="domain-list">
+                        <!-- Domain entries will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Current Processing Status -->
+                <div class="current-processing">
+                    <div class="processing-item">
+                        <span class="processing-label">Current Domain:</span>
+                        <span id="currentDomain" class="processing-value">-</span>
+                    </div>
+                    <div class="processing-item">
+                        <span class="processing-label">Current Path:</span>
+                        <span id="currentPath" class="processing-value">-</span>
+                    </div>
+                    <div class="processing-item">
+                        <span class="processing-label">Current File:</span>
+                        <span id="currentFile" class="processing-value">-</span>
+                    </div>
+                    <div class="processing-item">
+                        <span class="processing-label">Query Args:</span>
+                        <span id="currentArgs" class="processing-value">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Unified Submit Form -->
+            <div class="discovery-card" id="unifiedSubmitSection" style="display: none;">
+                <h3>📝 Single Content Submission</h3>
+                <form id="unifiedSubmitForm">
+                    <div class="form-group">
+                        <label for="url">URL</label>
+                        <input type="url" id="url" name="url" class="form-input" placeholder="https://example.com/content" required>
+                        <div id="urlValidation" style="display: none;"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="title">Title</label>
+                        <input type="text" id="title" name="title" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description" name="description" class="form-input" rows="3"></textarea>
+                    </div>
+                    <div id="metadataPreview" style="display: none;">
+                        <div id="metadataGrid"></div>
+                        <div id="qualityScore"></div>
+                    </div>
+                    <button type="submit" id="submitButton" class="submit-button">Submit Content</button>
+                </form>
+                <div id="messageContainer"></div>
+            </div>
+
+            <!-- Crawl Fetch Form -->
+            <div class="discovery-card" id="crawlFetchSection" style="display: none;">
+                <h3>🕷️ Bulk Content Crawler</h3>
+                <form id="crawlFetchForm">
+                    <div class="form-group">
+                        <label for="crawlUrls">URLs to Crawl</label>
+                        <textarea id="crawlUrls" name="crawlUrls" class="form-input" rows="5" placeholder="Enter URLs to crawl..."></textarea>
+                    </div>
+                    <button type="submit" id="crawlSubmitButton" class="submit-button">Start Crawling</button>
+                </form>
+                <div id="crawlProgress" style="display: none;">
+                    <div id="progressFill"></div>
+                    <div id="progressText"></div>
+                    <div id="progressPercent"></div>
+                </div>
+                <div id="crawlLog"></div>
+                <div id="feedResults"></div>
             </div>
             
             <div class="discovery-card">
@@ -1012,8 +1271,9 @@
             </div>
         </div>
     </main>
-    <%- include('../partials/footer') %>
-    <script src="/js/bambisleep-discovery-agent.js"></script>
+    <%- include('../partials/footer') %>    <script src="/js/bambisleep-discovery-agent.js"></script>
+    <script src="/js/bambisleep-feed-agent.js"></script>
+    <script src="/js/bambisleep-stats-agent.js"></script>
     <script src="/js/submit.js"></script>
 </body>
 </html>

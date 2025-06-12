@@ -2,17 +2,275 @@
 // Simplified interface for the specialized bambisleep discovery agent
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize BambiSleep Discovery Agent
+    // Sequential agent initialization: Discovery → Feed → Stats
+    console.log('🚀 Starting BambiSleep Agent Sequence...');
+    
+    // Step 1: Initialize Discovery Agent
     if (typeof BambiSleepDiscoveryAgent !== 'undefined') {
         window.bambiSleepAgent = new BambiSleepDiscoveryAgent();
-        window.bambiSleepAgent.initialize();
+        window.bambiSleepAgent.initialize().then(() => {
+            console.log('✅ Step 1: BambiSleep Discovery Agent ready');
+            
+            // Step 2: Initialize Feed Agent
+            initializeFeedAgent();
+        }).catch(err => {
+            console.error('❌ Discovery Agent failed:', err);
+        });
     } else {
         console.error('BambiSleep Discovery Agent not loaded');
+        // Try to continue with other agents
+        initializeFeedAgent();
     }
     
-    // Legacy compatibility for any existing functionality
+    function initializeFeedAgent() {
+        if (typeof BambiSleepFeedAgent !== 'undefined') {
+            window.bambiSleepFeedAgent = new BambiSleepFeedAgent();
+            window.bambiSleepFeedAgent.initialize().then(() => {
+                console.log('✅ Step 2: BambiSleep Feed Agent ready');
+                
+                // Step 3: Initialize Stats Agent
+                initializeStatsAgent();
+            }).catch(err => {
+                console.error('❌ Feed Agent failed:', err);
+                initializeStatsAgent();
+            });
+        } else {
+            console.log('BambiSleep Feed Agent not loaded, continuing...');
+            initializeStatsAgent();
+        }
+    }
+    
+    function initializeStatsAgent() {
+        if (typeof BambiSleepStatsAgent !== 'undefined') {
+            window.bambiSleepStatsAgent = new BambiSleepStatsAgent();
+            window.bambiSleepStatsAgent.initialize().then(() => {
+                console.log('✅ Step 3: BambiSleep Stats Agent ready');
+                console.log('🎉 All BambiSleep Agents initialized successfully!');
+            }).catch(err => {
+                console.error('❌ Stats Agent failed:', err);
+            });
+        } else {
+            console.log('BambiSleep Stats Agent not loaded');
+        }
+    }
+      // Legacy compatibility
     setupLegacyFormHandlers();
+    
+    // Initialize progression bar functionality
+    initializeProgressionBar();
 });
+
+// Progression Bar Management
+let progressionState = {
+    startTime: null,
+    urlsAdded: 0,
+    urlsRemaining: 0,
+    urlsFinished: 0,
+    currentDomain: '',
+    currentPath: '',
+    currentFile: '',
+    currentArgs: '',
+    domains: new Map(),
+    progressInterval: null
+};
+
+function initializeProgressionBar() {
+    console.log('🎯 Initializing progression bar...');
+    
+    // Set up progression bar event listeners
+    window.showProgressionBar = showProgressionBar;
+    window.hideProgressionBar = hideProgressionBar;
+    window.updateProgression = updateProgression;
+    window.addDomainEntry = addDomainEntry;
+    window.updateCurrentProcessing = updateCurrentProcessing;
+}
+
+function showProgressionBar() {
+    const section = document.getElementById('progressionSection');
+    if (section) {
+        section.style.display = 'block';
+        progressionState.startTime = Date.now();
+        startProgressionTimer();
+    }
+}
+
+function hideProgressionBar() {
+    const section = document.getElementById('progressionSection');
+    if (section) {
+        section.style.display = 'none';
+        stopProgressionTimer();
+    }
+}
+
+function startProgressionTimer() {
+    if (progressionState.progressInterval) {
+        clearInterval(progressionState.progressInterval);
+    }
+    
+    progressionState.progressInterval = setInterval(() => {
+        updateTimeDisplay();
+    }, 100); // Update every 100ms for smooth display
+}
+
+function stopProgressionTimer() {
+    if (progressionState.progressInterval) {
+        clearInterval(progressionState.progressInterval);
+        progressionState.progressInterval = null;
+    }
+}
+
+function updateTimeDisplay() {
+    if (!progressionState.startTime) return;
+    
+    const elapsed = Date.now() - progressionState.startTime;
+    const hours = Math.floor(elapsed / 3600000);
+    const minutes = Math.floor((elapsed % 3600000) / 60000);
+    const seconds = Math.floor((elapsed % 60000) / 1000);
+    const milliseconds = elapsed % 1000;
+    
+    const timeString = `[${hours.toString().padStart(2, '0')}%${minutes.toString().padStart(2, '0')}%${seconds.toString().padStart(2, '0')}${milliseconds.toString().padStart(3, '0')}]`;
+    
+    const timeElement = document.getElementById('timeProgress');
+    if (timeElement) {
+        timeElement.textContent = timeString;
+    }
+}
+
+function updateProgression(added, remaining, finished) {
+    progressionState.urlsAdded = added;
+    progressionState.urlsRemaining = remaining;
+    progressionState.urlsFinished = finished;
+    
+    // Update counter displays
+    const addedEl = document.getElementById('urlsAdded');
+    const remainingEl = document.getElementById('urlsRemaining');
+    const finishedEl = document.getElementById('urlsFinished');
+    
+    if (addedEl) addedEl.textContent = added;
+    if (remainingEl) remainingEl.textContent = remaining;
+    if (finishedEl) finishedEl.textContent = finished;
+    
+    // Update progress bar
+    const total = added;
+    const percentage = total > 0 ? Math.round((finished / total) * 100) : 0;
+    
+    const progressFill = document.getElementById('progressFillBar');
+    const progressText = document.getElementById('progressPercentage');
+    
+    if (progressFill) {
+        progressFill.style.width = `${percentage}%`;
+    }
+    if (progressText) {
+        progressText.textContent = `${percentage}%`;
+    }
+}
+
+function addDomainEntry(url, status = 'cued') {
+    try {
+        const urlObj = new URL(url);
+        const domain = urlObj.hostname;
+        const pathname = urlObj.pathname;
+        const search = urlObj.search;
+        
+        // Extract file extension
+        const pathParts = pathname.split('/');
+        const fileName = pathParts[pathParts.length - 1];
+        const fileExt = fileName.includes('.') ? fileName.split('.').pop() : '';
+        
+        // Create folder route (without filename)
+        const folderRoute = pathParts.slice(0, -1).join('/') || '/';
+        
+        // Get emoji for status
+        const statusEmojis = {
+            'cued': '🕐',
+            'crawling': '🕷️', 
+            'done': '✅',
+            'error': '❌'
+        };
+        
+        const domainList = document.getElementById('domainList');
+        if (!domainList) return;
+        
+        // Create domain entry
+        const entryDiv = document.createElement('div');
+        entryDiv.className = 'domain-entry';
+        entryDiv.innerHTML = `
+            <span class="domain-status">${statusEmojis[status] || '🕐'}</span>
+            <div class="domain-info">
+                <span class="domain-name">${domain}</span>
+                <span class="domain-separator">|</span>
+                <span class="folder-route">${folderRoute}</span>
+                <span class="domain-separator">|</span>
+                <span class="file-ending">${fileName}</span>
+                <span class="domain-separator">|</span>
+                <span class="query-args">${search || '(no args)'}</span>
+            </div>
+        `;
+        
+        // Store reference for updates
+        entryDiv.dataset.url = url;
+        domainList.appendChild(entryDiv);
+        
+        // Store in domains map
+        progressionState.domains.set(url, {
+            domain,
+            folderRoute,
+            fileName,
+            fileExt,
+            search,
+            status,
+            element: entryDiv
+        });
+        
+    } catch (error) {
+        console.error('Error adding domain entry:', error);
+    }
+}
+
+function updateCurrentProcessing(url) {
+    try {
+        const urlObj = new URL(url);
+        const domain = urlObj.hostname;
+        const pathname = urlObj.pathname;
+        const search = urlObj.search;
+        
+        const pathParts = pathname.split('/');
+        const fileName = pathParts[pathParts.length - 1];
+        const folderRoute = pathParts.slice(0, -1).join('/') || '/';
+        
+        // Update current processing display
+        const currentDomainEl = document.getElementById('currentDomain');
+        const currentPathEl = document.getElementById('currentPath');
+        const currentFileEl = document.getElementById('currentFile');
+        const currentArgsEl = document.getElementById('currentArgs');
+        
+        if (currentDomainEl) currentDomainEl.textContent = domain;
+        if (currentPathEl) currentPathEl.textContent = folderRoute;
+        if (currentFileEl) currentFileEl.textContent = fileName || '(index)';
+        if (currentArgsEl) currentArgsEl.textContent = search || '(none)';
+        
+        // Update status of this URL in domain list
+        const domainData = progressionState.domains.get(url);
+        if (domainData && domainData.element) {
+            const statusEl = domainData.element.querySelector('.domain-status');
+            if (statusEl) {
+                statusEl.textContent = '🕷️'; // Crawling
+            }
+        }
+        
+    } catch (error) {
+        console.error('Error updating current processing:', error);
+    }
+}
+
+// Export functions for global access
+window.progressionManager = {
+    show: showProgressionBar,
+    hide: hideProgressionBar,
+    update: updateProgression,
+    addDomain: addDomainEntry,
+    updateCurrent: updateCurrentProcessing
+};
 
 function setupLegacyFormHandlers() {
     // Maintain compatibility with existing form elements
@@ -30,6 +288,11 @@ function setupLegacyFormHandlers() {
 // Legacy form functionality - wrapped in DOMContentLoaded to prevent syntax errors
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('unifiedSubmitForm');
+    if (!form) {
+        console.log('Unified submit form not found, skipping initialization');
+        return;
+    }
+    
     const urlInput = document.getElementById('url');
     const titleInput = document.getElementById('title');
     const descriptionInput = document.getElementById('description');
@@ -390,6 +653,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // ===============================
 document.addEventListener('DOMContentLoaded', () => {
     const crawlForm = document.getElementById('crawlFetchForm');
+    if (!crawlForm) {
+        console.log('Crawl fetch form not found, skipping crawler initialization');
+        return;
+    }
+    
     const crawlUrlsInput = document.getElementById('crawlUrls');
     const crawlSubmitButton = document.getElementById('crawlSubmitButton');
     const crawlProgress = document.getElementById('crawlProgress');
