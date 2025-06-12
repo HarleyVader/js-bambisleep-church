@@ -183,9 +183,7 @@ class BambisleepMcpServer {
                 },
                 required: ['url']
             }
-        }, this.handleCrawlAndAnalyze.bind(this));
-
-        // Generate insights
+        }, this.handleCrawlAndAnalyze.bind(this));        // Generate insights
         this.registerTool('generate_insights', {
             description: 'Generate AI-powered insights about bambisleep community',
             parameters: {
@@ -198,6 +196,19 @@ class BambisleepMcpServer {
                 required: ['insightType']
             }
         }, this.handleGenerateInsights.bind(this));
+
+        // Generate documentation
+        this.registerTool('generate_documentation', {
+            description: 'Generate comprehensive markdown documentation for bambisleep knowledgebase',
+            parameters: {
+                type: 'object',
+                properties: {
+                    sections: { type: 'array', items: { type: 'string' }, description: 'Sections to include (overview, creators, links, community, api, faq)' },
+                    style: { type: 'string', enum: ['comprehensive', 'summary', 'technical'], default: 'comprehensive' },
+                    updateExisting: { type: 'boolean', default: true, description: 'Update existing documentation file' }
+                }
+            }
+        }, this.handleGenerateDocumentation.bind(this));
 
         console.log('📋 All MCP tools registered');
     }
@@ -409,9 +420,7 @@ Provide recommendations for data extraction and categorization.`;
         } catch (error) {
             return { success: false, error: error.message };
         }
-    }
-
-    /**
+    }    /**
      * Handle insights generation
      */
     async handleGenerateInsights(params) {
@@ -448,6 +457,80 @@ Please provide detailed insights based on the available data.`;
                 dataAnalyzed: totalItems,
                 insights: aiResponse,
                 generatedAt: new Date().toISOString()
+            };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+
+    /**
+     * Handle documentation generation
+     */
+    async handleGenerateDocumentation(params) {
+        const { sections = ['overview', 'creators', 'links', 'community', 'api', 'faq'], style = 'comprehensive', updateExisting = true } = params;
+
+        try {
+            // Gather all data for documentation
+            const allData = {};
+            for (const [type, data] of this.knowledgeBase.entries()) {
+                allData[type] = data;
+            }
+
+            const stats = {
+                totalCreators: allData.creators?.length || 0,
+                totalLinks: allData.links?.length || 0,
+                totalComments: allData.comments?.length || 0,
+                totalVotes: allData.votes?.length || 0,
+                topCreators: (allData.creators || []).slice(0, 10),
+                topLinks: (allData.links || []).sort((a, b) => (b.votes || 0) - (a.votes || 0)).slice(0, 10)
+            };
+
+            const aiPrompt = `Generate comprehensive markdown documentation for the Bambisleep community knowledgebase.
+
+Style: ${style}
+Sections to include: ${sections.join(', ')}
+
+Available data:
+- Creators: ${stats.totalCreators} profiles
+- Links: ${stats.totalLinks} submitted links  
+- Comments: ${stats.totalComments} community comments
+- Votes: ${stats.totalVotes} total votes cast
+
+Please create well-structured markdown documentation that includes:
+1. A professional overview of the bambisleep community
+2. Statistics and metrics
+3. Documentation of available data and APIs
+4. Community guidelines and information
+5. FAQ section addressing common questions
+6. Technical details about the platform
+
+Make it comprehensive, professional, and useful for both community members and developers. Use proper markdown formatting with headers, lists, code blocks, and emphasis where appropriate.
+
+Focus on creating documentation that would help newcomers understand the bambisleep community and developers understand how to interact with the platform.`;
+
+            const aiResponse = await this.callLMStudio([
+                { role: 'system', content: 'You are a technical documentation expert specializing in community platforms. Create comprehensive, well-structured markdown documentation.' },
+                { role: 'user', content: aiPrompt }
+            ]);
+
+            // Generate the markdown documentation
+            const documentation = aiResponse;
+
+            // Save to file if requested
+            if (updateExisting) {
+                const docPath = path.join(process.cwd(), 'src/mcp/bambisleep-info.md');
+                await fs.writeFile(docPath, documentation);
+                console.log('📝 Documentation updated at bambisleep-info.md');
+            }
+
+            return {
+                success: true,
+                sections,
+                style,
+                documentation,
+                stats,
+                generatedAt: new Date().toISOString(),
+                savedToFile: updateExisting
             };
         } catch (error) {
             return { success: false, error: error.message };

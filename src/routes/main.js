@@ -66,9 +66,7 @@ function setRoutes(app) {
     // 4. STATS ROUTE
     router.get('/stats', (req, res) => {
         res.render('pages/stats');
-    });
-
-    // 5. HELP ROUTE
+    });    // 5. HELP ROUTE
     router.get('/help', async (req, res) => {
         try {
             const fs = require('fs');
@@ -134,6 +132,144 @@ Help the community by voting on content quality:
                 title: 'Help', 
                 isMarkdown: false 
             });        }
+    });
+
+    // 5.5. DOCUMENTATION ROUTE (Bambisleep Knowledge Base)
+    router.get('/docs', async (req, res) => {
+        try {
+            const fs = require('fs');
+            const path = require('path');
+            const { marked } = require('marked');
+            
+            const docPath = path.join(__dirname, '../mcp/bambisleep-info.md');
+            
+            let markdownContent = '';
+            let title = 'Bambisleep Knowledge Base';
+            
+            if (fs.existsSync(docPath)) {
+                markdownContent = fs.readFileSync(docPath, 'utf8');
+                
+                // If file is empty, generate documentation using MCP
+                if (!markdownContent.trim()) {
+                    try {
+                        const BambisleepMcpServer = require('../mcp/McpServer');
+                        const mcpServer = new BambisleepMcpServer();
+                        await mcpServer.initialize();
+                        
+                        const docResult = await mcpServer.callTool('generate_documentation', {
+                            sections: ['overview', 'creators', 'links', 'community', 'api', 'faq'],
+                            style: 'comprehensive',
+                            updateExisting: true
+                        });
+                        
+                        if (docResult.success) {
+                            markdownContent = docResult.documentation;
+                        }
+                    } catch (mcpError) {
+                        console.error('MCP documentation generation failed:', mcpError);
+                    }
+                }
+            }
+            
+            // Fallback documentation if no file exists or MCP fails
+            if (!markdownContent.trim()) {
+                markdownContent = `# Bambisleep Knowledge Base
+
+## 🎯 Welcome to the Bambisleep Community
+
+This is the comprehensive knowledge base for the Bambisleep community platform - a real-time, community-voted link sharing platform dedicated to bambisleep content and creators.
+
+## 📊 Platform Overview
+
+The Bambisleep community platform serves as a central hub for:
+- **Creator Discovery** - Find and explore bambisleep content creators
+- **Content Curation** - Community-voted link sharing and organization  
+- **Interactive Engagement** - Voting, comments, and community interaction
+- **Real-time Updates** - Live feed of new submissions and updates
+
+## 🔧 Technical Documentation
+
+### API Endpoints
+- \`GET /\` - Homepage with featured content
+- \`GET /feed\` - Real-time community feed
+- \`GET /submit\` - Content submission interface
+- \`GET /stats\` - Community statistics and metrics
+- \`GET /docs\` - This documentation page
+
+### Data Structure
+The platform manages several data types:
+- **Links** - Submitted content with metadata and voting
+- **Creators** - Profile information for bambisleep creators
+- **Comments** - Community discussions and feedback
+- **Votes** - Community curation through voting system
+
+## 🤝 Community Guidelines
+
+### Content Submission
+1. Ensure all submissions are relevant to bambisleep
+2. Provide accurate titles and descriptions
+3. Choose appropriate categories
+4. Include proper attribution to creators
+
+### Voting Guidelines
+- Vote based on content quality and relevance
+- Help surface valuable community content
+- Consider helpfulness to other community members
+
+## ❓ Frequently Asked Questions
+
+**Q: How do I submit new content?**
+A: Use the Submit page to add new links or creator profiles with proper categorization.
+
+**Q: How does the voting system work?**
+A: Community members vote on content quality to help curate and surface the best submissions.
+
+**Q: Can I suggest new features?**
+A: Yes! Community feedback is welcome for platform improvements.
+
+---
+
+*Documentation generated automatically by Bambisleep MCP Server*
+`;
+            }
+            
+            // Configure marked with custom renderer for better styling
+            const renderer = new marked.Renderer();
+            
+            // Custom heading renderer for better styling
+            renderer.heading = function(text, level) {
+                const id = text.toLowerCase().replace(/[^\w]+/g, '-');
+                return `<h${level} id="${id}" class="doc-heading doc-h${level}">${text}</h${level}>`;
+            };
+            
+            // Custom code block renderer
+            renderer.code = function(code, lang) {
+                return `<pre class="doc-code"><code class="language-${lang || ''}">${code}</code></pre>`;
+            };
+            
+            // Custom blockquote renderer
+            renderer.blockquote = function(quote) {
+                return `<blockquote class="doc-quote">${quote}</blockquote>`;
+            };
+            
+            marked.setOptions({ renderer });
+            
+            const htmlContent = marked(markdownContent);
+            res.render('pages/help', { 
+                htmlContent, 
+                title,
+                isMarkdown: true,
+                isDocs: true
+            });
+        } catch (error) {
+            console.error('Error rendering documentation page:', error);
+            res.render('pages/help', { 
+                htmlContent: '<p>Error loading documentation content</p>', 
+                title: 'Documentation Error', 
+                isMarkdown: false,
+                isDocs: true
+            });
+        }
     });
 
     // 6. CRAWL STATUS ROUTE  

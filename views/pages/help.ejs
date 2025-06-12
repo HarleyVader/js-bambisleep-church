@@ -1,10 +1,9 @@
 <%- include('../partials/header') %>
 
 <main>
-    <div class="container">
-        <section class="help-section">
+    <div class="container">        <section class="help-section">
             <% if (typeof isMarkdown !== 'undefined' && isMarkdown) { %>
-                <div class="markdown-content">
+                <div class="<%= typeof isDocs !== 'undefined' && isDocs ? 'documentation-container' : 'markdown-content' %>">
                     <%- htmlContent %>
                 </div>
             <% } else { %>
