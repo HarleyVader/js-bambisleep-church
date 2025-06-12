@@ -645,7 +645,7 @@
         }function showPlatformCategoriesError(message) {
             const container = document.getElementById('platformCategoriesContainer');
             container.innerHTML = `<div style="grid-column: 1 / -1; color: var(--color-primary-yellow); font-size: 0.7rem; text-align: center; padding: 1rem;">${message}</div>`;
-        }        // Voting functionality
+        }        // Voting functionality with real-time Socket.IO support
         function castVote(event, type, id, voteType) {
             event.preventDefault();
             event.stopPropagation();
@@ -653,7 +653,8 @@
             const emoji = event.target;
             const itemContainer = emoji.closest('.creator-info');
             const upvoteEmoji = itemContainer.querySelector('.upvote');
-            const downvoteEmoji = itemContainer.querySelector('.downvote');            const voteStats = itemContainer.querySelector('.vote-stats');
+            const downvoteEmoji = itemContainer.querySelector('.downvote');            
+            const voteStats = itemContainer.querySelector('.vote-stats');
             const voteCountSpan = voteStats.querySelector('.vote-stats-left span');
             
             const upvoteCookieKey = `voted_${type}_${id}_up`;
@@ -712,18 +713,50 @@
                     downvoteEmoji.classList.add('active');
                 }
             }
-              // Update vote count immediately for better UX
+              
+            // Update vote count immediately for better UX
             const currentVotes = parseInt(voteCountSpan.textContent.replace('⭐ ', '')) || 0;
-            voteCountSpan.textContent = `⭐ ${currentVotes + newVoteValue}`;
+            const newVoteCount = currentVotes + newVoteValue;
+            voteCountSpan.textContent = `⭐ ${newVoteCount}`;
             
-            // Store vote locally instead of server API
-            const voteKey = `votes_${type}_${id}`;
-            const currentStoredVotes = parseInt(localStorage.getItem(voteKey)) || 0;
-            localStorage.setItem(voteKey, currentStoredVotes + newVoteValue);
+            // Send vote to server for real-time broadcasting (if available)
+            if (window.realtimeSocket && window.realtimeSocket.connected) {
+                console.log('📡 Sending vote to server for real-time broadcast');
+                
+                // Emit vote data to server
+                fetch('/api/votes', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        linkId: id,
+                        itemId: id,
+                        itemType: type,
+                        type: voteType === 'up' ? 'upvote' : 'downvote',
+                        voter: bambiName,
+                        action: action
+                    })
+                }).then(response => response.json())
+                  .then(data => {
+                      if (data.success) {
+                          console.log('✅ Vote submitted successfully');
+                      }
+                  })
+                  .catch(error => {
+                      console.error('❌ Error submitting vote:', error);
+                  });
+            } else {
+                // Fallback to local storage
+                console.log('🔄 Socket not connected, using local storage');
+                const voteKey = `votes_${type}_${id}`;
+                const currentStoredVotes = parseInt(localStorage.getItem(voteKey)) || 0;
+                localStorage.setItem(voteKey, currentStoredVotes + newVoteValue);
+            }
             
-            console.log('Vote cast locally:', action);
+            console.log('Vote cast:', action);
             
-            // Reload platform categories to reflect changes (using local data)
+            // Reload platform categories to reflect changes
             setTimeout(() => {
                 loadPlatformCategories();
             }, 500);
@@ -852,12 +885,92 @@
         document.addEventListener('DOMContentLoaded', initializeClickTracking);
         
         // Re-initialize click tracking after platform categories are loaded
-        const originalRenderPlatformCategories = renderPlatformCategories;
-        renderPlatformCategories = function(platforms) {
+        const originalRenderPlatformCategories = renderPlatformCategories;        renderPlatformCategories = function(platforms) {
             originalRenderPlatformCategories(platforms);
             // Re-add event listeners after DOM update
             setTimeout(initializeClickTracking, 100);
         };
+        
+        // Real-time update handlers for Socket.IO
+        window.handleContentUpdate = function(data) {
+            console.log('🔄 Handling real-time content update:', data);
+            
+            if (data.type === 'newLink') {
+                // Add new content to the display
+                loadPlatformCategories(); // Refresh the categories
+                
+                // Show notification
+                showNotification(`New ${data.data.type} added: ${data.data.title}`, 'success');
+            }
+        };
+        
+        window.handleVoteUpdate = function(data) {
+            console.log('🗳️ Handling real-time vote update:', data);
+            
+            // Update vote count in UI
+            const voteElement = document.querySelector(`[data-id="${data.itemId}"]`)?.closest('.creator-info')?.querySelector('.vote-stats-left span');
+            if (voteElement) {
+                voteElement.textContent = `⭐ ${data.newVoteCount}`;
+            }
+            
+            // Refresh platform categories to show updated vote counts
+            setTimeout(() => {
+                loadPlatformCategories();
+            }, 100);
+        };
+        
+        window.handleTemplateUpdate = function(data) {
+            console.log('📄 Handling template update:', data);
+            
+            if (data.template === 'index') {
+                if (data.action === 'addContent') {
+                    // Refresh the entire display
+                    loadPlatformCategories();
+                } else if (data.action === 'updateVotes') {
+                    // Just update the specific vote count
+                    const voteElement = document.querySelector(`[data-id="${data.data.itemId}"]`)?.closest('.creator-info')?.querySelector('.vote-stats-left span');
+                    if (voteElement) {
+                        voteElement.textContent = `⭐ ${data.data.newVoteCount}`;
+                    }
+                }
+            }
+        };
+        
+        // Notification system for real-time updates
+        function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: var(--color-primary-cyan);
+                color: var(--color-bg-primary);
+                padding: 1rem;
+                border-radius: 8px;
+                z-index: 10000;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                transform: translateX(400px);
+                transition: transform 0.3s ease;
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Animate in
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            // Remove after 5 seconds
+            setTimeout(() => {
+                notification.style.transform = 'translateX(400px)';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 5000);
+        }
     </script>
 </body>
 </html>

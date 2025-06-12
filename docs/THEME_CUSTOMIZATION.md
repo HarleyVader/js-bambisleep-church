@@ -72,6 +72,7 @@ The theme automatically adjusts:
 ## 🎨 Example Color Themes
 
 ### 🌊 Ocean Theme
+
 ```css
 --color-primary-cyan: #00ccff;
 --color-primary-magenta: #0066cc;
@@ -80,6 +81,7 @@ The theme automatically adjusts:
 ```
 
 ### 🔥 Fire Theme
+
 ```css
 --color-primary-cyan: #ff6600;
 --color-primary-magenta: #ff0066;
@@ -88,6 +90,7 @@ The theme automatically adjusts:
 ```
 
 ### 💜 Purple Theme
+
 ```css
 --color-primary-cyan: #9966ff;
 --color-primary-magenta: #cc00ff;

@@ -37,7 +37,7 @@ class CommentController {
                     const filePath = path.join(this.dataPath, `${type}.json`);
                     fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
                 } catch (error) {
-                    console.error(`Error writing ${type}:`, error);
+                    
                 }
             }
         };

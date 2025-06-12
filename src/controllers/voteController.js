@@ -37,7 +37,7 @@ class VoteController {
                     const filePath = path.join(this.dataPath, `${type}.json`);
                     fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
                 } catch (error) {
-                    console.error(`Error writing ${type}:`, error);
+                    
                 }
             }
         };
@@ -45,11 +45,48 @@ class VoteController {
         try {
             const voteData = req.body;
             const newVote = this.db.add('votes', voteData);
+            
+            // Broadcast vote update via Socket.IO for real-time rendering
+            if (global.socketIO) {
+                console.log('📡 Broadcasting vote update for real-time EJS rendering');
+                global.socketIO.emit('voteUpdate', {
+                    itemId: voteData.linkId || voteData.itemId,
+                    itemType: voteData.itemType || 'link',
+                    voteType: voteData.type,
+                    voter: voteData.voter,
+                    newVoteCount: this.getVoteCount(voteData.linkId || voteData.itemId),
+                    timestamp: new Date().toISOString()
+                });
+                
+                // Also broadcast template update
+                global.socketIO.emit('templateDataUpdate', {
+                    template: 'index',
+                    action: 'updateVotes',
+                    data: {
+                        itemId: voteData.linkId || voteData.itemId,
+                        newVoteCount: this.getVoteCount(voteData.linkId || voteData.itemId)
+                    }
+                });
+            }
+            
             res.json({ success: true, data: newVote });
         } catch (error) {
             res.status(500).json({ success: false, error: error.message });
         }
-    }    getVotes(req, res) {
+    }
+    
+    // Helper method to get total vote count for an item
+    getVoteCount(itemId) {
+        try {
+            const votes = this.db.read('votes');
+            const itemVotes = votes.filter(vote => (vote.linkId || vote.itemId) === itemId);
+            const upvotes = itemVotes.filter(vote => vote.type === 'upvote').length;
+            const downvotes = itemVotes.filter(vote => vote.type === 'downvote').length;
+            return upvotes - downvotes;
+        } catch (error) {
+            return 0;
+        }
+    }getVotes(req, res) {
         try {
             const { linkId } = req.params;
             const votes = this.db.read('votes');

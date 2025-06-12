@@ -37,6 +37,7 @@ The application will be available at `http://localhost:8888`
 #### 1. IMAGINE (Planning & Solutions) - **DO 3 TIMES**
 
 **First IMAGINE Round:**
+
 - Fetch `.tasks/<build_name.task>.md` tasks [IF] <doesnt_exist> ignore
 - What's the absolute minimum I need to write?
 - What's the minimal viable code approach?
@@ -44,6 +45,7 @@ The application will be available at `http://localhost:8888`
 - Can I solve this with existing code or tools?
 
 **Second IMAGINE Round:**
+
 - Fetch required `.github/codebase-inventory.md` files
 - What code structure will I use with the least words?
 - What files do I need to touch to keep coding to a minimum?
@@ -52,13 +54,16 @@ The application will be available at `http://localhost:8888`
 - Create a `.tasks/<build_name.task>.md` file with the task description and requirements, add [0%]
 
 **Third IMAGINE Round:**
+
 ### RULE: Think More, Code Less
+
 - Always try to do the LEAST possible amount of work, even if it means thinking longer
 - Final sanity check: Is this the laziest yet correct possible solution?
 - Can I reuse something that already exists?
 - Update `.tasks/<build_name.task>.md` with [%COMPLETION%] percentages for each item
 
 #### 2. CREATION (Single Implementation) - **LOOP UNTIL 100% BUILT ACHIEVED**
+
 - Implement ONLY the solution from the 3x IMAGINE phase
 - Write the absolute minimum code required
 - One function, one purpose, done
@@ -67,6 +72,7 @@ The application will be available at `http://localhost:8888`
 - If not 100% complete, go back to **Third IMAGINE Round:**
 
 #### 3. COMPACT (Consolidation & Cleanup) - **DO 3 TIMES**
+
 - Review the code for unnecessary complexity
 - Remove tests, demos, temp, new, old & junk files
 - Remove dead code, comments, and console logs
@@ -176,6 +182,7 @@ views/
 ## 🌟 Key Features
 
 ### Content Management
+
 - **Universal Content Detection**: Supports YouTube, SoundCloud, Patreon, Reddit, and 15+ platforms
 - **Real-time Feed**: Live updates via Socket.IO
 - **Community Voting**: Upvote/downvote system with bambi name tracking
@@ -183,6 +190,7 @@ views/
 - **Smart Categorization**: Automatic content type detection and classification
 
 ### AI Agent Capabilities
+
 - **Discovery Agent**: Autonomous content discovery across platforms
 - **Feed Management**: Automated content validation and moderation
 - **Knowledge Base**: Learning system for content relationships and trends
@@ -190,6 +198,7 @@ views/
 - **Stats Management**: Real-time analytics and performance monitoring
 
 ### Technical Features
+
 - **MCP Compliance**: Full Model Context Protocol support
 - **Agent-to-Agent Communication**: Real-time inter-agent messaging
 - **Error Tracking**: Comprehensive error monitoring and logging
@@ -208,6 +217,7 @@ views/
 6. **Function over Form**: Prioritize working code over perfect code
 
 ### Core Rules
+
 - **Function over form**
 - **Working code over perfect code**
 - **Less is more**
@@ -244,6 +254,7 @@ getAgentStatus() {
 ## 📊 API Endpoints
 
 ### Core Routes
+
 - `GET /` - Homepage with featured content
 - `GET /feed` - Real-time community feed  
 - `GET /submit` - Content submission interface
@@ -252,6 +263,7 @@ getAgentStatus() {
 - `GET /help` - Documentation and help
 
 ### API Routes
+
 - `GET /api/feed` - Feed data API
 - `POST /api/submit` - Content submission API
 - `GET /api/platforms` - Platform content organization
@@ -261,12 +273,14 @@ getAgentStatus() {
 - `POST /api/comments` - Comment system API
 
 ### MCP Routes
+
 - `GET /api/mcp/status` - MCP server status
 - `POST /api/a2a/register` - Agent registration
 - `POST /api/a2a/message` - Inter-agent messaging
 - `GET /api/a2a/status` - A2A system status
 
 ### Agent Routes
+
 - `POST /api/ai-girlfriend/discover` - Content discovery
 - `POST /api/ai-girlfriend/crawl` - Intelligent crawling
 - `GET /api/crawl-status/active` - Active crawl monitoring

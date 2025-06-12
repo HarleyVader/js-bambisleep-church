@@ -12,4 +12,105 @@
         </div>
     </div>
 </footer>
+
+<!-- Socket.IO for real-time EJS template updates -->
 <script src="/socket.io/socket.io.js"></script>
+<script>
+// Initialize Socket.IO for real-time template rendering
+(function() {
+    console.log('🔌 Initializing Socket.IO for real-time updates...');
+    
+    const socket = io();
+    
+    // Connection handlers
+    socket.on('connect', () => {
+        console.log('✅ Connected to real-time server');
+        document.body.classList.add('socket-connected');
+    });
+    
+    socket.on('disconnect', () => {
+        console.log('❌ Disconnected from real-time server');
+        document.body.classList.remove('socket-connected');
+    });
+    
+    socket.on('connected', (data) => {
+        console.log('📡 Real-time connection confirmed:', data.message);
+    });
+    
+    // Real-time content updates
+    socket.on('contentUpdate', (data) => {
+        console.log('📥 Received content update:', data);
+        
+        // Trigger page-specific update handlers
+        if (window.handleContentUpdate) {
+            window.handleContentUpdate(data);
+        } else {
+            // Default behavior: reload current page section
+            if (location.pathname === '/' || location.pathname === '/feed') {
+                location.reload();
+            }
+        }
+    });
+    
+    // Real-time template data updates
+    socket.on('templateDataUpdate', (data) => {
+        console.log('📄 Received template data update:', data);
+        
+        if (window.handleTemplateUpdate) {
+            window.handleTemplateUpdate(data);
+        }
+    });
+    
+    // Real-time stats updates
+    socket.on('statsUpdate', (data) => {
+        console.log('📊 Received stats update:', data);
+        
+        // Update stats elements if they exist
+        const updateStatElement = (id, value) => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = value;
+            }
+        };
+        
+        if (data.totalLinks) updateStatElement('totalLinks', data.totalLinks);
+        if (data.totalCreators) updateStatElement('totalCreators', data.totalCreators);
+        if (data.totalVotes) updateStatElement('totalVotes', data.totalVotes);
+        if (data.totalViews) updateStatElement('totalViews', data.totalViews);
+    });
+    
+    // Real-time voting updates
+    socket.on('voteUpdate', (data) => {
+        console.log('🗳️ Received vote update:', data);
+        
+        // Update vote count in UI
+        const voteElement = document.querySelector(`#vote-count-${data.itemId}`);
+        if (voteElement) {
+            voteElement.textContent = `⭐ ${data.newVoteCount}`;
+        }
+        
+        if (window.handleVoteUpdate) {
+            window.handleVoteUpdate(data);
+        }
+    });
+    
+    // Real-time comment updates
+    socket.on('commentUpdate', (data) => {
+        console.log('💬 Received comment update:', data);
+        
+        if (window.handleCommentUpdate) {
+            window.handleCommentUpdate(data);
+        }
+    });
+    
+    // Make socket globally available for page-specific handlers
+    window.realtimeSocket = socket;
+    
+    // Helper function to emit updates
+    window.emitUpdate = function(event, data) {
+        socket.emit(event, data);
+    };
+    
+    console.log('🚀 Real-time Socket.IO client initialized');
+})();
+</script>

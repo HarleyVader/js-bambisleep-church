@@ -38,7 +38,7 @@
 - Write the absolute minimum code required
 - One function, one purpose, done
 - Check percentage of completion every itertation
-- Update **.github/codebase-inventory.md** with any new or modified files with [%COMPLETION%] percentages for each
+- Update **.github/codebase-inventory.md** with full list of files with [%COMPLETION%] percentages.
 - If not 100% complete, go back to **Third IMAGINE Round:**
 
 **IMPORTANT: DO NOT FORGET TO THINK BEFORE DOING THIS**

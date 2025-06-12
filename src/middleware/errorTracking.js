@@ -22,7 +22,7 @@ const errorTracker = {
             this.errors = this.errors.slice(-100);
         }
         
-        console.error('Tracked error:', errorEntry);
+        
         return errorEntry.id;
     },
     

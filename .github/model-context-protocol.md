@@ -3,15 +3,19 @@
 ## Core Architecture
 
 ### Overview
+
 MCP follows a client-server architecture where:
+
 - **Hosts**: LLM applications (like Claude Desktop or IDEs) that initiate connections
 - **Clients**: Maintain 1:1 connections with servers, inside the host application  
 - **Servers**: Provide context, tools, and prompts to clients
 
 ### Message Format
+
 Uses **JSON-RPC 2.0** as wire format with three message types:
 
 #### Requests
+
 ```json
 {
   "jsonrpc": "2.0",
@@ -22,6 +26,7 @@ Uses **JSON-RPC 2.0** as wire format with three message types:
 ```
 
 #### Responses
+
 ```json
 {
   "jsonrpc": "2.0",
@@ -36,6 +41,7 @@ Uses **JSON-RPC 2.0** as wire format with three message types:
 ```
 
 #### Notifications
+
 ```json
 {
   "jsonrpc": "2.0",
@@ -47,16 +53,20 @@ Uses **JSON-RPC 2.0** as wire format with three message types:
 ## Transports
 
 ### 1. Standard Input/Output (stdio)
+
 - **Use for**: Local integrations, command-line tools, shell scripts
 - **Benefits**: Simple process communication
 
 ### 2. Streamable HTTP  
+
 - **Use for**: Web integrations, stateful sessions, multiple clients
 - **Features**: HTTP POST for client-to-server, optional SSE for server-to-client
 - **Security**: Origin validation, localhost binding, HTTPS for production
 
 ### 3. Custom Transports
+
 Implement `Transport` interface:
+
 ```typescript
 interface Transport {
   start(): Promise<void>;
@@ -71,6 +81,7 @@ interface Transport {
 ## Tools
 
 ### Definition Structure
+
 ```json
 {
   "name": "string",
@@ -90,11 +101,13 @@ interface Transport {
 ```
 
 ### Tool Categories
+
 - **System operations**: Execute commands, file operations
 - **API integrations**: External service calls
 - **Data processing**: Transform, analyze data
 
 ### Best Practices
+
 1. Clear, descriptive names and descriptions
 2. Detailed JSON Schema for parameters
 3. Proper error handling within result object
@@ -104,6 +117,7 @@ interface Transport {
 ## Prompts
 
 ### Structure
+
 ```json
 {
   "name": "string",
@@ -119,6 +133,7 @@ interface Transport {
 ```
 
 ### Usage Patterns
+
 - **Discovery**: `prompts/list` endpoint
 - **Execution**: `prompts/get` with arguments
 - **Dynamic content**: Embed resources, multi-step workflows
@@ -126,18 +141,21 @@ interface Transport {
 ## Security Considerations
 
 ### Transport Security
+
 - Use TLS for remote connections
 - Validate connection origins  
 - Implement authentication
 - DNS rebinding protection
 
 ### Message Validation
+
 - Validate all incoming messages
 - Sanitize inputs
 - Check message size limits
 - Verify JSON-RPC format
 
 ### Access Control
+
 - Implement proper authentication
 - Use authorization checks
 - Audit tool usage
@@ -146,6 +164,7 @@ interface Transport {
 ## Error Handling
 
 ### Standard Error Codes
+
 ```typescript
 enum ErrorCode {
   ParseError = -32700,
@@ -157,6 +176,7 @@ enum ErrorCode {
 ```
 
 ### Best Practices
+
 - Don't leak sensitive information
 - Log security-relevant errors
 - Implement proper cleanup
@@ -165,16 +185,19 @@ enum ErrorCode {
 ## Connection Lifecycle
 
 ### 1. Initialization
+
 1. Client sends `initialize` request
 2. Server responds with capabilities
 3. Client sends `initialized` notification
 4. Normal message exchange begins
 
 ### 2. Message Exchange
+
 - Request-Response patterns
 - One-way notifications
 
 ### 3. Termination
+
 - Clean shutdown via `close()`
 - Transport disconnection
 - Error conditions
@@ -182,6 +205,7 @@ enum ErrorCode {
 ## Implementation Guidelines
 
 ### Server Setup
+
 ```typescript
 import { Server } from "@modelcontextprotocol/sdk/server";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio";
@@ -199,6 +223,7 @@ const server = new Server({
 ```
 
 ### Tool Implementation
+
 ```typescript
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   try {
@@ -505,12 +530,14 @@ for chunk in client.chat.completions.create(
 ### Model Context Protocol (MCP) Orchestration
 
 **Primary Model**: `llama-3.2-3b-claude-3.7-sonnet-reasoning-distilled@q4_0`
+
 - **Purpose**: Orchestrate MCP server tools with advanced reasoning
-- **Endpoint**: http://192.168.0.69:7777/v1/chat/completions
+- **Endpoint**: <http://192.168.0.69:7777/v1/chat/completions>
 - **Capabilities**: Tool selection, workflow orchestration, adaptive learning
 - **Framework**: LMStudio MCP Framework (src/mcp/lmstudioMcpFramework.js)
 
 #### MCP Integration Guidelines
+
 1. **Always use LMStudio for tool orchestration** - Let the AI reason about which tools to use
 2. **Leverage the framework's orchestration capabilities** - Don't manually chain tools
 3. **Use structured output** - Configure response_format for JSON when needed

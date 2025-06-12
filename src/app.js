@@ -22,21 +22,30 @@ app.use(requestContextMiddleware);
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '../views'));
 
-// Set up routes
-setRoutes(app);
-
-// Add error tracking middleware (must be after routes)
-app.use(errorTrackingMiddleware);
-
-// Socket.io setup for real-time updates
+// Socket.io setup for real-time updates (must be before routes)
 const server = require('http').createServer(app);
-const io = require('socket.io')(server);
+const io = require('socket.io')(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
+});
 const os = require('os');
 
 // Make socketIO globally available
 global.socketIO = io;
 
+// Pass io instance to app for route access
+app.set('io', io);
+
+// Set up socket handler
 socketHandler(io);
+
+// Set up routes (after Socket.IO setup)
+setRoutes(app);
+
+// Add error tracking middleware (must be after routes)
+app.use(errorTrackingMiddleware);
 
 // Start the server
 server.listen(PORT, async () => {

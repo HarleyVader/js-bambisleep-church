@@ -658,9 +658,22 @@ A: Yes! Community feedback is welcome for platform improvements.
                     const savedLink = linkController.db.add('links', newLink);
                     submittedItems.push(savedLink);
 
-                    // Broadcast new content via Socket.IO
-                    if (req.app.get('io')) {
-                        req.app.get('io').emit('newContent', savedLink);
+                    // Broadcast new content via Socket.IO for real-time updates
+                    const io = req.app.get('io');
+                    if (io) {
+                        console.log('📡 Broadcasting new content to all clients');
+                        io.emit('contentUpdate', {
+                            type: 'newLink',
+                            data: savedLink,
+                            message: `New ${item.type} added: ${item.title}`
+                        });
+                        
+                        // Also broadcast template update for homepage
+                        io.emit('templateDataUpdate', {
+                            template: 'index',
+                            action: 'addContent',
+                            data: savedLink
+                        });
                     }
 
                 } catch (error) {

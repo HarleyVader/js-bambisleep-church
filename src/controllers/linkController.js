@@ -18,7 +18,7 @@ class LinkController {
                     }
                     return [];
                 } catch (error) {
-                    console.error(`Error reading ${type}:`, error);
+                    
                     return [];
                 }
             },
@@ -30,7 +30,7 @@ class LinkController {
                     this.write(type, existing);
                     return newData;
                 } catch (error) {
-                    console.error(`Error adding to ${type}:`, error);
+                    
                     return null;
                 }
             },
@@ -39,7 +39,7 @@ class LinkController {
                     const filePath = path.join(this.dataPath, `${type}.json`);
                     fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
                 } catch (error) {
-                    console.error(`Error writing ${type}:`, error);
+                    
                 }
             }
         };

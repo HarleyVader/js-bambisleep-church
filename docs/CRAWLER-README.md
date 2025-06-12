@@ -9,16 +9,19 @@ The Bambisleep Agentic Crawler implements a 3-step intelligent loop to systemati
 From the project root directory, you can run the crawler using any of these methods:
 
 #### Method 1: NPM Script (Recommended)
+
 ```powershell
 npm run crawler
 ```
 
 #### Method 2: Direct Node Launcher
+
 ```powershell
 node run-crawler.js
 ```
 
 #### Method 3: Direct File (from mcp directory)
+
 ```powershell
 cd src\mcp
 node bambisleep-crawler-agent.js
@@ -35,12 +38,14 @@ npm start          # Start full application with MCP server
 ## How the Agentic Loop Works
 
 ### STEP 1: Analyze bambisleep.info
+
 - Crawls 11 main bambisleep.info pages
 - Extracts all content types (links, creators, files, metadata)
 - Saves results to knowledge base with 100% completion tracking
 - Updates data/links.json with extracted information
 
 ### STEP 2: Compare & Update Knowledge
+
 - Compares existing knowledge base with newly retrieved data
 - Uses AI analysis to categorize: new info (added), same info (kept), errors (corrected)
 - Tracks completion % for different content types:
@@ -48,6 +53,7 @@ npm start          # Start full application with MCP server
 - Updates knowledge base with comparison results
 
 ### STEP 3: Batch Crawl Remaining
+
 - Collects all URLs from knowledge base
 - Prioritizes by completion % (lower first) and content type importance
 - Searches for: bambiusername, social media, creator info, file metadata
@@ -73,6 +79,7 @@ npm start          # Start full application with MCP server
 ## Knowledge Base Structure
 
 The bambisleep-info.md file contains:
+
 - **Crawl Sessions** - Timestamped records of each agentic loop run
 - **URL Status Table** - Completion tracking for all discovered URLs
 - **Summary Statistics** - Total sessions, last updated, agent status
