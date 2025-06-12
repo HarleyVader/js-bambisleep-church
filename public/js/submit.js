@@ -1,20 +1,31 @@
-// Unified Submit Form JavaScript - Single form with automatic metadata validation
+// BambiSleep Content Discovery Agent Interface
+// Simplified interface for the specialized bambisleep discovery agent
+
 document.addEventListener('DOMContentLoaded', () => {
-    // Enhanced polyfill for crypto.randomUUID if not available
-    if (typeof crypto === 'undefined' || !crypto.randomUUID) {
-        // Create crypto object if it doesn't exist
-        if (typeof crypto === 'undefined') {
-            window.crypto = {};
-        }
-        
-        crypto.randomUUID = function() {
-            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-                const r = Math.random() * 16 | 0;
-                const v = c == 'x' ? r : (r & 0x3 | 0x8);
-                return v.toString(16);
-            });
-        };
+    // Initialize BambiSleep Discovery Agent
+    if (typeof BambiSleepDiscoveryAgent !== 'undefined') {
+        window.bambiSleepAgent = new BambiSleepDiscoveryAgent();
+        window.bambiSleepAgent.initialize();
+    } else {
+        console.error('BambiSleep Discovery Agent not loaded');
     }
+    
+    // Legacy compatibility for any existing functionality
+    setupLegacyFormHandlers();
+});
+
+function setupLegacyFormHandlers() {
+    // Maintain compatibility with existing form elements
+    const form = document.getElementById('bambisleepDiscoveryForm');
+    if (form) {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (window.bambiSleepAgent) {
+                await window.bambiSleepAgent.startDiscovery();
+            }
+        });
+    }
+}
 
     const form = document.getElementById('unifiedSubmitForm');
     const urlInput = document.getElementById('url');

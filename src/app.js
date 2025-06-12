@@ -3,6 +3,9 @@ const path = require('path');
 const setRoutes = require('./routes/main');
 const socketHandler = require('./utils/socketHandler');
 
+// Initialize global MCP instance
+const { getMcpInstance } = require('./mcp/mcpInstance');
+
 const app = express();
 const PORT = process.env.PORT || 8888;
 
@@ -29,7 +32,7 @@ global.socketIO = io;
 socketHandler(io);
 
 // Start the server
-server.listen(PORT, () => {
+server.listen(PORT, async () => {
     const networkInterfaces = os.networkInterfaces();
     let localIP = 'localhost';
     
@@ -47,4 +50,13 @@ server.listen(PORT, () => {
     
     console.log(`Server is running on http://localhost:${PORT}`);
     console.log(`Server is also available on http://${localIP}:${PORT}`);
+    
+    // Initialize MCP instance after server starts
+    try {
+        console.log('🚀 Initializing MCP server...');
+        await getMcpInstance();
+        console.log('✅ MCP server ready for A2A communication');
+    } catch (error) {
+        console.error('❌ MCP server initialization failed:', error.message);
+    }
 });

@@ -674,31 +674,109 @@
             text-transform: uppercase;
             font-weight: 600;
         }
+        
+        /* BambiSleep Feed Agent Status Panel */
+        .agent-status-panel {
+            background: rgba(var(--color-bg-primary-rgb), 0.8);
+            border: 2px solid var(--color-primary-magenta);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin: 1.5rem auto;
+            max-width: 800px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .agent-indicator {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            justify-content: center;
+        }
+        
+        .agent-indicator .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--color-primary-green);
+            animation: pulse 2s infinite;
+        }
+        
+        .status-text {
+            color: var(--color-primary-cyan);
+            font-weight: 600;
+        }
+        
+        .validation-stats {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            font-size: 0.875rem;
+            color: var(--color-text-secondary);
+        }
+        
+        .validation-stats span {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        @media (max-width: 768px) {
+            .validation-stats {
+                flex-direction: column;
+                gap: 0.5rem;
+                text-align: center;
+            }
+            
+            .agent-indicator {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
     </style>
 </head>
 <body>
     <%- include('../partials/header') %>
     
-    <main>
-        <div class="feed">
+    <main>        <div class="feed">
             <div class="feed-header">
-                <h1 class="neon-text scan-line">Enhanced Live Feed</h1>
-                <p class="feed-subtitle">Real-time content discovery with platform organization</p>
+                <h1 class="neon-text scan-line">🌙 BambiSleep Live Feed</h1>
+                <p class="feed-subtitle">AI-moderated BambiSleep content with intelligent validation</p>
+                
+                <!-- BambiSleep Feed Agent Status -->
+                <div class="agent-status-panel">
+                    <div class="agent-indicator">
+                        <span class="status-dot active" id="feedAgentStatus"></span>
+                        <span>BambiSleep Feed Agent</span>
+                        <span class="status-text" id="agentStatusText">Monitoring...</span>
+                    </div>
+                    <div class="validation-stats">
+                        <span>✅ <span id="bambisleepVerified">0</span> Verified</span>
+                        <span>🗑️ <span id="nonBambisleepRemoved">0</span> Removed</span>
+                        <span>📊 <span id="relevanceRate">0</span>% Relevance</span>
+                    </div>
+                </div>
                 
                 <!-- Enhanced Stats -->
                 <div class="feed-stats">
                     <div class="stat-card">
-                        <span class="stat-number"><%= totalLinks %></span>
-                        <span class="stat-label">Total Content</span>
+                        <span class="stat-number" id="liveCount"><%= totalLinks || 0 %></span>
+                        <span class="stat-label">BambiSleep Content</span>
                     </div>
                     <div class="stat-card">
-                        <span class="stat-number" id="platformCount">0</span>
+                        <span class="stat-number" id="platformCount"><%= platformCount || 0 %></span>
                         <span class="stat-label">Platforms</span>
                     </div>
                     <div class="stat-card">
-                        <span class="stat-number" id="activeFilters">0</span>
-                        <span class="stat-label">Filters</span>
+                        <span class="stat-number" id="qualityCount"><%= highQualityCount || 0 %></span>
+                        <span class="stat-label">High Confidence</span>
                     </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="totalChecked">0</span>
+                        <span class="stat-label">Auto-Validated</span>
+                    </div>
+                </div>
+            </div>
                     <div class="stat-card">
                         <span class="stat-number" id="onlineUsers">1</span>
                         <span class="stat-label">Online</span>
@@ -903,10 +981,10 @@
         </div>
     </main>
 
-    <%- include('../partials/footer') %>
-      <!-- Scripts -->
+    <%- include('../partials/footer') %>      <!-- Scripts -->
     <script src="/socket.io/socket.io.js"></script>
     <script src="/js/voting.js"></script>
+    <script src="/js/bambisleep-feed-agent.js"></script>
     <script src="/js/feed.js"></script>
 </body>
 </html>

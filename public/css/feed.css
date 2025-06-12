@@ -41,7 +41,6 @@
     border: var(--border-thin) solid var(--color-primary-cyan);
     border-radius: var(--radius-lg);
     padding: var(--spacing-lg);
-    backdrop-filter: blur(10px);
     position: relative;
     transition: all var(--transition-normal);
     overflow: hidden;
@@ -204,7 +203,6 @@
     margin-bottom: var(--spacing-xs);
     opacity: 0.8;
     display: -webkit-box;
-    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }

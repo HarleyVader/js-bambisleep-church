@@ -33,18 +33,22 @@ class FeedController {
                     commentCount: comments.length,
                     topComments: comments.slice(0, 3) // Get top 3 comments
                 };
-            }));
-
-            const hasMore = offset + limit < sortedLinks.length;
+            }));            const hasMore = offset + limit < sortedLinks.length;
             const totalPages = Math.ceil(sortedLinks.length / limit);
+
+            // Calculate platform and quality stats for the template
+            const platforms = new Set(sortedLinks.map(link => link.platform || 'unknown'));
+            const highQualityContent = sortedLinks.filter(link => (link.qualityScore || 0) > 0.7);
 
             res.render('pages/feed', { 
                 links: enhancedLinks,
                 currentPage: page,
                 totalPages,
                 hasMore,
-                totalLinks: sortedLinks.length
-            });        } catch (error) {
+                totalLinks: sortedLinks.length,
+                platformCount: platforms.size,
+                highQualityCount: highQualityContent.length
+            });} catch (error) {
             console.error('Error loading feed:', error);
             return ResponseUtils.error(res, 'Error loading feed', 500, { renderError: true });
         }

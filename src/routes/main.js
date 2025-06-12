@@ -955,20 +955,14 @@ A: Yes! Community feedback is welcome for platform improvements.
                 error: 'Failed to start crawl', 
                 message: error.message 
             });        }
-    });
-
-    // =================== MCP SERVER STATUS ROUTE ===================
+    });    // =================== MCP SERVER STATUS ROUTE ===================
     router.get('/api/mcp/status', async (req, res) => {
         try {
-            const BambisleepMcpServer = require('../mcp/McpServer');
-            const mcpServer = new BambisleepMcpServer();
-            
-            // Check if MCP server is initialized and get status
-            const status = mcpServer.getStatus();
+            const { getMcpStatus } = require('../mcp/mcpInstance');
+            const status = getMcpStatus();
             
             res.json({
                 success: true,
-                status: 'connected',
                 ...status,
                 timestamp: new Date().toISOString()
             });
@@ -979,6 +973,197 @@ A: Yes! Community feedback is welcome for platform improvements.
                 status: 'error',
                 error: error.message,
                 timestamp: new Date().toISOString()
+            });
+        }
+    });
+
+    // =================== A2A COMMUNICATION ROUTES ===================
+      // Agent Registration
+    router.post('/api/a2a/register', async (req, res) => {
+        try {
+            const { agentId, capabilities } = req.body;
+            
+            if (!agentId) {
+                return res.status(400).json({ error: 'agentId is required' });
+            }
+
+            const { getMcpInstance } = require('../mcp/mcpInstance');
+            const mcpServer = await getMcpInstance();
+            
+            const result = await mcpServer.callTool('a2a_register_agent', {
+                agentId,
+                capabilities: capabilities || {}
+            });
+            
+            res.json(result);
+        } catch (error) {
+            console.error('A2A agent registration failed:', error);
+            res.status(500).json({
+                success: false,
+                error: error.message
+            });
+        }
+    });    // Send A2A Message
+    router.post('/api/a2a/message', async (req, res) => {
+        try {
+            const { targetAgentId, messageType, data } = req.body;
+            
+            if (!targetAgentId || !messageType || !data) {
+                return res.status(400).json({ 
+                    error: 'targetAgentId, messageType, and data are required' 
+                });
+            }
+
+            const { getMcpInstance } = require('../mcp/mcpInstance');
+            const mcpServer = await getMcpInstance();
+            
+            const result = await mcpServer.callTool('a2a_send_message', {
+                targetAgentId,
+                messageType,
+                data
+            });
+            
+            res.json(result);
+        } catch (error) {
+            console.error('A2A message sending failed:', error);
+            res.status(500).json({
+                success: false,
+                error: error.message
+            });
+        }
+    });    // Get A2A Messages for Agent
+    router.get('/api/a2a/messages/:agentId', async (req, res) => {
+        try {
+            const { agentId } = req.params;
+            const { since } = req.query;
+            
+            const { getMcpInstance } = require('../mcp/mcpInstance');
+            const mcpServer = await getMcpInstance();
+            
+            const result = await mcpServer.callTool('a2a_get_messages', {
+                agentId,
+                since
+            });
+            
+            res.json(result);
+        } catch (error) {
+            console.error('A2A message retrieval failed:', error);
+            res.status(500).json({
+                success: false,
+                error: error.message
+            });
+        }
+    });    // Get A2A System Status
+    router.get('/api/a2a/status', async (req, res) => {
+        try {
+            const { getMcpInstance } = require('../mcp/mcpInstance');
+            const mcpServer = await getMcpInstance();
+            
+            const result = await mcpServer.callTool('a2a_get_status');
+            
+            res.json(result);
+        } catch (error) {
+            console.error('A2A status check failed:', error);
+            res.status(500).json({
+                success: false,
+                error: error.message
+            });
+        }
+    });
+
+    // Stats API for Real-time Updates
+    router.get('/api/stats', async (req, res) => {
+        try {
+            const links = linkController.db.read('links');
+            const creators = await creatorController.getCreators();
+            const votes = voteController.db.read('votes');
+            
+            // Calculate comprehensive stats for the Stats Management Agent
+            const stats = {
+                totalContent: links.length,
+                totalLinks: links.length, // Legacy compatibility
+                totalCreators: creators.length,
+                totalVotes: votes.length,
+                totalViews: links.reduce((sum, link) => sum + (link.views || 0), 0),
+                avgQualityScore: links.length > 0 ? 
+                    links.reduce((sum, link) => sum + (link.qualityScore || 0), 0) / links.length : 0,
+                
+                // Content type breakdown
+                contentByType: links.reduce((acc, link) => {
+                    const type = link.type || link.category || 'other';
+                    acc[type] = (acc[type] || 0) + 1;
+                    return acc;
+                }, {}),
+                
+                // Platform breakdown
+                contentByPlatform: links.reduce((acc, link) => {
+                    const platform = link.platform || 'unknown';
+                    acc[platform] = (acc[platform] || 0) + 1;
+                    return acc;
+                }, {}),
+                
+                // Top links for display
+                topLinks: links
+                    .sort((a, b) => (b.votes || 0) - (a.votes || 0))
+                    .slice(0, 10)
+                    .map(link => ({
+                        id: link.id,
+                        title: link.title,
+                        votes: link.votes || 0,
+                        views: link.views || 0,
+                        category: link.category,
+                        contentType: link.type,
+                        qualityScore: link.qualityScore,
+                        engagement: ((link.votes || 0) + (link.views || 0) / 10) * (link.qualityScore || 1)
+                    })),
+                
+                // Categories for legacy compatibility
+                categories: Object.entries(links.reduce((acc, link) => {
+                    const category = link.category || 'other';
+                    if (!acc[category]) {
+                        acc[category] = { category, count: 0, votes: 0, views: 0 };
+                    }
+                    acc[category].count++;
+                    acc[category].votes += link.votes || 0;
+                    acc[category].views += link.views || 0;
+                    return acc;
+                }, {})).map(([_, data]) => data),
+                
+                lastUpdated: new Date().toISOString()
+            };
+            
+            res.json(stats);
+        } catch (error) {
+            console.error('Stats API error:', error);
+            res.status(500).json({
+                success: false,
+                error: error.message
+            });
+        }
+    });
+
+    // Real-time Stats API
+    router.get('/api/stats/realtime', async (req, res) => {
+        try {
+            // Simulate real-time activity data
+            // In production, this would come from Redis, WebSocket connections, etc.
+            const stats = {
+                activeUsers: Math.floor(Math.random() * 25) + 5, // 5-30 users
+                recentActivity: [
+                    { action: 'Content discovered', timestamp: new Date().toISOString() },
+                    { action: 'Feed validated', timestamp: new Date(Date.now() - 30000).toISOString() },
+                    { action: 'Stats updated', timestamp: new Date(Date.now() - 60000).toISOString() }
+                ],
+                contentValidated: Math.floor(Math.random() * 100) + 50,
+                moderationActions: Math.floor(Math.random() * 10) + 1
+            };
+            
+            res.json(stats);
+        } catch (error) {
+            console.error('Real-time stats error:', error);
+            res.status(500).json({
+                success: false,
+                error: error.message
             });
         }
     });

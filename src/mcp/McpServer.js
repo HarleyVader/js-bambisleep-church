@@ -42,6 +42,15 @@ class BambisleepMcpServer {
         this.knowledgeBase = new Map();
         this.initialized = false;
         this.requestId = 0;
+
+        // A2A Communication state
+        this.a2aChannels = new Map();
+        this.agentRegistry = new Map();
+        this.messageQueue = [];
+        this.a2aEventHandlers = new Map();
+        
+        // Register default A2A event handlers
+        this.setupA2AEventHandlers();
     }
 
     /**
@@ -209,6 +218,52 @@ class BambisleepMcpServer {
                 }
             }
         }, this.handleGenerateDocumentation.bind(this));
+
+        // A2A Communication Tools
+        this.registerTool('a2a_register_agent', {
+            description: 'Register an agent for A2A communication',
+            parameters: {
+                type: 'object',
+                properties: {
+                    agentId: { type: 'string', description: 'Unique agent identifier' },
+                    capabilities: { type: 'object', description: 'Agent capabilities and features' }
+                },
+                required: ['agentId']
+            }
+        }, this.handleA2ARegisterAgent.bind(this));
+
+        this.registerTool('a2a_send_message', {
+            description: 'Send A2A message between agents',
+            parameters: {
+                type: 'object',
+                properties: {
+                    targetAgentId: { type: 'string', description: 'Target agent ID' },
+                    messageType: { type: 'string', description: 'Type of message' },
+                    data: { type: 'object', description: 'Message payload' }
+                },
+                required: ['targetAgentId', 'messageType', 'data']
+            }
+        }, this.handleA2ASendMessage.bind(this));
+
+        this.registerTool('a2a_get_messages', {
+            description: 'Get A2A messages for an agent',
+            parameters: {
+                type: 'object',
+                properties: {
+                    agentId: { type: 'string', description: 'Agent ID to get messages for' },
+                    since: { type: 'string', description: 'ISO timestamp to get messages since' }
+                },
+                required: ['agentId']
+            }
+        }, this.handleA2AGetMessages.bind(this));
+
+        this.registerTool('a2a_get_status', {
+            description: 'Get A2A communication system status',
+            parameters: {
+                type: 'object',
+                properties: {}
+            }
+        }, this.handleA2AGetStatus.bind(this));
 
         console.log('📋 All MCP tools registered');
     }
@@ -532,6 +587,57 @@ Focus on creating documentation that would help newcomers understand the bambisl
                 generatedAt: new Date().toISOString(),
                 savedToFile: updateExisting
             };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+
+    /**
+     * Handle A2A agent registration
+     */
+    async handleA2ARegisterAgent(params) {
+        const { agentId, capabilities } = params;
+        try {
+            const result = this.registerAgent(agentId, capabilities);
+            return { success: result, agentId, capabilities };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+
+    /**
+     * Handle A2A message sending
+     */
+    async handleA2ASendMessage(params) {
+        const { targetAgentId, messageType, data } = params;
+        try {
+            const messageId = await this.sendA2AMessage(targetAgentId, { type: messageType, data });
+            return { success: true, messageId };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+
+    /**
+     * Handle A2A message retrieval
+     */
+    async handleA2AGetMessages(params) {
+        const { agentId, since } = params;
+        try {
+            const messages = this.getA2AMessages(agentId, since);
+            return { success: true, messages };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+
+    /**
+     * Handle A2A status retrieval
+     */
+    async handleA2AGetStatus() {
+        try {
+            const status = this.getA2AStatus();
+            return { success: true, status };
         } catch (error) {
             return { success: false, error: error.message };
         }
@@ -968,6 +1074,217 @@ Focus on creating documentation that would help newcomers understand the bambisl
             error.error.data = data;
         }
         console.log(JSON.stringify(error));
+    }
+
+    /**
+     * Agent-to-Agent (A2A) Communication Hub
+     * Enables coordinated operations between Discovery, Feed, and Stats agents
+     */
+
+    /**
+     * Setup default A2A event handlers for inter-agent communication
+     */
+    setupA2AEventHandlers() {
+        // Discovery Agent -> Feed Agent communication
+        this.registerA2AHandler('content_discovered', async (message) => {
+            const { content, confidence, source } = message.data;
+            
+            // Forward to Feed Agent for validation and processing
+            await this.sendA2AMessage('bambisleep-feed-agent', {
+                type: 'validate_content',
+                data: { content, confidence, source, discoveredAt: new Date().toISOString() }
+            });
+            
+            console.log(`🔄 A2A: Forwarded discovered content to Feed Agent (confidence: ${confidence}%)`);
+        });
+
+        // Feed Agent -> Stats Agent communication
+        this.registerA2AHandler('content_validated', async (message) => {
+            const { content, action, reason } = message.data;
+            
+            // Update Stats Agent knowledge base
+            await this.sendA2AMessage('bambisleep-stats-agent', {
+                type: 'update_content_stats',
+                data: { content, action, reason, validatedAt: new Date().toISOString() }
+            });
+            
+            console.log(`📊 A2A: Updated Stats Agent with validation result: ${action}`);
+        });
+
+        // Stats Agent -> Discovery Agent communication (learning feedback)
+        this.registerA2AHandler('content_insights', async (message) => {
+            const { patterns, recommendations } = message.data;
+            
+            // Send learning insights to Discovery Agent
+            await this.sendA2AMessage('bambisleep-discovery-agent', {
+                type: 'update_patterns',
+                data: { patterns, recommendations, updatedAt: new Date().toISOString() }
+            });
+            
+            console.log(`🧠 A2A: Shared content insights with Discovery Agent`);
+        });
+
+        // Cross-agent status updates
+        this.registerA2AHandler('agent_status', async (message) => {
+            const { agentId, status, metrics } = message.data;
+            
+            // Broadcast status to all other agents
+            for (const [id, agent] of this.agentRegistry) {
+                if (id !== agentId) {
+                    await this.sendA2AMessage(id, {
+                        type: 'peer_status_update',
+                        data: { sourceAgent: agentId, status, metrics }
+                    });
+                }
+            }
+            
+            console.log(`📡 A2A: Broadcasted status from ${agentId} to peer agents`);
+        });
+    }
+
+    /**
+     * Register an agent for A2A communication
+     */
+    registerAgent(agentId, capabilities = {}) {
+        this.agentRegistry.set(agentId, {
+            id: agentId,
+            capabilities,
+            lastSeen: new Date(),
+            messageCount: 0,
+            isActive: true
+        });
+        
+        console.log(`🤖 A2A: Registered agent ${agentId} with capabilities:`, Object.keys(capabilities));
+        return true;
+    }
+
+    /**
+     * Register an A2A event handler
+     */
+    registerA2AHandler(eventType, handler) {
+        if (!this.a2aEventHandlers.has(eventType)) {
+            this.a2aEventHandlers.set(eventType, []);
+        }
+        this.a2aEventHandlers.get(eventType).push(handler);
+        console.log(`🔗 A2A: Registered handler for event type: ${eventType}`);
+    }
+
+    /**
+     * Send A2A message between agents
+     */
+    async sendA2AMessage(targetAgentId, message) {
+        try {
+            const timestamp = new Date().toISOString();
+            const a2aMessage = {
+                id: `a2a_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                timestamp,
+                source: 'mcp-server',
+                target: targetAgentId,
+                ...message
+            };
+
+            // Store in message queue for reliability
+            this.messageQueue.push(a2aMessage);
+
+            // Update agent last seen
+            if (this.agentRegistry.has(targetAgentId)) {
+                const agent = this.agentRegistry.get(targetAgentId);
+                agent.messageCount++;
+                agent.lastSeen = new Date();
+            }
+
+            // For now, we'll use in-memory queuing
+            // In production, this could use WebSockets, Redis pub/sub, etc.
+            console.log(`📨 A2A: Message sent to ${targetAgentId}:`, message.type);
+            
+            return a2aMessage.id;
+        } catch (error) {
+            console.error(`❌ A2A: Failed to send message to ${targetAgentId}:`, error.message);
+            throw error;
+        }
+    }
+
+    /**
+     * Handle incoming A2A message
+     */
+    async handleA2AMessage(message) {
+        try {
+            const { type, source, data } = message;
+            
+            // Trigger registered handlers
+            const handlers = this.a2aEventHandlers.get(type) || [];
+            
+            for (const handler of handlers) {
+                try {
+                    await handler(message);
+                } catch (error) {
+                    console.error(`❌ A2A: Handler failed for ${type}:`, error.message);
+                }
+            }
+
+            // Update source agent activity
+            if (this.agentRegistry.has(source)) {
+                const agent = this.agentRegistry.get(source);
+                agent.lastSeen = new Date();
+                agent.isActive = true;
+            }
+
+            console.log(`✅ A2A: Processed message type ${type} from ${source}`);
+            return true;
+        } catch (error) {
+            console.error(`❌ A2A: Failed to handle message:`, error.message);
+            return false;
+        }
+    }
+
+    /**
+     * Get A2A messages for a specific agent
+     */
+    getA2AMessages(agentId, since = null) {
+        const sinceTime = since ? new Date(since) : new Date(0);
+        
+        return this.messageQueue.filter(msg => 
+            msg.target === agentId && 
+            new Date(msg.timestamp) > sinceTime
+        );
+    }
+
+    /**
+     * Get A2A system status
+     */
+    getA2AStatus() {
+        const activeAgents = Array.from(this.agentRegistry.values())
+            .filter(agent => agent.isActive);
+            
+        return {
+            totalAgents: this.agentRegistry.size,
+            activeAgents: activeAgents.length,
+            messageQueue: this.messageQueue.length,
+            eventHandlers: Array.from(this.a2aEventHandlers.keys()),
+            agents: activeAgents.map(agent => ({
+                id: agent.id,
+                lastSeen: agent.lastSeen,
+                messageCount: agent.messageCount,
+                capabilities: Object.keys(agent.capabilities)
+            }))
+        };
+    }
+
+    /**
+     * Clean up old A2A messages (prevent memory leaks)
+     */
+    cleanupA2AMessages(olderThanHours = 24) {
+        const cutoff = new Date(Date.now() - (olderThanHours * 60 * 60 * 1000));
+        const initialLength = this.messageQueue.length;
+        
+        this.messageQueue = this.messageQueue.filter(msg => 
+            new Date(msg.timestamp) > cutoff
+        );
+        
+        const cleaned = initialLength - this.messageQueue.length;
+        if (cleaned > 0) {
+            console.log(`🧹 A2A: Cleaned up ${cleaned} old messages`);
+        }
     }
 }
 

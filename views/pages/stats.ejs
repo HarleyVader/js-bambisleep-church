@@ -3,49 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bambi Sleep - Stats</title>
+    <title>BambiSleep - AI Intelligence Hub</title>
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
     <%- include('../partials/header') %>
     
     <div class="container">
-        <h1 class="neon-text">Community Statistics</h1>
+        <h1 class="neon-text">🧠 BambiSleep AI Intelligence Hub</h1>
+        <p class="subtitle">Real-time knowledge base powered by AI Agent analytics</p>
         
+        <!-- BambiSleep Stats Agent Status Panel -->
+        <div class="agent-status-panel" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border: 2px solid #e91e63; border-radius: 15px; padding: 20px; margin-bottom: 25px; box-shadow: 0 8px 32px rgba(233, 30, 99, 0.3);">
+            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                <div class="agent-indicator" id="statsAgentIndicator" style="width: 20px; height: 20px; border-radius: 50%; background: #4CAF50; box-shadow: 0 0 20px #4CAF50; animation: pulse 2s infinite;"></div>
+                <h3 style="margin: 0; color: #e91e63; font-size: 1.4em;">🤖 BambiSleep Stats Management Agent</h3>
+                <span id="statsAgentStatus" style="padding: 5px 12px; background: rgba(76, 175, 80, 0.2); color: #4CAF50; border-radius: 20px; font-size: 0.9em; border: 1px solid #4CAF50;">MONITORING</span>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
+                <div style="background: rgba(233, 30, 99, 0.1); padding: 12px; border-radius: 8px; border-left: 4px solid #e91e63;">
+                    <div style="font-size: 0.9em; color: #bbb; margin-bottom: 5px;">Knowledge Base Items</div>
+                    <div style="font-size: 1.8em; font-weight: bold; color: #e91e63;" id="knowledgeBaseItems">-</div>
+                </div>
+                <div style="background: rgba(76, 175, 80, 0.1); padding: 12px; border-radius: 8px; border-left: 4px solid #4CAF50;">
+                    <div style="font-size: 0.9em; color: #bbb; margin-bottom: 5px;">Active Users</div>
+                    <div style="font-size: 1.8em; font-weight: bold; color: #4CAF50;" id="activeUsers">-</div>
+                </div>
+                <div style="background: rgba(255, 193, 7, 0.1); padding: 12px; border-radius: 8px; border-left: 4px solid #FFC107;">
+                    <div style="font-size: 0.9em; color: #bbb; margin-bottom: 5px;">Content Validated</div>
+                    <div style="font-size: 1.8em; font-weight: bold; color: #FFC107;" id="contentValidated">-</div>
+                </div>
+                <div style="background: rgba(156, 39, 176, 0.1); padding: 12px; border-radius: 8px; border-left: 4px solid #9C27B0;">
+                    <div style="font-size: 0.9em; color: #bbb; margin-bottom: 5px;">A2A Messages</div>
+                    <div style="font-size: 1.8em; font-weight: bold; color: #9C27B0;" id="a2aMessages">-</div>
+                </div>
+            </div>
+            
+            <div style="background: rgba(0, 0, 0, 0.3); padding: 12px; border-radius: 8px; max-height: 120px; overflow-y: auto; font-family: monospace; font-size: 0.85em; line-height: 1.4;">
+                <div style="color: #4CAF50; margin-bottom: 8px;">📊 Agent Intelligence Log:</div>
+                <pre id="statsAgentLog" style="margin: 0; color: #ccc; white-space: pre-wrap;"></pre>
+            </div>
+        </div>        
         <div class="stats-container">
+            <!-- BambiSleep Intelligence Insights -->
+            <div class="stats-card">
+                <h2>🧠 AI Knowledge Insights</h2>
+                <div class="insight-tabs" style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                    <button class="insight-tab active" data-question="who" style="padding: 8px 16px; background: #e91e63; color: white; border: none; border-radius: 20px; cursor: pointer; font-size: 0.9em;">👥 Who</button>
+                    <button class="insight-tab" data-question="what" style="padding: 8px 16px; background: #333; color: white; border: none; border-radius: 20px; cursor: pointer; font-size: 0.9em;">📝 What</button>
+                    <button class="insight-tab" data-question="where" style="padding: 8px 16px; background: #333; color: white; border: none; border-radius: 20px; cursor: pointer; font-size: 0.9em;">📍 Where</button>
+                    <button class="insight-tab" data-question="when" style="padding: 8px 16px; background: #333; color: white; border: none; border-radius: 20px; cursor: pointer; font-size: 0.9em;">⏰ When</button>
+                    <button class="insight-tab" data-question="why" style="padding: 8px 16px; background: #333; color: white; border: none; border-radius: 20px; cursor: pointer; font-size: 0.9em;">❓ Why</button>
+                    <button class="insight-tab" data-question="how" style="padding: 8px 16px; background: #333; color: white; border: none; border-radius: 20px; cursor: pointer; font-size: 0.9em;">⚙️ How</button>
+                    <button class="insight-tab" data-question="how_much" style="padding: 8px 16px; background: #333; color: white; border: none; border-radius: 20px; cursor: pointer; font-size: 0.9em;">📊 How Much</button>
+                </div>
+                <div id="insight-display" style="background: rgba(0, 0, 0, 0.3); padding: 20px; border-radius: 10px; min-height: 150px;">
+                    <div style="color: #666; text-align: center; padding: 40px;">
+                        Select an insight category above to explore BambiSleep knowledge...
+                    </div>
+                </div>
+            </div>
+
             <!-- Overall Stats -->
             <div class="stats-card">
-                <h2>📊 Overall Stats</h2>
+                <h2>📊 Overall BambiSleep Stats</h2>
                 <div class="stat-row">
-                    <span class="stat-label">Total Links:</span>
+                    <span class="stat-label">Total Content Items:</span>
                     <span class="stat-value" id="total-links">-</span>
                 </div>
                 <div class="stat-row">
-                    <span class="stat-label">Total Votes:</span>
+                    <span class="stat-label">Total Engagement:</span>
                     <span class="stat-value" id="total-votes">-</span>
                 </div>
                 <div class="stat-row">
                     <span class="stat-label">Total Views:</span>
                     <span class="stat-value" id="total-views">-</span>
                 </div>
+                <div class="stat-row">
+                    <span class="stat-label">Average Quality Score:</span>
+                    <span class="stat-value" id="avg-quality">-</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Active Creators:</span>
+                    <span class="stat-value" id="total-creators">-</span>
+                </div>
             </div>
 
-            <!-- Category Stats -->
+            <!-- Content Type Analysis -->
             <div class="stats-card">
-                <h2>📂 Category Breakdown</h2>
+                <h2>📂 Content Type Analysis</h2>
                 <div id="category-stats"></div>
             </div>
 
-            <!-- Top Links -->
+            <!-- Real-time Activity -->
             <div class="stats-card">
-                <h2>🏆 Top Voted Links</h2>
+                <h2>⚡ Real-time Activity</h2>
+                <div id="recent-activity" style="max-height: 300px; overflow-y: auto;"></div>
+            </div>
+
+            <!-- Top Performance -->
+            <div class="stats-card">
+                <h2>🏆 Top Performing Content</h2>
                 <div id="top-links"></div>
             </div>
         </div>
-    </div>
-
-    <%- include('../partials/footer') %>
+    </div>    <%- include('../partials/footer') %>
     <script src="/js/main.js"></script>
+    <script src="/js/bambisleep-stats-agent.js"></script>
     <script src="/js/stats.js"></script>
 </body>
 </html>

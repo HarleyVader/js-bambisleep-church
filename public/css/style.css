@@ -514,7 +514,7 @@ main h1 {
 
 /* Submit link styling for cards */
 .submit-link {
-    color: var(--color-primary-magenta) !important;
+    color: var(--color-primary-magenta);
     font-weight: 700;
     border: var(--border-thin) solid var(--color-primary-magenta);
     border-radius: var(--radius-sm);
@@ -529,7 +529,7 @@ main h1 {
     background: var(--glow-magenta);
     box-shadow: 0 0 10px var(--glow-magenta);
     transform: translateX(var(--spacing-sm)) scale(1.05);
-    color: var(--color-text-secondary) !important;
+    color: var(--color-text-secondary);
 }
 
 .submit-link::before {
@@ -538,7 +538,7 @@ main h1 {
 }
 
 .submit-link::after {
-    width: 0 !important;
+    width: 0;
 }
 
 /* Cyberpunk Footer */
@@ -728,7 +728,7 @@ main h1 {
     .card {
         margin: var(--spacing-xs);
         padding: var(--spacing-md);
-        min-height: auto;
+        min-height: 0;
     }
     
     nav ul {
@@ -1034,7 +1034,6 @@ main::before {
     border-radius: var(--radius-lg);
     padding: var(--spacing-2xl);
     box-shadow: var(--shadow-card), inset 0 0 15px rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(10px);
     position: relative;
     overflow: hidden;
 }
@@ -1411,12 +1410,12 @@ main::before {
 }
 
 .submit-link::after {
-    width: 0 !important;
+    width: 0;
 }
 
 /* Creator and content link styling */
 .creator-link, .content-link {
-    color: var(--color-primary-cyan) !important;
+    color: var(--color-primary-cyan);
     text-decoration: none;
     display: block;
     padding: var(--spacing-xs) 0;
@@ -1425,7 +1424,7 @@ main::before {
 }
 
 .creator-link:hover, .content-link:hover {
-    color: var(--color-primary-green) !important;
+    color: var(--color-primary-green);
     border-bottom-color: var(--color-primary-green);
     text-shadow: 0 0 5px var(--glow-green);
     transform: translateX(5px);

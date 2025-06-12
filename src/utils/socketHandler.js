@@ -38,6 +38,62 @@ const setupSocket = (io) => {
             socket.leave('feed');
         });
 
+        // =================== A2A AGENT COMMUNICATION ===================
+        
+        // Agent Status Updates
+        socket.on('agentStatus', (statusData) => {
+            console.log(`🤖 Agent status update: ${statusData.agentId} - ${statusData.status}`);
+            io.emit('agentStatusUpdate', statusData);
+        });
+
+        // Agent Discovery Events
+        socket.on('contentDiscovered', (discoveryData) => {
+            console.log(`🔍 Content discovered by ${discoveryData.agentId}: ${discoveryData.content.title}`);
+            io.emit('contentDiscoveryUpdate', discoveryData);
+            io.to('feed').emit('newContentDiscovered', discoveryData);
+        });
+
+        // Agent Feed Management Events  
+        socket.on('contentValidated', (validationData) => {
+            console.log(`✅ Content validated by ${validationData.agentId}: ${validationData.action}`);
+            io.emit('contentValidationUpdate', validationData);
+            io.to('feed').emit('feedValidationUpdate', validationData);
+        });
+
+        // Agent Stats Updates
+        socket.on('statsUpdated', (statsData) => {
+            console.log(`📊 Stats updated by ${statsData.agentId}`);
+            io.emit('statsUpdate', statsData);
+        });
+
+        // A2A Message Broadcasting
+        socket.on('a2aMessage', (messageData) => {
+            console.log(`📨 A2A message from ${messageData.source} to ${messageData.target}: ${messageData.type}`);
+            io.emit('a2aMessageUpdate', messageData);
+        });
+
+        // Agent Room Management
+        socket.on('joinAgentRoom', (agentId) => {
+            socket.join(`agent-${agentId}`);
+            console.log(`🤖 Client joined agent room: agent-${agentId}`);
+        });
+
+        socket.on('leaveAgentRoom', (agentId) => {
+            socket.leave(`agent-${agentId}`);
+            console.log(`🤖 Client left agent room: agent-${agentId}`);
+        });
+
+        // Real-time Agent Monitoring
+        socket.on('joinAgentMonitoring', () => {
+            socket.join('agent-monitoring');
+            console.log('👁️ Client joined agent monitoring room');
+        });
+
+        socket.on('leaveAgentMonitoring', () => {
+            socket.leave('agent-monitoring');
+            console.log('👁️ Client left agent monitoring room');
+        });
+
         socket.on('disconnect', () => {
             console.log('A user disconnected');
         });

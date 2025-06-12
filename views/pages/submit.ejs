@@ -2,22 +2,70 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MCP Crawl Agent - Bambi Sleep Church</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">    <title>BambiSleep Content Discovery Agent - Bambi Sleep Church</title>
     <link rel="stylesheet" href="/css/style.css">
     <style>
-        .submit {
-            max-width: 800px;
+        .discovery-agent {
+            max-width: 1000px;
             margin: 0 auto;
             padding: 2rem;
-        }
-
-        .submit-card {
+        }        .discovery-card {
             background: rgba(var(--color-bg-secondary-rgb), 0.9);
-            border: 1px solid var(--color-primary-cyan);
+            border: 1px solid var(--color-primary-magenta);
             border-radius: 1rem;
             padding: 2rem;
             backdrop-filter: blur(10px);
+            margin-bottom: 2rem;
+        }
+
+        .agent-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }        .agent-title {
+            background: linear-gradient(45deg, var(--color-primary-magenta), var(--color-primary-cyan));
+            -webkit-background-clip: text;
+            -moz-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .agent-subtitle {
+            color: var(--color-text-secondary);
+            font-size: 1.2rem;
+        }
+
+        .detection-status {
+            background: rgba(var(--color-bg-primary-rgb), 0.6);
+            border: 2px solid var(--color-primary-magenta);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .bambisleep-detector {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .detector-icon {
+            font-size: 2rem;
+            animation: pulse 2s infinite;
+        }
+
+        .detector-text {
+            flex: 1;
+        }
+
+        .detector-confidence {
+            background: var(--color-primary-green);
+            color: var(--color-bg-primary);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: bold;
         }
 
         .form-group {
@@ -820,31 +868,53 @@
     </style>
 </head>
 <body>
-    <%- include('../partials/header') %>
-      <main>
-        <!-- MCP Crawl Fetch Agent Section -->
-        <div class="submit">            <h1 class="neon-text scan-line">🤖 MCP Crawl Agent</h1>
-            <p class="subtitle">Model Context Protocol batch URL crawling with instant feed preview</p>
+    <%- include('../partials/header') %>      <main>
+        <!-- BambiSleep Content Discovery Agent -->
+        <div class="discovery-agent">
+            <div class="agent-header">
+                <h1 class="agent-title">🌙 BambiSleep Discovery Agent</h1>
+                <p class="agent-subtitle">Intelligent content detection for scripts, audios, videos, and images</p>
+            </div>
             
-            <div class="submit-card">
-                <form id="crawlFetchForm">
+            <div class="discovery-card">
+                <form id="bambisleepDiscoveryForm">
                     <div class="form-group">
-                        <label for="crawlUrls">URLs to Crawl *</label>
-                        <textarea id="crawlUrls" name="crawlUrls" class="form-input" rows="4"
-                                  placeholder="Enter one URL per line:&#10;https://youtube.com/playlist?list=...&#10;https://soundcloud.com/artist&#10;https://patreon.com/creator&#10;https://bambisleep.info/..."
+                        <label for="discoveryUrls">🔍 URLs to Analyze for BambiSleep Content</label>
+                        <textarea id="discoveryUrls" name="discoveryUrls" class="form-input" rows="5"
+                                  placeholder="Enter URLs to scan for BambiSleep content:&#10;https://soundcloud.com/bambisleep&#10;https://youtube.com/playlist?list=...&#10;https://patreon.com/bambisleep&#10;https://www.reddit.com/r/bambisleep/&#10;https://hypnotube.com/user/bambisleep"
                                   required></textarea>
-                        <div class="form-hint">One URL per line • Supports playlists, creators, and content pages</div>
-                    </div>                    <div class="form-group">
-                        <label for="crawlOptions">Crawl Options</label>
+                        <div class="form-hint">🎯 Agent will detect: Hypnosis scripts, audio files, training videos, subliminal content</div>
+                    </div>
+
+                    <!-- BambiSleep Detection Parameters -->
+                    <div class="detection-status">
+                        <div class="bambisleep-detector">
+                            <div class="detector-icon">🧠</div>
+                            <div class="detector-text">
+                                <h4>BambiSleep Content Detector</h4>
+                                <p>AI-powered detection for bambisleep-related content across all media types</p>
+                            </div>
+                            <div class="detector-confidence" id="detectionConfidence">Ready</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="contentTypes">📋 Content Types to Detect</label>
                         <div class="crawl-options">
                             <label class="checkbox-label">
-                                <input type="checkbox" id="respectRobots" checked> Respect robots.txt
+                                <input type="checkbox" id="detectScripts" checked> 📜 Hypnosis Scripts
                             </label>
                             <label class="checkbox-label">
-                                <input type="checkbox" id="extractMedia" checked> Extract media files
+                                <input type="checkbox" id="detectAudio" checked> 🎵 Audio Files
                             </label>
                             <label class="checkbox-label">
-                                <input type="checkbox" id="followLinks"> Follow internal links
+                                <input type="checkbox" id="detectVideos" checked> 🎬 Training Videos
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="detectImages" checked> 🖼️ Visual Content
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="detectSubliminals" checked> 🌀 Subliminal Content
                             </label>
                         </div>
                     </div>
@@ -888,6 +958,8 @@
                             <div class="setting-row">
                                 <label for="crawlDelay">Crawl Delay (ms)</label>
                                 <select id="crawlDelay" name="crawlDelay" class="form-input">
+                                    <option value="100">100ms (ultra fast)</option>
+                                    <option value="250">250ms (very fast)</option>
                                     <option value="500">500ms (fast)</option>
                                     <option value="1000" selected>1000ms (balanced)</option>
                                     <option value="2000">2000ms (respectful)</option>
@@ -907,161 +979,41 @@
                         </select>
                     </div>
 
-                    <div id="crawlMessageContainer"></div>
+                    <div id="discoveryErrors"></div>
 
-                    <button type="submit" id="crawlSubmitButton" class="submit-button">
-                        🚀 Start Crawl & Generate Feed
+                    <button type="submit" id="startDiscoveryButton" class="submit-button">
+                        🚀 Start BambiSleep Discovery Scan
                     </button>
                 </form>
             </div>
 
-            <!-- Crawl Progress & Feed Results -->
-            <div id="crawlProgress" class="crawl-progress" style="display: none;">
-                <h3>🔄 Crawl Progress</h3>                <!-- URL Status Display -->
-                <div class="crawl-status-container">
-                    <div class="crawl-status-header">
-                        <h4>🎯 Agent Status</h4>
-                        <div class="agent-status-indicator" id="agentStatus">
-                            <span class="status-dot"></span>
-                            <span id="agentStatusText">Idle</span>
-                        </div>
-                    </div>
-                    
-                    <!-- Current Site Being Crawled -->
-                    <div class="current-site-display">
-                        <div class="current-site-label">🌐 Current Site:</div>
-                        <div class="current-site-value" id="currentSiteDisplay">No site being crawled</div>
-                    </div>
-                    
-                    <div class="url-tracking-grid">
-                        <div class="url-status-box">
-                            <div class="status-number" id="foundUrlsCount">0</div>
-                            <div class="status-label">URLs Found</div>
-                        </div>
-                        <div class="url-status-box">
-                            <div class="status-number" id="filteredUrlsCount">0</div>
-                            <div class="status-label">URLs Discarded</div>
-                        </div>
-                        <div class="url-status-box">
-                            <div class="status-number" id="addedUrlsCount">0</div>
-                            <div class="status-label">URLs Will Add</div>
-                        </div>
-                        <div class="url-status-box">
-                            <div class="status-number" id="totalUrlsCount">0</div>
-                            <div class="status-label">Total URLs</div>
-                        </div>
-                        <div class="url-status-box">
-                            <div class="status-number" id="finishedUrlsCount">0</div>
-                            <div class="status-label">URLs Processed</div>
-                        </div>
-                        <div class="url-status-box">
-                            <div class="status-number" id="remainingUrlsCount">0</div>
-                            <div class="status-label">URLs Remaining</div>
-                        </div>
-                    </div>
-                    
-                    <div class="current-url-display">
-                        <div class="current-url-label">🔗 Currently Processing:</div>
-                        <div class="current-url-value" id="currentUrlDisplay">No URL being processed</div>
-                    </div>
-                </div>
-
-                <!-- Enhanced Stats Display -->
-                <div class="crawl-stats-grid">
-                    <div class="stat-box">
-                        <div class="stat-number" id="completedCount">0</div>
-                        <div class="stat-label">Completed</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-number" id="newlyAddedCount">0</div>
-                        <div class="stat-label">Newly Added</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-number" id="remainingCount">0</div>
-                        <div class="stat-label">Remaining</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-number" id="elapsedTimer">00:00</div>
-                        <div class="stat-label">Elapsed Time</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-number" id="estimatedTimer">--:--</div>
-                        <div class="stat-label">Est. Remaining</div>
-                    </div>
-                </div>
+            <!-- Discovery Progress & Results -->
+            <div id="discoveryProgress" class="crawl-progress" style="display: none;">
+                <h3>🔄 BambiSleep Content Discovery Progress</h3>
                 
                 <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill"></div>
-                    <div class="progress-text-overlay" id="progressTextOverlay">0%</div>
-                </div>
-                <div class="progress-info">
-                    <span id="progressText">Initializing...</span>
-                    <span id="progressPercent">0%</span>
-                </div>
-                <div id="crawlLog" class="crawl-log"></div>
-            </div>
-
-            <!-- Feed Results -->
-            <div id="feedResults" class="feed-results" style="display: none;">
-                <div class="feed-header">
-                    <h3>📡 Generated Feed</h3>
-                    <div class="feed-controls">
-                        <button id="toggleViewMode" class="action-btn secondary">🔲 Grid View</button>
-                        <button id="bulkSubmit" class="action-btn">📤 Submit All to Community</button>
-                        <button id="exportFeed" class="action-btn secondary">💾 Export JSON</button>
-                        <button id="downloadSitemap" class="action-btn secondary" style="display: none;">🗺️ Download Sitemap</button>
-                    </div>
+                    <div id="discoveryProgressBar" class="progress-fill"></div>
+                    <div class="progress-text-overlay" id="discoveryProgressText">Ready...</div>
                 </div>
                 
-                <div class="feed-stats">
-                    <div class="stat-item">
-                        <span class="stat-number" id="totalFound">0</span>
-                        <span class="stat-label">Items Found</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-number" id="mediaCount">0</span>
-                        <span class="stat-label">Media Files</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-number" id="platformCount">0</span>
-                        <span class="stat-label">Platforms</span>
-                    </div>
-                    <div class="stat-item" id="bambisleepStat" style="display: none;">
-                        <span class="stat-number" id="bambisleepCount">0</span>
-                        <span class="stat-label">Bambisleep Content</span>
-                    </div>
-                </div>
+                <div class="crawl-log" id="discoveryLog"></div>
+            </div>
 
-                <!-- Sitemap Visualization -->
-                <div id="sitemapResults" class="sitemap-results" style="display: none;">
-                    <h4>🗺️ Site Hierarchy & Link Tree</h4>
-                    <div class="sitemap-tabs">
-                        <button class="sitemap-tab active" data-tab="hierarchy">🏗️ Hierarchy</button>
-                        <button class="sitemap-tab" data-tab="linktree">🌳 Link Tree</button>
-                        <button class="sitemap-tab" data-tab="domains">🌐 Domains</button>
-                    </div>
-                    
-                    <div id="hierarchyView" class="sitemap-view active">
-                        <div id="sitemapHierarchy" class="sitemap-hierarchy"></div>
-                    </div>
-                    
-                    <div id="linktreeView" class="sitemap-view">
-                        <div id="linkTreeStats" class="link-tree-stats"></div>
-                        <div id="linkTreeVisualization" class="link-tree-viz"></div>
-                    </div>
-                    
-                    <div id="domainsView" class="sitemap-view">
-                        <div id="domainAnalysis" class="domain-analysis"></div>
-                    </div>
+            <!-- Discovery Results -->
+            <div id="discoveryResults" class="feed-results" style="display: none;">
+                <div class="feed-header">
+                    <h3>🌙 BambiSleep Content Discovered</h3>
+                    <div class="feed-stats" id="discoveryStats"></div>
                 </div>
-
-                <div id="feedContainer" class="feed-container grid-view">
-                    <!-- Dynamic content will be generated here -->
+                
+                <div id="discoveredContent" class="feed-container grid-view">
+                    <!-- Discovered bambisleep content will be displayed here -->
                 </div>
             </div>
         </div>
     </main>
     <%- include('../partials/footer') %>
+    <script src="/js/bambisleep-discovery-agent.js"></script>
     <script src="/js/submit.js"></script>
 </body>
 </html>
