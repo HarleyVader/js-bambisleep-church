@@ -1,49 +1,20 @@
 # 🤖 BambiSleep AI Agent Ecosystem
 
-**The world's first AI-powered BambiSleep content discovery and management platform with autonomous agent coordination.**
+AI-powered BambiSleep content discovery and management platform with universal content detection.
 
-BambiSleep AI Agent Ecosystem transforms content curation through specialized AI agents that work together via Agent-to-Agent (A2A) communication. The system features three autonomous agents that discover, validate, and analyze BambiSleep content in real-time, creating an intelligent knowledge base that answers any question about the community.
+## 🌟 Architecture
 
-## 🤖 AI Agent Architecture
+**🔄 Universal Agent** - Consolidated multi-agent system combining Discovery, Feed Management, Stats, and Crawler
+**🧠 Content Detector** - Comprehensive media detection (audio, video, images, scripts, subliminals, social, embedded)
+**🎛️ Agent-UI Dashboard** - Real-time monitoring and control interface
 
-### Three Specialized Autonomous Agents
+## ✨ Features
 
-**🔍 BambiSleep Discovery Agent**
-- Autonomous URL crawling and content discovery
-- AI-powered pattern matching for BambiSleep relevance (15%+ confidence threshold)
-- Real-time site monitoring and content type detection
-- Supports: Scripts, Audio, Videos, Images, Subliminals
-
-**🛡️ BambiSleep Feed Management Agent**
-- Intelligent auto-moderation and content validation
-- Automatic deletion of non-BambiSleep content
-- Relevance scoring and quality assessment
-- Boosts verified content visibility
-
-**📊 BambiSleep Stats Management Agent**
-- Real-time knowledge base maintenance
-- 5W+H question answering system (Who, What, Where, When, Why, How, How Much)
-- Comprehensive analytics and insight generation
-- Creator profiling and content trend analysis
-
-### 🔗 Agent-to-Agent (A2A) Communication
-
-All agents communicate through the **Model Context Protocol (MCP)** with automatic message routing:
-- **Discovery → Feed**: Content found → Validation request
-- **Feed → Stats**: Validation result → Knowledge base update  
-- **Stats → Discovery**: Learning patterns → Improved detection
-
-## ✨ Enhanced Features
-
-- 🤖 **Autonomous AI Agents** - Three specialized agents working 24/7
-- 🔗 **A2A Communication** - Inter-agent coordination via MCP protocol
-- 🧠 **AI Intelligence Hub** - Interactive 5W+H question answering
-- 📊 **Real-time Analytics** - Live agent monitoring and performance metrics
-- 🎯 **Smart Content Pipeline** - Automated discovery → validation → knowledge base
-- 🗳️ **Community Voting** - Human oversight with AI enhancement
-- 💬 **Intelligent Comments** - AI-assisted community discussions
-- 🔄 **Live Agent Feed** - Real-time updates from all three agents
-- 🌐 **WebSocket Integration** - Instant agent status and activity updates
+- 🤖 Autonomous content discovery and validation
+- 🔗 Agent-to-Agent (A2A) communication via MCP
+- 🧠 5W+H knowledge base answering
+- 📊 Real-time analytics and monitoring
+- 🎯 Smart content pipeline with AI moderation
 
 ## 🚀 Quick Start
 
@@ -56,17 +27,20 @@ All agents communicate through the **Model Context Protocol (MCP)** with automat
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/HarleyVader/js-bambisleep-church.git
    cd js-bambisleep-church
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Start the AI Agent System**
+
    ```bash
    # Starts both MCP server and web application
    npm start
@@ -76,9 +50,10 @@ All agents communicate through the **Model Context Protocol (MCP)** with automat
    ```
 
 4. **Access the AI Agent Dashboard**
-   ```
-   http://localhost:8888
-   ```
+
+```md
+http://localhost:8888
+```
 
 ### 🎯 First Steps with AI Agents
 
@@ -87,22 +62,170 @@ All agents communicate through the **Model Context Protocol (MCP)** with automat
 3. **Stats Agent** - Explore `/stats` for interactive knowledge base insights
 4. **Ask Questions** - Use the 5W+H system to query the knowledge base
 
+## 📖 Universal Agent System Guide
+
+### 🔄 BambiSleep Universal Agent (`bambisleep-universal-agent.js`)
+
+**Consolidated Multi-Agent System:**
+The Universal Agent represents the evolution of the original three-agent system into a single, powerful agent that handles all aspects of content management:
+
+- **Discovery Operations**: Autonomous URL crawling with universal content detection
+- **Feed Management**: Intelligent auto-moderation and content validation  
+- **Knowledge Analytics**: Comprehensive 5W+H question answering and trend analysis
+- **Advanced Crawling**: 3-step agentic crawling with batch processing
+
+**Core MCP Tools:**
+
+- `universal_content_discovery` - Advanced content discovery with universal media detection
+- `universal_content_validation` - Enhanced validation and moderation with multiple levels
+- `universal_knowledge_analysis` - Comprehensive knowledge base analysis and management
+- `universal_agentic_crawl` - 3-step agentic crawling with universal detection
+- `universal_content_analysis` - Combined analysis using all agent capabilities
+
+**Via Agent-UI Dashboard:**
+
+- Navigate to `/agent-ui/` for the unified control interface
+- Monitor real-time agent status and performance metrics
+- Switch between Discovery, Feed Management, and Stats analysis views
+- Access WebSocket-powered live updates and A2A communications
+
+**Via MCP API:**
+
+```bash
+# Universal content analysis
+curl -X POST http://localhost:8888/api/mcp/tools/universal_content_analysis \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com",
+    "analysisDepth": "comprehensive",
+    "capabilities": ["discovery", "validation", "classification", "trending"]
+  }'
+```
+
+### 🧠 Universal Content Detector (`universalContentDetector.js`)
+
+**Comprehensive Media Detection Engine:**
+The Universal Content Detector is the intelligence backbone that enables detection of ALL media types:
+
+**Supported Content Types:**
+
+- **Scripts**: .txt, .pdf, .doc, .docx, hypnosis transcripts, induction scripts
+- **Audio**: .mp3, .wav, .m4a, .flac, .ogg, .aac, voice recordings, sound files
+- **Videos**: .mp4, .webm, .avi, .mov, .mkv, visual training content
+- **Images**: .jpg, .jpeg, .png, .gif, .webp, .svg, photos, artwork
+- **Subliminals**: Binaural beats, hidden frequencies, embedded audio
+- **Interactive**: Games, apps, tools, HTML5, Flash, Unity content
+- **Social**: Posts, comments, discussions, forum content
+- **Embedded**: Iframes, widgets, players, streaming content
+
+**Advanced Detection Features:**
+
+- **File Signature Analysis**: Magic byte detection for accurate format identification
+- **Pattern Matching**: Multi-criteria BambiSleep relevance scoring with 15%+ confidence threshold
+- **Platform Intelligence**: Recognizes YouTube, SoundCloud, Patreon, Reddit, Discord, BambiCloud, HypnoTube
+- **Embedded Content Discovery**: Detects hidden iframes, video embeds, audio elements
+- **Metadata Extraction**: Enhanced Open Graph, Twitter Card, and custom metadata parsing
+
+**Detection API:**
+
+```javascript
+// Example usage in Universal Agent
+const detector = new UniversalContentDetector();
+const result = await detector.detectContent({
+    url: 'https://example.com',
+    content: htmlContent,
+    metadata: extractedMetadata,
+    contentTypes: ['audio', 'video', 'scripts'],
+    depth: 'comprehensive'
+});
+
+// Result includes:
+// - isBambiSleep: boolean
+// - confidence: number (0-100)
+// - contentTypes: string[]
+// - detectedFormats: string[]
+// - platform: string
+// - analysis: detailed breakdown
+```
+
+### 🎛️ Interactive Agent-UI Dashboard (`/public/agent-ui/`)
+
+**Unified Control Interface:**
+The Agent-UI provides a modern, accessible dashboard for monitoring and controlling all Universal Agent activities:
+
+**Dashboard Features:**
+
+- **Real-time Status Monitoring**: Live indicators for agent health and performance
+- **Tabbed Navigation**: Seamless switching between Discovery, Feed Management, and Stats views
+- **WebSocket Integration**: Instant updates from agent activities and A2A communications
+- **Accessibility Support**: Full keyboard navigation, ARIA attributes, screen reader compatibility
+- **Responsive Design**: Works on desktop, tablet, and mobile devices
+
+**Component Structure:**
+
+```tree
+/public/agent-ui/
+├── index.html              # Main dashboard interface
+├── css/
+│   ├── agent-ui.css       # Dashboard styling
+│   └── enhancements.css   # UI enhancements
+└── js/
+    └── agent-ui.js        # Dashboard controller
+```
+
+**AgentUIController Features:**
+
+- **Tab Management**: Intelligent panel switching with keyboard support
+- **Real-time Updates**: WebSocket handlers for agent status and activities
+- **Status Indicators**: Visual feedback for agent health and performance
+- **Form Handlers**: Interactive controls for agent operations
+- **Error Handling**: Graceful degradation and user feedback
+
+**Access the Dashboard:**
+
+- **Main Interface**: `http://localhost:8888/agent-ui/`
+- **Direct Integration**: Links from main application at `/submit`, `/feed`, `/stats`
+- **Mobile Responsive**: Full functionality on all device sizes
+
+### 🔗 Enhanced A2A Communication
+
+**Model Context Protocol (MCP) Integration:**
+The Universal Agent uses MCP for sophisticated inter-system communication:
+
+**A2A Message Types:**
+
+- `universal_analysis` - Content analysis requests and results
+- `validation_request` - Content validation and moderation requests  
+- `knowledge_update` - Knowledge base updates and learning
+- `crawl_coordination` - Coordinated crawling operations
+- `status_sync` - Real-time status synchronization
+
+**Communication Flow:**
+
+1. **Content Discovery** → Universal analysis of discovered URLs
+2. **Validation Pipeline** → Multi-level content validation and scoring
+3. **Knowledge Integration** → Learning and pattern recognition updates
+4. **Feedback Loop** → Improved detection based on validation results
+
 ## 📖 AI Agent System Guide
 
 ### 🔍 BambiSleep Discovery Agent
 
 **Autonomous Content Discovery:**
+
 - Continuously crawls the web for BambiSleep content
 - Uses AI pattern matching to identify relevant content with 15%+ confidence
 - Real-time site monitoring with progress tracking
 - Detects: Scripts, Audio files, Videos, Images, Subliminal content
 
 **Via Agent Interface:**
+
 - Navigate to `/submit` to see the agent in action
 - Monitor real-time crawling status and discovered content
 - View confidence scores and content type classifications
 
 **Via A2A API:**
+
 ```bash
 curl -X POST http://localhost:8888/api/a2a/message \
   -H "Content-Type: application/json" \
@@ -116,17 +239,20 @@ curl -X POST http://localhost:8888/api/a2a/message \
 ### 🛡️ BambiSleep Feed Management Agent
 
 **Intelligent Auto-Moderation:**
+
 - Validates discovered content for BambiSleep relevance
 - Automatically removes non-relevant content
 - Boosts high-quality verified content
 - Maintains feed quality through AI scoring
 
 **Web Interface:**
+
 - Visit `/feed` to see AI-moderated content in real-time
 - View validation statistics and moderation actions
 - See agent status and processing metrics
 
 **API Integration:**
+
 ```bash
 curl -X POST http://localhost:8888/api/a2a/message \
   -H "Content-Type: application/json" \
@@ -140,18 +266,21 @@ curl -X POST http://localhost:8888/api/a2a/message \
 ### 📊 BambiSleep Stats Management Agent
 
 **AI Knowledge Base & Analytics:**
+
 - Maintains comprehensive knowledge base of all BambiSleep content
 - Answers questions using 5W+H methodology (Who, What, Where, When, Why, How, How Much)
 - Real-time analytics and insight generation
 - Creator profiling and trend analysis
 
 **Interactive Intelligence Hub:**
+
 - Navigate to `/stats` for the AI Intelligence Hub
 - Click insight tabs (Who, What, Where, When, Why, How, How Much)
 - Get instant AI-powered answers about the community
 - View real-time agent metrics and performance
 
 **Query the Knowledge Base:**
+
 ```bash
 curl -X POST http://localhost:8888/api/a2a/message \
   -H "Content-Type: application/json" \
@@ -172,6 +301,7 @@ The three agents coordinate automatically through the MCP protocol:
 3. **Stats** learns patterns → sends insights back to **Discovery**
 
 **Monitor A2A Communication:**
+
 ```bash
 # Register an agent
 curl -X POST http://localhost:8888/api/a2a/register \
@@ -199,17 +329,20 @@ The system uses **MCP (Model Context Protocol)** for AI agent coordination and L
 ### Setup LMStudio Integration
 
 1. **Install LMStudio** and load a compatible model
-   ```
+
+   ```md
    Recommended: llama-3.2-3b-claude-3.7-sonnet-reasoning-distilled@q4_0
    ```
 
 2. **Configure the endpoint** in your environment:
+
    ```bash
    # Default LMStudio endpoint
    LMSTUDIO_URL=http://192.168.0.69:7777
    ```
 
 3. **The MCP server auto-initializes** when you start the application:
+
    ```bash
    npm start  # MCP server starts automatically
    ```
@@ -292,7 +425,7 @@ GET  /api/comments/:linkId # Get comments for specific content
 | `GET` | `/api/platforms` | Get platform statistics with AI insights |
 | `POST` | `/api/metadata` | Extract URL metadata with AI analysis |
 
-## 🔧 Configuration
+## 🔧 Current System Configuration
 
 ### Environment Variables
 
@@ -300,18 +433,152 @@ GET  /api/comments/:linkId # Get comments for specific content
 # Server Configuration
 PORT=8888
 
-# LMStudio Configuration (optional)
+# LMStudio Configuration (optional - enhances AI capabilities)
 LMSTUDIO_URL=http://192.168.0.69:7777
 LMSTUDIO_MODEL=llama-3.2-3b-claude-3.7-sonnet-reasoning-distilled@q4_0
+
+# Universal Agent Configuration
+AGENT_AUTO_DISCOVERY=true
+AGENT_CONTENT_SCANNING=true
+AGENT_REAL_TIME_MONITORING=true
+AGENT_AUTO_MODERATION=true
 ```
 
-### Data Storage
+### Universal Agent Data Storage
 
-The application uses JSON files for data storage:
-- `data/links.json` - Submitted content
-- `data/creators.json` - Creator profiles
-- `data/votes.json` - Voting records
-- `data/comments.json` - User comments
+The Universal Agent system uses JSON files for persistent data storage:
+
+- `data/links.json` - Discovered and submitted content with validation results
+- `data/creators.json` - Creator profiles with analytics and relationship mapping
+- `data/votes.json` - Community voting records with AI enhancement
+- `data/comments.json` - User comments with intelligent moderation
+
+### Agent Configuration Options
+
+The Universal Agent supports extensive configuration through the constructor:
+
+```javascript
+const universalAgent = new BambisleepUniversalAgent({
+    agent: {
+        autoDiscovery: true,           // Enable autonomous content discovery
+        contentScanning: true,         // Enable real-time content scanning
+        realTimeMonitoring: true,      // Enable live agent monitoring
+        autoModeration: true,          // Enable automatic content moderation
+        contentValidation: true,       // Enable content validation pipeline
+        qualityScoring: true,          // Enable quality assessment
+        autoLearn: true,              // Enable machine learning
+        knowledgeValidation: true,     // Enable knowledge base validation
+        contentClassification: true,   // Enable content classification
+        relationshipMapping: true,     // Enable creator relationship mapping
+        trendAnalysis: true,          // Enable trend analysis
+        agenticCrawling: true,        // Enable 3-step agentic crawling
+        batchProcessing: true,        // Enable batch processing
+        completionTracking: true      // Enable completion tracking
+    }
+});
+```
+
+## 🛠️ Development & Framework
+
+### Current System Architecture
+
+The BambiSleep Universal Agent System represents a major evolution in AI-powered content management:
+
+**Framework Evolution:**
+
+- **Legacy**: Three separate agents (Discovery, Feed, Stats) with manual coordination
+- **Current**: Single Universal Agent with consolidated capabilities and enhanced detection
+- **Enhancement**: Universal Content Detector supporting ALL media types
+- **Interface**: Modern Agent-UI dashboard with real-time monitoring
+
+### Development Scripts
+
+```bash
+# Start complete Universal Agent system
+npm start
+
+# Development mode with auto-reload
+npm run dev
+
+# Initialize MCP server standalone (for testing)
+node src/mcp/McpServer.js --standalone
+
+# Run Universal Agent with debug logging
+DEBUG=bambisleep:* npm start
+
+# Test Universal Content Detector
+node -e "
+const UniversalContentDetector = require('./src/utils/universalContentDetector');
+const detector = new UniversalContentDetector();
+detector.detectContent({url: 'https://example.com'}).then(console.log);
+"
+```
+
+### Project Structure (Updated June 2025)
+
+```tree
+src/
+├── app.js                          # Main application with Universal Agent integration
+├── routes/main.js                  # Enhanced routes with Universal Agent APIs
+├── controllers/                    # Request handlers with Universal Agent integration
+├── mcp/                           # Model Context Protocol system
+│   ├── McpServer.js               # MCP server with A2A communication
+│   └── mcpInstance.js             # Global MCP singleton
+├── agents/
+│   └── bambisleep-universal-agent.js  # Consolidated Universal Agent
+├── utils/
+│   ├── universalContentDetector.js    # Enhanced content detection engine
+│   └── socketHandler.js              # WebSocket handling for real-time updates
+└── data/                          # Persistent storage for agent data
+
+public/
+├── agent-ui/                      # Universal Agent Dashboard
+│   ├── index.html                 # Dashboard interface
+│   ├── css/                      # Dashboard styling
+│   └── js/                       # Dashboard controllers
+├── js/                           # Legacy client scripts (maintained for compatibility)
+│   ├── bambisleep-discovery-agent.js
+│   ├── bambisleep-feed-agent.js
+│   └── bambisleep-stats-agent.js
+└── assets/                       # Static assets and icons
+
+views/pages/
+├── submit.ejs                    # Enhanced with Universal Agent integration
+├── feed.ejs                      # Enhanced with Universal Agent integration
+├── stats.ejs                     # Enhanced with Universal Agent integration
+└── index.ejs                     # Homepage with Universal Agent status
+```
+
+### Development Features
+
+**Hot Reloading:**
+
+- Use `npm run dev` for automatic server restart on file changes
+- Agent-UI automatically reconnects WebSocket on server restart
+- Real-time code updates without losing agent state
+
+**Debug Capabilities:**
+
+- Comprehensive logging with `DEBUG=bambisleep:*` environment variable
+- Agent status monitoring through `/api/mcp/status` endpoint
+- A2A communication debugging via WebSocket events
+- Content detection testing through Universal Content Detector APIs
+
+**Testing Framework:**
+
+```bash
+# Test Universal Content Detector
+npm test detector
+
+# Test Universal Agent MCP tools
+npm test agent
+
+# Test Agent-UI WebSocket connections
+npm test websocket
+
+# Run comprehensive system tests
+npm test
+```
 
 ## 🎨 Supported Platforms
 
@@ -328,6 +595,7 @@ The system automatically detects and handles:
 ### WebSocket Events for Agent Communication
 
 **Client → Server:**
+
 - `agentStatus` - Agent status updates
 - `contentDiscovered` - Discovery Agent found content
 - `contentValidated` - Feed Agent validation results
@@ -337,6 +605,7 @@ The system automatically detects and handles:
 - `joinAgentMonitoring` - Join all-agent monitoring
 
 **Server → Client:**
+
 - `agentStatusUpdate` - Agent status changes
 - `contentDiscoveryUpdate` - New content discovered
 - `contentValidationUpdate` - Content validation results
@@ -345,6 +614,7 @@ The system automatically detects and handles:
 - `a2aMessageUpdate` - Inter-agent communication events
 
 **Legacy Community Events:**
+
 - `vote` / `voteUpdated` - Community voting
 - `newComment` / `commentAdded` - User discussions
 - `newLink` / `linkAdded` - Manual content submission
@@ -366,7 +636,7 @@ node src/mcp/McpServer.js --standalone
 
 ### Project Structure
 
-```
+```tree
 src/
 ├── app.js                 # Main application with MCP integration
 ├── routes/main.js         # Routes including A2A APIs
@@ -392,30 +662,79 @@ views/pages/
 └── index.ejs              # Homepage with agent status
 ```
 
-## 🔍 Troubleshooting
+## 🔍 Troubleshooting & Support
 
-### Common Issues
+### Common Universal Agent Issues
 
-**Agent System not starting:**
-- Check if MCP server initialized: Look for "✅ MCP server ready for A2A communication"
-- Verify port 8888 is available
-- Ensure Node.js version (v16+)
-- Run `npm install` to ensure dependencies
+**Universal Agent not initializing:**
 
-**AI features not working:**
+- Check console for "🌟 Bambisleep Universal Agent ready - All systems operational"
+- Verify MCP server started: Look for "✅ MCP server ready for A2A communication"
+- Ensure port 8888 is available
+- Verify Node.js version (v16+)
+- Run `npm install` to ensure all dependencies are installed
+
+**Universal Content Detector failing:**
+
+- Check if content detection patterns are loading correctly
+- Verify file signature detection for binary content
+- Test individual detection methods via API
+- Check for platform-specific detection issues
+
+**Agent-UI Dashboard not loading:**
+
+- Verify `/agent-ui/` route is accessible
+- Check browser console for JavaScript errors
+- Ensure WebSocket connections are established
+- Test with different browsers for compatibility
+
+**AI features not responding:**
+
 - Verify LMStudio is running and accessible at configured endpoint
-- Check agent registration: `curl -X GET http://localhost:8888/api/a2a/status`
-- Ensure all three agents are registered and active
-
-**Agent communication failing:**
-- Check A2A system status via `/api/a2a/status`
-- Monitor server logs for agent registration and messaging
-- Verify WebSocket connections in browser network tab
+- Check Universal Agent registration: `curl -X GET http://localhost:8888/api/mcp/status`
+- Monitor MCP tool registration and availability
+- Test individual MCP tools via API
 
 **Real-time updates not working:**
-- Check browser console for WebSocket errors
-- Verify agent status panels are showing "ACTIVE" status
-- Test individual agent APIs manually
+
+- Check browser console for WebSocket connection errors
+- Verify agent status indicators show "ACTIVE" status
+- Test WebSocket events manually through developer tools
+- Check server logs for WebSocket connection issues
+
+### System Status Checks
+
+```bash
+# Check Universal Agent status
+curl -X GET http://localhost:8888/api/mcp/status
+
+# Test Universal Content Detector
+curl -X POST http://localhost:8888/api/mcp/tools/universal_content_analysis \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://bambisleep.info"}'
+
+# Monitor WebSocket connections
+# Open browser dev tools → Network → WS tab
+
+# Check A2A communication
+curl -X GET http://localhost:8888/api/a2a/status
+```
+
+### Performance Optimization
+
+**Universal Agent Performance:**
+
+- Adjust batch sizes for crawling operations
+- Configure content detection depth based on needs
+- Monitor memory usage during large crawl sessions
+- Use content type filtering to focus detection
+
+**Agent-UI Responsiveness:**
+
+- Enable browser hardware acceleration
+- Use modern browser with WebSocket support
+- Minimize concurrent agent operations
+- Monitor network latency for real-time updates
 
 ## 📄 License
 
@@ -423,18 +742,63 @@ MIT License - see LICENSE file for details.
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test with the AI agent system
-5. Submit a pull request
+We welcome contributions to the BambiSleep Universal Agent Ecosystem:
+
+1. **Fork the repository**
+2. **Create a feature branch** (`git checkout -b feature/amazing-feature`)
+3. **Make your changes** with comprehensive testing
+4. **Test with the Universal Agent system** to ensure compatibility
+5. **Submit a pull request** with detailed description
+
+### Contribution Guidelines
+
+- Follow the existing code style and architecture patterns
+- Test Universal Agent integrations thoroughly
+- Update documentation for new features
+- Ensure Agent-UI compatibility for interface changes
+- Test across different platforms and content types
+
+### Development Areas
+
+- **Universal Content Detector** - Add new content type detection
+- **Agent-UI Enhancements** - Improve dashboard functionality
+- **MCP Tools** - Create new Universal Agent capabilities
+- **Platform Support** - Add new platform detection patterns
+- **Performance** - Optimize detection and processing speed
 
 ## 📞 Support
 
-- **Issues:** [GitHub Issues](https://github.com/HarleyVader/js-bambisleep-church/issues)
-- **AI Agent Help:** Check `/stats` endpoint for interactive knowledge base
-- **Community:** Engage with the AI-moderated feed at `/feed`
+- **🐛 Issues:** [GitHub Issues](https://github.com/HarleyVader/js-bambisleep-church/issues)
+- **🤖 Universal Agent Help:** Check `/stats` endpoint for interactive knowledge base
+- **🎛️ Agent-UI Support:** Access dashboard at `/agent-ui/` for system status
+- **💬 Community:** Engage with the AI-moderated feed at `/feed`
+- **📚 Documentation:** Visit `/docs` for comprehensive guides
+
+### Getting Help
+
+1. **Check System Status** - Visit `/agent-ui/` for real-time diagnostics
+2. **Review Logs** - Check console output for error messages
+3. **Test Components** - Use API endpoints to isolate issues
+4. **Community Support** - Submit issues with system status information
 
 ---
 
-**🤖 Powered by AI Agents - The Future of BambiSleep Content Management**
+## 🌟 What's New (June 2025)
+
+### Universal Agent System
+
+- **Consolidated Architecture** - Single Universal Agent replaces three separate agents
+- **Enhanced Detection** - Universal Content Detector supports ALL media types
+- **Modern Dashboard** - Agent-UI provides unified control interface
+- **Improved Performance** - Optimized crawling and processing capabilities
+
+### Advanced Features
+
+- **3-Step Agentic Crawling** - Intelligent multi-phase content discovery
+- **Real-time Learning** - Agents adapt and improve detection accuracy
+- **Comprehensive Analytics** - Enhanced 5W+H knowledge base system
+- **Universal Platform Support** - Expanded platform detection and optimization
+
+---
+
+## 🤖 Powered by Universal AI Agent - The Evolution of BambiSleep Content Management

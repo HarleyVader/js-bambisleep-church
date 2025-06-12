@@ -10,7 +10,7 @@
 
 ### 1. IMAGINE (Planning & Solutions) - **DO 3 TIMES**
 **First IMAGINE Round:**
-- Fetch **.tasks/<build_tasks_names>.md** tasks [IF] <doesnt_exist> ignore.
+- Fetch **.tasks/<build_name.task>.md** tasks [IF] <doesnt_exist> ignore.
 - What's the absolute minimum I need to write?
 - What's the minimal viable code approach?
 - What must I avoid touching entirely?
@@ -22,14 +22,14 @@
 - What files do I need to touch to keep coding to a minimum?
 - What configurations do I need to know to successfully implement this?
 - What is the least amount of work I can do to get this done correctly?
-- Create a **.tasks/<build_tasks_names>.md** file with the task description and requirements, add [0%]
+- Create a **.tasks/<build_name.task>.md** file with the task description and requirements, add [0%]
 
 **Third IMAGINE Round:**
 ### RULE: Think More, Code Less
 - Always try to do the LEAST possible amount of work, even if it means thinking longer.
 - Final sanity check: Is this the laziest yet correct possible solution?
 - Can I reuse something that already exists?
-- Update **.tasks/<build_tasks_names>.md** with [%COMPLETION%] percentages for each item.
+- Update **.tasks/<build_name.task>.md** with [%COMPLETION%] percentages for each item.
 
 **IMPORTANT: DO NOT FORGET TO THINK BEFORE DOING THIS**
 
@@ -38,16 +38,17 @@
 - Write the absolute minimum code required
 - One function, one purpose, done
 - Check percentage of completion every itertation
+- Update **.github/codebase-inventory.md** with any new or modified files with [%COMPLETION%] percentages for each
 - If not 100% complete, go back to **Third IMAGINE Round:**
 
 **IMPORTANT: DO NOT FORGET TO THINK BEFORE DOING THIS**
 
 ### 3. COMPACT (Consolidation & Cleanup) - **DO 3 TIMES**
 - Review the code for unnecessary complexity
-- Remove any redundant logic or unused variables
-- Simplify the implementation without changing functionality
+- Remove tests, demos, temp, new, old & junk files
+- Remove dead code, comments, and console logs
 - Ensure the code is as concise as possible
-- Update **.github/codebase-inventory.md** with any new or modified files
-- Remove completed tasks **.tasks/*.md**
+- Consolidate codebase structure
+- Remove completed task from **.tasks/<build_name.task>.md**
 
 **CRITICAL: When task is complete, STOP. Don't add features, don't improve, don't optimize.**

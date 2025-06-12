@@ -10,7 +10,8 @@
       }
     ],
     "meta-viewport": "off",
-    "no-inline-styles": "off"
+    "no-inline-styles": "off",
+    "manifest-app-name": "off"
   },
   "browserslist": [
     "defaults",

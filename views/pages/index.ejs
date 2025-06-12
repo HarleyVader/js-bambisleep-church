@@ -438,11 +438,9 @@
                 </div>
             </div>
         </div>
-    </main>
-
-    <%- include('../partials/footer') %>
+    </main>    <%- include('../partials/footer') %>
     
-    <script src="/socket.io/socket.io.js"></script>
+    <!-- Socket.io removed for standalone mode -->
     <script>
         let allPlatforms = [];
         
@@ -458,24 +456,65 @@
         };        document.addEventListener('DOMContentLoaded', () => {
             loadPlatformCategories();
             initializeVoteButtons();
-        });
-
-        async function loadPlatformCategories() {
+        });        async function loadPlatformCategories() {
             try {
-                const response = await fetch('/api/platforms');
-                const data = await response.json();
-                
-                if (data.success && data.platforms) {
-                    allPlatforms = data.platforms;
-                    renderPlatformCategories(data.platforms);
-                } else {
-                    showPlatformCategoriesError('Failed to load platforms');
-                }
+                // Use static sample data instead of server API
+                const platforms = getStaticPlatformData();
+                allPlatforms = platforms;
+                renderPlatformCategories(platforms);
             } catch (error) {
                 console.error('Error loading platform categories:', error);
                 showPlatformCategoriesError('Error loading platforms');
             }
-        }        function renderPlatformCategories(platforms) {
+        }        function getStaticPlatformData() {
+            // Sample static data for development/standalone mode
+            const baseData = [
+                {
+                    platform: 'youtube',
+                    totalViews: 1250,
+                    items: [
+                        { id: 'yt1', title: 'Bambi Sleep - Basic Training Loop', url: 'https://youtube.com/watch?v=sample1', votes: 45, views: 320, linkId: 'yt1' },
+                        { id: 'yt2', title: 'Advanced Bambi Training Session', url: 'https://youtube.com/watch?v=sample2', votes: 38, views: 285, linkId: 'yt2' },
+                        { id: 'yt3', title: 'Bambi Reinforcement Audio', url: 'https://youtube.com/watch?v=sample3', votes: 32, views: 210, linkId: 'yt3' }
+                    ]
+                },
+                {
+                    platform: 'soundcloud',
+                    totalViews: 890,
+                    items: [
+                        { id: 'sc1', title: 'Deep Bambi Programming', url: 'https://soundcloud.com/sample1', votes: 28, views: 195, linkId: 'sc1' },
+                        { id: 'sc2', title: 'Bambi Maintenance Track', url: 'https://soundcloud.com/sample2', votes: 22, views: 165, linkId: 'sc2' }
+                    ]
+                },
+                {
+                    platform: 'patreon',
+                    totalViews: 650,
+                    items: [
+                        { id: 'pt1', name: 'BambiCreator', title: 'BambiCreator - Premium Content', url: 'https://patreon.com/bambicreator', votes: 35, views: 240 },
+                        { id: 'pt2', name: 'HypnoMaster', title: 'HypnoMaster - Advanced Training', url: 'https://patreon.com/hypnomaster', votes: 28, views: 180 }
+                    ]
+                }
+            ];
+            
+            // Apply local storage modifications to data
+            return baseData.map(platform => ({
+                ...platform,
+                items: platform.items.map(item => {
+                    const itemId = item.id || item.linkId;
+                    const type = item.linkId ? 'link' : 'creator';
+                    
+                    // Get local votes and views
+                    const localVotes = parseInt(localStorage.getItem(`votes_${type}_${itemId}`)) || 0;
+                    const localViews = parseInt(localStorage.getItem(`views_${type}_${itemId}`)) || 0;
+                    
+                    return {
+                        ...item,
+                        votes: (item.votes || 0) + localVotes,
+                        views: (item.views || 0) + localViews
+                    };
+                })
+            }));
+        }function renderPlatformCategories(platforms) {
             const container = document.getElementById('platformCategoriesContainer');
             
             if (!platforms || platforms.length === 0) {
@@ -673,70 +712,21 @@
                     downvoteEmoji.classList.add('active');
                 }
             }
-            
-            // Update vote count immediately for better UX
+              // Update vote count immediately for better UX
             const currentVotes = parseInt(voteCountSpan.textContent.replace('⭐ ', '')) || 0;
             voteCountSpan.textContent = `⭐ ${currentVotes + newVoteValue}`;
             
-            // Cast vote to server
-            const endpoint = type === 'creator' ? `/api/creators/${id}/vote` : `/api/votes`;
-            const payload = type === 'creator' ? { voteType, action } : { linkId: id, userId: bambiName, voteType, action };
+            // Store vote locally instead of server API
+            const voteKey = `votes_${type}_${id}`;
+            const currentStoredVotes = parseInt(localStorage.getItem(voteKey)) || 0;
+            localStorage.setItem(voteKey, currentStoredVotes + newVoteValue);
             
-            fetch(endpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success || data.message) {
-                    // Success - emojis already updated above
-                    console.log('Vote cast successfully:', action);
-                    
-                    // Reload platform categories to reflect changes
-                    setTimeout(() => {
-                        loadPlatformCategories();
-                    }, 1000);
-                } else {
-                    throw new Error(data.error || 'Voting failed');
-                }
-            })
-            .catch(error => {
-                console.error('Error voting:', error);
-                
-                // Revert changes on error
-                voteCountSpan.textContent = `⭐ ${currentVotes}`;
-                
-                if (voteType === 'up') {
-                    if (action === 'add_upvote') {
-                        upvoteEmoji.classList.remove('active');
-                        removeVotingCookie(upvoteCookieKey);
-                        if (newVoteValue === 2) {
-                            downvoteEmoji.classList.add('active');
-                            createVotingCookie(downvoteCookieKey, bambiName);
-                        }
-                    } else {
-                        upvoteEmoji.classList.add('active');
-                        createVotingCookie(upvoteCookieKey, bambiName);
-                    }
-                } else {
-                    if (action === 'add_downvote') {
-                        downvoteEmoji.classList.remove('active');
-                        removeVotingCookie(downvoteCookieKey);
-                        if (newVoteValue === -2) {
-                            upvoteEmoji.classList.add('active');
-                            createVotingCookie(upvoteCookieKey, bambiName);
-                        }
-                    } else {
-                        downvoteEmoji.classList.add('active');
-                        createVotingCookie(downvoteCookieKey, bambiName);
-                    }
-                }
-                
-                alert('Error casting vote: ' + error.message);
-            });
+            console.log('Vote cast locally:', action);
+            
+            // Reload platform categories to reflect changes (using local data)
+            setTimeout(() => {
+                loadPlatformCategories();
+            }, 500);
         }
           function createVotingCookie(cookieKey, bambiName) {
             const expiryDate = new Date();
@@ -792,16 +782,8 @@
                     }
                 }
             });
-        }
-
-        // Listen for new content via WebSocket and reorganize platforms
-        if (typeof io !== 'undefined') {
-            const socket = io();
-            socket.on('newContent', (data) => {
-                console.log('New content received:', data);
-                loadPlatformCategories(); // Reload platform categories to reorganize by views
-            });
-        }
+        }        // WebSocket functionality removed - now using local data only
+        console.log('Running in standalone mode - no server dependencies');
 
         // Track clicks on all URLs on the root page
         function initializeClickTracking() {
@@ -830,46 +812,36 @@
                     }
                 });
             });
-        }
-
-        // Track link view using existing API
+        }        // Track link view using localStorage
         async function trackLinkView(linkId) {
             try {
-                const response = await fetch(`/api/links/${linkId}/view`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
+                const viewKey = `views_link_${linkId}`;
+                const currentViews = parseInt(localStorage.getItem(viewKey)) || 0;
+                const newViews = currentViews + 1;
+                localStorage.setItem(viewKey, newViews);
                 
-                if (response.ok) {
-                    const data = await response.json();
-                    // Update view count in UI if element exists
-                    const viewElement = document.querySelector(`[data-id="${linkId}"]`)?.closest('.creator-info')?.querySelector('.vote-stats-right span');
-                    if (viewElement) {
-                        viewElement.textContent = `👁 ${data.views}`;
-                    }
+                // Update view count in UI if element exists
+                const viewElement = document.querySelector(`[data-id="${linkId}"]`)?.closest('.creator-info')?.querySelector('.vote-stats-right span');
+                if (viewElement) {
+                    viewElement.textContent = `👁 ${newViews}`;
                 }
             } catch (error) {
                 console.error('Error tracking link view:', error);
             }
-        }        // Track creator view using dedicated creator API
+        }
+
+        // Track creator view using localStorage
         async function trackCreatorView(creatorId) {
             try {
-                const response = await fetch(`/api/creators/${creatorId}/view`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
+                const viewKey = `views_creator_${creatorId}`;
+                const currentViews = parseInt(localStorage.getItem(viewKey)) || 0;
+                const newViews = currentViews + 1;
+                localStorage.setItem(viewKey, newViews);
                 
-                if (response.ok) {
-                    const data = await response.json();
-                    // Update view count in UI if element exists
-                    const viewElement = document.querySelector(`[data-id="${creatorId}"]`)?.closest('.creator-info')?.querySelector('.vote-stats-right span');
-                    if (viewElement) {
-                        viewElement.textContent = `👁 ${data.views}`;
-                    }
+                // Update view count in UI if element exists
+                const viewElement = document.querySelector(`[data-id="${creatorId}"]`)?.closest('.creator-info')?.querySelector('.vote-stats-right span');
+                if (viewElement) {
+                    viewElement.textContent = `👁 ${newViews}`;
                 }
             } catch (error) {
                 console.error('Error tracking creator view:', error);

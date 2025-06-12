@@ -42,7 +42,7 @@ function setRoutes(app) {
                 totalViews: links.reduce((sum, link) => sum + (link.views || 0), 0)
             });
         } catch (error) {
-            console.error('Error loading homepage data:', error);
+            
             res.render('pages/index', { 
                 creators: [], 
                 links: [],
@@ -61,12 +61,18 @@ function setRoutes(app) {
     // 3. SUBMIT ROUTE
     router.get('/submit', (req, res) => {
         res.render('pages/submit');
-    });
-
-    // 4. STATS ROUTE
+    });    // 4. STATS ROUTE
     router.get('/stats', (req, res) => {
         res.render('pages/stats');
-    });    // 5. HELP ROUTE
+    });
+
+    // 5. AGENT UI ROUTE - Unified Agent Interface
+    router.get('/agent-ui', (req, res) => {
+        const path = require('path');
+        res.sendFile(path.join(__dirname, '../../public/agent-ui/index.html'));
+    });
+
+    // 6. HELP ROUTE
     router.get('/help', async (req, res) => {
         try {
             const fs = require('fs');
@@ -126,7 +132,7 @@ Help the community by voting on content quality:
                 isMarkdown: true 
             });
         } catch (error) {
-            console.error('Error rendering help page:', error);
+            
             res.render('pages/help', { 
                 htmlContent: '<p>Error loading help content</p>', 
                 title: 'Help', 
@@ -262,7 +268,7 @@ A: Yes! Community feedback is welcome for platform improvements.
                 isDocs: true
             });
         } catch (error) {
-            console.error('Error rendering documentation page:', error);
+            
             res.render('pages/help', { 
                 htmlContent: '<p>Error loading documentation content</p>', 
                 title: 'Documentation Error', 
@@ -293,7 +299,7 @@ A: Yes! Community feedback is welcome for platform improvements.
                 formatTimeRemaining: crawlStatusTracker.formatTimeRemaining.bind(crawlStatusTracker)
             });
         } catch (error) {
-            console.error('Error loading crawl status:', error);
+            
             res.render('pages/crawl-status', { 
                 activeCrawls: [],
                 crawlHistory: [],
@@ -310,7 +316,7 @@ A: Yes! Community feedback is welcome for platform improvements.
                 title: 'AI Girlfriend Agent - Advanced Content Discovery'
             });
         } catch (error) {
-            console.error('Error loading AI crawl page:', error);
+            
             res.status(500).send('Error loading AI crawl interface');
         }
     });
@@ -347,7 +353,7 @@ A: Yes! Community feedback is welcome for platform improvements.
             });
             
         } catch (error) {
-            console.error('Error starting AI crawl:', error);
+            
             res.status(500).json({
                 success: false,
                 error: error.message
@@ -377,7 +383,7 @@ A: Yes! Community feedback is welcome for platform improvements.
             const metadata = await metadataService.fetchMetadata(url);
             res.json(metadata);
         } catch (error) {
-            console.error('Error fetching metadata:', error);
+            
             res.status(500).json({ error: 'Could not fetch metadata' });
         }
     });
@@ -413,12 +419,11 @@ A: Yes! Community feedback is welcome for platform improvements.
                 return res.status(400).json({ error: 'URLs array is required' });
             }
 
-            console.log('🕷️ Processing crawl batch for:', urls);
+            
             const results = [];
             
             for (const url of urls) {
                 try {
-                    console.log(`📡 Fetching metadata for: ${url}`);
                     
                     // Use the existing metadata service
                     const metadata = await metadataService.fetchMetadata(url);
@@ -437,16 +442,15 @@ A: Yes! Community feedback is welcome for platform improvements.
                         };
                         
                         results.push(item);
-                        console.log(`✅ Successfully processed: ${metadata.title}`);
+                        
                     } else {
-                        console.log(`⚠️ No metadata found for: ${url}`);
+                        
                     }
                     
                     // Respectful delay between requests
                     await new Promise(resolve => setTimeout(resolve, 500));
                     
                 } catch (error) {
-                    console.error(`❌ Error processing ${url}:`, error.message);
                     
                     // Create a fallback item even if metadata extraction fails
                     results.push({
@@ -461,7 +465,6 @@ A: Yes! Community feedback is welcome for platform improvements.
                 }
             }
 
-            console.log(`🎉 Crawl batch completed with ${results.length} items`);
             
             res.json({
                 success: true,
@@ -469,7 +472,7 @@ A: Yes! Community feedback is welcome for platform improvements.
             });
 
         } catch (error) {
-            console.error('Crawl batch error:', error);
+            
             res.status(500).json({ 
                 error: 'Failed to crawl URLs',
                 message: error.message 
@@ -486,7 +489,6 @@ A: Yes! Community feedback is welcome for platform improvements.
                 return res.status(400).json({ error: 'URLs array is required' });
             }
 
-            console.log('🕷️ Starting advanced crawl with sitemap generation...');
             
             const AdvancedCrawlAgent = require('../utils/advancedCrawlAgent');
             const crawler = new AdvancedCrawlAgent({
@@ -500,7 +502,6 @@ A: Yes! Community feedback is welcome for platform improvements.
             const report = await crawler.crawlWithSitemap(urls, options);
               // Auto-index discovered bambisleep content
             if (report.bambisleepContent && report.bambisleepContent.length > 0) {
-                console.log(`🌙 Auto-indexing ${report.bambisleepContent.length} bambisleep items...`);
                 
                 for (const item of report.bambisleepContent) {
                     try {
@@ -512,14 +513,13 @@ A: Yes! Community feedback is welcome for platform improvements.
                             req.app.get('io').emit('newContent', savedLink);
                         }
                         
-                        console.log(`✅ Auto-indexed: ${item.title}`);
+                        
                     } catch (error) {
-                        console.error(`❌ Failed to index ${item.title}:`, error.message);
+                        
                     }
                 }
             }
 
-            console.log(`🎉 Advanced crawl completed: ${report.summary.totalUrls} pages, ${report.summary.bambisleepContent} bambisleep items found`);
             
             res.json({
                 success: true,
@@ -528,7 +528,7 @@ A: Yes! Community feedback is welcome for platform improvements.
             });
 
         } catch (error) {
-            console.error('Advanced crawl error:', error);
+            
             res.status(500).json({ 
                 error: 'Advanced crawl failed',
                 message: error.message 
@@ -545,7 +545,6 @@ A: Yes! Community feedback is welcome for platform improvements.
                 return res.status(400).json({ error: 'Domain is required' });
             }
 
-            console.log(`🗺️ Generating sitemap for domain: ${domain}`);
             
             // Get all links from database for the domain
             const allLinks = linkController.db.read('links');
@@ -585,7 +584,7 @@ A: Yes! Community feedback is welcome for platform improvements.
             }
 
         } catch (error) {
-            console.error('Sitemap generation error:', error);
+            
             res.status(500).json({ 
                 error: 'Failed to generate sitemap',
                 message: error.message 
@@ -665,7 +664,7 @@ A: Yes! Community feedback is welcome for platform improvements.
                     }
 
                 } catch (error) {
-                    console.error('Error submitting item:', error);
+                    
                 }
             }
 
@@ -676,7 +675,7 @@ A: Yes! Community feedback is welcome for platform improvements.
             });
 
         } catch (error) {
-            console.error('Bulk submit error:', error);
+            
             res.status(500).json({ 
                 error: 'Failed to submit items',
                 message: error.message 
@@ -730,7 +729,7 @@ A: Yes! Community feedback is welcome for platform improvements.
                 });
             }
 
-            console.log('🎬 Generating iframes for provided URLs...');
+            
               const agent = new BambisleepKnowledgeAgent();
             const iframes = [];
             
@@ -756,7 +755,7 @@ A: Yes! Community feedback is welcome for platform improvements.
             });
 
         } catch (error) {
-            console.error('💥 Iframe generation error:', error);
+            
             res.status(500).json({ 
                 error: 'Iframe generation failed', 
                 message: error.message 
@@ -775,7 +774,7 @@ A: Yes! Community feedback is welcome for platform improvements.
                 });
             }
 
-            console.log('🔍 Parsing URL arguments...');
+            
               const agent = new BambisleepKnowledgeAgent();
             const parsedUrls = [];
             
@@ -805,7 +804,7 @@ A: Yes! Community feedback is welcome for platform improvements.
             });
 
         } catch (error) {
-            console.error('💥 URL parsing error:', error);
+            
             res.status(500).json({ 
                 error: 'URL parsing failed', 
                 message: error.message 
@@ -815,8 +814,7 @@ A: Yes! Community feedback is welcome for platform improvements.
 
     // Get Bambisleep content specifically
     router.get('/api/ai-girlfriend/bambisleep-content', async (req, res) => {
-        try {            console.log('🌟 Discovering Bambisleep content...');
-            
+        try {            
             const agent = new BambisleepKnowledgeAgent({
                 maxDepth: 2,
                 maxPages: 30,
@@ -842,7 +840,7 @@ A: Yes! Community feedback is welcome for platform improvements.
             });
 
         } catch (error) {
-            console.error('💥 Bambisleep content discovery error:', error);
+            
             res.status(500).json({ 
                 error: 'Bambisleep content discovery failed', 
                 message: error.message 
@@ -943,14 +941,14 @@ A: Yes! Community feedback is welcome for platform improvements.
             // Start crawling in background
             agent.discoverContent(urls, { ...options, crawlId })
                 .then(report => {
-                    console.log(`✅ Crawl ${crawlId} completed successfully`);
+                    
                 })
                 .catch(error => {
-                    console.error(`💥 Crawl ${crawlId} failed:`, error);
+                    
                 });
 
         } catch (error) {
-            console.error('💥 Failed to start crawl:', error);
+            
             res.status(500).json({ 
                 error: 'Failed to start crawl', 
                 message: error.message 
@@ -997,7 +995,7 @@ A: Yes! Community feedback is welcome for platform improvements.
             
             res.json(result);
         } catch (error) {
-            console.error('A2A agent registration failed:', error);
+            
             res.status(500).json({
                 success: false,
                 error: error.message
@@ -1025,7 +1023,7 @@ A: Yes! Community feedback is welcome for platform improvements.
             
             res.json(result);
         } catch (error) {
-            console.error('A2A message sending failed:', error);
+            
             res.status(500).json({
                 success: false,
                 error: error.message
@@ -1047,7 +1045,7 @@ A: Yes! Community feedback is welcome for platform improvements.
             
             res.json(result);
         } catch (error) {
-            console.error('A2A message retrieval failed:', error);
+            
             res.status(500).json({
                 success: false,
                 error: error.message
@@ -1063,7 +1061,7 @@ A: Yes! Community feedback is welcome for platform improvements.
             
             res.json(result);
         } catch (error) {
-            console.error('A2A status check failed:', error);
+            
             res.status(500).json({
                 success: false,
                 error: error.message
@@ -1134,7 +1132,7 @@ A: Yes! Community feedback is welcome for platform improvements.
             
             res.json(stats);
         } catch (error) {
-            console.error('Stats API error:', error);
+            
             res.status(500).json({
                 success: false,
                 error: error.message
@@ -1160,7 +1158,7 @@ A: Yes! Community feedback is welcome for platform improvements.
             
             res.json(stats);
         } catch (error) {
-            console.error('Real-time stats error:', error);
+            
             res.status(500).json({
                 success: false,
                 error: error.message
@@ -1179,7 +1177,7 @@ A: Yes! Community feedback is welcome for platform improvements.
                 data: stats
             });
         } catch (error) {
-            console.error('Error fetching error stats:', error);
+            
             res.status(500).json({
                 success: false,
                 error: 'Failed to fetch error statistics'
@@ -1198,7 +1196,7 @@ A: Yes! Community feedback is welcome for platform improvements.
                 data: recentErrors
             });
         } catch (error) {
-            console.error('Error fetching recent errors:', error);
+            
             res.status(500).json({
                 success: false,
                 error: 'Failed to fetch recent errors'
@@ -1226,7 +1224,7 @@ A: Yes! Community feedback is welcome for platform improvements.
                 });
             });
         } catch (error) {
-            console.error('Error reporting error:', error);
+            
             res.status(500).json({
                 success: false,
                 error: 'Failed to report error'
@@ -1243,7 +1241,7 @@ A: Yes! Community feedback is welcome for platform improvements.
                 data: health
             });
         } catch (error) {
-            console.error('Database health check failed:', error);
+            
             res.status(500).json({
                 success: false,
                 error: 'Database health check failed',
@@ -1261,7 +1259,7 @@ A: Yes! Community feedback is welcome for platform improvements.
                 data: config
             });
         } catch (error) {
-            console.error('Error fetching configuration:', error);
+            
             res.status(500).json({
                 success: false,
                 error: 'Failed to fetch configuration'
@@ -1280,7 +1278,7 @@ A: Yes! Community feedback is welcome for platform improvements.
                 data: sectionConfig
             });
         } catch (error) {
-            console.error('Error fetching configuration section:', error);
+            
             res.status(500).json({
                 success: false,
                 error: `Failed to fetch configuration section: ${req.params.section}`
@@ -1297,7 +1295,7 @@ A: Yes! Community feedback is welcome for platform improvements.
                 message: 'Configuration reloaded successfully'
             });
         } catch (error) {
-            console.error('Error reloading configuration:', error);
+            
             res.status(500).json({
                 success: false,
                 error: 'Failed to reload configuration',

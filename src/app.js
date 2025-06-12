@@ -55,8 +55,7 @@ server.listen(PORT, async () => {
         if (localIP !== 'localhost') break;
     }
     
-    console.log(`Server is running on http://localhost:${PORT}`);
-    console.log(`Server is also available on http://${localIP}:${PORT}`);
+    
     
     // Initialize MCP instance after server starts
     try {

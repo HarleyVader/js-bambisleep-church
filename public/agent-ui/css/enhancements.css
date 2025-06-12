@@ -1,0 +1,409 @@
+/* BambiSleep Agent UI - Additional Styles & Toast Notifications */
+
+/* Additional CSS for enhanced UX that wasn't in the main file */
+
+/* Toast Notifications */
+.toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 1rem 1.5rem;
+    border-radius: 0.5rem;
+    color: white;
+    font-weight: 600;
+    z-index: 1000;
+    transform: translateX(400px);
+    transition: transform 0.3s ease;
+    max-width: 400px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.toast.toast-show {
+    transform: translateX(0);
+}
+
+.toast-info {
+    background: linear-gradient(45deg, var(--color-primary-cyan), var(--color-primary-magenta));
+}
+
+.toast-success {
+    background: linear-gradient(45deg, #10B981, #059669);
+}
+
+.toast-error {
+    background: linear-gradient(45deg, #EF4444, #DC2626);
+}
+
+.toast-warning {
+    background: linear-gradient(45deg, #F59E0B, #D97706);
+}
+
+/* Feed Item Styles */
+.feed-item {
+    background: rgba(var(--color-bg-secondary-rgb), 0.8);
+    border: 1px solid var(--color-primary-cyan);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.feed-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(var(--color-primary-magenta-rgb), 0.2);
+}
+
+.feed-item.high {
+    border-color: var(--color-primary-green);
+}
+
+.feed-item.medium {
+    border-color: var(--color-primary-cyan);
+}
+
+.feed-item.low {
+    border-color: #F59E0B;
+}
+
+.feed-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+}
+
+.feed-item-title a {
+    color: var(--color-primary-cyan);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.feed-item-title a:hover {
+    color: var(--color-primary-magenta);
+}
+
+.feed-item-confidence {
+    background: linear-gradient(45deg, var(--color-primary-magenta), var(--color-primary-cyan));
+    -webkit-text-fill-color: transparent;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.feed-item-meta {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+}
+
+.feed-item-meta .platform {
+    padding: 0.25rem 0.5rem;
+    background: rgba(var(--color-primary-cyan-rgb), 0.2);
+    border-radius: 0.25rem;
+}
+
+.feed-item-meta .content-type {
+    padding: 0.25rem 0.5rem;
+    background: rgba(var(--color-primary-magenta-rgb), 0.2);
+    border-radius: 0.25rem;
+}
+
+.feed-item-description {
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+    margin-bottom: 0.75rem;
+}
+
+.feed-item-stats {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+}
+
+.feed-item-stats span {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+/* Discovery Summary Stats */
+.discovery-summary {
+    background: rgba(var(--color-bg-primary-rgb), 0.6);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.summary-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+}
+
+.summary-stat {
+    text-align: center;
+    padding: 1rem;
+    background: rgba(var(--color-bg-secondary-rgb), 0.6);
+    border-radius: 0.5rem;
+    border: 1px solid var(--color-primary-cyan);
+}
+
+.summary-stat .stat-number {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-primary-cyan);
+    margin-bottom: 0.25rem;
+}
+
+.summary-stat .stat-label {
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Error and No Content States */
+.no-content, .error-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: var(--color-text-secondary);
+}
+
+.no-content h3, .error-state h3 {
+    color: var(--color-primary-magenta);
+    margin-bottom: 1rem;
+}
+
+.retry-btn, .refresh-btn {
+    background: linear-gradient(45deg, var(--color-primary-magenta), var(--color-primary-cyan));
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-weight: 600;
+    margin-top: 1rem;
+    transition: all 0.3s ease;
+}
+
+.retry-btn:hover, .refresh-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 3px 10px rgba(var(--color-primary-magenta-rgb), 0.4);
+}
+
+/* Feed Header */
+.feed-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--color-primary-cyan);
+}
+
+.feed-header h3 {
+    color: var(--color-primary-magenta);
+    margin: 0;
+}
+
+/* Insight Response Styling */
+.insight-response h4 {
+    color: var(--color-primary-magenta);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.insight-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.insight-stat {
+    text-align: center;
+    padding: 1rem;
+    background: rgba(var(--color-bg-primary-rgb), 0.6);
+    border-radius: 0.5rem;
+    border: 1px solid var(--color-primary-cyan);
+}
+
+.insight-stat .stat-number {
+    display: block;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--color-primary-cyan);
+    margin-bottom: 0.25rem;
+}
+
+.insight-stat .stat-label {
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Spinner Variations */
+.spinner-small {
+    width: 16px;
+    height: 16px;
+    border-width: 2px;
+}
+
+.spinner-medium {
+    width: 20px;
+    height: 20px;
+    border-width: 2px;
+}
+
+.spinner-large {
+    width: 32px;
+    height: 32px;
+    border-width: 3px;
+}
+
+/* Status Indicator Variations */
+.status-indicator.ready {
+    background: var(--color-primary-green);
+    box-shadow: 0 0 10px var(--color-primary-green);
+}
+
+.status-indicator.loading {
+    background: var(--color-primary-cyan);
+    box-shadow: 0 0 10px var(--color-primary-cyan);
+}
+
+.status-indicator.error {
+    background: #EF4444;
+    box-shadow: 0 0 10px #EF4444;
+}
+
+/* Confidence Classes */
+.confidence-high {
+    color: var(--color-primary-green);
+}
+
+.confidence-medium {
+    color: var(--color-primary-cyan);
+}
+
+.confidence-low {
+    color: #F59E0B;
+}
+
+.confidence-very-low {
+    color: #EF4444;
+}
+
+/* Enhanced Mobile Responsiveness */
+@media (max-width: 480px) {
+    .agent-ui-container {
+        padding: 0.25rem;
+    }
+    
+    .unified-header {
+        margin-bottom: 1rem;
+    }
+    
+    .agent-title {
+        font-size: 2rem;
+    }
+    
+    .agent-tabs {
+        padding: 0.25rem;
+        gap: 0.25rem;
+    }
+    
+    .tab-button {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .agent-panel {
+        padding: 1rem;
+    }
+    
+    .feed-item-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .feed-item-meta {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .insight-stats,
+    .summary-stats,
+    .feed-stats-grid,
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .toast {
+        left: 10px;
+        right: 10px;
+        max-width: none;
+        transform: translateY(-100px);
+    }
+    
+    .toast.toast-show {
+        transform: translateY(0);
+    }
+}
+
+/* Print Styles */
+@media print {
+    .agent-tabs,
+    .submit-button,
+    .refresh-btn,
+    .retry-btn {
+        display: none;
+    }
+    
+    .agent-panel {
+        display: block;
+        break-inside: avoid;
+    }
+    
+    .toast {
+        display: none;
+    }
+}
+
+/* Focus Management for Accessibility */
+.tab-button:focus,
+.submit-button:focus,
+.form-input:focus,
+.insight-tab:focus {
+    outline: 2px solid var(--color-primary-magenta);
+    outline-offset: 2px;
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+    .toast,
+    .feed-item,
+    .tab-button,
+    .submit-button,
+    .retry-btn,
+    .refresh-btn {
+        transition: none;
+    }
+    
+    .status-indicator {
+        animation: none;
+    }
+    
+    .spinner {
+        animation: none;
+        border: 2px solid var(--color-primary-cyan);
+    }
+}
