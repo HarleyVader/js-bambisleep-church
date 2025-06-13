@@ -40,5 +40,33 @@
     "type": "upvote",
     "voter": "user",
     "timestamp": "2025-06-13T15:22:05.498Z"
+  },
+  {
+    "id": 1749828194334.3042,
+    "linkId": "test-link-1",
+    "type": "upvote",
+    "voter": "test-user",
+    "timestamp": "2025-06-13T15:23:14.334Z"
+  },
+  {
+    "id": 1749828194515.528,
+    "linkId": "test",
+    "type": "upvote",
+    "voter": "user",
+    "timestamp": "2025-06-13T15:23:14.515Z"
+  },
+  {
+    "id": 1749828266819.0479,
+    "linkId": "test-link-1",
+    "type": "upvote",
+    "voter": "test-user",
+    "timestamp": "2025-06-13T15:24:26.819Z"
+  },
+  {
+    "id": 1749828266984.0635,
+    "linkId": "test",
+    "type": "upvote",
+    "voter": "user",
+    "timestamp": "2025-06-13T15:24:26.984Z"
   }
 ]

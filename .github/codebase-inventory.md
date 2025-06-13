@@ -44,7 +44,7 @@
 | File | Purpose | Completion |
 |------|---------|------------|
 | `src/controllers/mainController.js` | Main application logic | [75%] |
-| `src/controllers/linkController.js` | Link management operations | [80%] |
+| `src/controllers/linkController.js` | Link management operations | [90%] |
 | `src/controllers/voteController.js` | Voting system operations | [70%] |
 | `src/controllers/feedController.js` | Feed display operations | [80%] |
 | `src/controllers/commentController.js` | Comment system operations | [70%] |
