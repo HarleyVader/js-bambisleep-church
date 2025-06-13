@@ -107,7 +107,7 @@ body::before {
 body {
     font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
     margin: 0;
-    padding: 70px 0 0 0; /* reduced top padding for fixed header */
+    padding: 50px 0 0 0; /* reduced top padding for smaller fixed header */
     background: 
         radial-gradient(circle at 20% 50%, var(--glow-magenta) 0%, transparent 50%),
         radial-gradient(circle at 80% 20%, var(--glow-cyan) 0%, transparent 50%),
@@ -200,7 +200,7 @@ header {
     -webkit-backdrop-filter: blur(20px);
     backdrop-filter: blur(20px);
     box-shadow: var(--shadow-card), inset 0 1px 0 var(--color-overlay-light);
-    padding: var(--spacing-md) 0 var(--spacing-sm) 0; /* reduced top/bottom padding */
+    padding: var(--spacing-xs) 0 var(--spacing-xs) 0; /* smaller navbar - reduced padding */
     text-align: center;
     border-bottom: var(--border-medium) solid var(--color-primary-magenta);
     border-radius: 0 0 var(--radius-lg) var(--radius-lg);
@@ -246,12 +246,12 @@ header::before {
 
 header h1 {
     color: var(--color-text-primary);
-    font-size: var(--font-3xl);
+    font-size: var(--font-xl); /* smaller title for compact navbar */
     font-weight: 900;
-    margin-bottom: var(--spacing-md);
+    margin-bottom: var(--spacing-xs); /* reduced margin */
     text-shadow: var(--shadow-neon), 0 0 40px var(--color-text-primary);
     text-transform: uppercase;
-    letter-spacing: 3px;
+    letter-spacing: 2px; /* reduced letter spacing */
     animation: titleGlow 2s ease-in-out infinite alternate;
 }
 
@@ -274,9 +274,9 @@ nav ul {
     list-style: none;
     display: flex;
     justify-content: center;
-    gap: var(--spacing-lg); /* reduced gap */
-    margin-top: var(--spacing-xs); /* reduced margin */
-    margin-bottom: var(--spacing-xs); /* reduced margin */
+    gap: var(--spacing-sm); /* smaller gap for compact navbar */
+    margin-top: 0; /* removed margin for smaller navbar */
+    margin-bottom: 0; /* removed margin for smaller navbar */
     flex-wrap: wrap;
 }
 
@@ -284,13 +284,13 @@ nav li a {
     color: var(--color-primary-green);
     text-decoration: none;
     font-weight: 700;
-    font-size: var(--font-md);
-    padding: var(--spacing-xs) var(--spacing-md); /* reduced padding */
-    border: var(--border-medium) solid var(--color-primary-green);
-    border-radius: var(--radius-md);
+    font-size: var(--font-sm); /* smaller font for compact navbar */
+    padding: var(--spacing-xs) var(--spacing-sm); /* smaller padding for compact navbar */
+    border: var(--border-thin) solid var(--color-primary-green); /* thinner border */
+    border-radius: var(--radius-sm); /* smaller border radius */
     background: var(--glow-green);
     text-transform: uppercase;
-    letter-spacing: 2px;
+    letter-spacing: 1px; /* reduced letter spacing */
     transition: all var(--transition-normal);
     position: relative;
     overflow: hidden;
@@ -731,15 +731,14 @@ main h1 {
         padding: var(--spacing-md);
         min-height: 0;
     }
-    
-    nav ul {
+      nav ul {
         flex-direction: column;
-        gap: var(--spacing-sm);
+        gap: var(--spacing-xs); /* smaller gap for compact navbar */
     }
     
     nav li a {
-        padding: var(--spacing-xs) var(--spacing-md);
-        font-size: var(--font-sm);
+        padding: var(--spacing-xs) var(--spacing-sm); /* match compact navbar styling */
+        font-size: var(--font-xs); /* smaller font for mobile */
     }
     
     .footer {
@@ -764,9 +763,8 @@ main h1 {
         margin: var(--spacing-xs);
         padding: var(--spacing-lg);
     }
-    
-    nav ul {
-        gap: var(--spacing-md);
+      nav ul {
+        gap: var(--spacing-sm); /* compact navbar gap for tablet */
         flex-wrap: wrap;
     }
 }
