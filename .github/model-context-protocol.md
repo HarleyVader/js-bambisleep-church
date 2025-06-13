@@ -1,528 +1,637 @@
-# Model Context Protocol (MCP) Specifications
+# Knowledgebase Model Context Protocol Server
 
-## Core Architecture
+## Overview
 
-### Overview
+This document outlines the design and implementation of a knowledgebase Model Context Protocol (MCP) server that integrates with LM Studio for enhanced knowledge management, retrieval, and intelligent agent capabilities.
 
-MCP follows a client-server architecture where:
+## LM Studio Integration
 
-- **Hosts**: LLM applications (like Claude Desktop or IDEs) that initiate connections
-- **Clients**: Maintain 1:1 connections with servers, inside the host application  
-- **Servers**: Provide context, tools, and prompts to clients
+### Prerequisites
 
-### Message Format
+- **LM Studio 0.3.6+**: Required for tool use and structured output support
+- **Supported Models**: Native tool use models recommended
+  - `lmstudio-community/Qwen2.5-7B-Instruct-GGUF` (4.68 GB)
+  - `lmstudio-community/Meta-Llama-3.1-8B-Instruct-GGUF` (4.92 GB)  
+  - `bartowski/Ministral-8B-Instruct-2410-GGUF` (4.67 GB)
 
-Uses **JSON-RPC 2.0** as wire format with three message types:
+### Server Configuration
 
-#### Requests
+```bash
+# Start LM Studio server
+lms server start
 
-```json
-{
-  "jsonrpc": "2.0",
-  "id": "number | string",
-  "method": "string", 
-  "params": "object?"
-}
+# Or via GUI: Developer tab → Start Server
+# Default endpoint: http://localhost:1234
 ```
 
-#### Responses
+### API Integration
 
-```json
-{
-  "jsonrpc": "2.0",
-  "id": "number | string",
-  "result": "object?",
-  "error": {
-    "code": "number",
-    "message": "string",
-    "data": "unknown?"
-  }
-}
-```
-
-#### Notifications
-
-```json
-{
-  "jsonrpc": "2.0",
-  "method": "string",
-  "params": "object?"
-}
-```
-
-## Transports
-
-### 1. Standard Input/Output (stdio)
-
-- **Use for**: Local integrations, command-line tools, shell scripts
-- **Benefits**: Simple process communication
-
-### 2. Streamable HTTP  
-
-- **Use for**: Web integrations, stateful sessions, multiple clients
-- **Features**: HTTP POST for client-to-server, optional SSE for server-to-client
-- **Security**: Origin validation, localhost binding, HTTPS for production
-
-### 3. Custom Transports
-
-Implement `Transport` interface:
-
-```typescript
-interface Transport {
-  start(): Promise<void>;
-  send(message: JSONRPCMessage): Promise<void>; 
-  close(): Promise<void>;
-  onclose?: () => void;
-  onerror?: (error: Error) => void;
-  onmessage?: (message: JSONRPCMessage) => void;
-}
-```
-
-## Tools
-
-### Definition Structure
-
-```json
-{
-  "name": "string",
-  "description": "string?",
-  "inputSchema": {
-    "type": "object",
-    "properties": { "..." }
-  },
-  "annotations": {
-    "title": "string?",
-    "readOnlyHint": "boolean?",
-    "destructiveHint": "boolean?", 
-    "idempotentHint": "boolean?",
-    "openWorldHint": "boolean?"
-  }
-}
-```
-
-### Tool Categories
-
-- **System operations**: Execute commands, file operations
-- **API integrations**: External service calls
-- **Data processing**: Transform, analyze data
-
-### Tool Implementation Best Practices
-
-1. Clear, descriptive names and descriptions
-2. Detailed JSON Schema for parameters
-3. Proper error handling within result object
-4. Use `isError: true` for tool failures
-5. Implement proper timeouts and validation
-
-## Prompts
-
-### Structure
-
-```json
-{
-  "name": "string",
-  "description": "string?", 
-  "arguments": [
-    {
-      "name": "string",
-      "description": "string?",
-      "required": "boolean?"
-    }
-  ]
-}
-```
-
-### Usage Patterns
-
-- **Discovery**: `prompts/list` endpoint
-- **Execution**: `prompts/get` with arguments
-- **Dynamic content**: Embed resources, multi-step workflows
-
-## Security Considerations
-
-### Transport Security
-
-- Use TLS for remote connections
-- Validate connection origins  
-- Implement authentication
-- DNS rebinding protection
-
-### Message Validation
-
-- Validate all incoming messages
-- Sanitize inputs
-- Check message size limits
-- Verify JSON-RPC format
-
-### Access Control
-
-- Implement proper authentication
-- Use authorization checks
-- Audit tool usage
-- Rate limit requests
-
-## Error Handling
-
-### Standard Error Codes
-
-```typescript
-enum ErrorCode {
-  ParseError = -32700,
-  InvalidRequest = -32600, 
-  MethodNotFound = -32601,
-  InvalidParams = -32602,
-  InternalError = -32603
-}
-```
-
-### Best Practices
-
-- Don't leak sensitive information
-- Log security-relevant errors
-- Implement proper cleanup
-- Handle DoS scenarios
-
-## Connection Lifecycle
-
-### 1. Initialization
-
-1. Client sends `initialize` request
-2. Server responds with capabilities
-3. Client sends `initialized` notification
-4. Normal message exchange begins
-
-### 2. Message Exchange
-
-- Request-Response patterns
-- One-way notifications
-
-### 3. Termination
-
-- Clean shutdown via `close()`
-- Transport disconnection
-- Error conditions
-
-## Implementation Guidelines
-
-### Server Setup
-
-```typescript
-import { Server } from "@modelcontextprotocol/sdk/server";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio";
-
-const server = new Server({
-  name: "example-server",
-  version: "1.0.0" 
-}, {
-  capabilities: {
-    resources: {},
-    tools: {},
-    prompts: {}
-  }
-});
-```
-
-### Tool Implementation
-
-```typescript
-server.setRequestHandler(CallToolRequestSchema, async (request) => {
-  try {
-    const result = performOperation();
-    return {
-      content: [{ type: "text", text: String(result) }]
-    };
-  } catch (error) {
-    return {
-      isError: true,
-      content: [{ type: "text", text: `Error: ${error.message}` }]
-    };
-  }
-});
-```
-
-## LMStudio Integration
-
-### Framework Configuration
-
-- **Endpoint**: `http://192.168.0.69:7777/v1/chat/completions`
-- **Model**: `llama-3.2-3b-claude-3.7-sonnet-reasoning-distilled@q4_0`
-- **Capabilities**: Tool orchestration, workflow management, adaptive learning
-
-### API Endpoints
-
-#### Supported OpenAI-Compatible Endpoints
-
-```http
-GET  /v1/models
-POST /v1/chat/completions
-POST /v1/embeddings
-POST /v1/completions
-```
-
-#### Client Setup
-
-```python
-from openai import OpenAI
-
-client = OpenAI(
-    base_url="http://192.168.0.69:7777/v1",
-    api_key="lm-studio"
-)
-```
-
-```typescript
+```javascript
+// OpenAI-compatible client setup
 import OpenAI from 'openai';
 
 const client = new OpenAI({
-  baseUrl: "http://192.168.0.69:7777/v1",
+  baseURL: "http://localhost:1234/v1",
   apiKey: "lm-studio"
 });
 ```
 
-### Tool Calling Implementation
+## Architecture
 
-#### Tool Definition Format
+### Core Components
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    MCP Client (VS Code)                    │
+└─────────────────────┬───────────────────────────────────────┘
+                      │ MCP Protocol
+┌─────────────────────▼───────────────────────────────────────┐
+│              Knowledgebase MCP Server                      │
+├─────────────────────────────────────────────────────────────┤
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
+│  │   Tools     │  │  Resources  │  │     Prompts         │  │
+│  │ - search    │  │ - documents │  │ - knowledge_agent   │  │
+│  │ - add       │  │ - vectors   │  │ - search_expert     │  │
+│  │ - update    │  │ - metadata  │  │ - context_analyzer  │  │
+│  │ - analyze   │  │             │  │                     │  │
+│  └─────────────┘  └─────────────┘  └─────────────────────┘  │
+└─────────────────────┬───────────────────────────────────────┘
+                      │ HTTP API
+┌─────────────────────▼───────────────────────────────────────┐
+│                   LM Studio Server                         │
+├─────────────────────────────────────────────────────────────┤
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────┐  │
+│  │ Chat Completions│  │ Tool Use Engine │  │ Embeddings  │  │
+│  │ /v1/chat/...    │  │ Function Calls  │  │ /v1/embed.. │  │
+│  └─────────────────┘  └─────────────────┘  └─────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## MCP Tools Implementation
+
+### 1. Knowledge Search Tool
+
+```typescript
+{
+  name: "search_knowledge",
+  description: "Search the knowledgebase using semantic or keyword queries",
+  inputSchema: {
+    type: "object",
+    properties: {
+      query: {
+        type: "string",
+        description: "Search query (natural language or keywords)"
+      },
+      type: {
+        type: "string", 
+        enum: ["semantic", "keyword", "hybrid"],
+        description: "Search type to use"
+      },
+      limit: {
+        type: "number",
+        description: "Maximum number of results (default: 10)"
+      },
+      category: {
+        type: "string",
+        description: "Filter by knowledge category"
+      }
+    },
+    required: ["query"]
+  }
+}
+```
+
+### 2. Knowledge Management Tool
+
+```typescript
+{
+  name: "add_knowledge",
+  description: "Add new knowledge entry to the database",
+  inputSchema: {
+    type: "object",
+    properties: {
+      title: {
+        type: "string",
+        description: "Title of the knowledge entry"
+      },
+      content: {
+        type: "string", 
+        description: "Main content of the knowledge entry"
+      },
+      category: {
+        type: "string",
+        description: "Category/tag for organization"
+      },
+      metadata: {
+        type: "object",
+        description: "Additional metadata (source, date, etc.)"
+      }
+    },
+    required: ["title", "content"]
+  }
+}
+```
+
+### 3. Context Analysis Tool
+
+```typescript
+{
+  name: "analyze_context",
+  description: "Analyze conversation context and extract relevant knowledge needs",
+  inputSchema: {
+    type: "object", 
+    properties: {
+      conversation: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            role: { type: "string" },
+            content: { type: "string" }
+          }
+        },
+        description: "Conversation history to analyze"
+      },
+      extract_entities: {
+        type: "boolean",
+        description: "Extract named entities from context"
+      }
+    },
+    required: ["conversation"]
+  }
+}
+```
+
+## LM Studio Tool Use Integration
+
+### Function Calling Setup
+
+```javascript
+// Tools definition for LM Studio
+const tools = [
+  {
+    type: "function",
+    function: {
+      name: "search_knowledge",
+      description: "Search the knowledgebase for relevant information",
+      parameters: {
+        type: "object",
+        properties: {
+          query: { type: "string" },
+          type: { type: "string", enum: ["semantic", "keyword"] }
+        },
+        required: ["query"]
+      }
+    }
+  }
+];
+
+// Chat completion with tools
+const response = await client.chat.completions.create({
+  model: "lmstudio-community/qwen2.5-7b-instruct",
+  messages: [
+    { role: "user", content: "Find information about bambisleep techniques" }
+  ],
+  tools: tools
+});
+```
+
+### Tool Execution Handler
+
+```javascript
+async function handleToolCall(toolCall) {
+  const { name, arguments: args } = toolCall.function;
+  
+  switch (name) {
+    case 'search_knowledge':
+      return await searchKnowledge(JSON.parse(args));
+    case 'add_knowledge':
+      return await addKnowledge(JSON.parse(args));
+    case 'analyze_context':
+      return await analyzeContext(JSON.parse(args));
+    default:
+      throw new Error(`Unknown tool: ${name}`);
+  }
+}
+```
+
+## Structured Output Schemas
+
+### Search Results Schema
 
 ```json
 {
-  "type": "function",
-  "function": {
-    "name": "search_products",
-    "description": "Search the product catalog by various criteria",
-    "parameters": {
+  "type": "json_schema",
+  "json_schema": {
+    "name": "search_results",
+    "schema": {
       "type": "object",
       "properties": {
-        "query": {
-          "type": "string",
-          "description": "Search terms or product name"
+        "results": {
+          "type": "array",
+          "items": {
+            "type": "object", 
+            "properties": {
+              "id": { "type": "string" },
+              "title": { "type": "string" },
+              "content": { "type": "string" },
+              "category": { "type": "string" },
+              "relevance_score": { "type": "number" },
+              "metadata": { "type": "object" }
+            },
+            "required": ["id", "title", "content", "relevance_score"]
+          }
         },
-        "category": {
-          "type": "string",
-          "description": "Product category to filter by",
-          "enum": ["electronics", "clothing", "home", "outdoor"]
-        },
-        "max_price": {
-          "type": "number",
-          "description": "Maximum price in dollars"
-        }
+        "total_results": { "type": "number" },
+        "query_type": { "type": "string" }
       },
-      "required": ["query"],
-      "additionalProperties": false
+      "required": ["results", "total_results"]
     }
   }
 }
 ```
 
-#### Single-Turn Tool Call Example
+### Knowledge Entry Schema
 
-```python
-def say_hello(name: str) -> str:
-    print(f"Hello, {name}!")
-
-tools = [{
-    "type": "function",
-    "function": {
-        "name": "say_hello",
-        "description": "Says hello to someone",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string",
-                    "description": "The person's name"
-                }
-            },
-            "required": ["name"]
-        }
-    }
-}]
-
-response = client.chat.completions.create(
-    model="llama-3.2-3b-claude-3.7-sonnet-reasoning-distilled@q4_0",
-    messages=[{"role": "user", "content": "Say hello to Bob"}],
-    tools=tools
-)
-
-# Execute tool if requested
-if response.choices[0].message.tool_calls:
-    tool_call = response.choices[0].message.tool_calls[0]
-    name = eval(tool_call.function.arguments)["name"]
-    say_hello(name)
-```
-
-#### Multi-Turn Tool Flow
-
-```python
-# 1. Initial request with tools
-messages = [{"role": "user", "content": "When will order 123 be delivered?"}]
-
-response = client.chat.completions.create(
-    model="llama-3.2-3b-claude-3.7-sonnet-reasoning-distilled@q4_0",
-    messages=messages,
-    tools=tools
-)
-
-# 2. Execute tool and add results to conversation
-if response.choices[0].message.tool_calls:
-    # Add the assistant's tool call message
-    messages.append(response.choices[0].message)
-    
-    for tool_call in response.choices[0].message.tool_calls:
-        # Execute the tool
-        result = execute_function(tool_call.function.name, tool_call.function.arguments)
-        
-        # Add tool result to conversation
-        messages.append({
-            "role": "tool",
-            "tool_call_id": tool_call.id,
-            "content": str(result)
-        })
-    
-    # 3. Get final response without tools
-    final_response = client.chat.completions.create(
-        model="llama-3.2-3b-claude-3.7-sonnet-reasoning-distilled@q4_0",
-        messages=messages
-    )
-```
-
-### Structured Output
-
-#### JSON Schema Response Format
-
-```python
-character_schema = {
-    "type": "json_schema",
-    "json_schema": {
-        "name": "characters",
-        "schema": {
-            "type": "object",
-            "properties": {
-                "characters": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "name": {"type": "string"},
-                            "occupation": {"type": "string"},
-                            "personality": {"type": "string"},
-                            "background": {"type": "string"}
-                        },
-                        "required": ["name", "occupation", "personality", "background"]
-                    },
-                    "minItems": 1
-                }
-            },
-            "required": ["characters"]
-        }
-    }
-}
-
-response = client.chat.completions.create(
-    model="llama-3.2-3b-claude-3.7-sonnet-reasoning-distilled@q4_0",
-    messages=[{"role": "user", "content": "Create 1-3 fictional characters"}],
-    response_format=character_schema
-)
-
-results = json.loads(response.choices[0].message.content)
-```
-
-#### cURL Example for Structured Output
-
-```bash
-curl http://192.168.0.69:7777/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "llama-3.2-3b-claude-3.7-sonnet-reasoning-distilled@q4_0",
-    "messages": [
-      {"role": "system", "content": "You are a helpful jokester."},
-      {"role": "user", "content": "Tell me a joke."}
-    ],
-    "response_format": {
-      "type": "json_schema",
-      "json_schema": {
-        "name": "joke_response",
-        "strict": true,
-        "schema": {
+```json
+{
+  "type": "json_schema",
+  "json_schema": {
+    "name": "knowledge_entry", 
+    "schema": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "category": { "type": "string" },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "created_at": { "type": "string", "format": "date-time" },
+        "updated_at": { "type": "string", "format": "date-time" },
+        "metadata": {
           "type": "object",
           "properties": {
-            "joke": {"type": "string"}
-          },
-          "required": ["joke"]
+            "source": { "type": "string" },
+            "author": { "type": "string" },
+            "confidence": { "type": "number" }
+          }
         }
-      }
+      },
+      "required": ["id", "title", "content", "category"]
     }
-  }'
+  }
+}
 ```
 
-### Supported Models
+## Implementation Architecture
 
-#### Native Tool Use Support
+### Server Structure
 
-Models with hammer badge in LM Studio:
-
-- **Qwen2.5**: `lmstudio-community/Qwen2.5-7B-Instruct-GGUF`
-- **Llama-3.1/3.2**: `lmstudio-community/Meta-Llama-3.1-8B-Instruct-GGUF`
-- **Mistral**: `bartowski/Ministral-8B-Instruct-2410-GGUF`
-
-#### Default Tool Use Support
-
-All other models use custom system prompts with default tool call format.
-
-### Streaming Tool Calls
-
-```python
-for chunk in client.chat.completions.create(
-    model="llama-3.2-3b-claude-3.7-sonnet-reasoning-distilled@q4_0",
-    messages=messages,
-    tools=tools,
-    stream=True
-):
-    if chunk.choices[0].delta.tool_calls:
-        # Accumulate tool call chunks
-        tool_call_chunk = chunk.choices[0].delta.tool_calls[0]
-        if tool_call_chunk.function.name:
-            function_name = tool_call_chunk.function.name
-        if tool_call_chunk.function.arguments:
-            function_args += tool_call_chunk.function.arguments
+```
+src/
+├── mcp/
+│   ├── McpKnowledgeServer.js      # Main MCP server
+│   ├── tools/
+│   │   ├── searchTool.js          # Knowledge search implementation
+│   │   ├── managementTool.js      # Add/update/delete operations  
+│   │   └── analysisTool.js        # Context analysis
+│   ├── resources/
+│   │   ├── documentsResource.js   # Document access
+│   │   └── vectorsResource.js     # Vector embeddings
+│   └── prompts/
+│       ├── knowledgeAgent.js      # Knowledge agent prompt
+│       └── searchExpert.js        # Search expert prompt
+├── lmstudio/
+│   ├── client.js                  # LM Studio API client
+│   ├── toolExecutor.js           # Tool execution handler
+│   └── responseFormatter.js       # Response formatting
+├── knowledge/
+│   ├── storage.js                 # Knowledge storage layer
+│   ├── search.js                  # Search implementations
+│   ├── embeddings.js             # Vector operations
+│   └── indexing.js               # Content indexing
+└── config/
+    ├── server.js                  # Server configuration
+    └── models.js                  # LM Studio model configs
 ```
 
-### Error Handling and Debugging
+### Configuration
 
-#### Tool Call Response Parsing
+```javascript
+// config/server.js
+export default {
+  lmstudio: {
+    baseURL: process.env.LMSTUDIO_URL || "http://localhost:1234/v1",
+    apiKey: process.env.LMSTUDIO_API_KEY || "lm-studio",
+    model: process.env.LMSTUDIO_MODEL || "lmstudio-community/qwen2.5-7b-instruct",
+    temperature: 0.7,
+    maxTokens: 2048
+  },
+  
+  mcp: {
+    name: "knowledgebase-server",
+    version: "1.0.0",
+    port: process.env.MCP_PORT || 3001
+  },
+  
+  knowledge: {
+    storage: {
+      type: "filesystem", // or "database"
+      path: "./data/knowledge",
+      indexPath: "./data/index"
+    },
+    
+    search: {
+      defaultType: "hybrid",
+      maxResults: 50,
+      semanticThreshold: 0.7
+    }
+  }
+};
+```
 
-- LM Studio attempts to parse tool calls into `response.choices[0].message.tool_calls`
-- Unparseable calls fall back to `response.choices[0].message.content`
-- Check `finish_reason` for `"tool_calls"` to confirm successful parsing
+## Performance Optimizations
 
-#### Model Compatibility
+### Caching Strategy
 
-- Models below 7B parameters may have limited structured output capability
-- Check model README for tool use and structured output support
-- Use `lms log stream` to debug tool call formatting issues
+```javascript
+// Implement multi-level caching
+class KnowledgeCache {
+  constructor() {
+    this.searchCache = new Map();      // Search result cache
+    this.embeddingCache = new Map();   // Vector embedding cache
+    this.responseCache = new Map();    // LM response cache
+  }
+  
+  async getCachedSearch(query, type) {
+    const key = `${query}:${type}`;
+    return this.searchCache.get(key);
+  }
+  
+  setCachedSearch(query, type, results) {
+    const key = `${query}:${type}`;
+    this.searchCache.set(key, {
+      results,
+      timestamp: Date.now(),
+      ttl: 300000 // 5 minutes
+    });
+  }
+}
+```
 
-### Integration Best Practices
+### Async Operations
 
-1. Let AI reason about tool selection
-2. Use structured output with response_format for consistent data
-3. Enable learning from execution outcomes
-4. Follow JSON-RPC 2.0 specifications for MCP compatibility
-5. Leverage framework orchestration capabilities
-6. Implement proper error handling for tool failures
-7. Use streaming for real-time tool execution feedback
+```javascript
+// Parallel processing for complex operations
+async function enhancedSearch(query) {
+  const [semanticResults, keywordResults, contextAnalysis] = await Promise.all([
+    semanticSearch(query),
+    keywordSearch(query), 
+    analyzeQueryContext(query)
+  ]);
+  
+  return mergeAndRankResults(semanticResults, keywordResults, contextAnalysis);
+}
+```
 
-### Model Context Protocol (MCP) Orchestration
+## Usage Examples
 
-**Primary Model**: `llama-3.2-3b-claude-3.7-sonnet-reasoning-distilled@q4_0`
+### Basic Knowledge Search
 
-- **Purpose**: Orchestrate MCP server tools with advanced reasoning
-- **Endpoint**: <http://192.168.0.69:7777/v1/chat/completions>
-- **Capabilities**: Tool selection, workflow orchestration, adaptive learning
-- **Framework**: LMStudio MCP Framework (src/mcp/lmstudioMcpFramework.js)
+```javascript
+// Client code
+const result = await mcpClient.callTool('search_knowledge', {
+  query: "bambisleep induction techniques",
+  type: "hybrid",
+  limit: 5
+});
 
-#### MCP Integration Guidelines
+console.log(result.results);
+// Returns structured knowledge entries with relevance scores
+```
 
-1. **Always use LMStudio for tool orchestration** - Let the AI reason about which tools to use
-2. **Leverage the framework's orchestration capabilities** - Don't manually chain tools
-3. **Use structured output** - Configure response_format for JSON when needed
-4. **Enable learning** - Allow the framework to learn from execution outcomes
-5. **Respect the protocol** - Follow MCP JSON-RPC 2.0 specifications
+### Adding Knowledge with Context
+
+```javascript
+const knowledge = await mcpClient.callTool('add_knowledge', {
+  title: "Advanced Bambisleep Techniques",
+  content: "Detailed guide on advanced techniques...",
+  category: "techniques",
+  metadata: {
+    source: "community-wiki",
+    confidence: 0.9,
+    tags: ["advanced", "induction", "techniques"]
+  }
+});
+```
+
+### Context-Aware Knowledge Retrieval
+
+```javascript
+const analysis = await mcpClient.callTool('analyze_context', {
+  conversation: [
+    { role: "user", content: "I'm having trouble with deep relaxation" },
+    { role: "assistant", content: "Let me help you with that..." }
+  ],
+  extract_entities: true
+});
+
+// Use analysis to search for relevant knowledge
+const relevantKnowledge = await mcpClient.callTool('search_knowledge', {
+  query: analysis.entities.join(' '),
+  type: "semantic"
+});
+```
+
+## Error Handling & Fallbacks
+
+### LM Studio Connection Issues
+
+```javascript
+class LMStudioClient {
+  async callWithFallback(endpoint, data) {
+    try {
+      return await this.client.request(endpoint, data);
+    } catch (error) {
+      if (error.code === 'ECONNREFUSED') {
+        console.warn('LM Studio server not available, using fallback');
+        return this.fallbackProcessor(data);
+      }
+      throw error;
+    }
+  }
+  
+  fallbackProcessor(data) {
+    // Simple keyword-based fallback when LM Studio is unavailable
+    return {
+      content: "LM Studio unavailable. Using basic search.",
+      tool_calls: null
+    };
+  }
+}
+```
+
+### Tool Execution Safeguards
+
+```javascript
+async function safeToolExecution(toolCall) {
+  try {
+    const result = await executeToolCall(toolCall);
+    return {
+      success: true,
+      result: result
+    };
+  } catch (error) {
+    console.error(`Tool execution failed: ${error.message}`);
+    return {
+      success: false,
+      error: error.message,
+      fallback: "Tool execution failed. Please try again."
+    };
+  }
+}
+```
+
+## Testing Strategy
+
+### Unit Tests
+
+```javascript
+// Test tool implementations
+describe('Knowledge Tools', () => {
+  test('search_knowledge returns structured results', async () => {
+    const result = await searchKnowledge({
+      query: "test query",
+      type: "semantic"
+    });
+    
+    expect(result).toHaveProperty('results');
+    expect(result.results).toBeInstanceOf(Array);
+    expect(result.results[0]).toHaveProperty('relevance_score');
+  });
+});
+```
+
+### Integration Tests
+
+```javascript
+// Test LM Studio integration
+describe('LM Studio Integration', () => {
+  test('tool use workflow', async () => {
+    const response = await lmClient.chat.completions.create({
+      model: "qwen2.5-7b-instruct",
+      messages: [{ role: "user", content: "Search for bambisleep info" }],
+      tools: knowledgeTools
+    });
+    
+    expect(response.choices[0].message.tool_calls).toBeDefined();
+  });
+});
+```
+
+## Deployment
+
+### Environment Setup
+
+```bash
+# Install dependencies
+npm install
+
+# Set environment variables
+export LMSTUDIO_URL="http://localhost:1234/v1"
+export LMSTUDIO_MODEL="lmstudio-community/qwen2.5-7b-instruct"
+export MCP_PORT=3001
+
+# Start LM Studio server
+lms server start
+
+# Start MCP server
+npm run start:mcp
+```
+
+### Docker Configuration
+
+```dockerfile
+FROM node:18-alpine
+
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+
+COPY src/ ./src/
+COPY config/ ./config/
+
+EXPOSE 3001
+
+CMD ["node", "src/mcp/McpKnowledgeServer.js"]
+```
+
+## Monitoring & Maintenance
+
+### Health Checks
+
+```javascript
+// Health monitoring
+async function healthCheck() {
+  const checks = {
+    lmstudio: await checkLMStudioConnection(),
+    knowledge_db: await checkKnowledgeDatabase(),
+    mcp_server: await checkMCPServer()
+  };
+  
+  return {
+    status: Object.values(checks).every(Boolean) ? 'healthy' : 'degraded',
+    checks
+  };
+}
+```
+
+### Performance Metrics
+
+```javascript
+// Track key metrics
+const metrics = {
+  search_latency: new Map(),
+  tool_call_success_rate: 0,
+  cache_hit_rate: 0,
+  knowledge_entries_count: 0
+};
+```
+
+## Security Considerations
+
+### Input Validation
+
+```javascript
+function validateToolInput(toolName, input) {
+  const schemas = {
+    search_knowledge: searchSchema,
+    add_knowledge: addSchema,
+    analyze_context: analysisSchema
+  };
+  
+  return validate(input, schemas[toolName]);
+}
+```
+
+### Access Control
+
+```javascript
+// Implement role-based access
+function checkPermissions(user, operation) {
+  const permissions = {
+    read: ['user', 'admin'],
+    write: ['admin'],
+    delete: ['admin']
+  };
+  
+  return permissions[operation].includes(user.role);
+}
+```
+
+---
+
+This knowledgebase MCP server leverages LM Studio's powerful local LLM capabilities to provide intelligent, context-aware knowledge management that enhances the bambisleep community platform with advanced AI-driven features.

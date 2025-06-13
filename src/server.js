@@ -1,162 +1,105 @@
-import { Server } from 'socket.io';
-import { createServer } from 'http';
 import express from 'express';
+import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import fs from 'fs';
-import os from 'os';
-import path from 'path';
-import { marked } from 'marked';
+import KnowledgeStorage from './knowledge/storage.js';
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = dirname(__filename);
 
 const app = express();
-const server = createServer(app);
-const io = new Server(server);
+const PORT = process.env.PORT || 3000;
 
-// Configure EJS
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, '../views'));
+// Initialize knowledge storage
+const knowledgeStorage = new KnowledgeStorage();
 
-// Static files
-app.use(express.static(path.join(__dirname, '../public')));
+// Middleware
 app.use(express.json());
+app.use(express.static(join(__dirname, '../public')));
 
-// Load optional routes
-const loadOptionalRoutes = async () => {
-    const routesDir = path.join(__dirname, 'routes');
-    if (fs.existsSync(routesDir)) {
-        try {
-            const files = fs.readdirSync(routesDir).filter(file => file.endsWith('.js'));
-            for (const file of files) {
-                const routePath = path.join(routesDir, file);
-                const routeModule = await import(`file://${routePath}`);
-                if (routeModule.default) {
-                    app.use(routeModule.default);
-                    console.log(`✓ Loaded route: ${file}`);
-                }
-            }
-        } catch (error) {
-            console.warn('Warning: Error loading optional routes:', error.message);
-        }
-    }
-};
-
-// Load routes
-await loadOptionalRoutes();
+// Set view engine
+app.set('view engine', 'ejs');
+app.set('views', join(__dirname, '../views'));
 
 // Routes
 app.get('/', (req, res) => {
-    res.render('pages/index', {
-        title: 'Bambi Sleep Church - Unified Platform Hub',
-        categories: [],
-        links: [],
-        creators: []
-    });
+  res.render('pages/index', {
+    title: 'JS Bambi Sleep Church - URL Crawler MCP',
+    message: 'MCP URL Crawler Server Running'
+  });
 });
 
-app.get('/help', (req, res) => {
-    res.render('pages/help', {
-        title: 'Help & Support - Bambi Sleep Church',
-        isMarkdown: false,
-        currentDoc: null
-    });
+app.get('/knowledge', (req, res) => {
+  res.render('pages/knowledge', {
+    title: 'Knowledge Base - Bambi Sleep Church'
+  });
 });
 
-// Markdown documentation routes
-app.get('/help/:docName', (req, res) => {
-    const docName = req.params.docName;
-    const docPath = path.join(__dirname, '../docs', `${docName}.md`);
+// API Routes for Knowledge
+app.get('/api/knowledge', async (req, res) => {
+  try {
+    const entries = await knowledgeStorage.listEntries();
+    const fullEntries = await Promise.all(
+      entries.map(async (entry) => {
+        const fullEntry = await knowledgeStorage.getEntry(entry.id);
+        return fullEntry;
+      })
+    );
     
-    if (fs.existsSync(docPath)) {
-        try {
-            const markdownContent = fs.readFileSync(docPath, 'utf8');
-            const htmlContent = marked(markdownContent);
-            
-            res.render('pages/help', {
-                title: `${docName} - Bambi Sleep Church`,
-                isMarkdown: true,
-                currentDoc: docName,
-                htmlContent: htmlContent,
-                isDocs: true
-            });
-        } catch (error) {
-            console.error('Error reading markdown file:', error);
-            res.status(500).render('pages/help', {
-                title: 'Error - Bambi Sleep Church',
-                isMarkdown: false,
-                currentDoc: null
-            });
-        }
-    } else {
-        res.status(404).render('pages/help', {
-            title: 'Not Found - Bambi Sleep Church',
-            isMarkdown: false,
-            currentDoc: null
-        });
+    res.json({
+      success: true,
+      entries: fullEntries.filter(Boolean),
+      total: fullEntries.length
+    });
+  } catch (error) {
+    console.error('API Error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+app.post('/api/knowledge', async (req, res) => {
+  try {
+    const { title, category, content } = req.body;
+    
+    if (!content) {
+      return res.status(400).json({
+        success: false,
+        error: 'Content is required'
+      });
     }
+    
+    const result = await knowledgeStorage.addEntry(content, {
+      title: title || 'Untitled',
+      category: category || 'general'
+    });
+    
+    res.json({
+      success: true,
+      id: result.id,
+      message: 'Knowledge added successfully'
+    });
+  } catch (error) {
+    console.error('API Error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
 });
 
-// Socket.IO real-time features
-const loadOptionalSocketHandlers = async (io) => {
-    const socketDir = path.join(__dirname, 'socket');
-    if (fs.existsSync(socketDir)) {
-        try {
-            const files = fs.readdirSync(socketDir).filter(file => file.endsWith('.js'));
-            for (const file of files) {
-                const socketPath = path.join(socketDir, file);
-                const socketModule = await import(`file://${socketPath}`);
-                if (socketModule.default) {
-                    socketModule.default(io);
-                    console.log(`✓ Loaded socket handler: ${file}`);
-                }
-            }
-        } catch (error) {
-            console.warn('Warning: Error loading optional socket handlers:', error.message);
-        }
-    }
-};
-
-io.on('connection', (socket) => {
-    console.log('User connected:', socket.id);
-    
-    socket.on('vote', (data) => {
-        // Broadcast vote updates to all clients
-        io.emit('voteUpdate', data);
-    });
-    
-    socket.on('newLink', (data) => {
-        // Broadcast new link to all clients
-        io.emit('linkAdded', data);
-    });
-    
-    socket.on('disconnect', () => {
-        console.log('User disconnected:', socket.id);
-    });
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    service: 'url-crawler-knowledgebase-mcp',
+    timestamp: new Date().toISOString()
+  });
 });
 
-// Load optional socket handlers
-await loadOptionalSocketHandlers(io);
-
-const PORT = process.env.PORT || 8888;
-
-function getServerAddress() {
-    const interfaces = os.networkInterfaces();
-    for (const name of Object.keys(interfaces)) {
-        for (const iface of interfaces[name]) {
-            if (iface.family === 'IPv4' && !iface.internal) {
-                return iface.address;
-            }
-        }
-    }
-    return 'localhost';
-}
-
-server.listen(PORT, () => {
-    const address = getServerAddress();
-    console.log(`Express server running on port ${PORT}`);
-    console.log(`Local: http://localhost:${PORT}`);
-    console.log(`Network: http://${address}:${PORT}`);
+// Start server
+app.listen(PORT, () => {
+  console.log(`Web server running on http://localhost:${PORT}`);
 });
 
 export default app;
