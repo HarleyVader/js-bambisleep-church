@@ -51,6 +51,45 @@ app.get('/agents', (req, res) => {
   });
 });
 
+// AGENTS URL SUBMIT HANDLER
+app.post('/agents/submit-url', async (req, res) => {
+  const url = req.body.url;
+  if (!url) {
+    return res.redirect('/agents');
+  }
+  // Add or update a temporary agent task for this URL
+  agentTasksStore.updateAgentTask('knowledge-base-builder', {
+    status: `Crawling: ${url}`,
+    completion: 10
+  });
+  try {
+    const { crawlUrl } = await import('./mcp/tools/urlCrawler.js');
+    const crawlResult = await crawlUrl(url);
+    agentTasksStore.updateAgentTask('knowledge-base-builder', {
+      status: `Analyzing: ${url}`,
+      completion: 60
+    });
+    if (crawlResult.status === 'success') {
+      // Simulate metadata add
+      agentTasksStore.updateAgentTask('knowledge-base-builder', {
+        status: `Metadata added for: ${url}`,
+        completion: 100
+      });
+    } else {
+      agentTasksStore.updateAgentTask('knowledge-base-builder', {
+        status: `Error: ${crawlResult.error}`,
+        completion: 100
+      });
+    }
+  } catch (err) {
+    agentTasksStore.updateAgentTask('knowledge-base-builder', {
+      status: `Error: ${err.message}`,
+      completion: 100
+    });
+  }
+  res.redirect('/agents');
+});
+
 app.get('/help', (req, res) => {
   res.render('pages/help', {
     title: 'Help & Documentation - Bambi Sleep Church',
