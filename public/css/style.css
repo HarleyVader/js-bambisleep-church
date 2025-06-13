@@ -107,7 +107,7 @@ body::before {
 body {
     font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
     margin: 0;
-    padding: 80px 0 0 0; /* increased top padding to prevent header overlap */
+    padding: 120px 0 0 0; /* increased padding to account for full header + nav height */
     background: 
         radial-gradient(circle at 20% 50%, var(--glow-magenta) 0%, transparent 50%),
         radial-gradient(circle at 80% 20%, var(--glow-cyan) 0%, transparent 50%),
@@ -200,7 +200,7 @@ header {
     -webkit-backdrop-filter: blur(20px);
     backdrop-filter: blur(20px);
     box-shadow: var(--shadow-card), inset 0 1px 0 var(--color-overlay-light);
-    padding: var(--spacing-xs) 0 var(--spacing-xs) 0; /* smaller navbar - reduced padding */
+    padding: var(--spacing-sm) 0 var(--spacing-sm) 0; /* increased padding for better proportion */
     text-align: center;
     border-bottom: var(--border-medium) solid var(--color-primary-magenta);
     border-radius: 0 0 var(--radius-lg) var(--radius-lg);
@@ -713,10 +713,6 @@ main h1 {
         --spacing-xl: 16px;
         --spacing-2xl: 20px;
         --spacing-3xl: 24px;
-    }
-    
-    body {
-        padding-top: 100px; /* extra padding for mobile header stacking */
     }
     
     .container {
