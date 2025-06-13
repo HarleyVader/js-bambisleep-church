@@ -10,6 +10,10 @@
   <%- include('../partials/header') %>
   <div class="agents-container">
     <h1 class="agent-title agent-title-center">Knowledgebase Agent Status</h1>
+    <form action="/agents/submit-url" method="POST" class="agent-url-form" style="margin-bottom:2em; text-align:center;">
+      <input type="url" name="url" placeholder="Enter URL to add to knowledgebase" required style="width:60%;padding:0.5em;">
+      <button type="submit" style="padding:0.5em 1.5em;">Submit URL</button>
+    </form>
     <% if (agentTasks && agentTasks.length) { %>
       <div class="agent-summary">
         <h2>Agent Summary</h2>
