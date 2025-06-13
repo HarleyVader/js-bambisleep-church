@@ -1,0 +1,42 @@
+<%- include('../partials/header') %>
+
+<main>
+    <div class="container">
+        <section class="submit-section">
+            <h1>Submit Content</h1>
+            <p>Add new links or creator profiles to the community.</p>
+            
+            <form class="submit-form" method="POST" action="/api/links">
+                <div class="form-group">
+                    <label for="title">Title *</label>
+                    <input type="text" id="title" name="title" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="url">URL *</label>
+                    <input type="url" id="url" name="url" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" rows="4"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="category">Category</label>
+                    <select id="category" name="category">
+                        <option value="general">General</option>
+                        <option value="audio">Audio</option>
+                        <option value="video">Video</option>
+                        <option value="text">Text</option>
+                        <option value="creator">Creator</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="submit-btn">Submit Content</button>
+            </form>
+        </section>
+    </div>
+</main>
+
+<%- include('../partials/footer') %>

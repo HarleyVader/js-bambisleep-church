@@ -34,5 +34,15 @@
       "file": ".github/copilot-ssh-agent.md",
       "description": "SSH agent configuration for bambisleep.chat, bambisleep.church, fickdichselber.com"
     }
-  ]
+  ],
+  "chat.mcp.serverSampling": {
+    "js-bambisleep-church/.vscode/mcp.json: gistpad": {
+      "allowedModels": [
+        "github.copilot-chat/claude-opus-4",
+        "github.copilot-chat/claude-3.7-sonnet",
+        "github.copilot-chat/claude-3.7-sonnet-thought",
+        "github.copilot-chat/claude-sonnet-4"
+      ]
+    }
+  }
 }

@@ -1,0 +1,57 @@
+<%- include('../partials/header') %>
+
+<main>
+    <div class="container">
+        <section class="crawl-status-section">
+            <h1>Crawl Status</h1>
+            <p>Monitor the status of content crawling operations.</p>
+            
+            <div class="status-overview">
+                <% if (typeof status !== 'undefined' && status) { %>
+                    <div class="status-card">
+                        <h3>Current Status</h3>
+                        <div class="status-indicator <%= status.isRunning ? 'running' : 'stopped' %>">
+                            <%= status.isRunning ? 'Running' : 'Stopped' %>
+                        </div>
+                    </div>
+                    
+                    <% if (status.lastRun) { %>
+                        <div class="status-card">
+                            <h3>Last Run</h3>
+                            <p><%= new Date(status.lastRun).toLocaleString() %></p>
+                        </div>
+                    <% } %>
+                    
+                    <% if (status.totalProcessed) { %>
+                        <div class="status-card">
+                            <h3>Total Processed</h3>
+                            <p><%= status.totalProcessed %></p>
+                        </div>
+                    <% } %>
+                    
+                    <% if (status.errors && status.errors.length > 0) { %>
+                        <div class="status-card errors">
+                            <h3>Recent Errors</h3>
+                            <ul>
+                                <% status.errors.slice(0, 5).forEach(error => { %>
+                                    <li><%= error %></li>
+                                <% }) %>
+                            </ul>
+                        </div>
+                    <% } %>
+                <% } else { %>
+                    <div class="status-card">
+                        <h3>Status</h3>
+                        <p>No crawl status information available.</p>
+                    </div>
+                <% } %>
+            </div>
+            
+            <div class="actions">
+                <button onclick="location.reload()" class="refresh-btn">Refresh Status</button>
+            </div>
+        </section>
+    </div>
+</main>
+
+<%- include('../partials/footer') %>

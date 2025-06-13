@@ -28,7 +28,20 @@
 | `src/mcp/McpServer.js` | Model Context Protocol server | [60%] |
 | `src/mcp/mcpInstance.js` | MCP instance manager | [70%] |
 
-## Testing Infrastructure [100%]
+## Views & Templates [100%]
+
+| File | Purpose | Completion |
+|------|---------|------------|
+| `views/pages/index.ejs` | Homepage template | [100%] |
+| `views/pages/help.ejs` | Help page template | [100%] |
+| `views/pages/submit.ejs` | Content submission form | [100%] |
+| `views/pages/stats.ejs` | Statistics display | [100%] |
+| `views/pages/feed.ejs` | Content feed display | [100%] |
+| `views/pages/crawl-status.ejs` | Crawl monitoring | [100%] |
+| `views/pages/ai-crawl.ejs` | AI crawl control | [100%] |
+| `views/partials/header.ejs` | Common header template | [100%] |
+| `views/partials/footer.ejs` | Common footer template | [100%] |
+| `views/components/linkCard.ejs` | Link card component | [100%] |
 
 | File | Purpose | Completion |
 |------|---------|------------|
