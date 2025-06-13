@@ -4,90 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">    <title><%= title %> - Bambi Sleep Church</title>
     <link rel="stylesheet" href="/css/style.css">
-    <style>
-        .agent-name-link {
-            color: var(--color-primary-cyan);
-            text-decoration: none;
-            text-shadow: 0 0 5px var(--color-primary-cyan);
-            transition: var(--transition-normal);
-        }
-
-        .agent-name-link:hover {
-            color: var(--color-primary-magenta);
-            text-shadow: 0 0 10px var(--color-primary-magenta);
-            transform: scale(1.05);
-        }
-
-        .agent-stats-mini {
-            display: flex;
-            flex-wrap: wrap;
-            gap: var(--spacing-xs);
-            margin-bottom: var(--spacing-md);
-        }
-
-        .stat-badge {
-            background: var(--color-overlay-purple);
-            border: var(--border-thin) solid var(--color-primary-green);
-            border-radius: var(--radius-sm);
-            padding: var(--spacing-xs) var(--spacing-sm);
-            font-size: var(--font-xs);
-            color: var(--color-primary-green);
-        }
-
-        .stat-badge.status-idle {
-            border-color: var(--color-primary-yellow);
-            color: var(--color-primary-yellow);
-        }
-
-        .stat-badge.status-active {
-            border-color: var(--color-primary-green);
-            color: var(--color-primary-green);
-        }
-
-        .stat-badge.status-busy {
-            border-color: var(--color-primary-magenta);
-            color: var(--color-primary-magenta);
-        }
-
-        .tools-preview {
-            margin-bottom: var(--spacing-md);
-            font-size: var(--font-sm);
-        }
-
-        .button-group {
-            display: flex;
-            gap: var(--spacing-sm);
-            margin-bottom: var(--spacing-md);
-        }
-
-        .ui-button-small {
-            background: linear-gradient(45deg, var(--color-primary-green), var(--color-primary-cyan));
-            border: none;
-            border-radius: var(--radius-sm);
-            padding: var(--spacing-xs) var(--spacing-sm);
-            color: var(--color-bg-dark);
-            font-size: var(--font-xs);
-            font-weight: bold;
-            cursor: pointer;
-            transition: var(--transition-normal);
-            text-decoration: none;
-            display: inline-block;
-            text-align: center;
-        }
-
-        .ui-button-small:hover {
-            box-shadow: 0 0 10px var(--color-primary-green);
-            transform: scale(1.05);
-        }
-
-        .ui-button-secondary {
-            background: linear-gradient(45deg, var(--color-primary-magenta), var(--color-primary-cyan));
-        }
-
-        .ui-button-secondary:hover {
-            box-shadow: 0 0 10px var(--color-primary-magenta);
-        }
-    </style>
 </head>
 <body>
     <%- include('../partials/header') %>
@@ -141,30 +57,21 @@
 
         <!-- Existing Agents -->
         <div class="agent-grid" id="agentGrid">
-            <% if (agents && agents.length > 0) { %>
-                <% agents.forEach(agent => { %>                    <div class="agent-card" data-agent-id="<%= agent.id %>">
+            <% if (agents && agents.length > 0) { %>                <% agents.forEach(agent => { %>                    <div class="agent-card" data-agent-id="<%= agent.id %>">
                         <h3><a href="/agents/<%= agent.id %>" class="agent-name-link"><%= agent.name %></a></h3>
                         <p><%= agent.description %></p>
-                        <div class="agent-stats-mini">
-                            <span class="stat-badge status-<%= agent.status %>"><%= agent.status %></span>
-                            <span class="stat-badge">Created: <%= new Date(agent.created).toLocaleDateString() %></span>
-                            <span class="stat-badge">Tools: <%= agent.tools.length %></span>
-                        </div>
+                        <p><strong>Status:</strong> <span class="status-badge status-<%= agent.status %>"><%= agent.status %></span></p>
+                        <p><strong>Created:</strong> <%= new Date(agent.created).toLocaleDateString() %></p>
                         <% if (agent.tools && agent.tools.length > 0) { %>
-                            <div class="tools-preview">
-                                <strong>Tools:</strong> 
+                            <p><strong>Tools:</strong> 
                                 <span class="agent-tools-display">
-                                    <%= agent.tools.slice(0, 3).join(', ') %><%= agent.tools.length > 3 ? '...' : '' %>
+                                    <%= agent.tools.join(', ') %>
                                 </span>
-                            </div>
-                        <% } %>
-                        <div class="prompt-section">
-                            <h4>Quick Prompt</h4>
+                            </p>
+                        <% } %><div class="prompt-section">
+                            <h4>Prompt Agent</h4>
                             <textarea placeholder="Enter your prompt..." class="agent-prompt-input ui-textarea"></textarea>
-                            <div class="button-group">
-                                <button class="ui-button-small" onclick="promptAgent('<%= agent.id %>')">Send Prompt</button>
-                                <a href="/agents/<%= agent.id %>" class="ui-button-small ui-button-secondary">View Details</a>
-                            </div>
+                            <button class="ui-button" onclick="promptAgent('<%= agent.id %>')">Send Prompt</button>
                             
                             <div class="agent-response" id="response-<%= agent.id %>">
                                 <h5>Agent Response:</h5>

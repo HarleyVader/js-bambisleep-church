@@ -11,6 +11,9 @@ const router = express.Router();
 
 // Agents page
 router.get('/agents', (req, res) => {
+  // Initialize predefined agents if not already loaded
+  agentManager.initializeFromConfigs();
+  
   // Load MCP toolbox tools
   let mcpTools = [];
   try {
@@ -35,22 +38,19 @@ router.get('/agents', (req, res) => {
 
 // Individual agent page
 router.get('/agents/:id', (req, res) => {
-  const agent = agentManager.getAgent(req.params.id);
-  if (!agent) {
-    return res.status(404).render('pages/error', { 
-      title: 'Agent Not Found',
-      error: 'The requested agent could not be found.'
+  try {
+    const agent = agentManager.getAgent(req.params.id);
+    if (!agent) {
+      return res.status(404).render('pages/404', { title: 'Agent Not Found' });
+    }
+    
+    res.render('pages/agent-detail', {
+      title: `${agent.name} - Agent Dashboard`,
+      agent: agent
     });
+  } catch (error) {
+    res.status(500).render('pages/error', { title: 'Error', error: error.message });
   }
-
-  // Get agent conversations
-  const conversations = agentManager.getAgentConversations(req.params.id);
-  
-  res.render('pages/agent-detail', {
-    title: `${agent.name} - Agent Details`,
-    agent: agent,
-    conversations: conversations
-  });
 });
 
 // API endpoints
@@ -80,15 +80,6 @@ router.post('/api/agents/communicate', express.json(), (req, res) => {
   try {
     const communication = agentManager.sendAgentMessage(req.body.fromAgentId, req.body.toAgentId, req.body.message);
     res.json(communication);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-router.get('/api/agents/:id/conversations', (req, res) => {
-  try {
-    const conversations = agentManager.getAgentConversations(req.params.id);
-    res.json(conversations);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
