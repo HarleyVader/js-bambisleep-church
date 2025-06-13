@@ -29,7 +29,9 @@ app.set('views', join(__dirname, '../views'));
 app.get('/', (req, res) => {
   res.render('pages/index', {
     title: 'JS Bambi Sleep Church - URL Crawler MCP',
-    message: 'MCP URL Crawler Server Running'
+    message: 'MCP URL Crawler Server Running',
+    creators: [],
+    links: []
   });
 });
 
