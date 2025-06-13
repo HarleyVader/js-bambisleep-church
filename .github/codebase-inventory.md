@@ -5,7 +5,7 @@
 **Project Name:** js-bambisleep-church  
 **Version:** 1.0.0  
 **Description:** A real-time community-voted link list for different bambisleep themes and categories  
-**Main Entry:** src/app.js  
+**Main Entry:** src/server.js (Updated)
 **License:** MIT  
 **Author:** melkanea  
 
@@ -16,6 +16,33 @@
 - `package.json` - NPM configuration and dependencies [100%]
 - `.env` - Environment variables [100%]
 - `.gitignore` - Git ignore rules [100%]
+
+### Web Server & Routes [100%]
+
+- **Express Web Server** [100%]
+  - `src/server.js` - Main Express server with all routes [100%]
+  - `/` - Homepage route with creators/links data [100%]
+  - `/knowledge` - Knowledge base interface [100%]
+  - `/agents` - AI Agents placeholder page [100%]
+  - `/help` - Help documentation page [100%]
+  - `/api/knowledge` - Knowledge API endpoints (GET/POST) [100%]
+  - `/health` - Health check endpoint [100%]
+  - EJS template rendering configured [100%]
+  - Static file serving from public/ [100%]
+  - Socket.IO integration for real-time updates [100%]
+
+### View Templates [100%]
+
+- **EJS Templates** [100%]
+  - `views/pages/index.ejs` - Homepage with working navigation [100%]
+  - `views/pages/knowledge.ejs` - Knowledge base interface [100%]
+  - `views/pages/help.ejs` - Help documentation [100%]
+  - `views/pages/error.ejs` - Error page template [100%]
+  - `views/components/linkCard.ejs` - Reusable link card component [100%]
+  - `views/partials/header.ejs` - Site header with navigation [100%]
+  - `views/partials/footer.ejs` - Site footer with Socket.IO [100%]
+  - All templates receive proper data from server routes [100%]
+  - Navigation links all functional [100%]
 
 ### MCP Server Infrastructure [100%]
 
@@ -79,19 +106,6 @@
   - `site.webmanifest` - PWA manifest [100%]
   - `assets/placeholders/` - SVG placeholder icons [100%]
   - `css/style.css` - Cyberpunk theme stylesheet (2091 lines) [100%]
-
-### Views & Templates [100%]
-
-- `views/`
-  - `components/linkCard.ejs` - Reusable link card component [100%]
-  - `pages/`
-    - `index.ejs` - Main homepage (977 lines) [100%]
-    - `help.ejs` - Help/support page with markdown navigation sidebar [100%]
-    - `agents.ejs` - Smolagents agent hub interface [100%]
-    - `knowledge.ejs` - Knowledge base UI with search, add, and display functionality [100%]
-  - `partials/`
-    - `header.ejs` - Site header template with knowledge navigation [100%]
-    - `footer.ejs` - Site footer template [100%]
 
 ## 🔧 Dependencies & Technologies
 

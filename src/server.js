@@ -41,6 +41,20 @@ app.get('/knowledge', (req, res) => {
   });
 });
 
+app.get('/agents', (req, res) => {
+  res.render('pages/error', {
+    title: 'AI Agents - Coming Soon',
+    error: 'AI Agents functionality is coming soon. This page is under development.'
+  });
+});
+
+app.get('/help', (req, res) => {
+  res.render('pages/help', {
+    title: 'Help & Documentation - Bambi Sleep Church',
+    isMarkdown: false
+  });
+});
+
 // API Routes for Knowledge
 app.get('/api/knowledge', async (req, res) => {
   try {
