@@ -1,204 +1,96 @@
-# BambiSleep Church - Codebase Inventory
+# Codebase Inventory - JS Bambi Sleep Church
 
-## Last updated: June 13, 2025
+## Project Overview
 
-## Core Application Files [85%]
+**Project Name:** js-bambisleep-church  
+**Version:** 1.0.0  
+**Description:** A real-time community-voted link list for different bambisleep themes and categories  
+**Main Entry:** src/app.js  
+**License:** MIT  
+**Author:** melkanea  
 
-| File | Purpose | Completion |
-|------|---------|------------|
-| `src/app.js` | Main Express server application | [95%] |
-| `package.json` | Dependencies and scripts | [100%] |
+## 📁 Directory Structure & Completion Status
 
-## MCP Toolbox Implementation [85%] - NEW
+### Root Level [90%]
 
-### MCP Core Infrastructure [100%]
-| File | Purpose | Completion |
-|------|---------|------------|
-| `src/mcp/McpServer.js` | Upgraded to MCPCore with logging, metrics, enhanced functionality | [100%] |
-| `src/mcp/mcpInstance.js` | Updated to use MCPCore with tool invocation methods | [100%] |
+- `package.json` - NPM configuration and dependencies [100%]
+- `.env` - Environment variables [100%]
+- `.gitignore` - Git ignore rules [100%]
 
-### MCP Toolbox [100%]
-| File | Purpose | Completion |
-|------|---------|------------|
-| `src/mcp/toobox/knowledgeExtractionTool.js` | Knowledge extraction and analysis tool | [100%] |
-| `src/mcp/toobox/contentDetectionTool.js` | Content type detection and categorization tool | [100%] |
-| `src/mcp/toobox/metadataServiceTool.js` | Enhanced metadata extraction tool | [100%] |
-| `src/mcp/toobox/inventory.json` | Tool inventory with complete definitions | [100%] |
+### Tasks [100%]
 
-### API Routes Enhancement [100%] - CONSOLIDATED
+- `.tasks/`
+  - `smolagents-analysis.task.md` - Smolagents documentation analysis task [100%]
+  - `smolagents-integration-build.task.md` - Build task with integration analysis and recommendations [100%]
+  - `smolagents-documentation.task.md` - Technical documentation creation task [100%]
+  - `smolagents-documentation-update.task.md` - MCP & SSH integration documentation update [100%]
+  - `js-es6-smolagents-docs.task.md` - JavaScript ES6 integration documentation task [100%]
 
-| File | Purpose | Completion |
-|------|---------|------------|
-| `src/routes/main.js` | API routes consolidated - eliminated duplicate /api/submit and /links routes | [100%] |
+### Documentation [95%]
 
-## New API Endpoints - CONSOLIDATED
+- `docs/`
+  - `BambiSleepChurch.md` - Establishment mission guide [100%]
+  - `index.html` - Documentation index [100%]
+  - `smolagents-technical-guide.md` - Comprehensive smolagents framework documentation with MCP, SSH & JavaScript ES6 integration [100%]
 
-- `/api/links` - GET all links, POST new link with form redirect (WORKING CORRECTLY)
-- Removed duplicate `/api/submit` route (consolidated into /api/links)
-- Removed confusing `/links` route (consolidated into /api/links)
-- `/api/mcp/status` - MCP Core status endpoint
-- `/api/mcp/tools` - Available tools listing  
-- `/api/mcp/metrics` - Performance metrics
-- `/api/mcp/call/:toolName` - Tool invocation endpoint
-- `/api/database/health` - Database health check with fallback implementation
-- `/api/config/*` - Configuration management with fallback implementations
-- `/api/errors/*` - Error monitoring and reporting endpoints
+### Configuration [100%]
 
-## Controllers [75%]
+- `.github/`
+  - `codebase-inventory.md` - This file [100%]
+  - `copilot-instructions.md` - AI Framework: 3-Step Agent Loop MK-XII methodology [100%]
+  - `copilot-ssh-agent.md` - SSH agent configuration [100%]
+  - `model-context-protocol.md` - MCP documentation [100%]
+- `.vscode/` - VS Code workspace settings [100%]
 
-| File | Purpose | Completion |
-|------|---------|------------|
-| `src/controllers/mainController.js` | Main application logic | [75%] |
-| `src/controllers/linkController.js` | Link management operations - FIXED FORM SUBMISSION | [95%] |
-| `src/controllers/voteController.js` | Voting system operations | [70%] |
-| `src/controllers/feedController.js` | Feed display operations | [80%] |
-| `src/controllers/commentController.js` | Comment system operations | [70%] |
-| `src/controllers/creatorController.js` | Creator management operations | [65%] |
+### Frontend Assets [100%]
 
-## Views & Templates [100%]
+- `public/`
+  - Favicon collection (ico, png variants) [100%]
+  - `site.webmanifest` - PWA manifest [100%]
+  - `assets/placeholders/` - SVG placeholder icons [100%]
+  - `css/style.css` - Cyberpunk theme stylesheet (2091 lines) [100%]
 
-| File | Purpose | Completion |
-|------|---------|------------|
-| `views/pages/index.ejs` | Homepage template | [100%] |
-| `views/pages/help.ejs` | Help page template | [100%] |
-| `views/pages/submit.ejs` | Content submission form | [100%] |
-| `views/pages/stats.ejs` | Statistics display | [100%] |
-| `views/pages/feed.ejs` | Content feed display | [100%] |
-| `views/pages/crawl-status.ejs` | Crawl monitoring | [100%] |
-| `views/pages/ai-crawl.ejs` | AI crawl control | [100%] |
-| `views/partials/header.ejs` | Common header template | [100%] |
-| `views/partials/footer.ejs` | Common footer template | [100%] |
-| `views/components/linkCard.ejs` | Link card component | [100%] |
+### Views & Templates [95%]
 
-## Tests & Quality Assurance [100%]
+- `views/`
+  - `components/linkCard.ejs` - Reusable link card component [100%]
+  - `pages/`
+    - `index.ejs` - Main homepage (977 lines) [100%]
+    - `help.ejs` - Help/support page [100%]
+  - `partials/`
+    - `header.ejs` - Site header template [100%]
+    - `footer.ejs` - Site footer template [100%]
 
-| File | Purpose | Completion |
-|------|---------|------------|
-| `tests/unit/controllers/voteController.test.js` | Vote controller unit tests | [100%] |
-| `tests/unit/mcp/McpServer.test.js` | MCP server unit tests | [100%] |
-| `tests/unit/agents/bambisleepUniversalAgent.test.js` | Universal agent unit tests | [100%] |
-| `tests/integration/fickdichselber-mcp.test.js` | External MCP server integration tests | [100%] |
-| `tests/unit/utils/universalContentDetector.test.js` | Content detector unit tests | [100%] |
-| `tests/integration/api.test.js` | API integration tests | [100%] |
-| `tests/integration/socket.test.js` | Socket.IO integration tests | [100%] |
-| `package.json` | Test scripts and Jest configuration | [100%] |
+## 🔧 Dependencies & Technologies
 
-### Test Results: 107/107 tests passing (100% success rate)
+### Runtime Dependencies [100%]
 
-## Utilities [80%]
+- **Express.js** (v5.1.0) - Web server framework
+- **Socket.IO** (v4.8.1) - Real-time communication
+- **EJS** (v3.1.10) - Template engine
+- **Axios** (v1.9.0) - HTTP client
+- **Cheerio** (v1.1.0) - Server-side jQuery
+- **Marked** (v12.0.0) - Markdown parser
+- **p-limit** (v6.2.0) - Concurrency limiting
 
-| File | Purpose | Completion |
-|------|---------|------------|
-| `src/utils/socketHandler.js` | WebSocket real-time updates | [85%] |
-| `src/utils/metadataService.js` | URL metadata extraction | [90%] |
-| `src/utils/crawlStatusTracker.js` | Crawling status tracking | [85%] |
-| `src/utils/universalContentDetector.js` | Universal content detection | [75%] |
-| `src/middleware/errorTracking.js` | Error tracking middleware | [80%] |
+### Development Dependencies [100%]
 
-## Frontend Assets [90%]
+- **Jest** (v30.0.0) - Testing framework
+- **Supertest** (v7.1.1) - HTTP testing
+- **Socket.IO Client** (v4.8.1) - Client-side testing
 
-| File | Purpose | Completion |
-|------|---------|------------|
-| `public/css/style.css` | Main cyberpunk theme styles | [95%] |
-| `public/css/feed.css` | Feed-specific styles | [90%] |
-| `public/agent-ui/css/agent-ui.css` | Agent UI styles | [85%] |
-| `public/agent-ui/css/enhancements.css` | UI enhancement styles | [90%] |
+## 📝 Available Scripts
 
-## Views & Templates [85%]
+- `npm start` - Start MCP server & main application
 
-| File | Purpose | Completion |
-|------|---------|------------|
-| `views/partials/header.ejs` | Header template | [95%] |
-| `views/partials/footer.ejs` | Footer template | [90%] |
-| `views/pages/index.ejs` | Homepage template | [85%] |
-| `views/pages/help.ejs` | Help page template | [80%] |
-| `views/components/linkCard.ejs` | Link card component | [85%] |
+## 🎨 Frontend Features [95%]
 
-## Agent UI [85%]
-
-| File | Purpose | Completion |
-|------|---------|------------|
-| `public/agent-ui/index.html` | Agent dashboard interface | [90%] |
-| `public/agent-ui/js/agent-ui.js` | Agent UI controller | [80%] |
-
-## Data Storage [100%]
-
-| File | Purpose | Completion |
-|------|---------|------------|
-| `data/links.json` | Links database | [100%] |
-| `data/votes.json` | Votes database | [100%] |
-| `data/comments.json` | Comments database | [100%] |
-| `data/creators.json` | Creators database | [100%] |
-
-## Configuration & Documentation [95%]
-
-| File | Purpose | Completion |
-|------|---------|------------|
-| `.github/copilot-instructions.md` | AI development instructions | [100%] |
-| `.github/model-context-protocol.md` | MCP specifications | [100%] |
-| `.github/copilot-ssh-agent.md` | SSH deployment config | [100%] |
-| `.vscode/settings.json` | VS Code configuration | [100%] |
-| `docs/UPGRADE.md` | Upgrade documentation | [95%] |
-| `docs/CRAWLER-README.md` | Crawler documentation | [90%] |
-| `docs/THEME_CUSTOMIZATION.md` | Theme customization guide | [95%] |
-
-## Automation & Cleanup [85%]
-
-| File | Purpose | Completion |
-|------|---------|------------|
-| `cleanup-agent.js` | Codebase cleanup automation | [85%] |
-| `src/routes/main.js` | Main routing configuration | [80%] |
-
-## Agent Control Center Implementation [100%]
-
-### Modified Files
-
-- `public/agent-ui/index.html` [100%] - Unified control center interface
-- `.tasks/agent-control-center.task.md` [100%] - Task tracking
-
-### Key Features Implemented
-
-- ✅ Unified interface for discovery, feed management, and analytics
-- ✅ Real-time status indicators for all agents
-- ✅ Error handling and status monitoring
-- ✅ BambiSleep Content Detector with initialization sequence
-- ✅ Modern responsive design with gradient styling
-- ✅ Accessible navigation with ARIA attributes
-- ✅ Integration with existing agent infrastructure
-
-### Agent Status Messages
-
-- "✅ All agents initialized and ready" - Global status
-- "🔍 Discovery Agent" / "🌙 BambiSleep Discovery Agent" - Discovery status
-- "🌙 Feed Manager" / "✅ Feed management active" - Feed status  
-- "📊 Intelligence Hub" / "📊 Analytics engine running" - Analytics status
-- "🧠 BambiSleep Content Detector" / "Initializing AI detection algorithms..." - Detector status
-
-## Overall Codebase Status: [82%]
-
-### Ready for Production
-
-- ✅ Core application structure
-- ✅ Frontend cyberpunk theme
-- ✅ Data storage system
-- ✅ Real-time WebSocket updates
-- ✅ Agent UI dashboard
-
-### Needs Completion
-
-- 🔄 MCP server full implementation
-- 🔄 Advanced content discovery features
-- 🔄 Enhanced voting system
-- 🔄 Comment moderation system
-- 🔄 Creator management features
-
-### Next Priority Tasks
-
-1. Complete MCP server implementation [60% → 90%]
-2. Enhance agent system integration [70% → 85%]
-3. Implement advanced content detection [75% → 90%]
-4. Add comprehensive error handling [80% → 95%]
-5. Optimize real-time performance [85% → 95%]
+- **Neon Wave Cyber Goth** - Custom CSS with neon effects and grid overlays
+- **Responsive Design** - Mobile-first approach
+- **PWA Ready** - Web manifest configured
+- **Component-Based** - EJS template components
+- **Real-time Updates** - Socket.IO integration ready
 
 ---
-*This inventory follows the **3-Step Agent Methodology | MK-XII** for efficient development tracking.*
+
+**Last Updated:** June 13, 2025
