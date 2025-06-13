@@ -3,62 +3,91 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Agents - Bambi Sleep Church</title>
+  <title>Knowledgebase Agent - Bambi Sleep Church</title>
   <link rel="stylesheet" href="/css/style.css">
-  <!-- moved styles to style.css -->
 </head>
 <body>
   <%- include('../partials/header') %>
   <div class="agents-container">
-    <h1 class="agent-title agent-title-center">AI Agents</h1>
-    <form action="/agents/submit-url" method="POST" class="agent-url-form">
-      <input type="url" name="url" placeholder="Enter URL" required class="agent-url-input">
-      <button type="submit" class="agent-url-btn">Submit URL</button>
-    </form>
+    <h1 class="agent-title agent-title-center">Knowledgebase Agent Status</h1>
     <% if (agentTasks && agentTasks.length) { %>
+      <div class="agent-summary">
+        <h2>Agent Summary</h2>
+        <div><b>Agent Name:</b> <%= agentTasks[0].title %></div>
+        <div><b>Description:</b> <%= agentTasks[0].description %></div>
+        <div><b>Status:</b> <%= agentTasks[0].status %></div>
+        <div><b>Started:</b> <%= agentTasks[0].createdAt %></div>
+        <div><b>Last Updated:</b> <%= agentTasks[0].updatedAt %></div>
+        <div><b>Last Run:</b> <%= agentTasks[0].lastRun || 'Never' %></div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar" style="width:<%= agentTasks[0].completion %>%;"></div>
+        </div>
+        <div class="agent-completion"><b>Completion:</b> <%= agentTasks[0].completion %>%</div>
+      </div>
+      <hr>
+      <h3>Tool Tasks</h3>
       <% agentTasks.forEach(function(task) { %>
-        <div class="agent-task">
-          <div class="agent-title"><%= task.title %></div>
-          <div class="agent-desc"><%= task.description %></div>
+        <div class="agent-task-detailed">
+          <div class="agent-task-title"><b><%= task.title %></b> <span style="color:#888;">[<%= task.toolName %>]</span></div>
+          <div class="agent-task-desc"><%= task.description %></div>
           <div class="progress-bar-bg">
             <div class="progress-bar" style="width:<%= task.completion %>%;"></div>
           </div>
-          <div class="agent-status">
+          <div class="agent-task-status">
             <b>Status:</b> <%= task.status %> &mdash; <%= task.completion %>% complete
           </div>
-          <div class="agent-detailed-status">
-            <b>Current Step:</b> <%= task.currentStep || 'N/A' %><br>
-            <b>Work Progress:</b> <%= task.workProgress || 'N/A' %><br>
-            <b>Tools Remaining:</b> <%= (task.toolsRemaining && task.toolsRemaining.length) ? task.toolsRemaining.join(', ') : 'None' %>
+          <div class="agent-task-details">
+            <b>Created:</b> <%= task.createdAt %> &nbsp; <b>Updated:</b> <%= task.updatedAt %> &nbsp; <b>Last Run:</b> <%= task.lastRun || 'Never' %>
           </div>
-          <% if (task.statusMessage) { %>
-            <div class="agent-status-message">
-              <b>Agent Message:</b> <%= task.statusMessage %>
+          <% if (task.logs && task.logs.length) { %>
+            <div class="agent-task-logs">
+              <b>Logs:</b>
+              <ul>
+                <% task.logs.forEach(function(log) { %>
+                  <li><%= log %></li>
+                <% }) %>
+              </ul>
             </div>
           <% } %>
-          <% if (task.stats) { %>
-            <div class="agent-stats">
-              <div><b>Crawled URL:</b> <%= task.stats.crawledUrl || '-' %></div>
-              <div><b>URLs Found:</b> <%= task.stats.urlsFound || (task.foundUrls ? task.foundUrls.length : 0) %></div>
-              <% if (task.stats.other) { %>
-                <div><%= task.stats.other %></div>
-              <% } %>
+          <% if (task.errors && task.errors.length) { %>
+            <div class="agent-task-errors" style="color:#c00;">
+              <b>Errors:</b>
+              <ul>
+                <% task.errors.forEach(function(err) { %>
+                  <li><%= err %></li>
+                <% }) %>
+              </ul>
             </div>
           <% } %>
-          <% if (task.foundUrls && task.foundUrls.length) { %>
-            <div class="agent-found-urls">
-              <div class="agent-found-urls-title"><b>Found URLs:</b></div>
-              <ul class="agent-found-urls-list">
-                <% task.foundUrls.forEach(function(url) { %>
-                  <li>
-                    <a href="<%= url %>" target="_blank"> <%= url %> </a>
-                  </li>
+          <% if (task.subtasks && task.subtasks.length) { %>
+            <div class="agent-task-subtasks">
+              <b>Subtasks:</b>
+              <ul>
+                <% task.subtasks.forEach(function(sub) { %>
+                  <li><%= sub.title %> - <%= sub.status %> (<%= sub.completion %>%)</li>
                 <% }) %>
               </ul>
             </div>
           <% } %>
         </div>
       <% }) %>
+      <hr>
+      <h3>Available Tools</h3>
+      <ul class="agent-tools-list">
+        <li>crawl_url</li>
+        <li>crawl_links</li>
+        <li>crawl_metadata_batch</li>
+        <li>save_url_data</li>
+        <li>search_knowledge</li>
+        <li>add_knowledge</li>
+        <li>list_knowledge</li>
+        <li>get_knowledge</li>
+        <li>update_knowledge</li>
+        <li>analyze_context</li>
+        <li>delete_knowledge</li>
+        <li>analyze_urls</li>
+        <li>urlUpdater</li>
+      </ul>
     <% } else { %>
       <div style="text-align:center; color:#aaa;">No agent tasks running.</div>
     <% } %>
