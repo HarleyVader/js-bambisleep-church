@@ -1,8 +1,12 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
+import dotenv from 'dotenv';
 import { crawlUrl, crawlLinks, crawlMetadataBatch, saveUrlData } from './tools/urlCrawler.js';
 import { searchKnowledge, addKnowledge, listKnowledge, getKnowledge, updateKnowledge, analyzeContext, deleteKnowledge } from './tools/knowledgeTools.js';
+
+// Load environment variables from .env file
+dotenv.config();
 
 const server = new Server(
   {
@@ -261,6 +265,7 @@ async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
   console.error('URL Crawler + Knowledgebase MCP server running on stdio');
+  console.error(`LM Studio configured for: ${process.env.LMS_URL || 'http://192.168.0.69'}:${process.env.LMS_PORT || '7777'}`);
 }
 
 main().catch(console.error);

@@ -134,6 +134,32 @@ For further exploration, consider engaging with experts in:
 
 This multi-dimensional approach may spark additional ideas on how your church can evolve as a sanctuary for creativity and social engagement.
 
+## Environment Configuration
+
+The server uses environment variables loaded from a `.env` file for configuration:
+
+```properties
+# Server Configuration
+PORT=8888
+HOST=0.0.0.0
+
+# LM Studio Configuration
+LMS_URL=http://192.168.0.69
+LMS_PORT=7777
+```
+
+### Environment Variables
+
+- **PORT**: Web server port (default: 8888)
+- **HOST**: Web server host (default: 0.0.0.0)
+- **LMS_URL**: LM Studio base URL (default: http://192.168.0.69)
+- **LMS_PORT**: LM Studio port (default: 7777)
+- **KNOWLEDGE_PATH**: Knowledge storage directory (default: ./data/knowledge)
+- **LM_STUDIO_API_KEY**: API key for LM Studio (default: lm-studio)
+- **LM_STUDIO_MODEL**: Default model name
+
+The configuration automatically combines `LMS_URL` and `LMS_PORT` to create the full LM Studio endpoint URL.
+
 ---
 
 *This guide provides a framework for establishing a creative spiritual community that bridges traditional religious practices with modern artistic expression.*

@@ -1,13 +1,18 @@
 import express from 'express';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
 import KnowledgeStorage from './knowledge/storage.js';
+
+// Load environment variables from .env file
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8888;
+const HOST = process.env.HOST || '0.0.0.0';
 
 // Initialize knowledge storage
 const knowledgeStorage = new KnowledgeStorage();
@@ -98,8 +103,9 @@ app.get('/health', (req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
-  console.log(`Web server running on http://localhost:${PORT}`);
+app.listen(PORT, HOST, () => {
+  console.log(`Web server running on http://${HOST}:${PORT}`);
+  console.log(`LM Studio configured for: ${process.env.LMS_URL || 'http://192.168.0.69'}:${process.env.LMS_PORT || '7777'}`);
 });
 
 export default app;

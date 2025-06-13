@@ -1,7 +1,12 @@
 // Configuration management for knowledgebase MCP server
+import dotenv from 'dotenv';
+
+// Load environment variables from .env file
+dotenv.config();
+
 export const config = {
   lmstudio: {
-    baseURL: process.env.LM_STUDIO_URL || 'http://192.168.0.69:7777/v1',
+    baseURL: process.env.LM_STUDIO_URL || `${process.env.LMS_URL || 'http://192.168.0.69'}:${process.env.LMS_PORT || '7777'}/v1`,
     apiKey: process.env.LM_STUDIO_API_KEY || 'lm-studio',
     defaultModel: process.env.LM_STUDIO_MODEL || 'lmstudio-community/qwen2.5-7b-instruct'
   },

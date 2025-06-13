@@ -11,7 +11,8 @@
   "bugs": {
     "url": "https://github.com/HarleyVader/js-bambisleep-church/issues"
   },
-  "homepage": "https://github.com/HarleyVader/js-bambisleep-church#readme",  "scripts": {
+  "homepage": "https://github.com/HarleyVader/js-bambisleep-church#readme",
+  "scripts": {
     "start": "npx concurrently \"node src/mcp/McpServer.js --http\" \"node src/server.js\"",
     "start:stdio": "npx concurrently \"node src/mcp/McpServer.js\" \"node src/server.js\"",
     "start:simple": "node src/mcp/McpServer.js --http & node src/server.js",
@@ -23,6 +24,7 @@
     "axios": "^1.9.0",
     "cheerio": "^1.1.0",
     "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
     "ejs": "^3.1.10",
     "express": "^5.1.0",
     "marked": "^12.0.0",
