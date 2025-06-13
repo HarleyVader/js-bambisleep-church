@@ -24,8 +24,18 @@
             <div class="progress-bar" style="width:<%= task.completion %>%;"></div>
           </div>
           <div class="agent-status">
-            <%= task.status %> &mdash; <%= task.completion %>% complete
+            <b>Status:</b> <%= task.status %> &mdash; <%= task.completion %>% complete
           </div>
+          <div class="agent-detailed-status">
+            <b>Current Step:</b> <%= task.currentStep || 'N/A' %><br>
+            <b>Work Progress:</b> <%= task.workProgress || 'N/A' %><br>
+            <b>Tools Remaining:</b> <%= (task.toolsRemaining && task.toolsRemaining.length) ? task.toolsRemaining.join(', ') : 'None' %>
+          </div>
+          <% if (task.statusMessage) { %>
+            <div class="agent-status-message">
+              <b>Agent Message:</b> <%= task.statusMessage %>
+            </div>
+          <% } %>
           <% if (task.stats) { %>
             <div class="agent-stats">
               <div><b>Crawled URL:</b> <%= task.stats.crawledUrl || '-' %></div>
