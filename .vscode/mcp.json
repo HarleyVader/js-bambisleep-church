@@ -11,6 +11,9 @@
                     "type": "node"
                 }
             }
+        },
+        "fickdichselber-mcp-test": {
+            "url": "https://fickdichselber.com"
         }
     }
 }

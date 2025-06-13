@@ -9,6 +9,8 @@ const MetadataService = require('../utils/metadataService');
 // AIGirlfriendAgent removed during cleanup - using bambisleep-knowledge-agent instead
 const BambisleepKnowledgeAgent = require('../agents/bambisleep-knowledge-agent');
 const crawlStatusTracker = require('../utils/crawlStatusTracker');
+// MCP Core instance for agent tool access
+const { callTool, getToolList, getMetrics, getMcpStatus } = require('../mcp/mcpInstance');
 
 const router = express.Router();
 const linkController = new LinkController();
@@ -371,6 +373,51 @@ A: Yes! Community feedback is welcome for platform improvements.
     
     // Content submission API
     router.post('/api/submit', mainController.submitContent.bind(mainController));
+    
+    // MCP API Routes - Agent Tool Access
+    router.get('/api/mcp/status', async (req, res) => {
+        try {
+            const status = getMcpStatus();
+            res.json(status);
+        } catch (error) {
+            res.status(500).json({ success: false, error: error.message });
+        }
+    });
+
+    router.get('/api/mcp/tools', async (req, res) => {
+        try {
+            const tools = await getToolList();
+            res.json({ success: true, tools });
+        } catch (error) {
+            res.status(500).json({ success: false, error: error.message });
+        }
+    });
+
+    router.get('/api/mcp/metrics', async (req, res) => {
+        try {
+            const metrics = await getMetrics();
+            res.json({ success: true, metrics });
+        } catch (error) {
+            res.status(500).json({ success: false, error: error.message });
+        }
+    });
+
+    router.post('/api/mcp/call/:toolName', async (req, res) => {
+        try {
+            const { toolName } = req.params;
+            const params = req.body;
+            
+            const result = await callTool(toolName, params);
+            
+            if (result.success === false) {
+                return res.status(400).json(result);
+            }
+            
+            res.json(result);
+        } catch (error) {
+            res.status(500).json({ success: false, error: error.message });
+        }
+    });
     
     // Metadata API
     router.post('/api/metadata', async (req, res) => {

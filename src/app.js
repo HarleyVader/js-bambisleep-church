@@ -65,13 +65,12 @@ server.listen(PORT, async () => {
     }
     
     
-    
-    // Initialize MCP instance after server starts
+      // Initialize MCP instance after server starts
     try {
-        console.log('🚀 Initializing MCP server...');
+        console.log('🚀 Initializing MCP Core...');
         await getMcpInstance();
-        console.log('✅ MCP server ready for A2A communication');
+        console.log('✅ MCP Core ready for A2A communication with enhanced toolbox');
     } catch (error) {
-        console.error('❌ MCP server initialization failed:', error.message);
+        console.error('❌ MCP Core initialization failed:', error.message);
     }
 });

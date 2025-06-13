@@ -1,14 +1,40 @@
 # BambiSleep Church - Codebase Inventory
 
-## Last updated: June 12, 2025
+## Last updated: June 13, 2025
 
 ## Core Application Files [85%]
 
 | File | Purpose | Completion |
 |------|---------|------------|
-| `src/app.js` | Main Express server application | [90%] |
+| `src/app.js` | Main Express server application | [95%] |
 | `package.json` | Dependencies and scripts | [100%] |
-| `README.md` | Project documentation | [95%] |
+
+## MCP Toolbox Implementation [85%] - NEW
+
+### MCP Core Infrastructure [100%]
+| File | Purpose | Completion |
+|------|---------|------------|
+| `src/mcp/McpServer.js` | Upgraded to MCPCore with logging, metrics, enhanced functionality | [100%] |
+| `src/mcp/mcpInstance.js` | Updated to use MCPCore with tool invocation methods | [100%] |
+
+### MCP Toolbox [100%]
+| File | Purpose | Completion |
+|------|---------|------------|
+| `src/mcp/toobox/knowledgeExtractionTool.js` | Knowledge extraction and analysis tool | [100%] |
+| `src/mcp/toobox/contentDetectionTool.js` | Content type detection and categorization tool | [100%] |
+| `src/mcp/toobox/metadataServiceTool.js` | Enhanced metadata extraction tool | [100%] |
+| `src/mcp/toobox/inventory.json` | Tool inventory with complete definitions | [100%] |
+
+### API Routes Enhancement [100%]
+| File | Purpose | Completion |
+|------|---------|------------|
+| `src/routes/main.js` | Added MCP API routes for agent tool invocation | [100%] |
+
+## New API Endpoints
+- `/api/mcp/status` - MCP Core status endpoint
+- `/api/mcp/tools` - Available tools listing  
+- `/api/mcp/metrics` - Performance metrics
+- `/api/mcp/call/:toolName` - Tool invocation endpoint
 
 ## Controllers [75%]
 
@@ -20,13 +46,6 @@
 | `src/controllers/feedController.js` | Feed display operations | [80%] |
 | `src/controllers/commentController.js` | Comment system operations | [70%] |
 | `src/controllers/creatorController.js` | Creator management operations | [65%] |
-
-## MCP Server Implementation [60%]
-
-| File | Purpose | Completion |
-|------|---------|------------|
-| `src/mcp/McpServer.js` | Model Context Protocol server | [60%] |
-| `src/mcp/mcpInstance.js` | MCP instance manager | [70%] |
 
 ## Views & Templates [100%]
 
@@ -43,11 +62,14 @@
 | `views/partials/footer.ejs` | Common footer template | [100%] |
 | `views/components/linkCard.ejs` | Link card component | [100%] |
 
+## Tests & Quality Assurance [100%]
+
 | File | Purpose | Completion |
 |------|---------|------------|
 | `tests/unit/controllers/voteController.test.js` | Vote controller unit tests | [100%] |
 | `tests/unit/mcp/McpServer.test.js` | MCP server unit tests | [100%] |
 | `tests/unit/agents/bambisleepUniversalAgent.test.js` | Universal agent unit tests | [100%] |
+| `tests/integration/fickdichselber-mcp.test.js` | External MCP server integration tests | [100%] |
 | `tests/unit/utils/universalContentDetector.test.js` | Content detector unit tests | [100%] |
 | `tests/integration/api.test.js` | API integration tests | [100%] |
 | `tests/integration/socket.test.js` | Socket.IO integration tests | [100%] |
