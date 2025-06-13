@@ -14,6 +14,10 @@ router.get('/agents', (req, res) => {
   // Initialize predefined agents if not already loaded
   agentManager.initializeFromConfigs();
   
+  // Debug: log loaded agents
+  const agents = agentManager.getAllAgents();
+  console.log('Loaded agents:', agents.map(a => ({ id: a.id, name: a.name })));
+  
   // Load MCP toolbox tools
   let mcpTools = [];
   try {
@@ -31,7 +35,7 @@ router.get('/agents', (req, res) => {
 
   res.render('pages/agents', {
     title: 'Smolagents Agent Hub',
-    agents: agentManager.getAllAgents(),
+    agents: agents,
     mcpTools: mcpTools
   });
 });
@@ -39,6 +43,9 @@ router.get('/agents', (req, res) => {
 // Individual agent page
 router.get('/agents/:id', (req, res) => {
   try {
+    // Initialize agents first
+    agentManager.initializeFromConfigs();
+    
     const agent = agentManager.getAgent(req.params.id);
     if (!agent) {
       return res.status(404).render('pages/404', { title: 'Agent Not Found' });
@@ -49,6 +56,7 @@ router.get('/agents/:id', (req, res) => {
       agent: agent
     });
   } catch (error) {
+    console.error('Agent route error:', error);
     res.status(500).render('pages/error', { title: 'Error', error: error.message });
   }
 });
