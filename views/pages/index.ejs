@@ -1,10 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bambi Sleep Church - Unified Platform Hub</title>
-    <link rel="stylesheet" href="/css/style.css">    <style>
+<%- include('../partials/header') %>
+    
+    <style>
         .unified-homepage {
             max-width: 1400px;
             margin: 0 auto;
@@ -259,13 +255,9 @@
         
         .vote-emoji.active {
             opacity: 1;
-        }
-    </style>
-</head>
-<body>
-    <%- include('../partials/header') %>
-    
-    <main>
+        }    </style>
+
+<main>
         <div class="unified-homepage">
             <!-- Hero Section -->
             <div class="hero-section">
@@ -994,11 +986,10 @@
             // Remove after 5 seconds
             setTimeout(() => {
                 notification.style.transform = 'translateX(400px)';
-                setTimeout(() => {
-                    document.body.removeChild(notification);
+                setTimeout(() => {                    document.body.removeChild(notification);
                 }, 300);
             }, 5000);
         }
     </script>
-</body>
-</html>
+
+    <%- include('../partials/footer') %>
