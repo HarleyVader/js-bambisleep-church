@@ -37,7 +37,7 @@
                 
                 <div class="form-group">
                     <label for="mcpTools">MCP Server Tools</label>
-                    <select id="mcpTools" multiple class="ui-select" style="height: 120px;">
+                    <select id="mcpTools" multiple class="ui-select">
                         <% if (mcpTools && mcpTools.length > 0) { %>
                             <% mcpTools.forEach(tool => { %>
                                 <option value="<%= tool.id %>"><%= tool.name %> - <%= tool.description %></option>
@@ -65,7 +65,7 @@
                         <p><strong>Created:</strong> <%= new Date(agent.created).toLocaleDateString() %></p>
                         <% if (agent.tools && agent.tools.length > 0) { %>
                             <p><strong>Tools:</strong> 
-                                <span style="color: var(--color-primary-cyan); font-size: 0.9rem;">
+                                <span class="agent-tools-display">
                                     <%= agent.tools.join(', ') %>
                                 </span>
                             </p>

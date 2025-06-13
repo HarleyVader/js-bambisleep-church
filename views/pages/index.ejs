@@ -1,261 +1,4 @@
 <%- include('../partials/header') %>
-    
-    <style>
-        .unified-homepage {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-        
-        .hero-section {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-        
-        .hero-subtitle {
-            font-size: 1.2rem;
-            color: var(--color-text-secondary);
-            margin-bottom: 2rem;
-            line-height: 1.6;
-        }
-        
-        /* Categories View */
-        .categories-view {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 0.3rem;
-            grid-auto-rows: min-content;
-            align-items: start;
-            margin-bottom: 2rem;
-        }
-        
-        .category-card {
-            background: rgba(var(--color-bg-secondary-rgb), 0.8);
-            border: 2px solid var(--color-primary-cyan);
-            border-radius: 1rem;
-            padding: 0.3rem;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease, height 0.5s ease, min-height 0.5s ease;
-            position: relative;
-            overflow: hidden;
-            min-height: 200px;
-            height: auto;
-        }
-        
-        .category-card:hover {
-            border-color: var(--color-primary-magenta);
-            border-width: 3px;
-            box-shadow: 0 0 30px rgba(var(--color-primary-magenta-rgb), 0.5);
-            transform: translateY(-8px);
-            background: rgba(var(--color-bg-secondary-rgb), 0.95);
-        }
-        
-        .category-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, var(--color-primary-cyan), var(--color-primary-magenta));
-        }
-        
-        .category-card h2 {
-            margin-bottom: 0.2rem;
-            color: var(--color-primary-cyan);
-            display: flex;
-            align-items: center;
-            gap: 0.2rem;
-            font-size: 1.0rem;
-        }
-        
-        .category-icon {
-            font-size: 1.0rem;
-        }
-        
-        .category-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            font-size: 0.8rem;
-        }
-        
-        .category-list li {
-            padding: 0.1rem 0;
-            border-bottom: 1px solid rgba(var(--color-primary-cyan-rgb), 0.1);
-            transition: all 0.3s ease;
-        }
-        
-        .category-list li:hover {
-            padding-left: 0.25rem;
-            background: rgba(var(--color-primary-cyan-rgb), 0.05);
-        }
-        
-        .category-list li:last-child {
-            border-bottom: none;
-        }
-        
-        .creator-info {
-            flex: 1;
-        }
-        
-        .creator-main-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.05rem;
-        }
-        
-        .creator-name-main {
-            font-weight: 600;
-            color: var(--color-text-primary);
-            font-size: 0.8rem;
-        }
-        
-        .creator-subtitle {
-            font-size: 0.6rem;
-            color: var(--color-text-secondary);
-            line-height: 1.0;
-            margin-bottom: 0.05rem;
-        }
-        
-        .vote-count-inline {
-            font-size: 0.6rem;
-            color: var(--color-primary-yellow);
-            display: flex;
-            align-items: center;
-            gap: 0.1rem;
-            white-space: nowrap;
-        }
-        
-        .content-link, .creator-link {
-            color: var(--color-text-primary);
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            display: block;
-            width: 100%;
-        }
-        
-        .content-link:hover, .creator-link:hover {
-            color: var(--color-primary-cyan);
-        }
-          /* Platform Categories Container - Similar to Main Categories */
-        .platform-categories-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 0.3rem;
-            grid-auto-rows: min-content;
-            align-items: start;
-            margin-top: 2rem;
-        }
-        
-        .platform-category-card {
-            background: rgba(var(--color-bg-secondary-rgb), 0.8);
-            border: 2px solid var(--color-primary-cyan);
-            border-radius: 1rem;
-            padding: 0.3rem;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease, height 0.5s ease, min-height 0.5s ease;
-            position: relative;
-            overflow: hidden;
-            min-height: 200px;
-            height: auto;
-            cursor: pointer;
-        }
-        
-        .platform-category-card:hover {
-            border-color: var(--color-primary-magenta);
-            border-width: 3px;
-            box-shadow: 0 0 30px rgba(var(--color-primary-magenta-rgb), 0.5);
-            transform: translateY(-8px);
-            background: rgba(var(--color-bg-secondary-rgb), 0.95);
-        }
-        
-        .platform-category-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, var(--color-primary-cyan), var(--color-primary-magenta));
-        }          .platform-favicon {
-            width: 1.0rem;
-            height: 1.0rem;
-            border-radius: 2px;
-            display: inline-block;
-            vertical-align: middle;
-            margin-right: 0.1rem;
-            object-fit: contain;
-        }
-        
-        .platform-favicon.fallback {
-            background: var(--color-primary-cyan);
-            color: var(--color-bg-primary);
-            text-align: center;
-            line-height: 1.0rem;
-            font-size: 0.6rem;
-            font-weight: 600;
-            border: 1px solid rgba(var(--color-primary-cyan-rgb), 0.3);
-        }
-          
-        @media (max-width: 768px) {
-            .unified-homepage {
-                padding: 1rem;
-            }
-            
-            .categories-view {
-                grid-template-columns: 1fr;
-            }
-            
-            .platform-categories-container {
-                grid-template-columns: 1fr;
-            }
-        }        /* Voting System - Single Row Layout */
-        .vote-stats {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-size: 0.6rem;
-            margin-bottom: 0.1rem;
-        }
-        
-        .vote-stats-left {
-            display: flex;
-            align-items: center;
-            gap: 0.3rem;
-        }
-        
-        .vote-stats-right {
-            display: flex;
-            align-items: center;
-            gap: 0.1rem;
-        }
-        
-        .vote-emojis {
-            display: flex;
-            gap: 0.2rem;
-            align-items: center;
-        }
-        
-        .vote-emoji {
-            font-size: 0.6rem;
-            cursor: pointer;
-            opacity: 0.5;
-            transition: all 0.3s ease;
-            user-select: none;
-            margin-left: 0.2rem;
-        }
-        
-        .vote-emoji:hover {
-            opacity: 1;
-            transform: scale(1.2);
-        }
-        
-        .vote-emoji.active {
-            opacity: 1;
-        }    </style>
 
 <main>
         <div class="unified-homepage">
@@ -299,7 +42,7 @@
                                 </li>
                             <% }); %>
                         <% } else { %>
-                            <li style="color: var(--color-text-secondary);">No creators yet</li>
+                            <li class="no-content-message">No creators yet</li>
                         <% } %>
                     </ul>
                 </div>                <!-- Videos Card -->
@@ -338,7 +81,7 @@
                                     </li>
                                 <% }); %>
                             <% } else { %>
-                                <li style="color: var(--color-text-secondary);">No videos yet</li>
+                                <li class="no-content-message">No videos yet</li>
                             <% } %>
                         <% } %>
                     </ul>
@@ -378,7 +121,7 @@
                                     </li>
                                 <% }); %>
                             <% } else { %>
-                                <li style="color: var(--color-text-secondary);">No audios yet</li>
+                                <li class="no-content-message">No audios yet</li>
                             <% } %>
                         <% } %>
                     </ul>
@@ -417,7 +160,7 @@
                                     </li>
                                 <% }); %>
                             <% } else { %>
-                                <li style="color: var(--color-text-secondary);">No images yet</li>
+                                <li class="no-content-message">No images yet</li>
                             <% } %>
                         <% } %>
                     </ul>
@@ -425,7 +168,7 @@
             </div>            
             <!-- Platform Categories (organized like main categories) -->
             <div class="platform-categories-container" id="platformCategoriesContainer">
-                <div style="grid-column: 1 / -1; text-align: center; color: var(--color-text-secondary); font-size: 0.7rem; padding: 1rem;">
+                <div class="loading-message">
                     Loading platforms...
                 </div>
             </div>
@@ -532,7 +275,7 @@
             const container = document.getElementById('platformCategoriesContainer');
             
             if (!platforms || platforms.length === 0) {
-                container.innerHTML = '<div style="grid-column: 1 / -1; color: var(--color-text-secondary); font-size: 0.7rem; text-align: center; padding: 1rem;">No platforms yet</div>';
+                container.innerHTML = '<div class="loading-message">No platforms yet</div>';
                 return;
             }
             
@@ -558,9 +301,8 @@
             
             const faviconUrl = getPlatformFavicon(platform.platform);
               // Create favicon element with better error handling
-            const faviconElement = faviconUrl ? 
-                `<img src="${faviconUrl}" alt="${platform.platform}" class="platform-favicon" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';" style="display: inline-block;">
-                 <span class="platform-favicon fallback" style="display: none;">${platform.platform.charAt(0).toUpperCase()}</span>` :
+            const faviconElement = faviconUrl ?                `<img src="${faviconUrl}" alt="${platform.platform}" class="platform-favicon platform-favicon-visible" onerror="this.className='platform-favicon platform-favicon-hidden'; this.nextElementSibling.className='platform-favicon fallback platform-favicon-visible';">
+                 <span class="platform-favicon fallback platform-favicon-hidden">${platform.platform.charAt(0).toUpperCase()}</span>` :
                 `<span class="platform-favicon fallback">${platform.platform.charAt(0).toUpperCase()}</span>`;
             
             // Get top 15 items from this platform, sorted by engagement
@@ -598,12 +340,12 @@
                         </li>
                     `).join('')}
                     ${platform.items.length > 15 ? `
-                        <li style="color: var(--color-text-secondary); font-style: italic; text-align: center; padding: 0.2rem;">
+                        <li class="more-content-indicator">
                             ...and ${platform.items.length - 15} more items
                         </li>
                     ` : ''}
                     ${platform.items.length === 0 ? `
-                        <li style="color: var(--color-text-secondary);">No content yet</li>
+                        <li class="no-content-message">No content yet</li>
                     ` : ''}
                 </ul>
             `;
@@ -658,7 +400,7 @@
             return null;
         }function showPlatformCategoriesError(message) {
             const container = document.getElementById('platformCategoriesContainer');
-            container.innerHTML = `<div style="grid-column: 1 / -1; color: var(--color-primary-yellow); font-size: 0.7rem; text-align: center; padding: 1rem;">${message}</div>`;
+            container.innerHTML = `<div class="error-message">${message}</div>`;
         }        // Voting functionality with real-time Socket.IO support
         function castVote(event, type, id, voteType) {
             event.preventDefault();
