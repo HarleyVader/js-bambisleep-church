@@ -11,12 +11,12 @@
                     "type": "node"
                 }
             }
-        },
-        "fickdichselber-mcp-server": {
-            "url": "https://fickdichselber.com",
+        },        "fickdichselber-mcp-server": {
+            "url": "https://fickdichselber.com:9999",
             "headers": {
                 "Authorization": "Bearer bambi_brdnttbmbslpchrc8x2k",
-                "X-Verification": "sha256:a7b9c3d5e8f2a1b4c6d9e2f5a8b1c4d7"
+                "X-Verification": "sha256:a7b9c3d5e8f2a1b4c6d9e2f5a8b1c4d7",
+                "Content-Type": "application/json"
             }
         }
     }

@@ -9,15 +9,15 @@
     "typescript": true,
     "python": true,
     "shell": true,
-  },
-  "github.copilot.advanced": {
+  },  "github.copilot.advanced": {
     "debug.overrideEngine": "codex",
     "length": 1000,
     "temperature": 0.1,
     "listCount": 3,
     "inlineSuggestEnable": true
-  },  
-  "github.copilot.chat.instructions": [
+  },
+  "github.copilot.chat.experimental.mcpIntegration": true,
+  "github.copilot.chat.contextSelection": "auto",  "github.copilot.chat.instructions": [
     {
       "file": ".github/copilot-instructions.md",
       "description": "Instructions for using GitHub Copilot"
@@ -33,10 +33,21 @@
     {
       "file": ".github/copilot-ssh-agent.md",
       "description": "SSH agent configuration for bambisleep.chat, bambisleep.church, fickdichselber.com"
+    },
+    {
+      "file": ".vscode/copilot-mcp.json",
+      "description": "MCP server integration configuration for GitHub Copilot"
     }
-  ],
-  "chat.mcp.serverSampling": {
+  ],"chat.mcp.serverSampling": {
     "js-bambisleep-church/.vscode/mcp.json: gistpad": {
+      "allowedModels": [
+        "github.copilot-chat/claude-opus-4",
+        "github.copilot-chat/claude-3.7-sonnet",
+        "github.copilot-chat/claude-3.7-sonnet-thought",
+        "github.copilot-chat/claude-sonnet-4"
+      ]
+    },
+    "js-bambisleep-church/.vscode/mcp.json: fickdichselber-mcp-server": {
       "allowedModels": [
         "github.copilot-chat/claude-opus-4",
         "github.copilot-chat/claude-3.7-sonnet",

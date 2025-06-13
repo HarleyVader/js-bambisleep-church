@@ -17,6 +17,10 @@
 - `.env` - Environment variables [100%]
 - `.gitignore` - Git ignore rules [100%]
 
+### Testing & Utilities [100%]
+
+- `test-mcp-integration.js` - MCP server connection test script [100%]
+
 ### Source Code [100%]
 
 - `src/server.js` - Main Express server with optional framework [100%]
@@ -69,6 +73,9 @@
   - `copilot-ssh-agent.md` - SSH agent configuration [100%]
   - `model-context-protocol.md` - MCP documentation [100%]
 - `.vscode/` - VS Code workspace settings [100%]
+  - `settings.json` - Enhanced GitHub Copilot MCP integration [100%]
+  - `mcp.json` - MCP server configuration [100%]
+  - `copilot-mcp.json` - GitHub Copilot MCP integration settings [100%]
 
 ### Frontend Assets [100%]
 

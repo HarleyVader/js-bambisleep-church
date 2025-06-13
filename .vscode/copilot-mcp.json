@@ -1,0 +1,49 @@
+{
+  "mcpIntegration": {
+    "enabled": true,
+    "servers": [
+      {
+        "name": "fickdichselber-mcp-server",
+        "description": "Bambi Sleep Church MCP Server with smolagents integration",
+        "endpoint": "https://fickdichselber.com:9999",
+        "tools": [
+          "get_links",
+          "add_link", 
+          "vote_link",
+          "create_agent",
+          "prompt_agent",
+          "get_agents",
+          "agent_communicate"
+        ],
+        "capabilities": {
+          "linkManagement": true,
+          "agentOrchestration": true,
+          "communityVoting": true,
+          "contentGeneration": true
+        }
+      },
+      {
+        "name": "gistpad",
+        "description": "Local development MCP server",
+        "endpoint": "stdio",
+        "command": "node",
+        "args": ["build/index.js"],
+        "capabilities": {
+          "codeGeneration": true,
+          "fileManagement": true
+        }
+      }
+    ],
+    "contextSharing": {
+      "enableAutoContext": true,
+      "includeWorkspaceFiles": true,
+      "includeGitHistory": false,
+      "maxContextSize": 50000
+    },
+    "toolExecution": {
+      "allowAutomaticExecution": false,
+      "requireConfirmation": true,
+      "timeoutMs": 30000
+    }
+  }
+}
