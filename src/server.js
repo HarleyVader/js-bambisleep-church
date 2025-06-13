@@ -3,6 +3,7 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import KnowledgeStorage from './knowledge/storage.js';
+import agentTasksStore from './mcp/tools/agentTasks.js';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -41,10 +42,12 @@ app.get('/knowledge', (req, res) => {
   });
 });
 
+// AGENTS UI ROUTE
 app.get('/agents', (req, res) => {
-  res.render('pages/error', {
-    title: 'AI Agents - Coming Soon',
-    error: 'AI Agents functionality is coming soon. This page is under development.'
+  const agentTasks = agentTasksStore.getAgentTasks();
+  res.render('pages/agents', {
+    title: 'AI Agents - Bambi Sleep Church',
+    agentTasks
   });
 });
 

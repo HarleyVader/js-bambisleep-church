@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Agents - Bambi Sleep Church</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .agents-container { max-width: 700px; margin: 2rem auto; padding: 2rem; background: var(--bg2,#181a20); border-radius: 1.5rem; box-shadow: 0 2px 16px #0008; }
+    .agent-task { margin-bottom: 2rem; padding: 1.5rem; background: var(--bg3,#23262f); border-radius: 1rem; box-shadow: 0 1px 8px #0004; }
+    .agent-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--accent,#0ff); }
+    .agent-desc { color: #aaa; margin-bottom: 1rem; }
+    .progress-bar-bg { background: #222; border-radius: 1rem; height: 18px; width: 100%; overflow: hidden; }
+    .progress-bar { background: linear-gradient(90deg, #0ff 0%, #09f 100%); height: 100%; border-radius: 1rem; transition: width 0.4s; }
+    .agent-status { font-size: 0.95rem; color: #0ff; margin-top: 0.5rem; }
+    @media (max-width: 600px) {
+      .agents-container { padding: 1rem; }
+      .agent-task { padding: 1rem; }
+      .agent-title { font-size: 1.1rem; }
+    }
+  </style>
+</head>
+<body>
+  <%- include('../partials/header') %>
+  <div class="agents-container">
+    <h1 style="text-align:center; color:var(--accent,#0ff);">AI Agents</h1>
+    <% if (agentTasks && agentTasks.length) { %>
+      <% agentTasks.forEach(function(task) { %>
+        <div class="agent-task">
+          <div class="agent-title"><%= task.title %></div>
+          <div class="agent-desc"><%= task.description %></div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar" style="width:<%= task.completion %>%;"></div>
+          </div>
+          <div class="agent-status">
+            <%= task.status %> &mdash; <%= task.completion %>% complete
+          </div>
+        </div>
+      <% }) %>
+    <% } else { %>
+      <div style="text-align:center; color:#aaa;">No agent tasks running.</div>
+    <% } %>
+  </div>
+  <%- include('../partials/footer') %>
+</body>
+</html>

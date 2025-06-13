@@ -1,6 +1,9 @@
 // Knowledge management tools for MCP server
 import KnowledgeStorage from '../../knowledge/storage.js';
 import LMStudioClient from '../../lmstudio/client.js';
+import { crawlLinks, crawlMetadataBatch } from './urlCrawler.js';
+import { analyzeUrls } from './urlAnalyzer.js';
+import { convertAnalysisToUrls } from '../../utils/urlUpdater.js';
 
 const storage = new KnowledgeStorage();
 const lmStudio = new LMStudioClient();
@@ -198,4 +201,47 @@ export async function deleteKnowledge(args) {
       }]
     };
   }
+}
+
+// Agent: Crawl, analyze, get metadata, update URLs, build knowledge base
+export async function agentBuildKnowledgeBase({ seedUrl, domainFilter = null }) {
+  // 1. Crawl links from the seed URL
+  const crawlResult = await crawlLinks(seedUrl, domainFilter);
+  if (crawlResult.status !== 'success' || !crawlResult.links) {
+    return { error: 'Failed to crawl links', details: crawlResult };
+  }
+  const urls = crawlResult.links.map(l => l.url);
+
+  // 2. Batch crawl metadata for all URLs
+  const metadataBatch = await crawlMetadataBatch(urls);
+  if (metadataBatch.status !== 'success') {
+    return { error: 'Failed to crawl metadata', details: metadataBatch };
+  }
+
+  // 3. Analyze URLs for structured info
+  const analysis = await analyzeUrls(urls);
+
+  // 4. Convert analysis to frontend-compatible URLs
+  const urlInfos = convertAnalysisToUrls(analysis);
+
+  // 5. Store each URL info as a knowledge entry
+  const added = [];
+  for (const info of urlInfos) {
+    const { url, title, description, type, platform, metadata } = info;
+    const content = description || '';
+    const entryMeta = { title, type, platform, url, ...metadata };
+    try {
+      const result = await storage.addEntry(content, entryMeta);
+      added.push(result.id);
+    } catch (e) {
+      // skip failed adds
+    }
+  }
+
+  return {
+    status: 'complete',
+    crawled: urls.length,
+    added: added.length,
+    knowledgeIds: added
+  };
 }
