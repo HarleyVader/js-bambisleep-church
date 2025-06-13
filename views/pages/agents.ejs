@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - Bambi Sleep Church</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .agent-hub {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .agent-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .agent-card {
+            background: rgba(var(--color-bg-secondary-rgb), 0.8);
+            border: 2px solid var(--color-primary-cyan);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .agent-card:hover {
+            border-color: var(--color-primary-magenta);
+            transform: translateY(-2px);
+        }
+        
+        .agent-form {
+            background: rgba(var(--color-bg-secondary-rgb), 0.9);
+            border: 2px solid var(--color-primary-cyan);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            color: var(--color-primary-cyan);
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+        
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(var(--color-bg-primary-rgb), 0.8);
+            border: 1px solid var(--color-primary-cyan);
+            border-radius: 0.5rem;
+            color: var(--color-text-primary);
+            font-family: inherit;
+        }
+        
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .btn {
+            background: var(--color-primary-magenta);
+            color: var(--color-text-primary);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            background: var(--color-primary-cyan);
+            transform: translateY(-1px);
+        }
+        
+        .prompt-section {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--color-primary-cyan);
+        }
+        
+        .communication-hub {
+            background: rgba(var(--color-bg-secondary-rgb), 0.9);
+            border: 2px solid var(--color-primary-cyan);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <%- include('../partials/header') %>
+    
+    <div class="agent-hub">
+        <div class="hero-section">
+            <h1 class="hero-title">🤖 Smolagents Agent Hub</h1>
+            <p class="hero-subtitle">Create, configure, and orchestrate intelligent agents</p>
+        </div>
+
+        <!-- Agent Creation Form -->
+        <div class="agent-form">
+            <h2>Create New Agent</h2>
+            <form id="createAgentForm">
+                <div class="form-group">
+                    <label for="agentName">Agent Name</label>
+                    <input type="text" id="agentName" name="name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="agentDescription">Description</label>
+                    <input type="text" id="agentDescription" name="description">
+                </div>
+                
+                <div class="form-group">
+                    <label for="agentPrompt">System Prompt</label>
+                    <textarea id="agentPrompt" name="prompt" placeholder="Define your agent's behavior and capabilities..." required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="agentTools">Available Tools (comma-separated)</label>
+                    <input type="text" id="agentTools" name="tools" placeholder="search, analyze, communicate">
+                </div>
+                
+                <button type="submit" class="btn">Create Agent</button>
+            </form>
+        </div>
+
+        <!-- Existing Agents -->
+        <div class="agent-grid" id="agentGrid">
+            <% if (agents && agents.length > 0) { %>
+                <% agents.forEach(agent => { %>
+                    <div class="agent-card" data-agent-id="<%= agent.id %>">
+                        <h3><%= agent.name %></h3>
+                        <p><%= agent.description %></p>
+                        <p><strong>Status:</strong> <%= agent.status %></p>
+                        <p><strong>Created:</strong> <%= new Date(agent.created).toLocaleDateString() %></p>
+                        
+                        <div class="prompt-section">
+                            <h4>Prompt Agent</h4>
+                            <textarea placeholder="Enter your prompt..." class="agent-prompt-input"></textarea>
+                            <button class="btn" onclick="promptAgent('<%= agent.id %>')">Send Prompt</button>
+                        </div>
+                    </div>
+                <% }); %>
+            <% } else { %>
+                <div class="agent-card">
+                    <h3>No Agents Yet</h3>
+                    <p>Create your first smolagents agent using the form above.</p>
+                </div>
+            <% } %>
+        </div>
+
+        <!-- Agent2Agent Communication Hub -->
+        <div class="communication-hub">
+            <h2>Agent Communication Hub</h2>
+            <p>Enable agents to communicate with each other for complex workflows.</p>
+            
+            <div class="form-group">
+                <label>From Agent</label>
+                <select id="fromAgent">
+                    <option value="">Select source agent...</option>
+                    <% if (agents) { %>
+                        <% agents.forEach(agent => { %>
+                            <option value="<%= agent.id %>"><%= agent.name %></option>
+                        <% }); %>
+                    <% } %>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>To Agent</label>
+                <select id="toAgent">
+                    <option value="">Select target agent...</option>
+                    <% if (agents) { %>
+                        <% agents.forEach(agent => { %>
+                            <option value="<%= agent.id %>"><%= agent.name %></option>
+                        <% }); %>
+                    <% } %>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Message</label>
+                <textarea id="commMessage" placeholder="Inter-agent communication message..."></textarea>
+            </div>
+            
+            <button class="btn" onclick="sendAgentCommunication()">Send Communication</button>
+        </div>
+    </div>
+
+    <script>
+        // Create agent form handler
+        document.getElementById('createAgentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            
+            if (data.tools) {
+                data.tools = data.tools.split(',').map(t => t.trim());
+            }
+            
+            try {
+                const response = await fetch('/api/agents', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert('Error creating agent');
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        });
+
+        // Prompt agent function
+        async function promptAgent(agentId) {
+            const card = document.querySelector(`[data-agent-id="${agentId}"]`);
+            const message = card.querySelector('.agent-prompt-input').value;
+            
+            if (!message) {
+                alert('Please enter a prompt');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/agents/${agentId}/prompt`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                });
+                
+                const result = await response.json();
+                alert('Agent Response: ' + result.response);
+                card.querySelector('.agent-prompt-input').value = '';
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        // Agent communication function
+        async function sendAgentCommunication() {
+            const fromAgent = document.getElementById('fromAgent').value;
+            const toAgent = document.getElementById('toAgent').value;
+            const message = document.getElementById('commMessage').value;
+            
+            if (!fromAgent || !toAgent || !message) {
+                alert('Please fill all communication fields');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/agents/communicate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ fromAgentId: fromAgent, toAgentId: toAgent, message })
+                });
+                
+                const result = await response.json();
+                alert('Communication sent successfully!');
+                document.getElementById('commMessage').value = '';
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+    </script>
+
+    <%- include('../partials/footer') %>
+</body>
+</html>

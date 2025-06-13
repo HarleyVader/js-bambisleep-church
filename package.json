@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "A real-time community-voted link list for different bambisleep themes and categories.",
   "main": "src/app.js",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "https://github.com/HarleyVader/js-bambisleep-church.git"
@@ -11,17 +12,16 @@
     "url": "https://github.com/HarleyVader/js-bambisleep-church/issues"
   },
   "homepage": "https://github.com/HarleyVader/js-bambisleep-church#readme",  "scripts": {
-    "start": "node src/mcp/McpServer.js & node src/app.js",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "mcp": "node src/mcp/McpServer.js",
-    "agentic": "node src/mcp/bambisleep-crawler-agent.js",
-    "cleanup": "node cleanup-agent.js"
+    "start": "start /B node src/mcp/McpServer.js --http & node src/server.js",
+    "start:stdio": "node src/mcp/McpServer.js & node src/server.js",
+    "start:mcp": "node src/mcp/McpServer.js --http",
+    "start:web": "node src/server.js"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.5.0",
     "axios": "^1.9.0",
     "cheerio": "^1.1.0",
+    "cors": "^2.8.5",
     "ejs": "^3.1.10",
     "express": "^5.1.0",
     "marked": "^12.0.0",

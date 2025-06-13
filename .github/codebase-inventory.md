@@ -11,11 +11,39 @@
 
 ## 📁 Directory Structure & Completion Status
 
-### Root Level [90%]
+### Root Level [100%]
 
 - `package.json` - NPM configuration and dependencies [100%]
 - `.env` - Environment variables [100%]
 - `.gitignore` - Git ignore rules [100%]
+
+### Source Code [100%]
+
+- `src/server.js` - Main Express server with optional framework [100%]
+- `src/mcp/McpServer.js` - Model Context Protocol server with smolagents agent tools [100%]
+
+### Optional Framework [100%]
+
+- `src/routes/` - Optional route modules directory [100%]
+- `src/routes/toolbox.js` - Toolbox API routes [100%]
+- `src/routes/agents.js` - Smolagents agent routes and API [100%]
+- `src/socket/` - Optional socket handler modules directory [100%]
+- `src/socket/toolbox.js` - Toolbox socket handlers [100%]
+
+### MCP Toolbox System [100%]
+
+- `src/toolbox/` - MCP toolbox directory [100%]
+- `src/toolbox/index.js` - Central toolbox registry [100%]
+- `src/toolbox/linkManager.js` - Link management tool [100%]
+- `src/toolbox/analytics.js` - Analytics tracking tool [100%]
+- `src/toolbox/contentManager.js` - Content management tool [100%]
+- `src/toolbox/agentManager.js` - Smolagents agent management tool [100%]
+- `src/toolbox/README.md` - Toolbox documentation [100%]
+- `src/toolbox.json` - Smolagents integration schema [100%]
+
+- `src/`
+  - `app.js` - Express server with EJS templates and Socket.IO [100%]
+  - `mcp/McpServer.js` - Model Context Protocol server implementation [100%]
 
 ### Tasks [100%]
 
@@ -50,13 +78,14 @@
   - `assets/placeholders/` - SVG placeholder icons [100%]
   - `css/style.css` - Cyberpunk theme stylesheet (2091 lines) [100%]
 
-### Views & Templates [95%]
+### Views & Templates [100%]
 
 - `views/`
   - `components/linkCard.ejs` - Reusable link card component [100%]
   - `pages/`
     - `index.ejs` - Main homepage (977 lines) [100%]
-    - `help.ejs` - Help/support page [100%]
+    - `help.ejs` - Help/support page with markdown navigation sidebar [100%]
+    - `agents.ejs` - Smolagents agent hub interface [100%]
   - `partials/`
     - `header.ejs` - Site header template [100%]
     - `footer.ejs` - Site footer template [100%]
@@ -68,6 +97,7 @@
 - **Express.js** (v5.1.0) - Web server framework
 - **Socket.IO** (v4.8.1) - Real-time communication
 - **EJS** (v3.1.10) - Template engine
+- **@modelcontextprotocol/sdk** (v0.5.0) - MCP protocol implementation
 - **Axios** (v1.9.0) - HTTP client
 - **Cheerio** (v1.1.0) - Server-side jQuery
 - **Marked** (v12.0.0) - Markdown parser
@@ -81,7 +111,13 @@
 
 ## 📝 Available Scripts
 
-- `npm start` - Start MCP server & main application
+- `npm start` - Start MCP server & main application concurrently
+- `npm run mcp` - Start only the MCP server
+- `npm run agentic` - Run bambisleep crawler agent
+- `npm run cleanup` - Run cleanup agent
+- `npm test` - Run Jest test suite
+- `npm run test:watch` - Run tests in watch mode
+- `npm run test:coverage` - Run tests with coverage report
 
 ## 🎨 Frontend Features [95%]
 
