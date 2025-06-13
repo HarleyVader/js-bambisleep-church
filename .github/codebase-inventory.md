@@ -130,6 +130,14 @@
   - `assets/placeholders/` - SVG placeholder icons [100%]
   - `css/style.css` - Cyberpunk theme stylesheet (2091 lines) [100%]
 
+### Agent Dashboard Realtime Upgrade [10%]
+
+- `views/pages/agents.ejs` [0%] (UI changes for real-time, animated, interactive dashboard)
+- `src/server.js` [0%] (API endpoint for agent status polling)
+- `public/css/style.css` [0%] (Animated status bar styles)
+- `public/js/agents-dashboard.js` [0%] (Client-side polling, animation, interactivity)
+- `.tasks/agent-dashboard-realtime.task.md` [10%] (Task file created)
+
 ## 🔧 Dependencies & Technologies
 
 ### Runtime Dependencies [100%]

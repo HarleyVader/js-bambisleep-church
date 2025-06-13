@@ -153,6 +153,12 @@ app.post('/api/knowledge', async (req, res) => {
   }
 });
 
+// API endpoint for agent task polling
+app.get('/api/agent-tasks', (req, res) => {
+  const agentTasks = agentTasksStore.getAgentTasks();
+  res.json({ agentTasks });
+});
+
 app.get('/health', (req, res) => {
   res.json({
     status: 'healthy',
