@@ -24,6 +24,10 @@
   <%- include('../partials/header') %>
   <div class="agents-container">
     <h1 style="text-align:center; color:var(--accent,#0ff);">AI Agents</h1>
+    <form action="/agents/submit-url" method="POST" style="margin-bottom:2rem; text-align:center;">
+      <input type="url" name="url" placeholder="Enter URL" required style="padding:0.5rem 1rem; border-radius:0.5rem; border:1px solid #333; width:60%; max-width:350px; margin-right:0.5rem;">
+      <button type="submit" style="padding:0.5rem 1.2rem; border-radius:0.5rem; background:var(--accent,#0ff); color:#111; border:none; font-weight:600; cursor:pointer;">Submit URL</button>
+    </form>
     <% if (agentTasks && agentTasks.length) { %>
       <% agentTasks.forEach(function(task) { %>
         <div class="agent-task">
