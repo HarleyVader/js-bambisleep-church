@@ -3,6 +3,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import dotenv from 'dotenv';
 import { crawlUrl, crawlLinks, crawlMetadataBatch, saveUrlData } from './tools/urlCrawler.js';
+import { analyzeUrls, saveAnalysis, analyzeAndSave } from './tools/urlAnalyzer.js';
 import { searchKnowledge, addKnowledge, listKnowledge, getKnowledge, updateKnowledge, analyzeContext, deleteKnowledge } from './tools/knowledgeTools.js';
 
 // Load environment variables from .env file
@@ -210,7 +211,26 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           },
           required: ['id']
         }
-      }
+      },
+      {
+        name: 'analyze_urls',
+        description: 'Analyze a list of URLs and organize metadata into structured JSON',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            urls: {
+              type: 'array',
+              items: { type: 'string' },
+              description: 'Array of URLs to analyze'
+            },
+            filename: {
+              type: 'string',
+              description: 'Optional filename for saved analysis (auto-generated if not provided)'
+            }
+          },
+          required: ['urls']
+        }
+      },
     ]
   };
 });
@@ -252,6 +272,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       
       case 'delete_knowledge':
         return await deleteKnowledge(args);
+      
+      case 'analyze_urls':
+        const analysis = await analyzeAndSave(args.urls, args.filename);
+        return { content: [{ type: 'text', text: JSON.stringify(analysis, null, 2) }] };
       
       default:
         throw new Error(`Unknown tool: ${name}`);

@@ -253,8 +253,11 @@
                 }
             ];
             
+            // Merge with crawled URLs from localStorage
+            const mergedData = mergeCrawledUrls(baseData);
+            
             // Apply local storage modifications to data
-            return baseData.map(platform => ({
+            return mergedData.map(platform => ({
                 ...platform,
                 items: platform.items.map(item => {
                     const itemId = item.id || item.linkId;
@@ -271,7 +274,196 @@
                     };
                 })
             }));
-        }function renderPlatformCategories(platforms) {
+        }
+
+        // URL Updater Functions
+        function mergeCrawledUrls(baseData) {
+            // Get stored crawled URLs
+            const crawledUrls = getCrawledUrls();
+            if (!crawledUrls || crawledUrls.length === 0) {
+                return baseData;
+            }
+
+            // Create a copy of base data to work with
+            const mergedData = JSON.parse(JSON.stringify(baseData));
+            const platformMap = {};
+            
+            // Create lookup map for existing platforms
+            mergedData.forEach(platform => {
+                platformMap[platform.platform] = platform;
+            });
+
+            // Process crawled URLs
+            crawledUrls.forEach(crawledUrl => {
+                const platformName = extractPlatformFromUrl(crawledUrl.url);
+                if (!platformName) return;
+
+                // Create platform if it doesn't exist
+                if (!platformMap[platformName]) {
+                    const newPlatform = {
+                        platform: platformName,
+                        totalViews: 0,
+                        items: []
+                    };
+                    mergedData.push(newPlatform);
+                    platformMap[platformName] = newPlatform;
+                }
+
+                // Add crawled URL to platform
+                const platform = platformMap[platformName];
+                const newItem = {
+                    id: crawledUrl.id,
+                    title: crawledUrl.title || crawledUrl.url,
+                    url: crawledUrl.url,
+                    votes: 0,
+                    views: 0,
+                    linkId: crawledUrl.id,
+                    source: 'crawled',
+                    addedAt: crawledUrl.addedAt
+                };
+
+                // Check if URL already exists
+                const exists = platform.items.some(item => item.url === crawledUrl.url);
+                if (!exists) {
+                    platform.items.push(newItem);
+                    platform.totalViews += newItem.views;
+                }
+            });
+
+            return mergedData;
+        }
+
+        function addCrawledUrl(url, metadata = {}) {
+            const crawledUrls = getCrawledUrls();
+            const id = generateUniqueId();
+            
+            const newUrl = {
+                id: id,
+                url: url,
+                title: metadata.title || url,
+                description: metadata.description || '',
+                type: metadata.type || 'website',
+                addedAt: new Date().toISOString()
+            };
+
+            crawledUrls.push(newUrl);
+            localStorage.setItem('crawledUrls', JSON.stringify(crawledUrls));
+            
+            // Refresh display
+            loadPlatformCategories();
+            
+            return newUrl;
+        }
+
+        function addCrawledUrls(urlsArray) {
+            if (!Array.isArray(urlsArray)) return;
+            
+            const crawledUrls = getCrawledUrls();
+            const addedUrls = [];
+
+            urlsArray.forEach(urlData => {
+                const id = generateUniqueId();
+                const newUrl = {
+                    id: id,
+                    url: urlData.url || urlData,
+                    title: urlData.title || urlData.metadata?.title || urlData.url || urlData,
+                    description: urlData.description || urlData.metadata?.description || '',
+                    type: urlData.type || urlData.metadata?.type || 'website',
+                    addedAt: new Date().toISOString()
+                };
+
+                // Check for duplicates
+                const exists = crawledUrls.some(existing => existing.url === newUrl.url);
+                if (!exists) {
+                    crawledUrls.push(newUrl);
+                    addedUrls.push(newUrl);
+                }
+            });
+
+            if (addedUrls.length > 0) {
+                localStorage.setItem('crawledUrls', JSON.stringify(crawledUrls));
+                loadPlatformCategories();
+                showNotification(`Added ${addedUrls.length} new URLs`, 'success');
+            }
+
+            return addedUrls;
+        }
+
+        function getCrawledUrls() {
+            try {
+                return JSON.parse(localStorage.getItem('crawledUrls') || '[]');
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function clearCrawledUrls() {
+            localStorage.removeItem('crawledUrls');
+            loadPlatformCategories();
+            showNotification('Cleared all crawled URLs', 'info');
+        }
+
+        function extractPlatformFromUrl(url) {
+            try {
+                const hostname = new URL(url).hostname.toLowerCase();
+                const platformDomains = {
+                    'youtube.com': 'youtube',
+                    'youtu.be': 'youtube',
+                    'soundcloud.com': 'soundcloud',
+                    'vimeo.com': 'vimeo',
+                    'patreon.com': 'patreon',
+                    'reddit.com': 'reddit',
+                    'twitter.com': 'twitter',
+                    'x.com': 'twitter',
+                    'spotify.com': 'spotify',
+                    'bandcamp.com': 'bandcamp',
+                    'pornhub.com': 'pornhub',
+                    'xvideos.com': 'xvideos',
+                    'ko-fi.com': 'ko-fi',
+                    'onlyfans.com': 'onlyfans',
+                    'twitch.tv': 'twitch',
+                    'dailymotion.com': 'dailymotion',
+                    'anchor.fm': 'anchor',
+                    'subscribestar.com': 'subscribestar',
+                    'gumroad.com': 'gumroad',
+                    'etsy.com': 'etsy',
+                    'xhamster.com': 'xhamster',
+                    'dropbox.com': 'dropbox',
+                    'mega.nz': 'mega',
+                    'drive.google.com': 'google-drive'
+                };
+
+                // Check for exact match
+                if (platformDomains[hostname]) {
+                    return platformDomains[hostname];
+                }
+
+                // Check for subdomain matches
+                for (const [domain, platform] of Object.entries(platformDomains)) {
+                    if (hostname.endsWith(domain)) {
+                        return platform;
+                    }
+                }
+
+                // Default to 'website' for unknown platforms
+                return 'website';
+            } catch (e) {
+                return 'website';
+            }
+        }
+
+        function generateUniqueId() {
+            return 'crawled_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        // Expose URL updater functions globally for external access
+        window.urlUpdater = {
+            addUrl: addCrawledUrl,
+            addUrls: addCrawledUrls,
+            getUrls: getCrawledUrls,
+            clearUrls: clearCrawledUrls,
+            refreshDisplay: loadPlatformCategories
+        };function renderPlatformCategories(platforms) {
             const container = document.getElementById('platformCategoriesContainer');
             
             if (!platforms || platforms.length === 0) {
@@ -579,6 +771,12 @@
             });
         }        // WebSocket functionality removed - now using local data only
         console.log('Running in standalone mode - no server dependencies');
+        console.log('URL Updater available via: window.urlUpdater');
+        console.log('Example usage:');
+        console.log('  window.urlUpdater.addUrl("https://youtube.com/watch?v=example", {title: "Example Video"})');
+        console.log('  window.urlUpdater.addUrls([{url: "https://soundcloud.com/example", title: "Example Audio"}])');
+        console.log('  window.urlUpdater.getUrls() // View all crawled URLs');
+        console.log('  window.urlUpdater.clearUrls() // Clear all crawled URLs');
 
         // Track clicks on all URLs on the root page
         function initializeClickTracking() {
