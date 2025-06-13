@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bambisleep Church - Content Discovery & Management Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.95);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 1rem;            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -moz-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            color: #34495e;
+            margin: 2rem 0 1rem 0;
+            padding-bottom: 0.5rem;
+            border-bottom: 3px solid #667eea;
+            position: relative;
+        }
+
+        h2::before {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background: #764ba2;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            color: #667eea;
+            margin: 1.5rem 0 0.8rem 0;
+            display: flex;
+            align-items: center;
+        }
+
+        h3::before {
+            content: '▶';
+            color: #764ba2;
+            margin-right: 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: #555;
+        }
+
+        ul {
+            margin: 1rem 0;
+            padding-left: 2rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+            color: #666;
+            position: relative;
+        }
+
+        li::marker {
+            color: #667eea;
+        }
+
+        strong {
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .intro-text {
+            font-size: 1.1rem;
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            margin-bottom: 2rem;
+        }
+
+        .section {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 15px;
+            border-left: 5px solid #667eea;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+        }
+
+        .emoji {
+            font-size: 1.5rem;
+            margin-right: 0.5rem;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+            border-color: #667eea;
+        }
+
+        .stats-badge {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: inline-block;
+            margin: 0.5rem 0;
+        }
+
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+
+        .tech-tag {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 1rem;
+                padding: 1rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><span class="emoji">🌟</span>Bambisleep Church - Content Discovery & Management Platform</h1>
+        
+        <p class="intro-text">
+            A sophisticated Node.js web application that serves as a content discovery and management platform, 
+            specifically designed around "Bambisleep" content with AI-powered capabilities.
+        </p>
+
+        <div class="section">
+            <h2><span class="emoji">🎯</span>Core Functionality</h2>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>1. Content Discovery & Crawling</h3>
+                    <ul>
+                        <li><strong>Universal Content Detection</strong> - Automatically discovers and analyzes content from various sources</li>
+                        <li><strong>Multi-platform Support</strong> - Handles videos, audio, images, creators, and playlists</li>
+                        <li><strong>Smart Crawling</strong> - Uses agents to systematically discover and catalog content</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <h3>2. Content Management</h3>
+                    <ul>
+                        <li><strong>Link Management</strong> - Stores and organizes content links with metadata</li>
+                        <li><strong>Creator Profiles</strong> - Manages content creator information</li>
+                        <li><strong>Feed System</strong> - Provides organized content feeds</li>
+                        <li><strong>Comment System</strong> - Allows user interactions and discussions</li>
+                        <li><strong>Voting System</strong> - Community-driven content rating</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <h3>3. Real-time Features</h3>
+                    <ul>
+                        <li><strong>WebSocket Support</strong> - Live updates and real-time communication</li>
+                        <li><strong>Socket Handlers</strong> - Manages real-time connections and events</li>
+                        <li><strong>Live Stats</strong> - Real-time statistics and monitoring</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <h3>4. AI-Powered Agents</h3>
+                    <ul>
+                        <li><strong>Knowledge Agent</strong> - Processes and understands content</li>
+                        <li><strong>Universal Agent</strong> - Handles multiple content types and operations</li>
+                        <li><strong>Discovery Agent</strong> - Automatically finds new content</li>
+                        <li><strong>Feed Agent</strong> - Curates and organizes content feeds</li>
+                        <li><strong>Stats Agent</strong> - Generates analytics and insights</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <h3>5. MCP (Model Context Protocol) Integration</h3>
+                    <ul>
+                        <li><strong>Agent-to-Agent Communication</strong> - Enables AI agents to collaborate</li>
+                        <li><strong>Tool Registration</strong> - Provides structured AI tool interfaces</li>
+                        <li><strong>Status Monitoring</strong> - Tracks agent health and performance</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><span class="emoji">🛠️</span>Technical Architecture</h2>
+
+            <div class="highlight-box">
+                <h3>Backend (Node.js/Express)</h3>
+                <div class="tech-stack">
+                    <span class="tech-tag">RESTful API</span>
+                    <span class="tech-tag">JSON Storage</span>
+                    <span class="tech-tag">Error Tracking</span>
+                    <span class="tech-tag">Config Management</span>
+                </div>
+                <ul>
+                    <li>RESTful API endpoints (<code>/api/*</code>)</li>
+                    <li>File-based JSON data storage</li>
+                    <li>Error tracking and logging</li>
+                    <li>Configuration management</li>
+                </ul>
+            </div>
+
+            <div class="highlight-box">
+                <h3>Frontend (Web UI)</h3>
+                <div class="tech-stack">
+                    <span class="tech-tag">Content Browsing</span>
+                    <span class="tech-tag">Agent Management</span>
+                    <span class="tech-tag">WebSockets</span>
+                    <span class="tech-tag">Responsive Design</span>
+                </div>
+                <ul>
+                    <li>Content browsing interface</li>
+                    <li>Agent management UI</li>
+                    <li>Real-time updates via WebSockets</li>
+                    <li>Responsive design with custom CSS</li>
+                </ul>
+            </div>
+
+            <div class="highlight-box">
+                <h3>Data Layer</h3>
+                <div class="tech-stack">
+                    <span class="tech-tag">JSON Persistence</span>
+                    <span class="tech-tag">Metadata Service</span>
+                    <span class="tech-tag">Enhanced DB</span>
+                </div>
+                <ul>
+                    <li>JSON files for persistence (links, creators, comments, votes)</li>
+                    <li>Metadata service for content enrichment</li>
+                    <li>Enhanced database service capabilities</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><span class="emoji">🎨</span>User Experience</h2>
+            <ul>
+                <li><strong>Browse Content</strong> - Discover videos, audio, images, and creators</li>
+                <li><strong>Community Features</strong> - Comment, vote, and interact with content</li>
+                <li><strong>Real-time Updates</strong> - See new content and activity as it happens</li>
+                <li><strong>Search & Discovery</strong> - Find content through intelligent agents</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2><span class="emoji">🔧</span>Current State</h2>
+            <p>Based on the coverage reports, this is an <strong>active development project</strong> with:</p>
+            
+            <div class="highlight-box">
+                <ul>
+                    <li><span class="stats-badge">~28% Test Coverage</span> indicating it's still in development</li>
+                    <li>Multiple AI agents for content processing</li>
+                    <li>Rich API surface for content management</li>
+                    <li>Real-time capabilities for user engagement</li>
+                </ul>
+            </div>
+
+            <p>This appears to be a <strong>sophisticated content platform</strong> that combines traditional web application features with modern AI agent capabilities for intelligent content discovery and management.</p>
+        </div>
+    </div>
+</body>
+</html>

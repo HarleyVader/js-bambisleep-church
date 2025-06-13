@@ -6,20 +6,27 @@ describe('McpServer', () => {
   beforeEach(() => {
     mcpServer = new McpServer();
   });
-
   describe('constructor', () => {
     it('should initialize with default config', () => {
-      expect(mcpServer.config).toEqual({});
+      expect(mcpServer.config).toEqual({
+        toolboxPath: expect.any(String),
+        logLevel: 'info',
+        enableMetrics: true
+      });
       expect(mcpServer.initialized).toBe(false);
       expect(mcpServer.tools).toBeInstanceOf(Map);
       expect(mcpServer.tools.size).toBe(0);
-    });
-
-    it('should accept custom config', () => {
+    });    it('should accept custom config', () => {
       const customConfig = { timeout: 5000, debug: true };
       const server = new McpServer(customConfig);
       
-      expect(server.config).toEqual(customConfig);
+      expect(server.config).toEqual({
+        timeout: 5000,
+        debug: true,
+        toolboxPath: expect.any(String),
+        logLevel: 'info',
+        enableMetrics: true
+      });
     });
   });
 
@@ -29,15 +36,13 @@ describe('McpServer', () => {
       
       expect(mcpServer.initialized).toBe(true);
       expect(result).toBe(mcpServer);
-    });
-
-    it('should log initialization messages', async () => {
+    });    it('should log initialization messages', async () => {
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
       
       await mcpServer.initialize();
       
-      expect(consoleSpy).toHaveBeenCalledWith('🚀 MCP Server initializing...');
-      expect(consoleSpy).toHaveBeenCalledWith('✅ MCP Server ready');
+      expect(consoleSpy).toHaveBeenCalledWith('ℹ️  [MCP-CORE] Initializing MCP Core...');
+      expect(consoleSpy).toHaveBeenCalledWith('ℹ️  [MCP-CORE] MCP Core ready with 3 tools');
       
       consoleSpy.mockRestore();
     });
@@ -56,12 +61,13 @@ describe('McpServer', () => {
       };
       const toolHandler = jest.fn();
 
-      mcpServer.registerTool('test-tool', toolConfig, toolHandler);
-
-      expect(mcpServer.tools.has('test-tool')).toBe(true);
+      mcpServer.registerTool('test-tool', toolConfig, toolHandler);      expect(mcpServer.tools.has('test-tool')).toBe(true);
       expect(mcpServer.tools.get('test-tool')).toEqual({
         config: toolConfig,
-        handler: toolHandler
+        handler: toolHandler,
+        instance: null,
+        lastUsed: null,
+        callCount: 0
       });
     });
 
@@ -126,16 +132,14 @@ describe('McpServer', () => {
       expect(status.toolCount).toBe(0);
       expect(status.timestamp).toBeDefined();
       expect(new Date(status.timestamp)).toBeInstanceOf(Date);
-    });
-
-    it('should return correct status when initialized', async () => {
+    });    it('should return correct status when initialized', async () => {
       await mcpServer.initialize();
       mcpServer.registerTool('test-tool', {}, jest.fn());
 
       const status = mcpServer.getStatus();
 
       expect(status.status).toBe('ready');
-      expect(status.toolCount).toBe(1);
+      expect(status.toolCount).toBe(4); // 3 from initialization + 1 registered
       expect(status.timestamp).toBeDefined();
     });
   });
@@ -152,12 +156,10 @@ describe('McpServer', () => {
       // Test all tools
       const addResult = await mcpServer.callTool('add', { a: 5, b: 3 });
       const multiplyResult = await mcpServer.callTool('multiply', { a: 4, b: 7 });
-      const echoResult = await mcpServer.callTool('echo', { message: 'hello world' });
-
-      expect(addResult).toEqual({ result: 8 });
+      const echoResult = await mcpServer.callTool('echo', { message: 'hello world' });      expect(addResult).toEqual({ result: 8 });
       expect(multiplyResult).toEqual({ result: 28 });
       expect(echoResult).toEqual({ result: 'hello world' });
-      expect(mcpServer.getStatus().toolCount).toBe(3);
+      expect(mcpServer.getStatus().toolCount).toBe(6); // 3 from initialization + 3 registered
     });
 
     it('should maintain tool isolation', async () => {

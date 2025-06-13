@@ -13,11 +13,13 @@ class McpInstanceManager {
             await mcpInstance.initialize();
         }
         return mcpInstance;
-    }
-
-    static getMcpStatus() {
+    }    static getMcpStatus() {
         if (!mcpInstance) {
-            return { status: 'not_initialized', initialized: false };
+            return { 
+                status: 'not_initialized', 
+                initialized: false, 
+                timestamp: new Date().toISOString() 
+            };
         }
         return { ...mcpInstance.getStatus(), initialized: true };
     }

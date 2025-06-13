@@ -1,1 +1,30 @@
-[]
+[
+  {
+    "id": 1749826755192.1938,
+    "linkId": "test-link-1",
+    "type": "upvote",
+    "voter": "test-user",
+    "timestamp": "2025-06-13T14:59:15.192Z"
+  },
+  {
+    "id": 1749826755398.8347,
+    "linkId": "test",
+    "type": "upvote",
+    "voter": "user",
+    "timestamp": "2025-06-13T14:59:15.398Z"
+  },
+  {
+    "id": 1749827581575.028,
+    "linkId": "test-link-1",
+    "type": "upvote",
+    "voter": "test-user",
+    "timestamp": "2025-06-13T15:13:01.575Z"
+  },
+  {
+    "id": 1749827581744.8892,
+    "linkId": "test",
+    "type": "upvote",
+    "voter": "user",
+    "timestamp": "2025-06-13T15:13:01.744Z"
+  }
+]

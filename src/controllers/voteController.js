@@ -48,29 +48,36 @@ class VoteController {    constructor() {
         try {
             const voteData = req.body;
             
+            // Normalize field names for backward compatibility
+            const normalizedData = {
+                linkId: voteData.linkId || voteData.itemId,
+                type: voteData.type || voteData.voteType === 'up' ? 'upvote' : voteData.voteType === 'down' ? 'downvote' : voteData.voteType,
+                voter: voteData.voter || voteData.userId
+            };
+            
             // Validate required fields
-            if (!voteData.linkId && !voteData.itemId) {
+            if (!normalizedData.linkId) {
                 return res.status(400).json({ 
                     success: false, 
                     error: 'linkId or itemId is required' 
                 });
             }
             
-            if (!voteData.type) {
+            if (!normalizedData.type) {
                 return res.status(400).json({ 
                     success: false, 
                     error: 'vote type is required' 
                 });
             }
             
-            if (!voteData.voter) {
+            if (!normalizedData.voter) {
                 return res.status(400).json({ 
                     success: false, 
                     error: 'voter is required' 
                 });
             }
             
-            const newVote = this.db.add('votes', voteData);
+            const newVote = this.db.add('votes', normalizedData);
             
             // Check if vote addition failed
             if (!newVote) {
@@ -79,16 +86,15 @@ class VoteController {    constructor() {
                     error: 'Failed to add vote to database' 
                 });
             }
-            
-            // Broadcast vote update via Socket.IO for real-time rendering
+              // Broadcast vote update via Socket.IO for real-time rendering
             if (global.socketIO) {
                 console.log('📡 Broadcasting vote update for real-time EJS rendering');
                 global.socketIO.emit('voteUpdate', {
-                    itemId: voteData.linkId || voteData.itemId,
-                    itemType: voteData.itemType || 'link',
-                    voteType: voteData.type,
-                    voter: voteData.voter,
-                    newVoteCount: this.getVoteCount(voteData.linkId || voteData.itemId),
+                    itemId: normalizedData.linkId,
+                    itemType: normalizedData.itemType || 'link',
+                    voteType: normalizedData.type,
+                    voter: normalizedData.voter,
+                    newVoteCount: this.getVoteCount(normalizedData.linkId),
                     timestamp: new Date().toISOString()
                 });
                 
@@ -97,8 +103,8 @@ class VoteController {    constructor() {
                     template: 'index',
                     action: 'updateVotes',
                     data: {
-                        itemId: voteData.linkId || voteData.itemId,
-                        newVoteCount: this.getVoteCount(voteData.linkId || voteData.itemId)
+                        itemId: normalizedData.linkId,
+                        newVoteCount: this.getVoteCount(normalizedData.linkId)
                     }
                 });
             }
@@ -129,9 +135,7 @@ class VoteController {    constructor() {
         } catch (error) {
             res.status(500).json({ success: false, error: error.message });
         }
-    }
-
-    getVoteStats(req, res) {
+    }    getVoteStats(req, res) {
         try {
             const { linkId } = req.params;
             const votes = this.db.read('votes');
@@ -141,13 +145,11 @@ class VoteController {    constructor() {
             const downvotes = linkVotes.filter(vote => vote.type === 'downvote').length;
             
             res.json({ 
-                success: true, 
-                data: { 
-                    upvotes, 
-                    downvotes, 
-                    total: linkVotes.length,
-                    score: upvotes - downvotes
-                } 
+                success: true,
+                upvotes, 
+                downvotes, 
+                total: linkVotes.length,
+                score: upvotes - downvotes
             });
         } catch (error) {
             res.status(500).json({ success: false, error: error.message });

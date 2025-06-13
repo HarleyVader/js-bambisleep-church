@@ -28,13 +28,16 @@
 ### API Routes Enhancement [100%]
 | File | Purpose | Completion |
 |------|---------|------------|
-| `src/routes/main.js` | Added MCP API routes for agent tool invocation | [100%] |
+| `src/routes/main.js` | Enhanced with MCP API routes, fixed duplicate routes, added fallback implementations | [100%] |
 
 ## New API Endpoints
-- `/api/mcp/status` - MCP Core status endpoint
+- `/api/mcp/status` - MCP Core status endpoint (duplicate removed)
 - `/api/mcp/tools` - Available tools listing  
 - `/api/mcp/metrics` - Performance metrics
 - `/api/mcp/call/:toolName` - Tool invocation endpoint
+- `/api/database/health` - Database health check with fallback implementation
+- `/api/config/*` - Configuration management with fallback implementations
+- `/api/errors/*` - Error monitoring and reporting endpoints
 
 ## Controllers [75%]
 

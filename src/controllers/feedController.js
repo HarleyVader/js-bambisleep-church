@@ -31,12 +31,10 @@ class FeedController {
         } catch (error) {
             res.status(500).json({ success: false, error: error.message });
         }
-    }
-
-    getFeedAPI(req, res) {
+    }    getFeedAPI(req, res) {
         try {
             const links = this.db.read('links');
-            res.json({ success: true, data: links });
+            res.json({ success: true, items: links });
         } catch (error) {
             res.status(500).json({ success: false, error: error.message });
         }

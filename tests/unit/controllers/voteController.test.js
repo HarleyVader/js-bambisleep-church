@@ -8,8 +8,7 @@ describe('VoteController', () => {
   let mockReq, mockRes;
   let testDataPath;
 
-  beforeEach(() => {
-    // Create test data directory
+  beforeEach(() => {    // Create test data directory
     testDataPath = path.join(__dirname, '../../../src/data/test');
     if (!fs.existsSync(testDataPath)) {
       fs.mkdirSync(testDataPath, { recursive: true });

@@ -11,6 +11,10 @@ class AgentUIController {
         
         this.currentPanel = 'discovery';
         this.initialized = false;
+        this.maxResults = 100; // Limit resource usage
+        this.throttleTimeout = null;
+        this.debounceTimeout = null;
+        
         this.statusIndicators = {
             global: document.getElementById('globalStatusIndicator'),
             discovery: document.getElementById('discoveryStatus'),
@@ -26,6 +30,23 @@ class AgentUIController {
         };
         
         this.loadingState = document.getElementById('agentLoadingState');
+    }
+
+    // Throttle function to limit execution frequency
+    throttle(func, delay) {
+        if (this.throttleTimeout) return;
+        this.throttleTimeout = setTimeout(() => {
+            func.apply(this, arguments);
+            this.throttleTimeout = null;
+        }, delay);
+    }
+
+    // Debounce function to delay execution until after delay
+    debounce(func, delay) {
+        clearTimeout(this.debounceTimeout);
+        this.debounceTimeout = setTimeout(() => {
+            func.apply(this, arguments);
+        }, delay);
     }
 
     async initialize() {
