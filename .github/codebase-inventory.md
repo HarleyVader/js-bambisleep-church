@@ -17,158 +17,19 @@
 - `.env` - Environment variables [100%]
 - `.gitignore` - Git ignore rules [100%]
 
-### URL Updater System [100%]
+### MCP Server & Agent [100%]
+- `src/mcp/McpServer.js` - Modern, minimal MCP server entrypoint (uses server.serve) [100%]
+- `src/mcp/tools/knowledgeTools.js` - Modular, up-to-date knowledgebase tools (add, search, list, get, update, delete) [100%]
+- `src/mcp/agentKnowledge.js` - Minimal, modern agent using LMStudio and MCP tools [100%]
 
-- `views/pages/index.ejs` - Main homepage with integrated URL updater [100%]
-- `src/utils/urlUpdater.js` - Backend utility for processing crawled URLs [100%]
-- `test-url-updater.js` - Test script for URL updater validation [100%]
-- `.tasks/url-updater.task.md` - URL updater task tracking [100%]
+### Knowledgebase & LMStudio [100%]
+- `src/knowledge/storage.js` - File-based knowledge storage [100%]
+- `src/lmstudio/client.js` - LM Studio API client [100%]
 
-#### URL Updater Features [100%]
-
-- Frontend JavaScript integration with localStorage persistence [100%]
-- Platform auto-detection from URLs (youtube, soundcloud, patreon, etc.) [100%]
-- Global API via window.urlUpdater for external access [100%]
-- Merge functionality with existing static data [100%]
-- Browser console testing interface [100%]
-
-### Web Server & Routes [100%]
-
-- **Express Web Server** [100%]
-  - `src/server.js` - Main Express server with all routes [100%]
-  - `/` - Homepage route with creators/links data [100%]
-  - `/knowledge` - Knowledge base interface [100%]
-  - `/agents` - AI Agents placeholder page [100%]
-  - `/help` - Help documentation page [100%]
-  - `/api/knowledge` - Knowledge API endpoints (GET/POST) [100%]
-  - `/health` - Health check endpoint [100%]
-  - EJS template rendering configured [100%]
-  - Static file serving from public/ [100%]
-  - Socket.IO integration for real-time updates [100%]
-
-### View Templates [100%]
-
-- **EJS Templates** [100%]
-  - `views/pages/index.ejs` - Homepage with working navigation [100%]
-  - `views/pages/knowledge.ejs` - Knowledge base interface [100%]
-  - `views/pages/help.ejs` - Help documentation [100%]
-  - `views/pages/error.ejs` - Error page template [100%]
-  - `views/components/linkCard.ejs` - Reusable link card component [100%]
-  - `views/partials/header.ejs` - Site header with navigation [100%]
-  - `views/partials/footer.ejs` - Site footer with Socket.IO [100%]
-  - All templates receive proper data from server routes [100%]
-  - Navigation links all functional [100%]
-
-### MCP Server Infrastructure [100%]
-
-- **URL Crawler MCP Tools Implementation** [100%]
-  - `src/mcp/McpServer.js` - Main MCP server with URL crawling tools [100%]
-  - `src/mcp/tools/urlCrawler.js` - URL crawling tool implementations [100%]
-  - `src/utils/metadata.js` - URL metadata extraction utilities [100%]
-  - `src/server.js` - Basic web server [100%]
-  - URL metadata extraction functional and tested [100%]
-  - Batch URL processing capability verified [100%]
-  - JSON output generation working [100%]
-
-- **Knowledgebase MCP Tools Implementation** [100%]
-  - `src/mcp/McpServer.js` - Extended with complete knowledgebase tools [100%]
-  - `src/mcp/tools/knowledgeTools.js` - Full CRUD operations + context analysis [100%]
-  - `src/config/server.js` - Configuration management system [100%]
-  - `src/lmstudio/client.js` - LM Studio API client [100%]
-  - `src/knowledge/storage.js` - File-based knowledge storage with update/delete [100%]
-  - `src/server.js` - Enhanced web server with knowledge API endpoints [100%]
-  - `data/knowledge/` - Knowledge storage directory [100%]
-  - `views/pages/knowledge.ejs` - Full-featured knowledge base UI [100%]
-  - Knowledge storage and search functional and tested [100%]
-  - Complete tool set: search, add, get, update, delete, analyze [100%]
-  - Web UI for browsing, searching, and adding knowledge [100%]
-  - LM Studio integration ready for <http://192.168.0.69:7777> [100%]
-
-- **Live Server Testing at <https://fickdichselber.com/>** [100%]
-  - Website functionality verified [100%]
-  - Agent management interface operational [100%]
-  - API endpoints tested and confirmed working [100%]
-  - Bambi Sleep wiki crawling capability verified [100%]
-  - MCP server infrastructure fully operational [100%]
-
-- **URL Analyzer Implementation** [100%]
-  - `src/mcp/tools/urlAnalyzer.js` - URL analysis and metadata organization [100%]
-  - `analyze_urls` MCP tool for batch URL processing [100%]
-  - Structured JSON output with domain/content type organization [100%]
-  - Statistics and summary reporting [100%]
-  - Filesystem saving to `data/analysis/` directory [100%]
-  - `test-url-analyzer.js` - Test file for analyzer verification [100%]
-
-### Documentation [100%]
-
-- `.github/model-context-protocol.md` - Knowledgebase MCP server design and implementation guide [100%]
-
-### Documentation [95%]
-
-- `docs/`
-  - `BambiSleepChurch.md` - Establishment mission guide [100%]
-  - `index.html` - Documentation index [100%]
-  - `smolagents-technical-guide.md` - Comprehensive smolagents framework documentation with MCP, SSH & JavaScript ES6 integration [100%]
-
-### Configuration [100%]
-
-- `.github/`
-  - `codebase-inventory.md` - This file [100%]
-  - `copilot-instructions.md` - AI Framework: 3-Step Agent Loop MK-XII methodology [100%]
-  - `copilot-ssh-agent.md` - SSH agent configuration [100%]
-  - `model-context-protocol.md` - MCP documentation [100%]
-- `.vscode/` - VS Code workspace settings [100%]
-  - `settings.json` - Enhanced GitHub Copilot MCP integration [100%]
-  - `mcp.json` - MCP server configuration [100%]
-  - `copilot-mcp.json` - GitHub Copilot MCP integration settings [100%]
-
-### Frontend Assets [100%]
-
-- `public/`
-  - Favicon collection (ico, png variants) [100%]
-  - `site.webmanifest` - PWA manifest [100%]
-  - `assets/placeholders/` - SVG placeholder icons [100%]
-  - `css/style.css` - Cyberpunk theme stylesheet (2091 lines) [100%]
-
-### Agent Dashboard Realtime Upgrade [10%]
-
-- `views/pages/agents.ejs` [0%] (UI changes for real-time, animated, interactive dashboard)
-- `src/server.js` [0%] (API endpoint for agent status polling)
-- `public/css/style.css` [0%] (Animated status bar styles)
-- `public/js/agents-dashboard.js` [0%] (Client-side polling, animation, interactivity)
-- `.tasks/agent-dashboard-realtime.task.md` [10%] (Task file created)
-
-## 🔧 Dependencies & Technologies
-
-### Runtime Dependencies [100%]
-
-- **Express.js** (v5.1.0) - Web server framework
-- **Socket.IO** (v4.8.1) - Real-time communication
-- **EJS** (v3.1.10) - Template engine
-- **@modelcontextprotocol/sdk** (v0.5.0) - MCP protocol implementation
-- **Axios** (v1.9.0) - HTTP client
-- **Cheerio** (v1.1.0) - Server-side jQuery
-- **Marked** (v12.0.0) - Markdown parser
-- **p-limit** (v6.2.0) - Concurrency limiting
-
-### Development Dependencies [100%]
-
-- **Jest** (v30.0.0) - Testing framework
-- **Supertest** (v7.1.1) - HTTP testing
-- **Socket.IO Client** (v4.8.1) - Client-side testing
-
-## 📝 Available Scripts
-
-- `npm start` - Start MCP server & main application concurrently
-
-## 🎨 Frontend Features [95%]
-
-- **Neon Wave Cyber Goth** - Custom CSS with neon effects and grid overlays
-- **Responsive Design** - Mobile-first approach
-- **PWA Ready** - Web manifest configured
-- **Component-Based** - EJS template components
-- **Real-time Updates** - Socket.IO integration ready
+### Other
+- No irrelevant or legacy code remains in MCP server, agent, or tools.
+- All code is modular, minimal, and up-to-date as of June 14, 2025.
 
 ---
 
-**Last Updated:** June 13, 2025
+**Last Updated:** June 14, 2025

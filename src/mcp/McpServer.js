@@ -18,5 +18,5 @@ const server = new Server(
   }
 );
 
-server.listen(new StdioServerTransport());
+server.serve(new StdioServerTransport());
 console.log('Knowledgebase MCP Server running...');
