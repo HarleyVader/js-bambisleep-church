@@ -36,26 +36,7 @@
                 </select>
                 <button onclick="clearSearch()" class="clear-btn">Clear</button>
             </div>
-        </div>
-
-        <!-- Add Knowledge Section -->
-        <div class="add-knowledge-section">
-            <h3>Add New Knowledge</h3>
-            <div class="add-form">
-                <input type="text" id="knowledgeTitle" placeholder="Title..." class="form-input">
-                <select id="knowledgeCategory" class="form-select">
-                    <option value="general">General</option>
-                    <option value="meditation">Meditation</option>
-                    <option value="techniques">Techniques</option>
-                    <option value="community">Community</option>
-                    <option value="resources">Resources</option>
-                </select>
-                <textarea id="knowledgeContent" placeholder="Enter knowledge content..." class="form-textarea"></textarea>
-                <button onclick="addKnowledge()" class="add-btn">Add Knowledge</button>
-            </div>
-        </div>
-
-        <!-- Knowledge Grid -->
+        </div>        <!-- Knowledge Grid -->
         <div class="knowledge-grid" id="knowledgeGrid">
             <!-- Knowledge cards will be populated here -->
         </div>
@@ -170,60 +151,6 @@
 .clear-btn:hover {
     border-color: var(--color-primary-green);
     color: var(--color-primary-green);
-}
-
-.add-knowledge-section {
-    background: var(--color-overlay-purple);
-    border: 1px solid var(--color-primary-green);
-    border-radius: 8px;
-    padding: 1.5rem;
-    margin: 2rem 0;
-}
-
-.add-knowledge-section h3 {
-    color: var(--color-primary-green);
-    margin: 0 0 1rem 0;
-}
-
-.add-form {
-    display: grid;
-    gap: 1rem;
-}
-
-.form-input, .form-textarea {
-    padding: 0.75rem;
-    background: var(--color-bg-dark);
-    border: 1px solid var(--color-primary-cyan);
-    border-radius: 4px;
-    color: var(--color-text-primary);
-    font-family: inherit;
-}
-
-.form-textarea {
-    min-height: 120px;
-    resize: vertical;
-}
-
-.form-input:focus, .form-textarea:focus {
-    outline: none;
-    border-color: var(--color-primary-green);
-    box-shadow: 0 0 5px var(--glow-green);
-}
-
-.add-btn {
-    padding: 0.75rem 1.5rem;
-    background: var(--color-primary-green);
-    border: none;
-    border-radius: 4px;
-    color: var(--color-bg-dark);
-    font-weight: bold;
-    cursor: pointer;
-    justify-self: start;
-}
-
-.add-btn:hover {
-    background: var(--color-primary-yellow);
-    box-shadow: 0 0 10px var(--glow-yellow);
 }
 
 .knowledge-grid {
@@ -450,50 +377,6 @@ function clearSearch() {
     document.getElementById('categoryFilter').value = '';
     filteredKnowledge = [...allKnowledge];
     renderKnowledge();
-}
-
-async function addKnowledge() {
-    const title = document.getElementById('knowledgeTitle').value.trim();
-    const category = document.getElementById('knowledgeCategory').value;
-    const content = document.getElementById('knowledgeContent').value.trim();
-    
-    if (!content) {
-        alert('Please enter knowledge content');
-        return;
-    }
-    
-    try {
-        const response = await fetch('/api/knowledge', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                title: title || 'Untitled',
-                category: category,
-                content: content
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            // Clear form
-            document.getElementById('knowledgeTitle').value = '';
-            document.getElementById('knowledgeContent').value = '';
-            document.getElementById('knowledgeCategory').value = 'general';
-            
-            // Reload knowledge
-            await loadKnowledge();
-            
-            alert('Knowledge added successfully!');
-        } else {
-            alert('Failed to add knowledge: ' + (data.error || 'Unknown error'));
-        }
-    } catch (error) {
-        console.error('Error adding knowledge:', error);
-        alert('Failed to add knowledge');
-    }
 }
 
 function viewKnowledge(id) {
