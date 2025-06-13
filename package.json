@@ -12,8 +12,8 @@
     "url": "https://github.com/HarleyVader/js-bambisleep-church/issues"
   },
   "homepage": "https://github.com/HarleyVader/js-bambisleep-church#readme",  "scripts": {
-    "start": "start /B node src/mcp/McpServer.js --http & node src/server.js",
-    "start:stdio": "node src/mcp/McpServer.js & node src/server.js",
+    "start": "concurrently \"node src/mcp/McpServer.js --http\" \"node src/server.js\"",
+    "start:stdio": "concurrently \"node src/mcp/McpServer.js\" \"node src/server.js\"",
     "start:mcp": "node src/mcp/McpServer.js --http",
     "start:web": "node src/server.js"
   },
@@ -39,6 +39,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/jest": "^29.5.14",
+    "concurrently": "^9.1.2",
     "jest": "^30.0.0",
     "socket.io-client": "^4.8.1",
     "supertest": "^7.1.1"
