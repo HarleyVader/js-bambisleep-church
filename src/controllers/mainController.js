@@ -41,23 +41,12 @@ class MainController {
         } catch (error) {
             res.status(500).json({ success: false, error: error.message });
         }
-    }
-
-    getPlatformContent(req, res) {
+    }    getPlatformContent(req, res) {
         try {
             const { platform } = req.params;
             const links = this.db.read('links');
             const platformLinks = links.filter(link => link.platform === platform);
             res.json({ success: true, data: platformLinks });
-        } catch (error) {
-            res.status(500).json({ success: false, error: error.message });
-        }
-    }
-
-    submitContent(req, res) {
-        try {
-            const contentData = req.body;
-            res.json({ success: true, message: 'Content submission not implemented yet' });
         } catch (error) {
             res.status(500).json({ success: false, error: error.message });
         }

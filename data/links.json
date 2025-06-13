@@ -1,1 +1,32 @@
-[]
+[
+  {
+    "id": 1749829191025,
+    "title": "Test Link",
+    "url": "https://example.com",
+    "description": "Testing API consolidation",
+    "createdAt": "2025-06-13T15:39:51.025Z"
+  },
+  {
+    "id": 1749829219590,
+    "url": "https://example.com/test",
+    "title": "Test Content",
+    "description": "Test description",
+    "createdAt": "2025-06-13T15:40:19.590Z"
+  },
+  {
+    "id": 1749829220303,
+    "createdAt": "2025-06-13T15:40:20.303Z"
+  },
+  {
+    "id": 1749829220316,
+    "url": "https://example.com",
+    "title": "Test",
+    "createdAt": "2025-06-13T15:40:20.316Z"
+  },
+  {
+    "id": 1749829220326,
+    "url": "<script>alert(\"xss\")</script>",
+    "title": "Test",
+    "createdAt": "2025-06-13T15:40:20.326Z"
+  }
+]

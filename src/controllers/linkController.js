@@ -21,13 +21,12 @@ class LinkController {
                     
                     return [];
                 }
-            },
-            add: (type, data) => {
+            },            add: (type, data) => {
                 try {
-                    const existing = this.read(type);
+                    const existing = this.db.read(type);
                     const newData = { id: Date.now(), ...data, createdAt: new Date().toISOString() };
                     existing.push(newData);
-                    this.write(type, existing);
+                    this.db.write(type, existing);
                     return newData;
                 } catch (error) {
                     
@@ -52,6 +51,18 @@ class LinkController {
             res.json({ success: true, data: newLink });
         } catch (error) {
             res.status(500).json({ success: false, error: error.message });
+        }
+    }    // Handle form submissions with redirect to created link
+    addLinkForm(req, res) {
+        try {
+            const linkData = req.body;
+            const newLink = this.db.add('links', linkData);
+            
+            // Redirect to the feed page with success message
+            res.redirect(`/feed?success=Link "${newLink.title || 'Untitled'}" added successfully!`);
+        } catch (error) {
+            // On error, redirect back to submit page with error message
+            res.redirect('/submit?error=' + encodeURIComponent(error.message));
         }
     }
 

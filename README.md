@@ -265,7 +265,8 @@ getAgentStatus() {
 ### API Routes
 
 - `GET /api/feed` - Feed data API
-- `POST /api/submit` - Content submission API
+- `GET /api/links` - Get all links
+- `POST /api/links` - Submit new content (form with redirect)
 - `GET /api/platforms` - Platform content organization
 - `POST /api/metadata` - URL metadata extraction
 - `GET /api/stats` - Real-time statistics

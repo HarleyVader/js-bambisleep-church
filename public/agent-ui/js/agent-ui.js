@@ -398,7 +398,7 @@ class AgentUIController {
         const formData = new FormData(form);
         
         try {
-            const response = await fetch('/api/submit', {
+            const response = await fetch('/api/links', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -25,13 +25,18 @@
 | `src/mcp/toobox/metadataServiceTool.js` | Enhanced metadata extraction tool | [100%] |
 | `src/mcp/toobox/inventory.json` | Tool inventory with complete definitions | [100%] |
 
-### API Routes Enhancement [100%]
+### API Routes Enhancement [100%] - CONSOLIDATED
+
 | File | Purpose | Completion |
 |------|---------|------------|
-| `src/routes/main.js` | Enhanced with MCP API routes, fixed duplicate routes, added fallback implementations | [100%] |
+| `src/routes/main.js` | API routes consolidated - eliminated duplicate /api/submit and /links routes | [100%] |
 
-## New API Endpoints
-- `/api/mcp/status` - MCP Core status endpoint (duplicate removed)
+## New API Endpoints - CONSOLIDATED
+
+- `/api/links` - GET all links, POST new link with form redirect (WORKING CORRECTLY)
+- Removed duplicate `/api/submit` route (consolidated into /api/links)
+- Removed confusing `/links` route (consolidated into /api/links)
+- `/api/mcp/status` - MCP Core status endpoint
 - `/api/mcp/tools` - Available tools listing  
 - `/api/mcp/metrics` - Performance metrics
 - `/api/mcp/call/:toolName` - Tool invocation endpoint
@@ -44,7 +49,7 @@
 | File | Purpose | Completion |
 |------|---------|------------|
 | `src/controllers/mainController.js` | Main application logic | [75%] |
-| `src/controllers/linkController.js` | Link management operations | [90%] |
+| `src/controllers/linkController.js` | Link management operations - FIXED FORM SUBMISSION | [95%] |
 | `src/controllers/voteController.js` | Voting system operations | [70%] |
 | `src/controllers/feedController.js` | Feed display operations | [80%] |
 | `src/controllers/commentController.js` | Comment system operations | [70%] |

@@ -366,13 +366,9 @@ A: Yes! Community feedback is welcome for platform improvements.
     
     // Feed API
     router.get('/api/feed', feedController.getFeedAPI.bind(feedController));
-    
-    // Platform API
+      // Platform API
     router.get('/api/platforms', mainController.getContentByPlatform.bind(mainController));
     router.get('/api/platforms/:platform', mainController.getPlatformContent.bind(mainController));
-    
-    // Content submission API
-    router.post('/api/submit', mainController.submitContent.bind(mainController));
     
     // MCP API Routes - Agent Tool Access
     router.get('/api/mcp/status', async (req, res) => {
@@ -432,10 +428,9 @@ A: Yes! Community feedback is welcome for platform improvements.
         } catch (error) {
             
             res.status(500).json({ error: 'Could not fetch metadata' });
-        }
-    });      // Link management
+        }    });      // Link management
     router.get('/api/links', linkController.getAllLinks.bind(linkController));
-    router.post('/links', linkController.addLink.bind(linkController));
+    router.post('/api/links', linkController.addLinkForm.bind(linkController)); // Form submissions with redirect
     router.get('/links/:id', linkController.getLinkById.bind(linkController));
     router.post('/api/links/:id/view', linkController.trackView ? linkController.trackView.bind(linkController) : (req, res) => {
         res.json({ success: true, message: 'View tracking not implemented yet', views: 0 });
