@@ -433,8 +433,8 @@ A: Yes! Community feedback is welcome for platform improvements.
             
             res.status(500).json({ error: 'Could not fetch metadata' });
         }
-    });
-      // Link management
+    });      // Link management
+    router.get('/api/links', linkController.getAllLinks.bind(linkController));
     router.post('/links', linkController.addLink.bind(linkController));
     router.get('/links/:id', linkController.getLinkById.bind(linkController));
     router.post('/api/links/:id/view', linkController.trackView ? linkController.trackView.bind(linkController) : (req, res) => {

@@ -86,6 +86,15 @@ class LinkController {
             res.status(500).json({ success: false, error: error.message });
         }
     }
+
+    getAllLinks(req, res) {
+        try {
+            const links = this.db.read('links');
+            res.json({ success: true, data: links });
+        } catch (error) {
+            res.status(500).json({ success: false, error: error.message });
+        }
+    }
 }
 
 module.exports = LinkController;

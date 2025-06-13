@@ -26,5 +26,19 @@
     "type": "upvote",
     "voter": "user",
     "timestamp": "2025-06-13T15:13:01.744Z"
+  },
+  {
+    "id": 1749828125339.6697,
+    "linkId": "test-link-1",
+    "type": "upvote",
+    "voter": "test-user",
+    "timestamp": "2025-06-13T15:22:05.339Z"
+  },
+  {
+    "id": 1749828125498.0012,
+    "linkId": "test",
+    "type": "upvote",
+    "voter": "user",
+    "timestamp": "2025-06-13T15:22:05.498Z"
   }
 ]
