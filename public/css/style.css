@@ -1743,469 +1743,97 @@ main::before {
     font-size: 0.9rem;
 }
 
-/* ===============================================
-//   UTILITY CLASSES FOR INLINE STYLES
-//   Replace inline styles throughout EJS files ===*/
-
-.no-content-message {
-    color: var(--color-text-secondary);
+/* AGENTS PAGE STYLES MOVED FROM agents.ejs */
+.agents-container {
+  max-width: 700px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: var(--bg2,#181a20);
+  border-radius: 1.5rem;
+  box-shadow: 0 2px 16px #0008;
 }
-
-.loading-message {
-    grid-column: 1 / -1;
-    text-align: center;
-    color: var(--color-text-secondary);
-    font-size: 0.7rem;
-    padding: 1rem;
+.agent-task {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: var(--bg3,#23262f);
+  border-radius: 1rem;
+  box-shadow: 0 1px 8px #0004;
 }
-
-.error-message {
-    grid-column: 1 / -1;
-    color: var(--color-primary-yellow);
-    font-size: 0.7rem;
-    text-align: center;
-    padding: 1rem;
+.agent-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--accent,#0ff);
 }
-
-.more-content-indicator {
-    color: var(--color-text-secondary);
-    font-style: italic;
-    text-align: center;
-    padding: 0.2rem;
+.agent-desc {
+  color: #aaa;
+  margin-bottom: 1rem;
 }
-
-.platform-favicon.platform-favicon-visible {
-    display: inline-block;
+.progress-bar-bg {
+  background: #222;
+  border-radius: 1rem;
+  height: 18px;
+  width: 100%;
+  overflow: hidden;
 }
-
-.platform-favicon.platform-favicon-hidden {
-    display: none;
-}
-
-.comments-section {
-    display: none;
-}
-
-/* ===============================================
-//   AGENT DETAIL PAGE STYLES
-//   Individual agent dashboard and console ===== */
-
-.agent-detail {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: var(--spacing-lg);
-}
-
-.agent-header {
-    margin-bottom: var(--spacing-xl);
-}
-
-.back-nav {
-    margin-bottom: var(--spacing-md);
-}
-
-.agent-title-section {
-    text-align: center;
-    position: relative;
-}
-
-.agent-name {
-    color: var(--color-primary-cyan);
-    font-size: var(--font-3xl);
-    margin-bottom: var(--spacing-sm);
-    text-shadow: var(--shadow-neon);
-}
-
-.agent-description {
-    color: var(--color-text-secondary);
-    font-size: var(--font-lg);
-    margin-bottom: var(--spacing-md);
-}
-
-.agent-status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-    padding: var(--spacing-xs) var(--spacing-md);
-    border-radius: var(--radius-lg);
-    font-weight: bold;
-    text-transform: uppercase;
-    font-size: var(--font-sm);
-}
-
-.status-indicator {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    animation: statusPulse 2s infinite;
-}
-
-.status-idle {
-    background: var(--color-overlay-dark);
-    border: var(--border-thin) solid var(--color-primary-yellow);
-    color: var(--color-primary-yellow);
-}
-
-.status-idle .status-indicator {
-    background: var(--color-primary-yellow);
-}
-
-.status-working {
-    background: var(--color-overlay-dark);
-    border: var(--border-thin) solid var(--color-primary-green);
-    color: var(--color-primary-green);
-}
-
-.status-working .status-indicator {
-    background: var(--color-primary-green);
-}
-
-.status-error {
-    background: var(--color-overlay-dark);
-    border: var(--border-thin) solid var(--color-primary-magenta);
-    color: var(--color-primary-magenta);
-}
-
-.status-error .status-indicator {
-    background: var(--color-primary-magenta);
-}
-
-@keyframes statusPulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
-}
-
-/* Stats Grid */
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: var(--spacing-lg);
-    margin-bottom: var(--spacing-xl);
-}
-
-.stat-card {
-    background: var(--color-overlay-dark);
-    border: var(--border-thin) solid var(--color-primary-cyan);
-    border-radius: var(--radius-lg);
-    padding: var(--spacing-lg);
-    text-align: center;
-    box-shadow: var(--shadow-card);
-    transition: all var(--transition-normal);
-}
-
-.stat-card:hover {
-    box-shadow: var(--shadow-hover);
-    transform: translateY(-2px);
-}
-
-.stat-card h3 {
-    color: var(--color-text-secondary);
-    font-size: var(--font-sm);
-    margin-bottom: var(--spacing-sm);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.stat-value {
-    color: var(--color-primary-cyan);
-    font-size: var(--font-2xl);
-    font-weight: bold;
-    margin-bottom: var(--spacing-xs);
-    text-shadow: 0 0 10px var(--glow-cyan);
-}
-
-.stat-card small {
-    color: var(--color-text-secondary);
-    opacity: 0.7;
-}
-
-/* Configuration Section */
-.config-section {
-    margin-bottom: var(--spacing-xl);
-}
-
-.config-section h2 {
-    color: var(--color-primary-magenta);
-    margin-bottom: var(--spacing-lg);
-    text-shadow: 0 0 10px var(--glow-magenta);
-}
-
-.config-card {
-    background: var(--color-overlay-dark);
-    border: var(--border-thin) solid var(--color-primary-green);
-    border-radius: var(--radius-lg);
-    padding: var(--spacing-lg);
-    margin-bottom: var(--spacing-lg);
-    box-shadow: var(--shadow-card);
-}
-
-.config-card h3 {
-    color: var(--color-primary-green);
-    margin-bottom: var(--spacing-md);
-}
-
-.prompt-display {
-    background: var(--color-bg-dark);
-    border: var(--border-thin) solid var(--color-overlay-light);
-    border-radius: var(--radius-md);
-    padding: var(--spacing-md);
-}
-
-.agent-prompt {
-    color: var(--color-text-primary);
-    font-family: 'Courier New', monospace;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    margin: 0;
-}
-
-.tools-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--spacing-sm);
-}
-
-.tool-badge {
-    background: var(--glow-green);
-    color: var(--color-bg-dark);
-    padding: var(--spacing-xs) var(--spacing-sm);
-    border-radius: var(--radius-sm);
-    font-size: var(--font-xs);
-    font-weight: bold;
-    text-transform: uppercase;
-}
-
-.no-tools {
-    color: var(--color-text-secondary);
-    opacity: 0.7;
-    font-style: italic;
-}
-
-/* Agent Console */
-.agent-console {
-    margin-bottom: var(--spacing-xl);
-}
-
-.agent-console h2 {
-    color: var(--color-primary-cyan);
-    margin-bottom: var(--spacing-lg);
-    text-shadow: 0 0 10px var(--glow-cyan);
-}
-
-.console-input {
-    background: var(--color-overlay-dark);
-    border: var(--border-thin) solid var(--color-primary-cyan);
-    border-radius: var(--radius-lg);
-    padding: var(--spacing-lg);
-    margin-bottom: var(--spacing-lg);
-}
-
-.console-textarea {
-    width: 100%;
-    min-height: 100px;
-    resize: vertical;
-}
-
-.prompt-controls {
-    display: flex;
-    gap: var(--spacing-md);
-    margin-top: var(--spacing-md);
-}
-
-/* Progress Section */
-.progress-section {
-    background: var(--color-overlay-dark);
-    border: var(--border-thin) solid var(--color-primary-yellow);
-    border-radius: var(--radius-lg);
-    padding: var(--spacing-lg);
-    margin-bottom: var(--spacing-lg);
-}
-
-.progress-container {
-    margin-top: var(--spacing-md);
-}
-
 .progress-bar {
-    background: var(--color-bg-dark);
-    border: var(--border-thin) solid var(--color-overlay-light);
-    border-radius: var(--radius-md);
-    height: 20px;
-    overflow: hidden;
-    position: relative;
+  background: linear-gradient(90deg, #0ff 0%, #09f 100%);
+  height: 100%;
+  border-radius: 1rem;
+  transition: width 0.4s;
+}
+.agent-status {
+  font-size: 0.95rem;
+  color: #0ff;
+  margin-top: 0.5rem;
+}
+@media (max-width: 600px) {
+  .agents-container { padding: 1rem; }
+  .agent-task { padding: 1rem; }
+  .agent-title { font-size: 1.1rem; }
+}
+.agent-stats {
+  margin-top:0.7rem; color:#0ff; font-size:0.97rem;
+}
+.agent-found-urls {
+  margin-top:0.5rem;
+}
+.agent-found-urls-title {
+  color:#0ff; font-size:0.97rem; margin-bottom:0.2rem;
+}
+.agent-found-urls-list {
+  max-height:120px; overflow:auto; background:#181a20; border-radius:0.5rem; padding:0.5rem 1rem; color:#fff; font-size:0.95rem;
+}
+.agent-found-urls-list li {
+  word-break:break-all; padding:0.1rem 0; border-bottom:1px solid #222;
+}
+.agent-found-urls-list a {
+  color:#0ff; text-decoration:underline;
 }
 
-.progress-fill {
-    background: linear-gradient(90deg, var(--color-primary-yellow), var(--color-primary-green));
-    height: 100%;
-    width: 0%;
-    transition: width 0.3s ease;
-    box-shadow: 0 0 10px var(--glow-yellow);
+/* AGENTS PAGE FORM & HEADER CLASSES */
+.agent-title-center {
+  text-align: center;
 }
-
-.progress-text {
-    color: var(--color-primary-yellow);
-    text-align: center;
-    margin-top: var(--spacing-sm);
-    font-weight: bold;
+.agent-url-form {
+  margin-bottom: 2rem;
+  text-align: center;
 }
-
-/* Response Section */
-.response-section {
-    background: var(--color-overlay-dark);
-    border: var(--border-thin) solid var(--color-primary-magenta);
-    border-radius: var(--radius-lg);
-    padding: var(--spacing-lg);
-    margin-bottom: var(--spacing-lg);
+.agent-url-input {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid #333;
+  width: 60%;
+  max-width: 350px;
+  margin-right: 0.5rem;
 }
-
-.agent-response-container {
-    margin-top: var(--spacing-md);
-}
-
-.response-item {
-    background: var(--color-bg-dark);
-    border: var(--border-thin) solid var(--color-overlay-light);
-    border-radius: var(--radius-md);
-    padding: var(--spacing-md);
-    margin-bottom: var(--spacing-md);
-}
-
-.response-meta {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: var(--spacing-sm);
-    font-size: var(--font-xs);
-    color: var(--color-text-secondary);
-    opacity: 0.8;
-}
-
-.response-content {
-    margin-top: var(--spacing-sm);
-}
-
-.prompt-echo {
-    color: var(--color-primary-cyan);
-    margin-bottom: var(--spacing-sm);
-    padding: var(--spacing-sm);
-    background: var(--glow-cyan);
-    border-radius: var(--radius-sm);
-}
-
-.agent-reply {
-    color: var(--color-primary-green);
-    padding: var(--spacing-sm);
-    background: var(--glow-green);
-    border-radius: var(--radius-sm);
-}
-
-.no-response {
-    color: var(--color-text-secondary);
-    opacity: 0.7;
-    text-align: center;
-    padding: var(--spacing-lg);
-    font-style: italic;
-}
-
-.error-response {
-    color: var(--color-primary-magenta);
-    background: var(--glow-magenta);
-    padding: var(--spacing-md);
-    border-radius: var(--radius-md);
-    border: var(--border-thin) solid var(--color-primary-magenta);
-}
-
-/* Conversation History */
-.history-section h2 {
-    color: var(--color-primary-green);
-    margin-bottom: var(--spacing-lg);
-    text-shadow: 0 0 10px var(--glow-green);
-}
-
-.conversation-list {
-    max-height: 600px;
-    overflow-y: auto;
-}
-
-.conversation-item {
-    background: var(--color-overlay-dark);
-    border: var(--border-thin) solid var(--color-overlay-light);
-    border-radius: var(--radius-md);
-    padding: var(--spacing-md);
-    margin-bottom: var(--spacing-md);
-}
-
-.conversation-meta {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: var(--spacing-sm);
-    font-size: var(--font-xs);
-    color: var(--color-text-secondary);
-    opacity: 0.8;
-}
-
-.user-prompt {
-    margin-bottom: var(--spacing-sm);
-    color: var(--color-primary-cyan);
-}
-
-.agent-response {
-    color: var(--color-primary-green);
-}
-
-.no-history {
-    color: var(--color-text-secondary);
-    opacity: 0.7;
-    text-align: center;
-    padding: var(--spacing-lg);
-    font-style: italic;
-}
-
-/* Agent Name Links */
-.agent-name-link {
-    color: var(--color-primary-cyan);
-    text-decoration: none;
-    transition: all var(--transition-normal);
-}
-
-.agent-name-link:hover {
-    color: var(--color-primary-magenta);
-    text-shadow: 0 0 10px var(--glow-magenta);
-}
-
-.status-badge {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: var(--radius-sm);
-    font-size: var(--font-xs);
-    font-weight: bold;
-    text-transform: uppercase;
-}
-
-/* Responsive Design for Agent Detail */
-@media (max-width: 768px) {
-    .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: var(--spacing-md);
-    }
-    
-    .prompt-controls {
-        flex-direction: column;
-    }
-    
-    .response-meta {
-        flex-direction: column;
-        gap: var(--spacing-xs);
-    }
-    
-    .conversation-meta {
-        flex-direction: column;
-        gap: var(--spacing-xs);
-    }
-}
-
-@media (max-width: 480px) {
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
+.agent-url-btn {
+  padding: 0.5rem 1.2rem;
+  border-radius: 0.5rem;
+  background: var(--accent,#0ff);
+  color: #111;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
 }
 
