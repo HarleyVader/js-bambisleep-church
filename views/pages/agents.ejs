@@ -44,23 +44,17 @@
             <b>Created:</b> <%= task.createdAt %> &nbsp; <b>Updated:</b> <%= task.updatedAt %> &nbsp; <b>Last Run:</b> <%= task.lastRun || 'Never' %>
           </div>
           <% if (task.logs && task.logs.length) { %>
-            <div class="agent-task-logs">
-              <b>Logs:</b>
-              <ul>
-                <% task.logs.forEach(function(log) { %>
-                  <li><%= log %></li>
-                <% }) %>
-              </ul>
+            <div class="agent-task-terminal" style="background:#181818;color:#39ff14;font-family:monospace;padding:1em;margin:1em 0;border-radius:6px;max-height:220px;overflow:auto;">
+              <% task.logs.forEach(function(log) { %>
+                <div>&gt; <%= log %></div>
+              <% }) %>
             </div>
           <% } %>
           <% if (task.errors && task.errors.length) { %>
-            <div class="agent-task-errors" style="color:#c00;">
-              <b>Errors:</b>
-              <ul>
-                <% task.errors.forEach(function(err) { %>
-                  <li><%= err %></li>
-                <% }) %>
-              </ul>
+            <div class="agent-task-terminal" style="background:#181818;color:#ff3c3c;font-family:monospace;padding:1em;margin:1em 0;border-radius:6px;max-height:120px;overflow:auto;">
+              <% task.errors.forEach(function(err) { %>
+                <div>! <%= err %></div>
+              <% }) %>
             </div>
           <% } %>
           <% if (task.subtasks && task.subtasks.length) { %>
