@@ -2,102 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= title %> - Bambi Sleep Church</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">    <title><%= title %> - Bambi Sleep Church</title>
     <link rel="stylesheet" href="/css/style.css">
-    <style>
-        .agent-hub {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-        
-        .agent-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        
-        .agent-card {
-            background: rgba(var(--color-bg-secondary-rgb), 0.8);
-            border: 2px solid var(--color-primary-cyan);
-            border-radius: 1rem;
-            padding: 1.5rem;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-        }
-        
-        .agent-card:hover {
-            border-color: var(--color-primary-magenta);
-            transform: translateY(-2px);
-        }
-        
-        .agent-form {
-            background: rgba(var(--color-bg-secondary-rgb), 0.9);
-            border: 2px solid var(--color-primary-cyan);
-            border-radius: 1rem;
-            padding: 2rem;
-            margin-bottom: 2rem;
-        }
-        
-        .form-group {
-            margin-bottom: 1rem;
-        }
-        
-        .form-group label {
-            display: block;
-            color: var(--color-primary-cyan);
-            margin-bottom: 0.5rem;
-            font-weight: bold;
-        }
-        
-        .form-group input,
-        .form-group textarea {
-            width: 100%;
-            padding: 0.75rem;
-            background: rgba(var(--color-bg-primary-rgb), 0.8);
-            border: 1px solid var(--color-primary-cyan);
-            border-radius: 0.5rem;
-            color: var(--color-text-primary);
-            font-family: inherit;
-        }
-        
-        .form-group textarea {
-            min-height: 120px;
-            resize: vertical;
-        }
-        
-        .btn {
-            background: var(--color-primary-magenta);
-            color: var(--color-text-primary);
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s ease;
-        }
-        
-        .btn:hover {
-            background: var(--color-primary-cyan);
-            transform: translateY(-1px);
-        }
-        
-        .prompt-section {
-            margin-top: 1rem;
-            padding-top: 1rem;
-            border-top: 1px solid var(--color-primary-cyan);
-        }
-        
-        .communication-hub {
-            background: rgba(var(--color-bg-secondary-rgb), 0.9);
-            border: 2px solid var(--color-primary-cyan);
-            border-radius: 1rem;
-            padding: 2rem;
-            margin-top: 2rem;
-        }
-    </style>
 </head>
 <body>
     <%- include('../partials/header') %>
@@ -111,45 +17,70 @@
         <!-- Agent Creation Form -->
         <div class="agent-form">
             <h2>Create New Agent</h2>
-            <form id="createAgentForm">
-                <div class="form-group">
+            <form id="createAgentForm">                <div class="form-group">
                     <label for="agentName">Agent Name</label>
-                    <input type="text" id="agentName" name="name" required>
+                    <input type="text" id="agentName" name="name" required class="ui-input">
                 </div>
                 
                 <div class="form-group">
                     <label for="agentDescription">Description</label>
-                    <input type="text" id="agentDescription" name="description">
+                    <input type="text" id="agentDescription" name="description" class="ui-input">
                 </div>
                 
                 <div class="form-group">
                     <label for="agentPrompt">System Prompt</label>
-                    <textarea id="agentPrompt" name="prompt" placeholder="Define your agent's behavior and capabilities..." required></textarea>
+                    <textarea id="agentPrompt" name="prompt" placeholder="Define your agent's behavior and capabilities..." required class="ui-textarea"></textarea>
+                </div><div class="form-group">
+                    <label for="agentTools">Available Tools (comma-separated)</label>
+                    <input type="text" id="agentTools" name="tools" placeholder="search, analyze, communicate" class="ui-input">
                 </div>
                 
                 <div class="form-group">
-                    <label for="agentTools">Available Tools (comma-separated)</label>
-                    <input type="text" id="agentTools" name="tools" placeholder="search, analyze, communicate">
+                    <label for="mcpTools">MCP Server Tools</label>
+                    <select id="mcpTools" multiple class="ui-select" style="height: 120px;">
+                        <% if (mcpTools && mcpTools.length > 0) { %>
+                            <% mcpTools.forEach(tool => { %>
+                                <option value="<%= tool.id %>"><%= tool.name %> - <%= tool.description %></option>
+                            <% }); %>
+                        <% } else { %>
+                            <option disabled>No MCP tools available</option>
+                        <% } %>
+                    </select>
+                    <small class="ui-text-small">
+                        Hold Ctrl/Cmd to select multiple tools. Selected tools will be added to the agent's capabilities.
+                    </small>
                 </div>
                 
-                <button type="submit" class="btn">Create Agent</button>
+                <button type="submit" class="ui-button">Create Agent</button>
             </form>
         </div>
 
         <!-- Existing Agents -->
         <div class="agent-grid" id="agentGrid">
             <% if (agents && agents.length > 0) { %>
-                <% agents.forEach(agent => { %>
-                    <div class="agent-card" data-agent-id="<%= agent.id %>">
+                <% agents.forEach(agent => { %>                    <div class="agent-card" data-agent-id="<%= agent.id %>">
                         <h3><%= agent.name %></h3>
                         <p><%= agent.description %></p>
                         <p><strong>Status:</strong> <%= agent.status %></p>
                         <p><strong>Created:</strong> <%= new Date(agent.created).toLocaleDateString() %></p>
-                        
-                        <div class="prompt-section">
+                        <% if (agent.tools && agent.tools.length > 0) { %>
+                            <p><strong>Tools:</strong> 
+                                <span style="color: var(--color-primary-cyan); font-size: 0.9rem;">
+                                    <%= agent.tools.join(', ') %>
+                                </span>
+                            </p>
+                        <% } %>                        <div class="prompt-section">
                             <h4>Prompt Agent</h4>
-                            <textarea placeholder="Enter your prompt..." class="agent-prompt-input"></textarea>
-                            <button class="btn" onclick="promptAgent('<%= agent.id %>')">Send Prompt</button>
+                            <textarea placeholder="Enter your prompt..." class="agent-prompt-input ui-textarea"></textarea>
+                            <button class="ui-button" onclick="promptAgent('<%= agent.id %>')">Send Prompt</button>
+                            
+                            <div class="agent-response" id="response-<%= agent.id %>">
+                                <h5>Agent Response:</h5>
+                                <div class="response-content"></div>
+                                <small class="ui-text-small">
+                                    Response time: <span class="response-time"></span>
+                                </small>
+                            </div>
                         </div>
                     </div>
                 <% }); %>
@@ -165,10 +96,9 @@
         <div class="communication-hub">
             <h2>Agent Communication Hub</h2>
             <p>Enable agents to communicate with each other for complex workflows.</p>
-            
-            <div class="form-group">
+              <div class="form-group">
                 <label>From Agent</label>
-                <select id="fromAgent">
+                <select id="fromAgent" class="ui-select">
                     <option value="">Select source agent...</option>
                     <% if (agents) { %>
                         <% agents.forEach(agent => { %>
@@ -180,7 +110,7 @@
             
             <div class="form-group">
                 <label>To Agent</label>
-                <select id="toAgent">
+                <select id="toAgent" class="ui-select">
                     <option value="">Select target agent...</option>
                     <% if (agents) { %>
                         <% agents.forEach(agent => { %>
@@ -192,23 +122,30 @@
             
             <div class="form-group">
                 <label>Message</label>
-                <textarea id="commMessage" placeholder="Inter-agent communication message..."></textarea>
+                <textarea id="commMessage" placeholder="Inter-agent communication message..." class="ui-textarea"></textarea>
             </div>
             
-            <button class="btn" onclick="sendAgentCommunication()">Send Communication</button>
+            <button class="ui-button" onclick="sendAgentCommunication()">Send Communication</button>
         </div>
     </div>
 
-    <script>
-        // Create agent form handler
+    <script>        // Create agent form handler
         document.getElementById('createAgentForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData);
             
+            // Handle manual tools
             if (data.tools) {
                 data.tools = data.tools.split(',').map(t => t.trim());
+            } else {
+                data.tools = [];
             }
+            
+            // Handle MCP tools
+            const mcpSelect = document.getElementById('mcpTools');
+            const selectedMcpTools = Array.from(mcpSelect.selectedOptions).map(option => option.value);
+            data.tools = [...data.tools, ...selectedMcpTools];
             
             try {
                 const response = await fetch('/api/agents', {
@@ -225,17 +162,25 @@
             } catch (error) {
                 alert('Error: ' + error.message);
             }
-        });
-
-        // Prompt agent function
+        });        // Prompt agent function
         async function promptAgent(agentId) {
             const card = document.querySelector(`[data-agent-id="${agentId}"]`);
             const message = card.querySelector('.agent-prompt-input').value;
+            const responseDiv = document.getElementById(`response-${agentId}`);
+            const responseContent = responseDiv.querySelector('.response-content');
+            const responseTime = responseDiv.querySelector('.response-time');
             
             if (!message) {
                 alert('Please enter a prompt');
                 return;
             }
+            
+            // Show loading state
+            responseDiv.style.display = 'block';
+            responseContent.textContent = 'Processing...';
+            responseTime.textContent = 'Processing...';
+            
+            const startTime = Date.now();
             
             try {
                 const response = await fetch(`/api/agents/${agentId}/prompt`, {
@@ -245,10 +190,20 @@
                 });
                 
                 const result = await response.json();
-                alert('Agent Response: ' + result.response);
+                const endTime = Date.now();
+                const duration = ((endTime - startTime) / 1000).toFixed(2);
+                
+                // Display response
+                responseContent.textContent = result.response || 'No response received';
+                responseTime.textContent = `${duration}s`;
                 card.querySelector('.agent-prompt-input').value = '';
+                
             } catch (error) {
-                alert('Error: ' + error.message);
+                const endTime = Date.now();
+                const duration = ((endTime - startTime) / 1000).toFixed(2);
+                
+                responseContent.textContent = `Error: ${error.message}`;
+                responseTime.textContent = `${duration}s (failed)`;
             }
         }
 

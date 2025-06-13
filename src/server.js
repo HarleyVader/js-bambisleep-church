@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import { marked } from 'marked';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -56,8 +57,44 @@ app.get('/', (req, res) => {
 
 app.get('/help', (req, res) => {
     res.render('pages/help', {
-        title: 'Help & Support - Bambi Sleep Church'
+        title: 'Help & Support - Bambi Sleep Church',
+        isMarkdown: false,
+        currentDoc: null
     });
+});
+
+// Markdown documentation routes
+app.get('/help/:docName', (req, res) => {
+    const docName = req.params.docName;
+    const docPath = path.join(__dirname, '../docs', `${docName}.md`);
+    
+    if (fs.existsSync(docPath)) {
+        try {
+            const markdownContent = fs.readFileSync(docPath, 'utf8');
+            const htmlContent = marked(markdownContent);
+            
+            res.render('pages/help', {
+                title: `${docName} - Bambi Sleep Church`,
+                isMarkdown: true,
+                currentDoc: docName,
+                htmlContent: htmlContent,
+                isDocs: true
+            });
+        } catch (error) {
+            console.error('Error reading markdown file:', error);
+            res.status(500).render('pages/help', {
+                title: 'Error - Bambi Sleep Church',
+                isMarkdown: false,
+                currentDoc: null
+            });
+        }
+    } else {
+        res.status(404).render('pages/help', {
+            title: 'Not Found - Bambi Sleep Church',
+            isMarkdown: false,
+            currentDoc: null
+        });
+    }
 });
 
 // Socket.IO real-time features

@@ -1,13 +1,35 @@
 import express from 'express';
 import agentManager from '../toolbox/agentManager.js';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const router = express.Router();
 
 // Agents page
 router.get('/agents', (req, res) => {
+  // Load MCP toolbox tools
+  let mcpTools = [];
+  try {
+    const toolboxPath = path.join(__dirname, '../toolbox.json');
+    const toolboxData = JSON.parse(fs.readFileSync(toolboxPath, 'utf8'));
+    mcpTools = Object.entries(toolboxData.tools).map(([key, tool]) => ({
+      id: key,
+      name: tool.name,
+      description: tool.description,
+      methods: Object.keys(tool.methods || {})
+    }));
+  } catch (error) {
+    console.warn('Could not load MCP tools:', error.message);
+  }
+
   res.render('pages/agents', {
     title: 'Smolagents Agent Hub',
-    agents: agentManager.getAllAgents()
+    agents: agentManager.getAllAgents(),
+    mcpTools: mcpTools
   });
 });
 
