@@ -9,7 +9,8 @@
     "typescript": true,
     "python": true,
     "shell": true,
-  },  "github.copilot.advanced": {
+  },
+  "github.copilot.advanced": {
     "debug.overrideEngine": "codex",
     "length": 1000,
     "temperature": 0.1,
@@ -17,36 +18,35 @@
     "inlineSuggestEnable": true
   },
   "github.copilot.chat.experimental.mcpIntegration": true,
-  "github.copilot.chat.contextSelection": "auto",  "github.copilot.chat.instructions": [
+  "github.copilot.chat.contextSelection": "auto",
+  "github.copilot.chat.welcomeMessage": "never",
+  "github.copilot.chat.followUp": "auto",
+  "github.copilot.chat.useProjectTemplates": true,
+  "github.copilot.chat.experimental.codeGeneration": true,
+  "github.copilot.chat.experimental.contextAwareness": true,
+  "github.copilot.chat.instructions": [
     {
-      "file": ".github/copilot-instructions.md",
-      "description": "Instructions for using GitHub Copilot"
+      "file": "#file:copilot-instructions.md",
+      "description": "AI Framework: 3-Step Agent Loop MK-XII methodology - Core rules for function over form, working code over perfect code, and KEEP IT SIMPLE approach"
     },
     {
-      "file": ".github/model-context-protocol.md",
-      "description": "Model Context Protocol requirements for the AI model"
+      "file": "#file:model-context-protocol.md", 
+      "description": "Model Context Protocol specifications for JSON-RPC 2.0, LMStudio integration, tool orchestration, and structured output requirements"
     },
     {
-      "file": ".github/codebase-inventory.md",
-      "description": "File inventory with [%] completion of the codebase"
+      "file": "#file:codebase-inventory.md",
+      "description": "Complete file inventory with completion percentages for js-bambisleep-church project including MCP server infrastructure and smolagents integration"
     },
     {
-      "file": ".github/copilot-ssh-agent.md",
-      "description": "SSH agent configuration for bambisleep.chat, bambisleep.church, fickdichselber.com"
+      "file": "#file:copilot-ssh-agent.md",
+      "description": "SSH deployment agent configuration for bambisleep.chat, bambisleep.church, fickdichselber.com with git workflow automation"
     },
     {
       "file": ".vscode/copilot-mcp.json",
-      "description": "MCP server integration configuration for GitHub Copilot"
+      "description": "MCP server integration configuration for GitHub Copilot with fickdichselber-mcp-server connection"
     }
-  ],"chat.mcp.serverSampling": {
-    "js-bambisleep-church/.vscode/mcp.json: gistpad": {
-      "allowedModels": [
-        "github.copilot-chat/claude-opus-4",
-        "github.copilot-chat/claude-3.7-sonnet",
-        "github.copilot-chat/claude-3.7-sonnet-thought",
-        "github.copilot-chat/claude-sonnet-4"
-      ]
-    },
+  ],
+  "chat.mcp.serverSampling": {
     "js-bambisleep-church/.vscode/mcp.json: fickdichselber-mcp-server": {
       "allowedModels": [
         "github.copilot-chat/claude-opus-4",

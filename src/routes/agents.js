@@ -33,6 +33,26 @@ router.get('/agents', (req, res) => {
   });
 });
 
+// Individual agent page
+router.get('/agents/:id', (req, res) => {
+  const agent = agentManager.getAgent(req.params.id);
+  if (!agent) {
+    return res.status(404).render('pages/error', { 
+      title: 'Agent Not Found',
+      error: 'The requested agent could not be found.'
+    });
+  }
+
+  // Get agent conversations
+  const conversations = agentManager.getAgentConversations(req.params.id);
+  
+  res.render('pages/agent-detail', {
+    title: `${agent.name} - Agent Details`,
+    agent: agent,
+    conversations: conversations
+  });
+});
+
 // API endpoints
 router.post('/api/agents', express.json(), (req, res) => {
   try {
@@ -60,6 +80,15 @@ router.post('/api/agents/communicate', express.json(), (req, res) => {
   try {
     const communication = agentManager.sendAgentMessage(req.body.fromAgentId, req.body.toAgentId, req.body.message);
     res.json(communication);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.get('/api/agents/:id/conversations', (req, res) => {
+  try {
+    const conversations = agentManager.getAgentConversations(req.params.id);
+    res.json(conversations);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

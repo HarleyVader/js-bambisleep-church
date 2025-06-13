@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - Bambi Sleep Church</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .agent-detail-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--spacing-lg);
+        }
+
+        .agent-header {
+            background: var(--color-overlay-dark);
+            border: var(--border-medium) solid var(--color-primary-cyan);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            margin-bottom: var(--spacing-xl);
+            box-shadow: var(--shadow-card);
+        }
+
+        .agent-name {
+            color: var(--color-primary-cyan);
+            font-size: var(--font-2xl);
+            margin-bottom: var(--spacing-sm);
+            text-shadow: var(--shadow-neon);
+        }
+
+        .agent-description {
+            color: var(--color-text-secondary);
+            font-size: var(--font-lg);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .agent-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .stat-card {
+            background: var(--color-overlay-purple);
+            border: var(--border-thin) solid var(--color-primary-green);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-lg);
+            text-align: center;
+            box-shadow: 0 0 10px var(--glow-green);
+        }
+
+        .stat-label {
+            color: var(--color-text-secondary);
+            font-size: var(--font-sm);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .stat-value {
+            color: var(--color-primary-green);
+            font-size: var(--font-xl);
+            font-weight: bold;
+            text-shadow: 0 0 5px var(--color-primary-green);
+        }
+
+        .status-active { color: var(--color-primary-green); }
+        .status-idle { color: var(--color-primary-yellow); }
+        .status-busy { color: var(--color-primary-magenta); }
+        .status-error { color: #ff4444; }
+
+        .agent-sections {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-xl);
+        }
+
+        .section-card {
+            background: var(--color-overlay-dark);
+            border: var(--border-thin) solid var(--color-primary-magenta);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            box-shadow: 0 0 15px var(--glow-magenta);
+        }
+
+        .section-title {
+            color: var(--color-primary-magenta);
+            font-size: var(--font-xl);
+            margin-bottom: var(--spacing-lg);
+            text-shadow: 0 0 5px var(--color-primary-magenta);
+        }
+
+        .agent-prompt {
+            background: var(--color-bg-dark);
+            border: var(--border-thin) solid var(--color-primary-cyan);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-lg);
+            color: var(--color-text-secondary);
+            font-family: 'Courier New', monospace;
+            font-size: var(--font-sm);
+            line-height: 1.6;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .interaction-form {
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .prompt-input {
+            width: 100%;
+            background: var(--color-bg-dark);
+            border: var(--border-thin) solid var(--color-primary-cyan);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+            color: var(--color-text-secondary);
+            font-family: 'Courier New', monospace;
+            font-size: var(--font-sm);
+            min-height: 100px;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .prompt-button {
+            background: linear-gradient(45deg, var(--color-primary-green), var(--color-primary-cyan));
+            border: none;
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md) var(--spacing-lg);
+            color: var(--color-bg-dark);
+            font-weight: bold;
+            cursor: pointer;
+            transition: var(--transition-normal);
+        }
+
+        .prompt-button:hover {
+            box-shadow: 0 0 15px var(--color-primary-green);
+            transform: scale(1.05);
+        }
+
+        .conversation-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .conversation-item {
+            background: var(--color-bg-dark);
+            border: var(--border-thin) solid var(--color-primary-yellow);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .conversation-timestamp {
+            color: var(--color-primary-yellow);
+            font-size: var(--font-xs);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .conversation-message {
+            color: var(--color-text-secondary);
+            margin-bottom: var(--spacing-sm);
+            font-size: var(--font-sm);
+        }
+
+        .conversation-response {
+            color: var(--color-primary-cyan);
+            font-style: italic;
+            font-size: var(--font-sm);
+            border-left: 2px solid var(--color-primary-cyan);
+            padding-left: var(--spacing-sm);
+        }
+
+        .back-button {
+            background: var(--color-overlay-purple);
+            border: var(--border-thin) solid var(--color-primary-magenta);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-sm) var(--spacing-md);
+            color: var(--color-primary-magenta);
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: var(--spacing-lg);
+            transition: var(--transition-normal);
+        }
+
+        .back-button:hover {
+            box-shadow: 0 0 10px var(--color-primary-magenta);
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .agent-sections {
+                grid-template-columns: 1fr;
+            }
+            
+            .agent-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <%- include('../partials/header') %>
+    
+    <div class="agent-detail-container">
+        <a href="/agents" class="back-button">← Back to Agent Hub</a>
+        
+        <div class="agent-header">
+            <h1 class="agent-name"><%= agent.name %></h1>
+            <p class="agent-description"><%= agent.description %></p>
+            
+            <div class="agent-stats">
+                <div class="stat-card">
+                    <div class="stat-label">Status</div>
+                    <div class="stat-value status-<%= agent.status %>"><%= agent.status.toUpperCase() %></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Created</div>
+                    <div class="stat-value"><%= new Date(agent.created).toLocaleDateString() %></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Tools</div>
+                    <div class="stat-value"><%= agent.tools.length %></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Interactions</div>
+                    <div class="stat-value"><%= conversations.length %></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="agent-sections">
+            <div class="section-card">
+                <h2 class="section-title">Agent Prompt & Configuration</h2>
+                <div class="agent-prompt"><%= agent.prompt %></div>
+                
+                <h3 style="color: var(--color-primary-cyan); margin: var(--spacing-lg) 0 var(--spacing-md) 0;">Available Tools</h3>
+                <div style="display: flex; flex-wrap: wrap; gap: var(--spacing-xs);">
+                    <% agent.tools.forEach(tool => { %>
+                        <span style="background: var(--color-overlay-purple); border: 1px solid var(--color-primary-green); border-radius: var(--radius-sm); padding: var(--spacing-xs) var(--spacing-sm); color: var(--color-primary-green); font-size: var(--font-xs);"><%= tool %></span>
+                    <% }); %>
+                </div>
+            </div>
+
+            <div class="section-card">
+                <h2 class="section-title">Interact with Agent</h2>
+                
+                <div class="interaction-form">
+                    <textarea class="prompt-input" id="agentPrompt" placeholder="Enter your prompt for <%= agent.name %>..."></textarea>
+                    <button class="prompt-button" onclick="sendPrompt('<%= agent.id %>')">Send Prompt</button>
+                </div>
+
+                <h3 style="color: var(--color-primary-cyan); margin-bottom: var(--spacing-md);">Recent Conversations</h3>
+                <div class="conversation-list" id="conversationList">
+                    <% if (conversations.length === 0) { %>
+                        <p style="color: var(--color-text-secondary); text-align: center; padding: var(--spacing-lg);">
+                            No conversations yet. Start by sending a prompt above.
+                        </p>
+                    <% } else { %>
+                        <% conversations.forEach(conv => { %>
+                            <div class="conversation-item">
+                                <div class="conversation-timestamp"><%= new Date(conv.timestamp).toLocaleString() %></div>
+                                <div class="conversation-message"><strong>Prompt:</strong> <%= conv.message %></div>
+                                <div class="conversation-response"><strong>Response:</strong> <%= conv.response %></div>
+                            </div>
+                        <% }); %>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function sendPrompt(agentId) {
+            const promptInput = document.getElementById('agentPrompt');
+            const message = promptInput.value.trim();
+            
+            if (!message) {
+                alert('Please enter a prompt');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/agents/${agentId}/prompt`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message })
+                });
+
+                if (response.ok) {
+                    const conversation = await response.json();
+                    
+                    // Add new conversation to the list
+                    const conversationList = document.getElementById('conversationList');
+                    const newItem = document.createElement('div');
+                    newItem.className = 'conversation-item';
+                    newItem.innerHTML = `
+                        <div class="conversation-timestamp">${new Date(conversation.timestamp).toLocaleString()}</div>
+                        <div class="conversation-message"><strong>Prompt:</strong> ${conversation.message}</div>
+                        <div class="conversation-response"><strong>Response:</strong> ${conversation.response}</div>
+                    `;
+                    conversationList.insertBefore(newItem, conversationList.firstChild);
+                    
+                    // Clear the input
+                    promptInput.value = '';
+                    
+                    // Update interaction count
+                    location.reload();
+                } else {
+                    alert('Error sending prompt');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error sending prompt');
+            }
+        }
+
+        // Auto-refresh conversation list every 30 seconds
+        setInterval(() => {
+            fetch(`/api/agents/<%= agent.id %>/conversations`)
+                .then(response => response.json())
+                .then(conversations => {
+                    // Update conversation list if needed
+                })
+                .catch(error => console.error('Auto-refresh error:', error));
+        }, 30000);
+    </script>
+
+    <%- include('../partials/footer') %>
+</body>
+</html>
