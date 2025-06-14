@@ -1,129 +1,6 @@
 <%- include('../partials/header', { title: title }) %>
 
-<style>
-  /* Platform specific styling */
-  .script-platform {
-    display: inline-flex;
-    align-items: center;
-    padding: 2px 6px;
-    border-radius: 4px;
-    margin-right: 8px;
-    font-size: 0.85em;
-    background: rgba(0, 0, 0, 0.2);
-  }
-  
-  .platform-youtube {
-    color: #FF0000;
-    border: 1px solid #FF0000;
-  }
-  
-  .platform-soundcloud {
-    color: #FF5500;
-    border: 1px solid #FF5500;
-  }
-  
-  .platform-vimeo {
-    color: #1AB7EA;
-    border: 1px solid #1AB7EA;
-  }
-  
-  .platform-patreon {
-    color: #F96854;
-    border: 1px solid #F96854;
-  }
-  
-  .platform-bambicloud {
-    color: #CD7CFF;
-    border: 1px solid #CD7CFF;
-  }
-  
-  .platform-hypnotube {
-    color: #00B0FF;
-    border: 1px solid #00B0FF;
-  }
-  
-  .platform-twitter {
-    color: #1DA1F2;
-    border: 1px solid #1DA1F2;
-  }
-  
-  .platform-reddit {
-    color: #FF4500;
-    border: 1px solid #FF4500;
-  }
-  
-  .platform-discord {
-    color: #7289DA;
-    border: 1px solid #7289DA;
-  }
-  
-  .platform-github {
-    color: #6e5494;
-    border: 1px solid #6e5494;
-  }
-  
-  .script-category {
-    display: inline-flex;
-    align-items: center;
-    padding: 2px 6px;
-    border-radius: 4px;
-    margin-right: 8px;
-    font-size: 0.85em;
-    background: rgba(0, 0, 0, 0.2);
-    color: #ffcc00;
-    border: 1px solid #ffcc00;
-  }
-  
-  .script-wordcount, .script-date {
-    display: inline-flex;
-    margin-right: 8px;
-    font-size: 0.85em;
-    opacity: 0.8;
-  }
-  
-  .text-script-item {
-    margin-bottom: 15px;
-    padding: 10px;
-    border-radius: 4px;
-    background: rgba(0, 0, 0, 0.2);
-    border-left: 3px solid #00ffff;
-  }
-  
-  .text-script-item:hover {
-    background: rgba(0, 0, 0, 0.3);
-  }
-  
-  .script-header {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 5px;
-  }
-  
-  .script-title {
-    font-weight: bold;
-    color: #00ffff;
-  }
-  
-  .script-relevance {
-    color: #ffcc00;
-  }
-  
-  .script-meta {
-    margin-bottom: 8px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-  }
-  
-  .script-preview {
-    font-size: 0.9em;
-    line-height: 1.4;
-    opacity: 0.8;
-    white-space: pre-line;
-    max-height: 4.2em;
-    overflow: hidden;
-  }
-</style>
+
 
 <div class="container">
   <h1>🤖 AI Agents Dashboard</h1>
@@ -192,17 +69,6 @@
         <h4>Recent Activity</h4>
         <div class="log-container" id="log-output">
           <p class="log-entry">Agent monitoring initialized...</p>
-        </div>
-      </div>
-
-      <!-- Text Scripts Section -->      <div class="text-scripts-section">
-        <h4>📝 Recent Text Scripts</h4>
-        <div class="text-scripts-stats">
-          <span class="stat-label">Total Scripts:</span>
-          <span class="stat-value" id="text-scripts-count">-</span>
-        </div>
-        <div class="text-scripts-preview" id="text-scripts-preview">
-          <p class="loading-text">Loading text scripts...</p>
         </div>
       </div>
     </div>
@@ -500,86 +366,19 @@ function simulateProgress(steps) {
 
 // Fetch and display text scripts
 async function fetchTextScripts() {
-  try {
-    const response = await fetch('/api/agent/text-scripts');
-    if (!response.ok) return null;
-    const scripts = await response.json();
-    updateTextScriptsDisplay(scripts);
-    return scripts;
-  } catch (error) {
-    console.error('Failed to fetch text scripts:', error);
-    return null;
-  }
+  // Text scripts functionality moved to knowledge page
+  return null;
 }
 
 function updateTextScriptsDisplay(scripts) {
-  if (!scripts || !scripts.length) {
-    document.getElementById('text-scripts-count').textContent = '0';
-    document.getElementById('text-scripts-preview').innerHTML = '<p class="loading-text">No text scripts found.</p>';
-    return;
-  }
-  
-  // Update count
-  document.getElementById('text-scripts-count').textContent = scripts.length;
-  
-  // Update preview
-  const previewContainer = document.getElementById('text-scripts-preview');
-  previewContainer.innerHTML = '';
-  
-  scripts.slice(0, 5).forEach(script => {
-    // Get platform icon
-    let platformIcon = '🌐';
-    let platformClass = '';
-    if (script.platform) {
-      platformClass = `platform-${script.platform}`;
-      switch(script.platform) {
-        case 'youtube': platformIcon = '📺'; break;
-        case 'soundcloud': platformIcon = '🎵'; break;
-        case 'vimeo': platformIcon = '🎬'; break;
-        case 'patreon': platformIcon = '💰'; break;
-        case 'bambicloud': platformIcon = '🌙'; break;
-        case 'hypnotube': platformIcon = '💫'; break;
-        case 'twitter': platformIcon = '🐦'; break;
-        case 'reddit': platformIcon = '📱'; break;
-        case 'discord': platformIcon = '💬'; break;
-        case 'github': platformIcon = '📦'; break;
-      }
-    }
-    
-    const scriptElement = document.createElement('div');
-    scriptElement.className = 'text-script-item';
-    scriptElement.innerHTML = `
-      <div class="script-header">
-        <span class="script-title">${script.title}</span>
-        <span class="script-relevance">⭐ ${script.relevance}/10</span>
-      </div>
-      <div class="script-meta">
-        <span class="script-category">${script.category || 'scripts'}</span>
-        ${script.platform ? `<span class="script-platform ${platformClass}">${platformIcon} ${script.platform}</span>` : ''}
-        <span class="script-wordcount">${script.wordCount || 'Unknown'} words</span>
-        <span class="script-date">Added: ${new Date(script.addedAt || script.timestamp).toLocaleDateString()}</span>
-      </div>
-      <div class="script-preview">${script.description || script.content.substring(0, 150)}${script.content.length > 150 ? '...' : ''}</div>
-    `;
-    previewContainer.appendChild(scriptElement);
-  });
-  
-  if (scripts.length > 5) {
-    const moreElement = document.createElement('div');
-    moreElement.className = 'scripts-more';
-    moreElement.innerHTML = `<p>... and ${scripts.length - 5} more scripts</p>`;
-    previewContainer.appendChild(moreElement);
-  }
+  // Text scripts display functionality moved to knowledge page
 }
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
   fetchAgentStatus();
-  fetchTextScripts();
   // Refresh status every 30 seconds
   setInterval(fetchAgentStatus, 30000);
-  // Refresh text scripts every 60 seconds
-  setInterval(fetchTextScripts, 60000);
   // Listen for crawl progress updates
   socket.on('crawl:progress', (data) => {
     // Override simulated progress with real progress if available

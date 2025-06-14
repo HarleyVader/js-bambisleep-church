@@ -206,116 +206,18 @@
                     <button class="ask-common-question">Ask</button>
                 </div>
             </div>
-        </section>
-
-        <!-- Scripts Preview Section -->
+        </section>        <!-- Scripts Preview Section -->
         <div class="scripts-preview-section">
-            <h2 class="section-title">Latest Scripts</h2>
-            <p class="section-subtitle">Explore the most recent BambiSleep scripts</p>
+            <h2 class="section-title">📝 Recent Text Scripts</h2>
+            <p class="section-subtitle">Automatically extracted from BambiSleep wiki and community content</p>
+            
+            <div class="text-scripts-stats">
+                <span class="stat-label">Total Scripts:</span>
+                <span class="stat-value" id="text-scripts-count">-</span>
+            </div>
             
             <div class="text-scripts-preview" id="text-scripts-preview">
-                <div class="text-script-item">
-                    <div class="script-header">
-                        <span class="script-title">Third Party Triggers</span>
-                        <span class="script-relevance">⭐ 10/10</span>
-                    </div>
-                    <div class="script-meta">
-                        <span class="script-category">scripts</span>
-                        <span class="script-platform platform-bambicloud">🌙 bambicloud</span>
-                        <span class="script-wordcount">367 words</span>
-                        <span class="script-date">Added: 14/06/2025</span>
-                    </div>
-                    <div class="script-preview">Third Party Triggers
-                        
-                        From BambiSleep Wiki
-                        
-                        Jump to:navigation, search
-                    
-
-                        Creators' Custom Triggers
-bambi...</div>
-                </div>
-                <div class="text-script-item">
-                    <div class="script-header">
-                        <span class="script-title">Submitting For Bambis</span>
-                        <span class="script-relevance">⭐ 10/10</span>
-                    </div>
-                    <div class="script-meta">
-                        <span class="script-category">scripts</span>
-                        <span class="script-platform platform-bambicloud">🌙 bambicloud</span>
-                        <span class="script-wordcount">74 words</span>
-                        <span class="script-date">Added: 14/06/2025</span>
-                    </div>
-                    <div class="script-preview">Submitting For Bambis
-                        
-                        From BambiSleep Wiki
-                        
-                        Jump to:navigation, search
-                    
-
-                        (WIP outline, under construc...</div>
-                </div>
-                <div class="text-script-item">
-                    <div class="script-header">
-                        <span class="script-title">Dominating Bambi</span>
-                        <span class="script-relevance">⭐ 10/10</span>
-                    </div>
-                    <div class="script-meta">
-                        <span class="script-category">scripts</span>
-                        <span class="script-platform platform-bambicloud">🌙 bambicloud</span>
-                        <span class="script-wordcount">660 words</span>
-                        <span class="script-date">Added: 14/06/2025</span>
-                    </div>
-                    <div class="script-preview">Dominating Bambi
-                        
-                        From BambiSleep Wiki
-                        
-                        Jump to:navigation, search
-                    
-
-                        Dominating Bambi From A Bambi's P...</div>
-                </div>
-                <div class="text-script-item">
-                    <div class="script-header">
-                        <span class="script-title">Extracted Script</span>
-                        <span class="script-relevance">⭐ 10/10</span>
-                    </div>
-                    <div class="script-meta">
-                        <span class="script-category">scripts</span>
-                        <span class="script-platform platform-bambicloud">🌙 bambicloud</span>
-                        <span class="script-wordcount">50 words</span>
-                        <span class="script-date">Added: 14/06/2025</span>
-                    </div>
-                    <div class="script-preview">Being a good dominant is about deep care and keeping a growth mindset. It's about learning, unlearning and holding space for your Bambi - not just dur...</div>
-                </div>
-                <div class="text-script-item">
-                    <div class="script-header">
-                        <span class="script-title">What Is A Uniform</span>
-                        <span class="script-relevance">⭐ 10/10</span>
-                    </div>
-                    <div class="script-meta">
-                        <span class="script-category">scripts</span>
-                        <span class="script-platform platform-bambicloud">🌙 bambicloud</span>
-                        <span class="script-wordcount">342 words</span>
-                        <span class="script-date">Added: 14/06/2025</span>
-                    </div>
-                    <div class="script-preview">What Is A Uniform
-                        
-                        From BambiSleep Wiki
-                        
-                        Jump to:navigation, search
-                    
-
-                        
-
-
-A uniform is a piece or piece...</div>
-                </div>
-                <div class="scripts-more">
-                    <p>... and 18 more scripts</p>
-                    <button class="view-all-scripts-btn">View All Scripts</button>
-                </div>
-            </div>
+                <p class="loading-text">Loading text scripts...</p>            </div>
         </div>
 
         <!-- Search Section -->
@@ -460,6 +362,29 @@ A uniform is a piece or piece...</div>
     margin-bottom: 1.5rem;
     text-align: center;
     font-size: 1rem;
+}
+
+.text-scripts-stats {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: var(--color-overlay-purple);
+    border: 1px solid var(--color-primary-cyan);
+    border-radius: 8px;
+}
+
+.text-scripts-stats .stat-label {
+    color: var(--color-text-secondary);
+    font-weight: bold;
+}
+
+.text-scripts-stats .stat-value {
+    color: var(--color-primary-cyan);
+    font-size: 1.5rem;
+    font-weight: bold;
 }
 
 .text-scripts-preview {
@@ -1188,6 +1113,7 @@ let filteredKnowledge = [];
 // Initialize page
 document.addEventListener('DOMContentLoaded', function() {
     loadKnowledge();
+    fetchTextScripts();
     checkAndInitializeKnowledge();
 });
 
@@ -1354,6 +1280,80 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+// Fetch and display text scripts
+async function fetchTextScripts() {
+  try {
+    const response = await fetch('/api/agent/text-scripts');
+    if (!response.ok) return null;
+    const scripts = await response.json();
+    updateTextScriptsDisplay(scripts);
+    return scripts;
+  } catch (error) {
+    console.error('Failed to fetch text scripts:', error);
+    return null;
+  }
+}
+
+function updateTextScriptsDisplay(scripts) {
+  if (!scripts || !scripts.length) {
+    document.getElementById('text-scripts-count').textContent = '0';
+    document.getElementById('text-scripts-preview').innerHTML = '<p class="loading-text">No text scripts found.</p>';
+    return;
+  }
+  
+  // Update count
+  document.getElementById('text-scripts-count').textContent = scripts.length;
+  
+  // Update preview
+  const previewContainer = document.getElementById('text-scripts-preview');
+  previewContainer.innerHTML = '';
+  
+  scripts.slice(0, 5).forEach(script => {
+    // Get platform icon
+    let platformIcon = '🌐';
+    let platformClass = '';
+    if (script.platform) {
+      platformClass = `platform-${script.platform}`;
+      switch(script.platform) {
+        case 'youtube': platformIcon = '📺'; break;
+        case 'soundcloud': platformIcon = '🎵'; break;
+        case 'vimeo': platformIcon = '🎬'; break;
+        case 'patreon': platformIcon = '💰'; break;
+        case 'bambicloud': platformIcon = '🌙'; break;
+        case 'hypnotube': platformIcon = '💫'; break;
+        case 'twitter': platformIcon = '🐦'; break;
+        case 'reddit': platformIcon = '📱'; break;
+        case 'discord': platformIcon = '💬'; break;
+        case 'github': platformIcon = '📦'; break;
+      }
+    }
+    
+    const scriptElement = document.createElement('div');
+    scriptElement.className = 'text-script-item';
+    scriptElement.innerHTML = `
+      <div class="script-header">
+        <span class="script-title">${script.title}</span>
+        <span class="script-relevance">⭐ ${script.relevance}/10</span>
+      </div>
+      <div class="script-meta">
+        <span class="script-category">${script.category || 'scripts'}</span>
+        ${script.platform ? `<span class="script-platform ${platformClass}">${platformIcon} ${script.platform}</span>` : ''}
+        <span class="script-wordcount">${script.wordCount || 'Unknown'} words</span>
+        <span class="script-date">Added: ${new Date(script.addedAt || script.timestamp).toLocaleDateString()}</span>
+      </div>
+      <div class="script-preview">${script.description || script.content.substring(0, 150)}${script.content.length > 150 ? '...' : ''}</div>
+    `;
+    previewContainer.appendChild(scriptElement);
+  });
+  
+  if (scripts.length > 5) {
+    const moreElement = document.createElement('div');
+    moreElement.className = 'scripts-more';
+    moreElement.innerHTML = `<p>... and ${scripts.length - 5} more scripts</p>`;
+    previewContainer.appendChild(moreElement);
+  }
 }
 
 // Q&A Functionality
