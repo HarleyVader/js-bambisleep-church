@@ -1,8 +1,10 @@
 // Minimal Agent for crawling, analyzing, and adding URLs
-const axios = require('axios');
-const knowledgeTools = require('./tools/knowledgeTools');
 
-async function crawlAndAnalyze(url) {
+import * as knowledgeTools from './tools/knowledgeTools.js';
+
+import axios from 'axios';
+
+export async function crawlAndAnalyze(url) {
   // Fetch and analyze URL (minimal)
   try {
     const res = await axios.get(url);
@@ -14,5 +16,3 @@ async function crawlAndAnalyze(url) {
     return { url, error: true };
   }
 }
-
-module.exports = { crawlAndAnalyze };

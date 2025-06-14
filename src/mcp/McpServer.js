@@ -1,6 +1,8 @@
 // Minimal MCP Server for Knowledgebase
-const express = require('express');
-const knowledgeTools = require('./tools/knowledgeTools');
+
+import * as knowledgeTools from './tools/knowledgeTools.js';
+
+import express from 'express';
 
 const app = express();
 app.use(express.json());

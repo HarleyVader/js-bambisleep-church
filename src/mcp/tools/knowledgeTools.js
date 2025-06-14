@@ -1,6 +1,11 @@
 // Minimal knowledgebase tools (add, search, list, get, update, delete)
-const fs = require('fs');
-const path = require('path');
+
+import { fileURLToPath } from 'url';
+import fs from 'fs';
+import path from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const dbPath = path.join(__dirname, '../../knowledge/knowledge.json');
 
 function loadDB() {
@@ -11,7 +16,7 @@ function saveDB(data) {
   fs.writeFileSync(dbPath, JSON.stringify(data, null, 2));
 }
 
-exports.add = (req, res) => {
+export const add = (req, res) => {
   const db = loadDB();
   const { url, title } = req.body;
   if (!url) return res.json({ error: 'No URL' });
@@ -20,20 +25,20 @@ exports.add = (req, res) => {
   saveDB(db);
   res.json({ success: true, id });
 };
-exports.list = (req, res) => {
+export const list = (req, res) => {
   res.json(loadDB());
 };
-exports.search = (req, res) => {
+export const search = (req, res) => {
   const q = req.query.q || '';
   const db = loadDB();
   res.json(db.filter(item => item.url.includes(q) || (item.title || '').includes(q)));
 };
-exports.get = (req, res) => {
+export const get = (req, res) => {
   const db = loadDB();
   const item = db.find(i => i.id === req.params.id);
   res.json(item || {});
 };
-exports.update = (req, res) => {
+export const update = (req, res) => {
   const db = loadDB();
   const idx = db.findIndex(i => i.id === req.params.id);
   if (idx === -1) return res.json({ error: 'Not found' });
@@ -41,9 +46,11 @@ exports.update = (req, res) => {
   saveDB(db);
   res.json({ success: true });
 };
-exports.remove = (req, res) => {
-  let db = loadDB();
-  db = db.filter(i => i.id !== req.params.id);
+export const remove = (req, res) => {
+  const db = loadDB();
+  const idx = db.findIndex(i => i.id === req.params.id);
+  if (idx === -1) return res.json({ error: 'Not found' });
+  db.splice(idx, 1);
   saveDB(db);
   res.json({ success: true });
 };
