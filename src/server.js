@@ -2,9 +2,10 @@
 
 import 'dotenv/config';
 
+import { deployAgent, getQualityMetrics } from './mcp/agentKnowledge.js';
+
 import { Server } from 'socket.io';
 import { createServer } from 'http';
-import { deployAgent, getQualityMetrics } from './mcp/agentKnowledge.js';
 import express from 'express';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
@@ -125,7 +126,7 @@ function loadKnowledgeData() {
       knowledge = JSON.parse(data);
     }
     
-    // Categorize the data
+  // Categorize the data
     const creators = knowledge.filter(item => 
       item.category === 'creators' || 
       item.url?.includes('youtube.com/c/') || 
@@ -146,9 +147,32 @@ function loadKnowledgeData() {
     );
     
     const images = knowledge.filter(item => 
-      item.category === 'images' || 
-      item.contentType?.startsWith('image/')
+      item.category === 'images' && 
+      (item.contentType?.startsWith('image/') || 
+       item.url?.endsWith('.jpg') || 
+       item.url?.endsWith('.png') || 
+       item.url?.endsWith('.gif') || 
+       item.url?.endsWith('.webp'))
     );
+    
+    // Make sure links aren't miscategorized as images by default
+    knowledge.forEach(item => {
+      if (!item.category) {
+        // Assign appropriate category if it's not already set
+        if (videos.includes(item)) {
+          item.category = 'videos';
+        } else if (audios.includes(item)) {
+          item.category = 'audio';
+        } else if (creators.includes(item)) {
+          item.category = 'creators';
+        } else if (images.includes(item)) {
+          item.category = 'images';
+        } else {
+          // Default to 'general' for anything else like regular links
+          item.category = 'general';
+        }
+      }
+    });
     
     return {
       title: 'Bambi Sleep Church',
@@ -340,6 +364,19 @@ app.get('/api/knowledge', (req, res) => {
   } catch (error) {
     console.error('Error loading knowledge:', error);
     res.status(500).json({ success: false, error: 'Failed to load knowledge base', entries: [] });
+  }
+});
+
+// Add the missing knowledge/list endpoint that returns all knowledge entries
+app.get('/knowledge/list', (req, res) => {
+  try {
+    const knowledgePath = path.join(__dirname, 'knowledge', 'knowledge.json');
+    const knowledgeData = fs.readFileSync(knowledgePath, 'utf8');
+    const entries = JSON.parse(knowledgeData);
+    res.json(entries);
+  } catch (error) {
+    console.error('Error loading knowledge list:', error);
+    res.status(500).json([]);
   }
 });
 

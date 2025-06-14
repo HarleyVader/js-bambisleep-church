@@ -895,29 +895,48 @@
                 setTimeout(() => {                    document.body.removeChild(notification);
                 }, 300);
             }, 5000);
-        }
-
-        // Add crawled URLs from knowledgebase (MCP server)
+        }        // Add crawled URLs from knowledgebase (MCP server)
         async function loadCrawledUrlsFromServer() {
             try {
                 const res = await fetch('/knowledge/list');
                 if (!res.ok) return;
                 const data = await res.json();
                 if (Array.isArray(data)) {
+                    // Process entries to ensure proper categorization
+                    const processed = data.map(function(item) {
+                        // Ensure every item has a category
+                        if (!item.category) {
+                            // Simple URL-based categorization
+                            const url = item.url || '';
+                            if (url.includes('youtube.com/watch') || url.includes('vimeo.com')) {
+                                item.category = 'videos';
+                            } else if (url.includes('soundcloud.com') || url.endsWith('.mp3')) {
+                                item.category = 'audio';
+                            } else if (url.includes('youtube.com/c/') || url.includes('patreon.com')) {
+                                item.category = 'creators';
+                            } else if (url.endsWith('.jpg') || url.endsWith('.png') || url.endsWith('.gif')) {
+                                item.category = 'images';
+                            } else {
+                                item.category = 'general';
+                            }
+                        }
+                        return {
+                            id: item.id,
+                            url: item.url,
+                            title: item.title || item.url,
+                            description: item.description || '',
+                            type: 'website',
+                            category: item.category,
+                            addedAt: item.addedAt || ''
+                        };
+                    });
+                    
                     // Add to localStorage for compatibility with existing code
-                    localStorage.setItem('crawledUrls', JSON.stringify(data.map(function(item) {
-                return {
-                    id: item.id,
-                    url: item.url,
-                    title: item.title || item.url,
-                    description: item.description || '',
-                    type: 'website',
-                    addedAt: item.addedAt || ''
-                };
-            })));
+                    localStorage.setItem('crawledUrls', JSON.stringify(processed));
                     loadPlatformCategories();
                 }
             } catch (e) {
+                console.error('Error loading crawled URLs:', e);
                 // fallback: do nothing
             }
         }

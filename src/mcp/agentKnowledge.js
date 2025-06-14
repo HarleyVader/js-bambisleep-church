@@ -163,6 +163,31 @@ function categorizeContent(title, description, url, platform, mediaType) {
     if (platform === 'bambicloud') return 'official';
   }
   
+  // Check for video URLs
+  if (url?.includes('youtube.com/watch') || 
+      url?.includes('vimeo.com/') || 
+      url?.endsWith('.mp4') || 
+      url?.endsWith('.webm')) {
+    return 'videos';
+  }
+  
+  // Check for audio URLs
+  if (url?.includes('soundcloud.com') || 
+      url?.endsWith('.mp3') || 
+      url?.endsWith('.wav') || 
+      url?.endsWith('.ogg')) {
+    return 'audio';
+  }
+  
+  // Check for image URLs
+  if (url?.endsWith('.jpg') || 
+      url?.endsWith('.jpeg') || 
+      url?.endsWith('.png') || 
+      url?.endsWith('.gif') || 
+      url?.endsWith('.webp')) {
+    return 'images';
+  }
+  
   // Fallback to keyword-based categorization
   for (const [category, keywords] of Object.entries(CATEGORIES)) {
     if (keywords.some(keyword => text.includes(keyword))) {
@@ -170,6 +195,7 @@ function categorizeContent(title, description, url, platform, mediaType) {
     }
   }
   
+  // Default to general for regular links
   return 'general';
 }
 
