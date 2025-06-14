@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "A real-time community-voted link list for different bambisleep themes and categories.",
   "main": "src/app.js",
-  "type": "commonjs",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "https://github.com/HarleyVader/js-bambisleep-church.git"
