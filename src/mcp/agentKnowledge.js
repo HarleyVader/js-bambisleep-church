@@ -223,14 +223,14 @@ async function extractMetadata(url) {
                  $('meta[property="og:title"]').attr('content') || 
                  $('h1').first().text().trim() || 
                  url;
-    
-    const description = $('meta[name="description"]').attr('content') || 
+      const description = $('meta[name="description"]').attr('content') || 
                        $('meta[property="og:description"]').attr('content') || 
                        $('p').first().text().trim().slice(0, 200) || '';
     
     console.log(`📝 Extracted - Title: "${title}", Description: "${description.substring(0, 100)}..."`);
     
-    // Extract scripts and transcripts    const scripts = extractScriptsFromHTML($, response.data);
+    // Extract scripts and transcripts
+    const scripts = extractScriptsFromHTML($, response.data);
     
     console.log(`🎭 Found ${scripts.length} potential scripts in ${url}`);
     
