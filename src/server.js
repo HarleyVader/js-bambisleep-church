@@ -4,7 +4,7 @@ import 'dotenv/config';
 
 import { Server } from 'socket.io';
 import { createServer } from 'http';
-import { deployAgent } from './mcp/agentKnowledge.js';
+import { deployAgent, getQualityMetrics } from './mcp/agentKnowledge.js';
 import express from 'express';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
@@ -114,8 +114,69 @@ io.on('connection', (socket) => {
   });
 });
 
+// Helper function to load and categorize knowledge base data
+function loadKnowledgeData() {
+  try {
+    const knowledgePath = path.join(__dirname, 'knowledge/knowledge.json');
+    let knowledge = [];
+    
+    if (fs.existsSync(knowledgePath)) {
+      const data = fs.readFileSync(knowledgePath, 'utf8');
+      knowledge = JSON.parse(data);
+    }
+    
+    // Categorize the data
+    const creators = knowledge.filter(item => 
+      item.category === 'creators' || 
+      item.url?.includes('youtube.com/c/') || 
+      item.url?.includes('youtube.com/channel/') ||
+      item.url?.includes('patreon.com/')
+    );
+    
+    const videos = knowledge.filter(item => 
+      item.category === 'videos' || 
+      item.url?.includes('youtube.com/watch') ||
+      item.url?.includes('vimeo.com/')
+    );
+    
+    const audios = knowledge.filter(item => 
+      item.category === 'audio' || 
+      item.url?.includes('soundcloud.com') ||
+      item.contentType?.startsWith('audio/')
+    );
+    
+    const images = knowledge.filter(item => 
+      item.category === 'images' || 
+      item.contentType?.startsWith('image/')
+    );
+    
+    return {
+      title: 'Bambi Sleep Church',
+      links: knowledge,
+      creators,
+      videos,
+      audios,
+      images,
+      crawledUrls: knowledge,
+      platforms: []
+    };
+  } catch (error) {
+    console.error('Error loading knowledge data:', error);
+    return {
+      title: 'Bambi Sleep Church',
+      links: [],
+      creators: [],
+      videos: [],
+      audios: [],
+      images: [],
+      crawledUrls: [],
+      platforms: []
+    };
+  }
+}
+
 // Main routes
-app.get('/', (req, res) => res.render('pages/index', mockData));
+app.get('/', (req, res) => res.render('pages/index', loadKnowledgeData()));
 app.get('/agents', (req, res) => res.render('pages/agents', { title: 'AI Agents' }));
 app.get('/knowledge', (req, res) => res.render('pages/knowledge'));
 app.get('/help', (req, res) => res.render('pages/help', { 

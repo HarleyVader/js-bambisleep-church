@@ -1337,8 +1337,7 @@ export async function cleanKnowledgeBase(io = null) {
         status: 'Cleanup complete!',
         message: `✅ Cleanup finished: ${totalRemoved} entries removed`
       });
-      
-      io.emit('cleanup:complete', {
+        io.emit('cleanup:complete', {
         success: true,
         summary: {
           originalCount,
@@ -1349,7 +1348,8 @@ export async function cleanKnowledgeBase(io = null) {
           archivedCount
         }
       });
-    }    return {
+    }
+      return {
       success: true,
       message: `Cleanup completed: ${totalRemoved} entries removed (${duplicatesRemoved} duplicates, ${invalidRemoved} invalid, ${archivedCount} archived)`,
       summary: {
