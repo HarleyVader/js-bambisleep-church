@@ -25,8 +25,8 @@
 
 - `src/mcp/McpServer.js` - Modern, minimal MCP server entrypoint (uses server.serve) [100%] **ENHANCED: Added BambiSleep knowledge agent endpoints**
 - `src/mcp/tools/knowledgeTools.js` - Enhanced knowledgebase tools with analytics and filtering [100%] **ENHANCED: Added analytics, category filtering, enhanced metadata support**
-- `src/mcp/agentKnowledge.js` - Intelligent Knowledge Base Agent with full automation, monitoring, and URL crawling [100%] **ENHANCED: Added specialized BambiSleep Q&A agent capabilities**
-- `src/mcp/tools/urlFetcher.js` - Tool for fetching and extracting content from URLs [100%] **NEW: Supports website content extraction with caching and rate limiting**
+- `src/mcp/agentKnowledge.js` - Intelligent Knowledge Base Agent with full automation, monitoring, and URL crawling [100%] **ENHANCED: Added specialized BambiSleep Q&A agent capabilities, removed crawler limits for unlimited site discovery**
+- `src/mcp/tools/urlFetcher.js` - Tool for fetching and extracting content from URLs [100%] **ENHANCED: Optimized rate limiting for faster crawling with 3 concurrent requests and 500ms delays**
 - `src/mcp/tools/contentProcessor.js` - Tool for processing and categorizing BambiSleep content [100%] **NEW: Analyzes content to extract BambiSleep information**
 - `src/mcp/tools/knowledgeIndex.js` - Tool for indexing and searching BambiSleep knowledge [100%] **NEW: Implements indexing for fast knowledge retrieval**
 - `src/mcp/tools/qaSystem.js` - Q&A system for answering BambiSleep questions [100%] **NEW: Answers questions about BambiSleep based on knowledge**

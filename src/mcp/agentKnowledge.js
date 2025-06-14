@@ -687,9 +687,8 @@ async function discoverFromReddit() {
     });
     
     const posts = response.data?.data?.children || [];
-    const discoveredUrls = [];
-    
-    for (const post of posts.slice(0, 10)) { // Limit to 10 most recent
+    const discoveredUrls = [];    
+    for (const post of posts) { // Process all posts (no artificial limits)
       const postData = post.data;
       if (postData.url && !postData.url.includes('reddit.com')) {
         discoveredUrls.push(postData.url);
@@ -953,13 +952,12 @@ export async function crawlAndExtractLinks(submittedUrl, io = null) {
         logMessage: `📋 Found ${relevantLinks.length} relevant links`
       });
     }
-    
-    // Analyze each relevant link
+      // Analyze each relevant link
     const linkResults = [];
     let successCount = 0;
     let errorCount = 0;
-      // Limit to 20 links to avoid overwhelming the system
-    const linksToProcess = relevantLinks.slice(0, 20);
+      // Process all found links (no artificial limits)
+    const linksToProcess = relevantLinks;
     
     for (let i = 0; i < linksToProcess.length; i++) {
       const link = linksToProcess[i];
@@ -972,9 +970,8 @@ export async function crawlAndExtractLinks(submittedUrl, io = null) {
           details: `Processing link ${i + 1} of ${linksToProcess.length}: ${link.substring(0, 50)}...`,
           logMessage: `🔗 Analyzing link ${i + 1}/${linksToProcess.length}`
         });
-      }        try {
-        // Small delay between requests to be respectful
-        await new Promise(resolve => setTimeout(resolve, 2000)); // Increased delay to 2 seconds
+      }        try {        // Small delay between requests to be respectful  
+        await new Promise(resolve => setTimeout(resolve, 500)); // Reduced delay to 500ms
           console.log(`🔗 Processing link ${i + 1}/${linksToProcess.length}: ${link}`);
         const result = await crawlAndAnalyze(link);
         linkResults.push(result);

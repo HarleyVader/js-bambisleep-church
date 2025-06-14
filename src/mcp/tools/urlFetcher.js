@@ -19,8 +19,8 @@ if (!fs.existsSync(CACHE_DIR)) {
 }
 
 // Configure rate limiting to avoid IP bans
-const limit = pLimit(1); // Only 1 request at a time
-const DELAY_BETWEEN_REQUESTS = 2000; // 2 seconds between requests
+const limit = pLimit(3); // Allow 3 concurrent requests
+const DELAY_BETWEEN_REQUESTS = 500; // 500ms between requests
 
 // Cache management
 const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
