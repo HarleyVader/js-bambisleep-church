@@ -1,5 +1,7 @@
 // Minimal MCP Server for Knowledgebase
 
+import 'dotenv/config';
+
 import * as knowledgeTools from './tools/knowledgeTools.js';
 
 import express from 'express';
@@ -17,6 +19,7 @@ app.delete('/knowledge/delete/:id', knowledgeTools.remove);
 
 // Start server
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`MCP Server running on port ${PORT}`);
+const HOST = process.env.HOST || '0.0.0.0';
+app.listen(PORT, HOST, () => {
+  console.log(`MCP Server running on http://${HOST}:${PORT}`);
 });
