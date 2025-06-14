@@ -497,12 +497,42 @@ export async function crawlAndAnalyze(url) {
       const errorMsg = 'Advanced duplicate detection: Similar content already exists';
       console.log(`⚠️ [${url}] ${errorMsg} - Title: "${metadata.title}"`);
       return { url, success: false, duplicate: true, message: errorMsg };
+    }// Step 4: Calculate advanced relevance with LMStudio integration or fallback to heuristics
+    let relevance = 0;
+    let modelAnalyzed = false;
+    
+    // Try using LMStudio for advanced analysis
+    try {
+      const isLMStudioAvailable = await lmstudio.isAvailable();
+      
+      if (isLMStudioAvailable) {
+        const combinedText = `Title: ${metadata.title}\nDescription: ${metadata.description || 'N/A'}\nURL: ${url}`;
+        const analysis = await lmstudio.analyze(combinedText);
+        
+        // Use the model's relevance score if available
+        if (analysis && typeof analysis.relevance === 'number') {
+          relevance = analysis.relevance;
+          modelAnalyzed = true;
+          
+          // Add model-enhanced categorization and keywords
+          metadata.analyzedCategory = analysis.category;
+          metadata.analyzedKeywords = analysis.keywords;
+          metadata.analyzedSummary = analysis.summary;
+          metadata.adultContent = analysis.adult_content;
+          metadata.safetyRating = analysis.safety_rating;
+          
+          console.log(`🤖 [${url}] LMStudio analysis: relevance=${relevance}, category=${analysis.category}, keywords=[${analysis.keywords.join(', ')}]`);
+        }
+      }
+    } catch (error) {
+      console.error(`❌ [${url}] LMStudio analysis error: ${error.message}. Falling back to heuristic scoring.`);
     }
-
-    // Step 4: Calculate advanced relevance with ML-like scoring
-    const relevance = calculateAdvancedRelevanceScore(metadata.title, metadata.description, url);
-    console.log(`📊 [${url}] Relevance score: ${relevance}/10 (title: "${metadata.title}", description: "${metadata.description.substring(0, 100)}...")`);
-      // Special handling for bambisleep.info - lower threshold
+    
+    // Fall back to heuristic scoring if model analysis failed
+    if (!modelAnalyzed) {
+      relevance = calculateAdvancedRelevanceScore(metadata.title, metadata.description, url);
+      console.log(`📊 [${url}] Heuristic relevance score: ${relevance}/10`);
+    }
     const safeUrl = url || '';
     const relevanceThreshold = safeUrl.includes('bambisleep.info') ? 1 : 2;
     if (relevance < relevanceThreshold) {
@@ -518,22 +548,25 @@ export async function crawlAndAnalyze(url) {
       metadata.platform, 
       metadata.mediaType
     );
-    console.log(`🏷️ Categorized ${url} as: ${category} (platform: ${metadata.platform || 'unknown'}, type: ${metadata.mediaType || 'unknown'})`);
-
-    // Step 6: Create enriched entry
+    console.log(`🏷️ Categorized ${url} as: ${category} (platform: ${metadata.platform || 'unknown'}, type: ${metadata.mediaType || 'unknown'})`);    // Step 6: Create enriched entry
     const entry = {
       id: 'kb_' + Date.now(),
       url,
       title: metadata.title,
       description: metadata.description,
-      category,
+      category: metadata.analyzedCategory || category, // Use model category if available
       platform: metadata.platform || null,
       mediaType: metadata.mediaType || null,
       relevance,
       contentType: validation.contentType,
       addedAt: new Date().toISOString(),
       validated: true,
-      scripts: metadata.scripts || [] // Store extracted scripts
+      scripts: metadata.scripts || [], // Store extracted scripts
+      modelAnalyzed: modelAnalyzed || false,
+      keywords: metadata.analyzedKeywords || [],
+      summary: metadata.analyzedSummary || null,
+      adultContent: metadata.adultContent || false,
+      safetyRating: metadata.safetyRating || 5
     };
 
     // Step 7: Save to knowledge base

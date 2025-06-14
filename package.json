@@ -17,7 +17,8 @@
     "start:simple": "node src/mcp/McpServer.js --http & node src/server.js",
     "start:mcp": "node src/mcp/McpServer.js --http",
     "start:web": "node src/server.js",
-    "test": "jest"
+    "test": "jest",
+    "test:lmstudio": "node test/lmstudio-integration.test.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^0.5.0",

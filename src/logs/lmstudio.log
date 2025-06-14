@@ -1,0 +1,12 @@
+{"timestamp":"2025-06-14T13:08:14.655Z","type":"request","prompt":"Analyze this BambiSleep-related content and provide a JSON response with:\n- summary: Brief summary (...","options":{"maxTokens":500,"temperature":0.3}}
+{"timestamp":"2025-06-14T13:08:14.659Z","type":"error","message":"","code":"ECONNREFUSED","retry":1}
+{"timestamp":"2025-06-14T13:08:15.670Z","type":"error","message":"","code":"ECONNREFUSED","retry":2}
+{"timestamp":"2025-06-14T13:08:17.683Z","type":"error","message":"","code":"ECONNREFUSED","retry":3}
+{"timestamp":"2025-06-14T13:08:20.701Z","type":"error","message":"","code":"ECONNREFUSED","retry":4}
+{"timestamp":"2025-06-14T13:08:20.701Z","type":"error-final","message":"","code":"ECONNREFUSED","duration":6046}
+{"timestamp":"2025-06-14T13:08:20.702Z","type":"request","prompt":"You are a knowledgeable assistant about BambiSleep hypnosis content. Answer the following question b...","options":{"maxTokens":800,"temperature":0.6}}
+{"timestamp":"2025-06-14T13:08:20.704Z","type":"error","message":"","code":"ECONNREFUSED","retry":1}
+{"timestamp":"2025-06-14T13:08:21.711Z","type":"error","message":"","code":"ECONNREFUSED","retry":2}
+{"timestamp":"2025-06-14T13:08:23.719Z","type":"error","message":"","code":"ECONNREFUSED","retry":3}
+{"timestamp":"2025-06-14T13:08:26.723Z","type":"error","message":"","code":"ECONNREFUSED","retry":4}
+{"timestamp":"2025-06-14T13:08:26.723Z","type":"error-final","message":"","code":"ECONNREFUSED","duration":6021}
