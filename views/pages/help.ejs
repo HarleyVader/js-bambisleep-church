@@ -2,20 +2,20 @@
 
 <main>
     <div class="container">
-        <div class="help-layout">
-            <!-- Sidebar Navigation -->
+        <div class="help-layout">            <!-- Sidebar Navigation -->
             <aside class="docs-sidebar">
                 <h3>📚 Documentation</h3>
                 <nav class="docs-nav">
                     <a href="/help" class="nav-item <%= !isMarkdown ? 'active' : '' %>">
                         🏠 Help Overview
                     </a>
-                    <a href="/help/BambiSleepChurch" class="nav-item <%= (isMarkdown && currentDoc === 'BambiSleepChurch') ? 'active' : '' %>">
-                        ⛪ Bambi Sleep Church
-                    </a>
-                    <a href="/help/smolagents-technical-guide" class="nav-item <%= (isMarkdown && currentDoc === 'smolagents-technical-guide') ? 'active' : '' %>">
-                        🤖 Smolagents Technical Guide
-                    </a>
+                    <% if (typeof availableDocs !== 'undefined' && availableDocs.length > 0) { %>
+                        <% availableDocs.forEach(doc => { %>
+                            <a href="/help/<%= doc.name %>" class="nav-item <%= (isMarkdown && currentDoc === doc.name) ? 'active' : '' %>">
+                                📄 <%= doc.title %>
+                            </a>
+                        <% }); %>
+                    <% } %>
                 </nav>
             </aside>
 

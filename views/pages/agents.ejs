@@ -1,8 +1,252 @@
 <%- include('../partials/header', { title: title }) %>
 
 <div class="container">
-  <h1>AI Agents</h1>
-  <p>This is a placeholder template for the /agents page.</p>
+  <h1>🤖 AI Agents Dashboard</h1>
+  
+  <div class="agent-grid">
+    <!-- Knowledge Base Agent -->
+    <div class="agent-card" id="knowledge-agent">
+      <div class="agent-header">
+        <h3>📚 Knowledge Base Agent</h3>
+        <div class="agent-status" id="agent-status">
+          <span class="status-dot"></span>
+          <span class="status-text">Checking...</span>
+        </div>
+      </div>
+      
+      <div class="agent-stats" id="agent-stats">
+        <div class="stat-item">
+          <span class="stat-label">Knowledge Entries:</span>
+          <span class="stat-value" id="knowledge-count">-</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Auto Discovery:</span>
+          <span class="stat-value" id="auto-discovery">-</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Uptime:</span>
+          <span class="stat-value" id="uptime">-</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Memory Usage:</span>
+          <span class="stat-value" id="memory">-</span>
+        </div>
+      </div>
+      
+      <div class="agent-actions">
+        <button class="btn-primary" onclick="triggerDiscovery()">🔍 Discover Content</button>
+        <button class="btn-secondary" onclick="refreshStatus()">🔄 Refresh Status</button>
+      </div>
+      
+      <!-- URL Submission Form -->
+      <div class="url-submission-section">
+        <h4>🌐 Submit URL for Analysis</h4>
+        <div class="url-form">
+          <input type="url" id="url-input" placeholder="Enter URL to crawl and analyze..." class="url-input">
+          <button class="btn-primary" onclick="submitUrl()">🚀 Submit & Crawl</button>
+        </div>
+        <p class="form-help">
+          Submit a URL and the agent will crawl it for relevant BambiSleep content, extract links, and add them to the knowledge base.
+        </p>
+        
+        <!-- Progress Bar -->
+        <div class="crawl-progress" id="crawl-progress" style="display: none;">
+          <div class="progress-header">
+            <span class="progress-status" id="progress-status">Initializing...</span>
+            <span class="progress-percentage" id="progress-percentage">0%</span>
+          </div>
+          <div class="progress-bar-container">
+            <div class="progress-bar" id="progress-bar" style="width: 0%;"></div>
+          </div>
+          <div class="progress-details" id="progress-details">
+            <span class="progress-current" id="progress-current">Preparing to crawl...</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="agent-logs" id="discovery-logs">
+        <h4>Recent Activity</h4>
+        <div class="log-container" id="log-output">
+          <p class="log-entry">Agent monitoring initialized...</p>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+
+<script>
+// Agent monitoring functionality
+let agentStatus = null;
+
+async function fetchAgentStatus() {
+  try {
+    const response = await fetch('/api/agent/status');
+    const status = await response.json();
+    agentStatus = status;
+    updateAgentDisplay(status);
+  } catch (error) {
+    console.error('Failed to fetch agent status:', error);
+    updateAgentDisplay({ status: 'error', error: error.message });
+  }
+}
+
+function updateAgentDisplay(status) {
+  const statusDot = document.querySelector('.status-dot');
+  const statusText = document.querySelector('.status-text');
+  
+  if (status.status === 'operational') {
+    statusDot.className = 'status-dot status-online';
+    statusText.textContent = 'Operational';
+  } else {
+    statusDot.className = 'status-dot status-offline';
+    statusText.textContent = 'Error';
+  }
+  
+  // Update stats
+  document.getElementById('knowledge-count').textContent = status.knowledgeEntries || '-';
+  document.getElementById('auto-discovery').textContent = status.autoDiscovery ? 'Enabled' : 'Disabled';
+  document.getElementById('uptime').textContent = formatUptime(status.uptime);
+  document.getElementById('memory').textContent = formatMemory(status.memoryUsage?.heapUsed);
+}
+
+function formatUptime(seconds) {
+  if (!seconds) return '-';
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  return `${hours}h ${minutes}m`;
+}
+
+function formatMemory(bytes) {
+  if (!bytes) return '-';
+  return `${Math.round(bytes / 1024 / 1024)}MB`;
+}
+
+async function triggerDiscovery() {
+  const button = event.target;
+  button.disabled = true;
+  button.textContent = '🔍 Discovering...';
+  
+  try {
+    const response = await fetch('/api/agent/discover', { method: 'POST' });
+    const result = await response.json();
+    
+    addLogEntry(`Discovery completed: ${result.processed || 0} items processed, ${result.errors || 0} errors`);
+    await fetchAgentStatus();
+  } catch (error) {
+    addLogEntry(`Discovery failed: ${error.message}`);
+  } finally {
+    button.disabled = false;
+    button.textContent = '🔍 Discover Content';
+  }
+}
+
+function refreshStatus() {
+  fetchAgentStatus();
+  addLogEntry('Status refreshed');
+}
+
+async function submitUrl() {
+  const urlInput = document.getElementById('url-input');
+  const url = urlInput.value.trim();
+  
+  if (!url) {
+    addLogEntry('Error: Please enter a URL');
+    return;
+  }
+  
+  if (!isValidUrl(url)) {
+    addLogEntry('Error: Please enter a valid URL');
+    return;
+  }
+  
+  const submitButton = event.target;
+  submitButton.disabled = true;
+  submitButton.textContent = '🚀 Crawling...';
+  
+  // Show progress bar
+  showProgressBar();
+  updateProgress(0, 'Crawling in progress...', 'Preparing to crawl...');
+  
+  addLogEntry(`Starting crawl of: ${url}`);
+  
+  try {
+    const response = await fetch('/api/agent/submit-url', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ url: url })
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      addLogEntry(`✅ Crawl completed: ${result.linksFound || 0} links found, ${result.added || 0} added to knowledge base`);
+      urlInput.value = '';
+      await fetchAgentStatus();
+    } else {
+      addLogEntry(`❌ Crawl failed: ${result.message || 'Unknown error'}`);
+    }
+  } catch (error) {
+    addLogEntry(`❌ Crawl error: ${error.message}`);
+  } finally {
+    submitButton.disabled = false;
+    submitButton.textContent = '🚀 Submit & Crawl';
+    // Hide progress bar
+    hideProgressBar();
+  }
+}
+
+function isValidUrl(string) {
+  try {
+    new URL(string);
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
+// Progress bar functions
+function showProgressBar() {
+  document.getElementById('crawl-progress').style.display = 'block';
+}
+
+function hideProgressBar() {
+  document.getElementById('crawl-progress').style.display = 'none';
+}
+
+function updateProgress(percentage, status, details) {
+  document.getElementById('progress-bar').style.width = percentage + '%';
+  document.getElementById('progress-percentage').textContent = percentage + '%';
+  document.getElementById('progress-status').textContent = status;
+  document.getElementById('progress-current').textContent = details;
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+  fetchAgentStatus();
+  // Refresh status every 30 seconds
+  setInterval(fetchAgentStatus, 30000);
+  
+  // Listen for crawl progress updates
+  socket.on('crawl:progress', (data) => {
+    updateProgress(data.percentage, data.status, data.details);
+    if (data.logMessage) {
+      addLogEntry(data.logMessage);
+    }
+  });
+  
+  socket.on('crawl:complete', (data) => {
+    updateProgress(100, 'Crawl completed!', `✅ Found ${data.linksFound || 0} links, added ${data.added || 0} to knowledge base`);
+    setTimeout(hideProgressBar, 3000);
+  });
+  
+  socket.on('crawl:error', (data) => {
+    updateProgress(100, 'Crawl failed', `❌ ${data.message || 'Unknown error'}`);
+    setTimeout(hideProgressBar, 3000);
+  });
+});
+
+</script>
 
 <%- include('../partials/footer') %>
