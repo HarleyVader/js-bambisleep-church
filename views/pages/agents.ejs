@@ -74,9 +74,27 @@
   </div>
 </div>
 
+<script src="/socket.io/socket.io.js"></script>
 <script>
+// Socket.IO connection
+const socket = io();
+
 // Agent monitoring functionality
 let agentStatus = null;
+
+// Log entry function
+function addLogEntry(message) {
+  const logContainer = document.getElementById('log-output');
+  if (logContainer) {
+    const timestamp = new Date().toLocaleTimeString();
+    const logEntry = document.createElement('div');
+    logEntry.className = 'log-entry';
+    logEntry.innerHTML = `<span class="log-time">[${timestamp}]</span> ${message}`;
+    logContainer.appendChild(logEntry);
+    logContainer.scrollTop = logContainer.scrollHeight;
+  }
+  console.log(`[${new Date().toLocaleTimeString()}] ${message}`);
+}
 
 async function fetchAgentStatus() {
   try {
