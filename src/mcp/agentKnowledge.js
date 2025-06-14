@@ -13,6 +13,7 @@ export async function crawlAndAnalyze(url) {
     await knowledgeTools.add({ body: { url, title } }, { json: (d) => d });
     return { url, title };
   } catch (e) {
-    return { url, error: true };
+    // Return detailed error info
+    return { url, error: true, message: e.message || 'Failed to fetch content' };
   }
 }

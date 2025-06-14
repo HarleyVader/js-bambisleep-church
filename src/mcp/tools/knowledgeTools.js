@@ -18,8 +18,15 @@ function saveDB(data) {
 
 export const add = (req, res) => {
   const db = loadDB();
-  const { url, title } = req.body;
+  const { url, title, error, message } = req.body;
   if (!url) return res.json({ error: 'No URL' });
+  if (error) {
+    // Store the error entry for traceability
+    const id = 'kb_' + Date.now();
+    db.push({ id, url, error: true, message: message || 'Failed to fetch content' });
+    saveDB(db);
+    return res.json({ error: true, id, message: message || 'Failed to fetch content' });
+  }
   const id = 'kb_' + Date.now();
   db.push({ id, url, title });
   saveDB(db);
@@ -31,7 +38,10 @@ export const list = (req, res) => {
 export const search = (req, res) => {
   const q = req.query.q || '';
   const db = loadDB();
-  res.json(db.filter(item => item.url.includes(q) || (item.title || '').includes(q)));
+  res.json(db.filter(item => {
+    if (item.error) return false; // Exclude error entries from search results
+    return item.url.includes(q) || (item.title || '').includes(q);
+  }));
 };
 export const get = (req, res) => {
   const db = loadDB();
