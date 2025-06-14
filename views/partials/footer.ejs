@@ -20,17 +20,38 @@
 (function() {
     console.log('🔌 Initializing Socket.IO for real-time updates...');
     
-    const socket = io();
+    // Better error handling for server unavailability
+    const socket = io({
+        timeout: 5000,
+        reconnection: true,
+        reconnectionAttempts: 3,
+        reconnectionDelay: 2000,
+        autoConnect: true
+    });
+    
+    let isStandaloneMode = false;
     
     // Connection handlers
     socket.on('connect', () => {
         console.log('✅ Connected to real-time server');
         document.body.classList.add('socket-connected');
+        isStandaloneMode = false;
     });
     
     socket.on('disconnect', () => {
         console.log('❌ Disconnected from real-time server');
         document.body.classList.remove('socket-connected');
+    });
+    
+    socket.on('connect_error', (error) => {
+        if (!isStandaloneMode) {
+            console.log('📍 Running in standalone mode - no server dependencies');
+            isStandaloneMode = true;
+            document.body.classList.add('standalone-mode');
+            
+            // Stop further connection attempts to prevent 502 spam
+            socket.disconnect();
+        }
     });
     
     socket.on('connected', (data) => {
@@ -102,15 +123,29 @@
             window.handleCommentUpdate(data);
         }
     });
-    
-    // Make socket globally available for page-specific handlers
+      // Make socket globally available for page-specific handlers
     window.realtimeSocket = socket;
     
-    // Helper function to emit updates
+    // Helper function to emit updates (with standalone mode check)
     window.emitUpdate = function(event, data) {
-        socket.emit(event, data);
+        if (!isStandaloneMode && socket.connected) {
+            socket.emit(event, data);
+        } else {
+            console.log('📍 Standalone mode: Cannot emit to server');
+        }
     };
     
     console.log('🚀 Real-time Socket.IO client initialized');
+    
+    // Check if URL Updater functions exist and expose standalone message
+    if (typeof window.urlUpdater !== 'undefined') {
+        console.log('📍 Running in standalone mode - no server dependencies');
+        console.log('📍 URL Updater available via: window.urlUpdater');
+        console.log('📍 Example usage:');
+        console.log('  window.urlUpdater.addUrl("https://youtube.com/watch?v=example", {title: "Example Video"})');
+        console.log('  window.urlUpdater.addUrls([{url: "https://soundcloud.com/example", title: "Example Audio"}])');
+        console.log('  window.urlUpdater.getUrls() // View all crawled URLs');
+        console.log('  window.urlUpdater.clearUrls() // Clear all crawled URLs');
+    }
 })();
 </script>

@@ -21,6 +21,7 @@
   "github.copilot.chat.useProjectTemplates": true,
   "github.copilot.chat.experimental.codeGeneration": true,
   "github.copilot.chat.experimental.contextAwareness": true,
+  
   "github.copilot.chat.instructions": [
     {
       "file": "#file:copilot-instructions.md",

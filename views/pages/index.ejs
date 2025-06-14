@@ -175,20 +175,18 @@
         </div>
     </main>    <%- include('../partials/footer') %>
     
-    <!-- Socket.IO for real-time communication -->
-    <script src="/socket.io/socket.io.js"></script>    <script>
-        // Initialize Socket.IO connection
-        const socket = io();
+    <script>
+        // Use the Socket.IO connection from footer.ejs
+        const socket = window.realtimeSocket || io();
         
-        socket.on('connect', () => {
-            console.log('Connected to server via Socket.IO');
-        });
-
-        socket.on('disconnect', () => {
-            console.log('Disconnected from server');
-        });
-
-        // Listen for real-time updates
+        // Wait for socket to be available from footer
+        if (!window.realtimeSocket) {
+            // Fallback initialization if footer didn't load properly
+            const socket = io();
+            window.realtimeSocket = socket;
+        }
+        
+        // Additional page-specific Socket.IO event handlers
         socket.on('toolbox:linkUpdate', (data) => {
             console.log('Link update received:', data);
             // Refresh the page or update specific elements
@@ -224,34 +222,8 @@
                 showPlatformCategoriesError('Error loading platforms');
             }
         }        function getStaticPlatformData() {
-            // Sample static data for development/standalone mode
-            const baseData = [
-                {
-                    platform: 'youtube',
-                    totalViews: 1250,
-                    items: [
-                        { id: 'yt1', title: 'Bambi Sleep - Basic Training Loop', url: 'https://youtube.com/watch?v=sample1', votes: 45, views: 320, linkId: 'yt1' },
-                        { id: 'yt2', title: 'Advanced Bambi Training Session', url: 'https://youtube.com/watch?v=sample2', votes: 38, views: 285, linkId: 'yt2' },
-                        { id: 'yt3', title: 'Bambi Reinforcement Audio', url: 'https://youtube.com/watch?v=sample3', votes: 32, views: 210, linkId: 'yt3' }
-                    ]
-                },
-                {
-                    platform: 'soundcloud',
-                    totalViews: 890,
-                    items: [
-                        { id: 'sc1', title: 'Deep Bambi Programming', url: 'https://soundcloud.com/sample1', votes: 28, views: 195, linkId: 'sc1' },
-                        { id: 'sc2', title: 'Bambi Maintenance Track', url: 'https://soundcloud.com/sample2', votes: 22, views: 165, linkId: 'sc2' }
-                    ]
-                },
-                {
-                    platform: 'patreon',
-                    totalViews: 650,
-                    items: [
-                        { id: 'pt1', name: 'BambiCreator', title: 'BambiCreator - Premium Content', url: 'https://patreon.com/bambicreator', votes: 35, views: 240 },
-                        { id: 'pt2', name: 'HypnoMaster', title: 'HypnoMaster - Advanced Training', url: 'https://patreon.com/hypnomaster', votes: 28, views: 180 }
-                    ]
-                }
-            ];
+            // Clean data structure - no fake URLs
+            const baseData = [];
             
             // Merge with crawled URLs from localStorage
             const mergedData = mergeCrawledUrls(baseData);
@@ -665,8 +637,8 @@
             // Update vote count immediately for better UX
             const currentVotes = parseInt(voteCountSpan.textContent.replace('⭐ ', '')) || 0;
             const newVoteCount = currentVotes + newVoteValue;
-            voteCountSpan.textContent = `⭐ ${newVoteCount}`;
-              // Send vote to server for real-time broadcasting (if available)
+            voteCountSpan.textContent = `⭐ ${newVoteCount}`;            // Send vote to server for real-time broadcasting (if available)
+            const socket = window.realtimeSocket;
             if (socket && socket.connected) {
                 console.log('📡 Sending vote to server for real-time broadcast');
                 
@@ -769,14 +741,7 @@
                     }
                 }
             });
-        }        // WebSocket functionality removed - now using local data only
-        console.log('Running in standalone mode - no server dependencies');
-        console.log('URL Updater available via: window.urlUpdater');
-        console.log('Example usage:');
-        console.log('  window.urlUpdater.addUrl("https://youtube.com/watch?v=example", {title: "Example Video"})');
-        console.log('  window.urlUpdater.addUrls([{url: "https://soundcloud.com/example", title: "Example Audio"}])');
-        console.log('  window.urlUpdater.getUrls() // View all crawled URLs');
-        console.log('  window.urlUpdater.clearUrls() // Clear all crawled URLs');
+        }
 
         // Track clicks on all URLs on the root page
         function initializeClickTracking() {
