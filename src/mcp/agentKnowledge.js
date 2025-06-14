@@ -135,7 +135,10 @@ function calculateRelevance(title, description, url) {
 
 // Determine content category
 function categorizeContent(title, description, url, platform, mediaType) {
-  const text = `${title} ${description} ${url}`.toLowerCase();
+  const safeTitle = title || '';
+  const safeDescription = description || '';
+  const safeUrl = url || '';
+  const text = `${safeTitle} ${safeDescription} ${safeUrl}`.toLowerCase();
   
   // First prioritize by mediaType if available
   if (mediaType) {
@@ -162,29 +165,28 @@ function categorizeContent(title, description, url, platform, mediaType) {
     if (platform === 'github') return 'tools';
     if (platform === 'bambicloud') return 'official';
   }
-  
-  // Check for video URLs
-  if (url?.includes('youtube.com/watch') || 
-      url?.includes('vimeo.com/') || 
-      url?.endsWith('.mp4') || 
-      url?.endsWith('.webm')) {
+    // Check for video URLs
+  if (safeUrl.includes('youtube.com/watch') || 
+      safeUrl.includes('vimeo.com/') || 
+      safeUrl.endsWith('.mp4') || 
+      safeUrl.endsWith('.webm')) {
     return 'videos';
   }
   
   // Check for audio URLs
-  if (url?.includes('soundcloud.com') || 
-      url?.endsWith('.mp3') || 
-      url?.endsWith('.wav') || 
-      url?.endsWith('.ogg')) {
+  if (safeUrl.includes('soundcloud.com') || 
+      safeUrl.endsWith('.mp3') || 
+      safeUrl.endsWith('.wav') || 
+      safeUrl.endsWith('.ogg')) {
     return 'audio';
   }
   
   // Check for image URLs
-  if (url?.endsWith('.jpg') || 
-      url?.endsWith('.jpeg') || 
-      url?.endsWith('.png') || 
-      url?.endsWith('.gif') || 
-      url?.endsWith('.webp')) {
+  if (safeUrl.endsWith('.jpg') || 
+      safeUrl.endsWith('.jpeg') || 
+      safeUrl.endsWith('.png') || 
+      safeUrl.endsWith('.gif') || 
+      safeUrl.endsWith('.webp')) {
     return 'images';
   }
   
@@ -228,6 +230,15 @@ async function validateURL(url) {
 // Extract metadata from webpage
 async function extractMetadata(url) {
   try {
+    // Ensure we're working with a valid URL
+    if (!url) {
+      return {
+        title: 'Unknown',
+        description: '',
+        error: 'Invalid URL: URL is null or undefined'
+      };
+    }
+    
     console.log(`🔍 Attempting to fetch metadata from: ${url}`);
     
     const response = await axios.get(url, { 
@@ -487,11 +498,11 @@ export async function crawlAndAnalyze(url) {
     // Step 4: Calculate advanced relevance with ML-like scoring
     const relevance = calculateAdvancedRelevanceScore(metadata.title, metadata.description, url);
     console.log(`📊 [${url}] Relevance score: ${relevance}/10 (title: "${metadata.title}", description: "${metadata.description.substring(0, 100)}...")`);
-    
-    // Special handling for bambisleep.info - lower threshold
-    const relevanceThreshold = url.includes('bambisleep.info') ? 1 : 2;
+      // Special handling for bambisleep.info - lower threshold
+    const safeUrl = url || '';
+    const relevanceThreshold = safeUrl.includes('bambisleep.info') ? 1 : 2;
     if (relevance < relevanceThreshold) {
-      const errorMsg = `Low relevance score: ${relevance}/10 (threshold: ${relevanceThreshold}) - Title: "${metadata.title}", Description: "${metadata.description.substring(0, 100)}..."`;
+      const errorMsg = `Low relevance score: ${relevance}/10 (threshold: ${relevanceThreshold}) - Title: "${metadata.title}", Description: "${metadata.description?.substring(0, 100) || ''}..."`;
       console.log(`❌ [${url}] ${errorMsg}`);
       return { url, success: false, error: true, message: errorMsg };    }
 
@@ -1122,7 +1133,10 @@ async function sendWebhookNotification(event, data) {
 
 function calculateAdvancedRelevanceScore(title, description, url) {
   let score = 0;
-  const text = `${title} ${description} ${url}`.toLowerCase();
+  const safeTitle = title || '';
+  const safeDescription = description || '';
+  const safeUrl = url || '';
+  const text = `${safeTitle} ${safeDescription} ${safeUrl}`.toLowerCase();
   
   // Enhanced keyword matching with context awareness
   const wordCounts = {};
@@ -1180,17 +1194,20 @@ function calculateSimilarity(str1, str2) {
 
 function isAdvancedDuplicate(newEntry, existingEntries) {
   const similarityThreshold = 0.9; // Increased from 0.8 to be less aggressive
-  
-  for (const existing of existingEntries) {
+    for (const existing of existingEntries) {
+    // Ensure we have valid URL strings
+    const newUrl = newEntry.url || '';
+    const existingUrl = existing.url || '';
+    
     // Exact URL match - this is a true duplicate
-    if (newEntry.url === existing.url) {
+    if (newUrl === existingUrl && newUrl !== '') {
       return true;
     }
     
     // For bambisleep.info domains, be more lenient to allow different pages
-    if (newEntry.url.includes('bambisleep.info') && existing.url.includes('bambisleep.info')) {
+    if (newUrl.includes('bambisleep.info') && existingUrl.includes('bambisleep.info')) {
       // Only consider duplicates if URLs are very similar or identical titles
-      const urlSimilarity = calculateSimilarity(newEntry.url, existing.url);
+      const urlSimilarity = calculateSimilarity(newUrl, existingUrl);
       if (urlSimilarity > 0.9) {
         return true;
       }
