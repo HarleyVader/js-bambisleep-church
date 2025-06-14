@@ -437,6 +437,19 @@ export async function crawlAndAnalyze(url) {
     }
     console.log(`✅ [${url}] Metadata extracted: "${metadata.title}"`);
     
+    // New Step: Check if URL already exists and update it if it does
+    const existingCheck = updateExistingEntry(url, metadata, validation);
+    if (existingCheck.exists) {
+      console.log(`🔄 [${url}] ${existingCheck.message}`);
+      return { 
+        url, 
+        success: true, 
+        updated: existingCheck.updated,
+        entry: existingCheck.entry,
+        message: existingCheck.message
+      };
+    }
+    
     // Step 3: Advanced duplicate detection
     const existingEntries = loadDB();
     if (isAdvancedDuplicate({ url, title: metadata.title, description: metadata.description }, existingEntries)) {
@@ -974,11 +987,14 @@ export async function crawlAndExtractLinks(submittedUrl, io = null) {
       summary: { totalProcessed: linksToProcess.length, successful: successCount, failed: errorCount }
     });    // Categorize results for better reporting
     let addedCount = 0;
+    let updatedCount = 0;
     let duplicateCount = 0;
     let finalErrorCount = 0;
     
     linkResults.forEach(result => {
-      if (result.success) {
+      if (result.success && result.updated) {
+        updatedCount++;
+      } else if (result.success && !result.updated) {
         addedCount++;
       } else if (result.message && result.message.includes('duplicate')) {
         duplicateCount++;
@@ -992,8 +1008,8 @@ export async function crawlAndExtractLinks(submittedUrl, io = null) {
       io.emit('crawl:progress', {
         percentage: 100,
         status: 'Complete!',
-        details: `Processed ${linksToProcess.length} links: ${addedCount} new, ${duplicateCount} duplicates, ${finalErrorCount} errors`,
-        logMessage: `✅ Crawl completed: ${addedCount} links found, ${addedCount} added to knowledge base`
+        details: `Processed ${linksToProcess.length} links: ${addedCount} new, ${updatedCount} updated, ${duplicateCount} duplicates, ${finalErrorCount} errors`,
+        logMessage: `✅ Crawl completed: ${addedCount} links added, ${updatedCount} links updated`
       });
       
       io.emit('crawl:complete', {
@@ -1002,6 +1018,7 @@ export async function crawlAndExtractLinks(submittedUrl, io = null) {
         summary: {
           totalProcessed: linksToProcess.length,
           successful: addedCount,
+          updated: updatedCount,
           duplicates: duplicateCount,
           failed: finalErrorCount
         }
@@ -1014,16 +1031,18 @@ export async function crawlAndExtractLinks(submittedUrl, io = null) {
       return total;
     }, 0);    return {
       success: true,
-      message: `Successfully processed ${addedCount} new links out of ${linksToProcess.length} total (${duplicateCount} duplicates, ${finalErrorCount} errors)`,
+      message: `Successfully processed ${addedCount} new links and updated ${updatedCount} existing links out of ${linksToProcess.length} total (${duplicateCount} duplicates, ${finalErrorCount} errors)`,
       results: linkResults,
       summary: {
         totalProcessed: linksToProcess.length,
         successful: addedCount,
+        updated: updatedCount,
         duplicates: duplicateCount,
         failed: finalErrorCount
       },
       linksFound: linksToProcess.length,
       added: addedCount,
+      updated: updatedCount,
       scriptsExtracted: totalScriptsExtracted
     };
   } catch (error) {
@@ -1537,4 +1556,97 @@ function detectPlatform(url) {
   }
   
   return null;
+}
+
+// Check if URL exists and update with new information
+function updateExistingEntry(url, newMetadata, validationData) {
+  const db = loadDB();
+  const existingIndex = db.findIndex(item => item.url === url);
+  
+  if (existingIndex === -1) {
+    return { exists: false };
+  }
+  
+  const existingEntry = db[existingIndex];
+  let hasChanges = false;
+  
+  // Fields to compare and update
+  const fieldsToUpdate = [
+    { field: 'title', source: newMetadata.title },
+    { field: 'description', source: newMetadata.description },
+    { field: 'platform', source: newMetadata.platform },
+    { field: 'mediaType', source: newMetadata.mediaType },
+    { field: 'contentType', source: validationData.contentType },
+    { field: 'category', source: categorizeContent(
+        newMetadata.title, 
+        newMetadata.description, 
+        url, 
+        newMetadata.platform, 
+        newMetadata.mediaType
+      )
+    },
+    { field: 'relevance', source: calculateAdvancedRelevanceScore(
+        newMetadata.title, 
+        newMetadata.description, 
+        url
+      )
+    }
+  ];
+  
+  // Compare and update fields
+  for (const field of fieldsToUpdate) {
+    // Skip undefined or null values
+    if (field.source === undefined || field.source === null) {
+      continue;
+    }
+    
+    // Check if field is different
+    if (existingEntry[field.field] !== field.source) {
+      console.log(`🔄 Updating ${field.field}: "${existingEntry[field.field]}" -> "${field.source}"`);
+      existingEntry[field.field] = field.source;
+      hasChanges = true;
+    }
+  }
+  
+  // Add scripts if new ones were found
+  if (newMetadata.scripts && newMetadata.scripts.length > 0) {
+    // Add scripts that don't already exist
+    const existingScripts = existingEntry.scripts || [];
+    const newScripts = newMetadata.scripts.filter(newScript => {
+      // Consider a script new if there isn't a matching title or content
+      return !existingScripts.some(existingScript => 
+        (existingScript.title === newScript.title) || 
+        (calculateSimilarity(existingScript.content, newScript.content) > 0.8)
+      );
+    });
+    
+    if (newScripts.length > 0) {
+      existingEntry.scripts = [...existingScripts, ...newScripts];
+      hasChanges = true;
+      console.log(`🔄 Added ${newScripts.length} new scripts to existing entry`);
+    }
+  }
+  
+  // Only update if there were actual changes
+  if (hasChanges) {
+    // Add updatedAt timestamp
+    existingEntry.updatedAt = new Date().toISOString();
+    // Update the entry in the database
+    db[existingIndex] = existingEntry;
+    saveDB(db);
+    
+    return { 
+      exists: true, 
+      updated: true, 
+      entry: existingEntry,
+      message: `Updated existing entry with new information`
+    };
+  }
+  
+  return { 
+    exists: true, 
+    updated: false, 
+    entry: existingEntry,
+    message: `Entry exists but no changes were detected`
+  };
 }

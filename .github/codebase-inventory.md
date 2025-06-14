@@ -25,7 +25,7 @@
 
 - `src/mcp/McpServer.js` - Modern, minimal MCP server entrypoint (uses server.serve) [100%]
 - `src/mcp/tools/knowledgeTools.js` - Enhanced knowledgebase tools with analytics and filtering [100%] **ENHANCED: Added analytics, category filtering, enhanced metadata support**
-- `src/mcp/agentKnowledge.js` - Intelligent Knowledge Base Agent with full automation, monitoring, and URL crawling [100%] **ENHANCED: Improved platform detection, content type categorization, and proper script organization - now organizes content by platform (YouTube, SoundCloud, etc.) and displays content type metadata** **FIXED: Resolved "scripts is not defined" error in metadata extraction function**
+- `src/mcp/agentKnowledge.js` - Intelligent Knowledge Base Agent with full automation, monitoring, and URL crawling [100%] **ENHANCED: Improved platform detection, content type categorization, and proper script organization - now organizes content by platform (YouTube, SoundCloud, etc.) and displays content type metadata** **FIXED: Resolved "scripts is not defined" error in metadata extraction function** **ENHANCED: Added URL comparison and update functionality to update existing entries instead of showing duplicate error**
 
 ### Tasks & Planning [100%] 🎉
 
