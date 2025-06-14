@@ -44,23 +44,22 @@
         <div class="url-form">
           <input type="url" id="url-input" placeholder="Enter URL to crawl and analyze..." class="url-input">
           <button class="btn-primary" onclick="submitUrl()">🚀 Submit & Crawl</button>
-        </div>
-        <p class="form-help">
-          Submit a URL and the agent will crawl it for relevant BambiSleep content, extract links, and add them to the knowledge base.
+        </div>        <p class="form-help">
+          Submit a URL and the agent will crawl it for relevant BambiSleep content, automatically extract scripts/transcripts, and add them to the knowledge base.
         </p>
-        
-        <!-- Progress Bar -->
-        <div class="crawl-progress" id="crawl-progress" style="display: none;">
-          <div class="progress-header">
-            <span class="progress-status" id="progress-status">Initializing...</span>
-            <span class="progress-percentage" id="progress-percentage">0%</span>
-          </div>
-          <div class="progress-bar-container">
-            <div class="progress-bar" id="progress-bar" style="width: 0%;"></div>
-          </div>
-          <div class="progress-details" id="progress-details">
-            <span class="progress-current" id="progress-current">Preparing to crawl...</span>
-          </div>
+      </div>
+      
+      <!-- Progress Bar -->
+      <div class="crawl-progress" id="crawl-progress" style="display: none;">
+        <div class="progress-header">
+          <span class="progress-status" id="progress-status">Initializing...</span>
+          <span class="progress-percentage" id="progress-percentage">0%</span>
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-bar" id="progress-bar" style="width: 0%;"></div>
+        </div>
+        <div class="progress-details" id="progress-details">
+          <span class="progress-current" id="progress-current">Preparing to crawl...</span>
         </div>
       </div>
       
@@ -68,6 +67,18 @@
         <h4>Recent Activity</h4>
         <div class="log-container" id="log-output">
           <p class="log-entry">Agent monitoring initialized...</p>
+        </div>
+      </div>
+
+      <!-- Text Scripts Section -->
+      <div class="text-scripts-section">
+        <h4>📝 Recent Text Scripts</h4>
+        <div class="text-scripts-stats">
+          <span class="stat-label">Total Scripts:</span>
+          <span class="stat-value" id="text-scripts-count">-</span>
+        </div>
+        <div class="text-scripts-preview" id="text-scripts-preview">
+          <p class="loading-text">Loading text scripts...</p>
         </div>
       </div>
     </div>
@@ -181,11 +192,24 @@ async function submitUrl() {
   submitButton.disabled = true;
   submitButton.textContent = '🚀 Crawling...';
   
-  // Show progress bar
+  // Show progress bar with simulated progression
   showProgressBar();
-  updateProgress(0, 'Crawling in progress...', 'Preparing to crawl...');
+  
+  // Start simulated progress
+  let currentProgress = 0;
+  const progressSteps = [
+    { progress: 10, status: 'Initializing crawl...', details: 'Connecting to target URL...', delay: 500 },
+    { progress: 25, status: 'Analyzing page structure...', details: 'Scanning for content and links...', delay: 800 },
+    { progress: 40, status: 'Extracting content...', details: 'Processing page content...', delay: 1000 },
+    { progress: 60, status: 'Analyzing for scripts...', details: 'Searching for BambiSleep content...', delay: 1200 },
+    { progress: 80, status: 'Processing knowledge...', details: 'Adding relevant content to knowledge base...', delay: 800 }
+  ];
   
   addLogEntry(`Starting crawl of: ${url}`);
+  updateProgress(0, 'Starting crawl...', 'Preparing to connect...');
+  
+  // Simulate realistic progress
+  const progressInterval = simulateProgress(progressSteps);
   
   try {
     const response = await fetch('/api/agent/submit-url', {
@@ -196,24 +220,46 @@ async function submitUrl() {
       body: JSON.stringify({ url: url })
     });
     
+    // Clear simulated progress
+    clearInterval(progressInterval);
+    
     const result = await response.json();
     
     if (result.success) {
-      addLogEntry(`✅ Crawl completed: ${result.linksFound || 0} links found, ${result.added || 0} added to knowledge base`);
+      // Complete the progress bar
+      updateProgress(100, 'Crawl completed!', 'Processing complete');
+      
+      let message = `✅ Crawl completed: ${result.linksFound || 0} links found, ${result.added || 0} added to knowledge base`;
+      
+      // Show script extraction info
+      if (result.scriptsExtracted && result.scriptsExtracted > 0) {
+        message += ` (🎭 ${result.scriptsExtracted} script(s) auto-extracted!)`;
+      }
+      
+      addLogEntry(message);
       urlInput.value = '';
       await fetchAgentStatus();
+      
+      // Hide progress bar after success
+      setTimeout(() => hideProgressBar(), 2000);
     } else {
+      updateProgress(100, 'Crawl failed', `❌ ${result.message || 'Unknown error'}`);
       addLogEntry(`❌ Crawl failed: ${result.message || 'Unknown error'}`);
+      setTimeout(() => hideProgressBar(), 3000);
     }
   } catch (error) {
+    // Clear simulated progress
+    clearInterval(progressInterval);
+    updateProgress(100, 'Crawl error', `❌ ${error.message}`);
     addLogEntry(`❌ Crawl error: ${error.message}`);
+    setTimeout(() => hideProgressBar(), 3000);
   } finally {
     submitButton.disabled = false;
     submitButton.textContent = '🚀 Submit & Crawl';
-    // Hide progress bar
-    hideProgressBar();
   }
 }
+
+
 
 function isValidUrl(string) {
   try {
@@ -231,24 +277,133 @@ function showProgressBar() {
 
 function hideProgressBar() {
   document.getElementById('crawl-progress').style.display = 'none';
+  // Reset progress bar
+  const progressBar = document.getElementById('progress-bar');
+  progressBar.style.width = '0%';
+  progressBar.classList.remove('complete', 'active');
+  updateProgress(0, '', '');
 }
 
 function updateProgress(percentage, status, details) {
-  document.getElementById('progress-bar').style.width = percentage + '%';
-  document.getElementById('progress-percentage').textContent = percentage + '%';
-  document.getElementById('progress-status').textContent = status;
-  document.getElementById('progress-current').textContent = details;
+  const progressBar = document.getElementById('progress-bar');
+  const progressPercentage = document.getElementById('progress-percentage');
+  const progressStatus = document.getElementById('progress-status');
+  const progressCurrent = document.getElementById('progress-current');
+  
+  // Smooth animation for progress bar
+  const safePercentage = Math.min(100, Math.max(0, percentage));
+  progressBar.style.width = safePercentage + '%';
+  progressPercentage.textContent = Math.round(safePercentage) + '%';
+  progressStatus.textContent = status;
+  progressCurrent.textContent = details;
+  
+  // Add visual feedback
+  if (safePercentage >= 100) {
+    progressBar.classList.add('complete');
+    progressBar.classList.remove('active');
+  } else if (safePercentage > 0) {
+    progressBar.classList.add('active');
+    progressBar.classList.remove('complete');
+  } else {
+    progressBar.classList.remove('active', 'complete');
+  }
+}
+
+// Simulated progress function for realistic user feedback
+function simulateProgress(steps) {
+  let stepIndex = 0;
+  let currentProgress = 0;
+  
+  const progressInterval = setInterval(() => {
+    if (stepIndex < steps.length) {
+      const step = steps[stepIndex];
+      
+      // Gradually increase progress to the next step
+      const targetProgress = step.progress;
+      const progressIncrement = (targetProgress - currentProgress) / 10;
+      
+      if (currentProgress < targetProgress) {
+        currentProgress += progressIncrement;
+        updateProgress(currentProgress, step.status, step.details);
+      } else {
+        // Move to next step
+        currentProgress = targetProgress;
+        updateProgress(currentProgress, step.status, step.details);
+        stepIndex++;
+        
+        // Add some delay between steps for realism
+        setTimeout(() => {}, step.delay || 500);
+      }
+    }
+  }, 100); // Update every 100ms for smooth animation
+  
+  return progressInterval;
+}
+
+// Fetch and display text scripts
+async function fetchTextScripts() {
+  try {
+    const response = await fetch('/api/agent/text-scripts');
+    if (!response.ok) return null;
+    const scripts = await response.json();
+    updateTextScriptsDisplay(scripts);
+    return scripts;
+  } catch (error) {
+    console.error('Failed to fetch text scripts:', error);
+    return null;
+  }
+}
+
+function updateTextScriptsDisplay(scripts) {
+  if (!scripts || !scripts.length) {
+    document.getElementById('text-scripts-count').textContent = '0';
+    document.getElementById('text-scripts-preview').innerHTML = '<p class="loading-text">No text scripts found.</p>';
+    return;
+  }
+  
+  // Update count
+  document.getElementById('text-scripts-count').textContent = scripts.length;
+  
+  // Update preview
+  const previewContainer = document.getElementById('text-scripts-preview');
+  previewContainer.innerHTML = '';
+  
+  scripts.slice(0, 5).forEach(script => {
+    const scriptElement = document.createElement('div');
+    scriptElement.className = 'text-script-item';
+    scriptElement.innerHTML = `
+      <div class="script-header">
+        <span class="script-title">${script.title}</span>
+        <span class="script-relevance">⭐ ${script.relevance}/10</span>
+      </div>
+      <div class="script-meta">${script.category} • ${script.wordCount} words • Added: ${new Date(script.timestamp).toLocaleDateString()}</div>
+      <div class="script-preview">${script.description || script.content.substring(0, 150)}${script.content.length > 150 ? '...' : ''}</div>
+    `;
+    previewContainer.appendChild(scriptElement);
+  });
+  
+  if (scripts.length > 5) {
+    const moreElement = document.createElement('div');
+    moreElement.className = 'scripts-more';
+    moreElement.innerHTML = `<p>... and ${scripts.length - 5} more scripts</p>`;
+    previewContainer.appendChild(moreElement);
+  }
 }
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
   fetchAgentStatus();
+  fetchTextScripts();
   // Refresh status every 30 seconds
   setInterval(fetchAgentStatus, 30000);
-  
-  // Listen for crawl progress updates
+  // Refresh text scripts every 60 seconds
+  setInterval(fetchTextScripts, 60000);
+    // Listen for crawl progress updates
   socket.on('crawl:progress', (data) => {
-    updateProgress(data.percentage, data.status, data.details);
+    // Override simulated progress with real progress if available
+    if (data.percentage !== undefined) {
+      updateProgress(data.percentage, data.status || 'Processing...', data.details || 'Working...');
+    }
     if (data.logMessage) {
       addLogEntry(data.logMessage);
     }
@@ -256,12 +411,25 @@ document.addEventListener('DOMContentLoaded', () => {
   
   socket.on('crawl:complete', (data) => {
     updateProgress(100, 'Crawl completed!', `✅ Found ${data.linksFound || 0} links, added ${data.added || 0} to knowledge base`);
-    setTimeout(hideProgressBar, 3000);
+    addLogEntry(`✅ Crawl completed: ${data.linksFound || 0} links found, ${data.added || 0} added to knowledge base`);
+    setTimeout(() => hideProgressBar(), 3000);
   });
   
   socket.on('crawl:error', (data) => {
     updateProgress(100, 'Crawl failed', `❌ ${data.message || 'Unknown error'}`);
-    setTimeout(hideProgressBar, 3000);
+    addLogEntry(`❌ Crawl failed: ${data.message || 'Unknown error'}`);
+    setTimeout(() => hideProgressBar(), 3000);
+  });
+  
+  socket.on('crawl:step', (data) => {
+    // Handle individual step updates from server
+    if (data.step && data.totalSteps) {
+      const percentage = Math.round((data.step / data.totalSteps) * 100);
+      updateProgress(percentage, data.status || `Step ${data.step}/${data.totalSteps}`, data.details || 'Processing...');
+    }
+    if (data.logMessage) {
+      addLogEntry(data.logMessage);
+    }
   });
 });
 

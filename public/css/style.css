@@ -1160,20 +1160,26 @@ main::before {
 
 .progress-bar-container {
     width: 100%;
-    height: 8px;
+    height: 12px;
     background: rgba(var(--color-bg-primary-rgb), 0.8);
-    border-radius: 4px;
+    border-radius: 6px;
     border: 1px solid var(--color-primary-cyan);
     overflow: hidden;
     margin-bottom: 0.5rem;
+    box-shadow: 
+        inset 0 2px 4px rgba(0, 0, 0, 0.3),
+        0 0 8px rgba(0, 255, 255, 0.3);
 }
 
 .progress-bar {
     height: 100%;
     background: linear-gradient(90deg, var(--color-primary-cyan), var(--color-accent-yellow));
-    border-radius: 4px;
-    transition: width 0.3s ease;
+    border-radius: 6px;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s ease;
     position: relative;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.6);
+    min-width: 0;
+    transform-origin: left;
 }
 
 .progress-bar::after {
@@ -1183,13 +1189,32 @@ main::before {
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
     animation: progress-shine 2s infinite;
+    border-radius: 6px;
+}
+
+.progress-bar.complete {
+    background: linear-gradient(90deg, var(--color-primary-green), var(--color-accent-yellow));
+    box-shadow: 0 0 15px rgba(0, 255, 0, 0.8);
 }
 
 @keyframes progress-shine {
     0% { transform: translateX(-100%); }
     100% { transform: translateX(100%); }
+}
+
+@keyframes progress-pulse {
+    0%, 100% { 
+        box-shadow: 0 0 10px rgba(0, 255, 255, 0.6);
+    }
+    50% { 
+        box-shadow: 0 0 20px rgba(0, 255, 255, 0.9);
+    }
+}
+
+.progress-bar.active {
+    animation: progress-pulse 2s infinite ease-in-out;
 }
 
 .progress-details {

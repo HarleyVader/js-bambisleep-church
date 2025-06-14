@@ -43,7 +43,8 @@ const CATEGORIES = {
   audio: ['soundcloud', 'youtube', 'audio', 'mp3', 'wav'],
   guides: ['guide', 'tutorial', 'howto', 'instruction'],
   community: ['reddit', 'discord', 'forum', 'discussion'],
-  tools: ['github', 'app', 'tool', 'script', 'software']
+  tools: ['github', 'app', 'tool', 'script', 'software'],
+  scripts: ['script', 'transcript', 'text', 'content', 'session']
 };
 
 // Backup configuration
@@ -139,17 +140,29 @@ function isDuplicate(url, title) {
 // Validate URL accessibility
 async function validateURL(url) {
   try {
+    // Try HEAD request first (faster)
     const response = await axios.head(url, { timeout: 5000 });
     return { valid: true, status: response.status, contentType: response.headers['content-type'] };
-  } catch (error) {
-    return { valid: false, error: error.message };
+  } catch (headError) {
+    try {
+      // Fall back to GET request if HEAD fails (some servers block HEAD)
+      const response = await axios.get(url, { timeout: 10000, maxContentLength: 1024 * 1024 }); // Limit to 1MB
+      return { valid: true, status: response.status, contentType: response.headers['content-type'] };
+    } catch (getError) {
+      return { valid: false, error: `HEAD failed: ${headError.message}, GET failed: ${getError.message}` };
+    }
   }
 }
 
 // Extract metadata from webpage
 async function extractMetadata(url) {
   try {
-    const response = await axios.get(url, { timeout: 10000 });
+    const response = await axios.get(url, { 
+      timeout: 15000, // Increased timeout
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+      }
+    });
     const $ = cheerio.load(response.data);
     
     const title = $('title').text().trim() || 
@@ -161,10 +174,133 @@ async function extractMetadata(url) {
                        $('meta[property="og:description"]').attr('content') || 
                        $('p').first().text().trim().slice(0, 200) || '';
     
-    return { title, description, contentType: response.headers['content-type'] };
+    // Extract scripts and transcripts
+    const scripts = extractScriptsFromHTML($, response.data);
+    
+    return { 
+      title, 
+      description, 
+      contentType: response.headers['content-type'],
+      scripts: scripts.length > 0 ? scripts : null
+    };
   } catch (error) {
-    return { title: url, description: '', error: error.message };
+    console.error(`Metadata extraction error for ${url}:`, error.message);
+    return { title: url, description: '', error: `Failed to extract metadata: ${error.message}` };
   }
+}
+
+// Extract BambiSleep scripts and transcripts from HTML content
+function extractScriptsFromHTML($, htmlContent) {
+  const scripts = [];
+  
+  // Common patterns for script content
+  const scriptSelectors = [
+    'script[type="text/plain"]', // Some sites store scripts in plain text scripts
+    '.script', '.transcript', '.content', '.post-content',
+    '[data-script]', '[data-transcript]',
+    'pre', 'code', // Code blocks often contain scripts
+    '.text-content', '.article-content', '.entry-content'
+  ];
+  
+  // Extract from various HTML elements
+  scriptSelectors.forEach(selector => {
+    $(selector).each((i, element) => {
+      const text = $(element).text().trim();
+      if (isScriptContent(text)) {
+        scripts.push({
+          content: text,
+          source: selector,
+          title: extractScriptTitle(text) || 'Extracted Script'
+        });
+      }
+    });
+  });
+  
+  // Also check for script-like content in paragraphs
+  $('p').each((i, element) => {
+    const text = $(element).text().trim();
+    if (text.length > 200 && isScriptContent(text)) {
+      scripts.push({
+        content: text,
+        source: 'paragraph',
+        title: extractScriptTitle(text) || 'Extracted Script'
+      });
+    }
+  });
+  
+  // Check for Reddit-style posts or comments that might contain scripts
+  $('.md, .usertext-body, .comment-content').each((i, element) => {
+    const text = $(element).text().trim();
+    if (isScriptContent(text)) {
+      scripts.push({
+        content: text,
+        source: 'reddit-content',
+        title: extractScriptTitle(text) || 'Reddit Script'
+      });
+    }
+  });
+  
+  return scripts.filter(script => script.content.length > 100); // Filter out too short content
+}
+
+// Check if text content looks like a BambiSleep script
+function isScriptContent(text) {
+  if (!text || text.length < 100) return false;
+  
+  const scriptIndicators = [
+    /bambi/i,
+    /trance/i,
+    /hypnosis/i,
+    /relax/i,
+    /sleep/i,
+    /breathe/i,
+    /focus/i,
+    /deeper/i,
+    /voice/i,
+    /mind/i,
+    /listen/i,
+    /close your eyes/i,
+    /take a deep breath/i,
+    /let go/i,
+    /drift/i,
+    /float/i,
+    /surrender/i,
+    /feminization/i,
+    /transformation/i,
+    /conditioning/i
+  ];
+  
+  let matches = 0;
+  scriptIndicators.forEach(pattern => {
+    if (pattern.test(text)) matches++;
+  });
+  
+  // Require at least 3 matches to consider it a script
+  return matches >= 3;
+}
+
+// Extract a title from script content
+function extractScriptTitle(text) {
+  const lines = text.split('\n').filter(line => line.trim().length > 0);
+  
+  // Check first few lines for title-like content
+  for (let i = 0; i < Math.min(5, lines.length); i++) {
+    const line = lines[i].trim();
+    
+    // Look for title patterns
+    if (line.length < 100 && line.length > 5) {
+      if (/^(title|name|script|session):/i.test(line)) {
+        return line.replace(/^(title|name|script|session):\s*/i, '');
+      }
+      
+      // If it's the first line and looks like a title
+      if (i === 0 && !line.includes('.') && line.length < 50) {
+        return line;
+      }
+    }
+  }
+  
+  return null;
 }
 
 // Main intelligent crawl and analyze function
@@ -176,20 +312,22 @@ export async function crawlAndAnalyze(url) {
       return { url, error: true, message: `URL validation failed: ${validation.error}` };
     }
 
-    // Step 2: Extract metadata
+    // Step 2: Extract metadata and scripts
     const metadata = await extractMetadata(url);
     if (metadata.error) {
       return { url, error: true, message: `Metadata extraction failed: ${metadata.error}` };
-    }    // Step 3: Advanced duplicate detection
+    }
+
+    // Step 3: Advanced duplicate detection
     const existingEntries = loadDB();
     if (isAdvancedDuplicate({ url, title: metadata.title, description: metadata.description }, existingEntries)) {
       return { url, error: true, message: 'Advanced duplicate detection: Similar content already exists' };
-    }
-
-    // Step 4: Calculate advanced relevance with ML-like scoring
+    }    // Step 4: Calculate advanced relevance with ML-like scoring
     const relevance = calculateAdvancedRelevanceScore(metadata.title, metadata.description, url);
-    if (relevance < 3) {
-      return { url, error: true, message: `Low relevance score: ${relevance}/10` };
+    console.log(`Relevance score for ${url}: ${relevance}/10 (title: "${metadata.title}", description: "${metadata.description.substring(0, 100)}...")`);
+    
+    if (relevance < 2) { // Lowered threshold from 3 to 2 for bambisleep.info
+      return { url, error: true, message: `Low relevance score: ${relevance}/10 - Title: "${metadata.title}", Description: "${metadata.description.substring(0, 100)}..."` };
     }
 
     // Step 5: Categorize content
@@ -205,18 +343,45 @@ export async function crawlAndAnalyze(url) {
       relevance,
       contentType: validation.contentType,
       addedAt: new Date().toISOString(),
-      validated: true
+      validated: true,
+      scripts: metadata.scripts || [] // Store extracted scripts
     };
 
     // Step 7: Save to knowledge base
     const db = loadDB();
     db.push(entry);
+    
+    // Step 8: If scripts were found, also save them as separate text entries
+    if (metadata.scripts && metadata.scripts.length > 0) {
+      for (const script of metadata.scripts) {
+        const scriptEntry = {
+          id: 'script_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+          type: 'text',
+          title: script.title,
+          content: script.content,
+          source: url,
+          category: 'scripts',
+          relevance: 10, // Auto-extracted scripts get high relevance
+          addedAt: new Date().toISOString(),
+          validated: true,
+          extractedFrom: entry.id
+        };
+        db.push(scriptEntry);
+      }
+    }
+    
     saveDB(db);
 
-    return { success: true, entry };
+    const result = { success: true, entry };
+    if (metadata.scripts && metadata.scripts.length > 0) {
+      result.scriptsExtracted = metadata.scripts.length;
+      result.message = `Content added with ${metadata.scripts.length} script(s) extracted automatically`;
+    }
 
+    return result;
   } catch (error) {
-    return { url, error: true, message: error.message };
+    console.error(`Error analyzing ${url}:`, error.message);
+    return { url, error: true, message: `Analysis error: ${error.message}` };
   }
 }
 
@@ -639,7 +804,13 @@ export async function crawlAndExtractLinks(submittedUrl, io = null) {
           failed: errorCount
         }
       });
-    }
+    }    // Calculate total scripts extracted
+    const totalScriptsExtracted = linkResults.reduce((total, result) => {
+      if (result.success && result.scriptsExtracted) {
+        return total + result.scriptsExtracted;
+      }
+      return total;
+    }, 0);
 
     return {
       success: true,
@@ -649,7 +820,10 @@ export async function crawlAndExtractLinks(submittedUrl, io = null) {
         totalProcessed: linksToProcess.length,
         successful: successCount,
         failed: errorCount
-      }
+      },
+      linksFound: linksToProcess.length,
+      added: successCount,
+      scriptsExtracted: totalScriptsExtracted
     };
   } catch (error) {
     const errorMessage = `Error during crawl: ${error.message}`;
@@ -927,3 +1101,24 @@ export {
   isAdvancedDuplicate,
   archiveExpiredContent
 };
+
+
+
+// Get all text scripts from knowledge base
+export function getTextScripts() {
+  const db = loadDB();
+  return db.filter(item => item.type === 'text_script')
+    .sort((a, b) => new Date(b.addedAt) - new Date(a.addedAt));
+}
+
+// Search text scripts by content
+export function searchTextScripts(query) {
+  const textScripts = getTextScripts();
+  const queryLower = query.toLowerCase();
+  
+  return textScripts.filter(script => 
+    script.title.toLowerCase().includes(queryLower) ||
+    script.content.toLowerCase().includes(queryLower) ||
+    script.description.toLowerCase().includes(queryLower)
+  );
+}

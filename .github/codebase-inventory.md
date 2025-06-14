@@ -19,7 +19,7 @@
 
 ### Web Server [100%]
 
-- `src/server.js` - Express web server with Socket.IO integration, dynamic docs system, and agent API endpoints [100%] **ENHANCED: Added dynamic /help routes with markdown rendering, agent monitoring APIs, and URL submission endpoint**
+- `src/server.js` - Express web server with Socket.IO integration, dynamic docs system, agent API endpoints, and knowledge API [100%] **ENHANCED: Added dynamic /help routes with markdown rendering, agent monitoring APIs, URL submission endpoint, and /api/knowledge endpoint**
 
 ### MCP Server & Agent [100%] 🚀
 

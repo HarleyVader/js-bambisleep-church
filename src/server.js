@@ -210,6 +210,34 @@ app.post('/api/agent/submit-url', async (req, res) => {
   }
 });
 
+
+// Get text scripts endpoint
+app.get('/api/agent/text-scripts', async (req, res) => {
+  try {
+    const { getTextScripts } = await import('./mcp/agentKnowledge.js');
+    const scripts = getTextScripts();
+    res.json(scripts);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch text scripts', message: error.message });
+  }
+});
+
+// Search text scripts endpoint
+app.get('/api/agent/search-text-scripts', async (req, res) => {
+  try {
+    const { query } = req.query;
+    if (!query) {
+      return res.status(400).json({ error: 'Search query is required' });
+    }
+    
+    const { searchTextScripts } = await import('./mcp/agentKnowledge.js');
+    const results = searchTextScripts(query);
+    res.json(results);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to search text scripts', message: error.message });
+  }
+});
+
 // Backup API endpoints
 app.post('/api/agent/backup', async (req, res) => {
   try {
@@ -251,6 +279,19 @@ app.post('/api/agent/archive', async (req, res) => {
     res.json(result);
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Knowledge base endpoint
+app.get('/api/knowledge', (req, res) => {
+  try {
+    const knowledgePath = path.join(__dirname, 'knowledge', 'knowledge.json');
+    const knowledgeData = fs.readFileSync(knowledgePath, 'utf8');
+    const entries = JSON.parse(knowledgeData);
+    res.json({ success: true, entries });
+  } catch (error) {
+    console.error('Error loading knowledge:', error);
+    res.status(500).json({ success: false, error: 'Failed to load knowledge base', entries: [] });
   }
 });
 
