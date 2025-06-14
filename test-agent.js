@@ -1,8 +1,31 @@
-// Minimal test for agent.js
-const agent = require('./agent');
+// Test script for running the knowledge agent
 
-console.log('Files:', agent.listFiles());
-console.log('Echo:', agent.echo('Hello MCP!'));
-console.log('Prompt:', agent.summarizeFilePrompt('example.txt'));
-// Uncomment to test file reading (ensure file exists):
-// console.log('File contents:', agent.readFile('example.txt'));
+import { crawlAndAnalyze } from './src/mcp/agentKnowledge.js';
+
+async function testAgent() {
+  console.log('🤖 Starting Knowledge Agent Test...');
+  
+  const testUrls = [
+    'https://bambisleep.info',
+    'https://example.com',
+    'https://github.com/HarleyVader/js-bambisleep-church'
+  ];
+  
+  for (const url of testUrls) {
+    console.log(`\n📡 Crawling: ${url}`);
+    try {
+      const result = await crawlAndAnalyze(url);
+      if (result.error) {
+        console.log(`❌ Error: ${result.message}`);
+      } else {
+        console.log(`✅ Success: ${result.title}`);
+      }
+    } catch (error) {
+      console.log(`💥 Exception: ${error.message}`);
+    }
+  }
+  
+  console.log('\n🏁 Agent test completed!');
+}
+
+testAgent().catch(console.error);

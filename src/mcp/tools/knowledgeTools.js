@@ -18,8 +18,9 @@ function saveDB(data) {
 
 export const add = (req, res) => {
   const db = loadDB();
-  const { url, title, error, message } = req.body;
+  const { url, title, description, category, relevance, contentType, validated, error, message } = req.body;
   if (!url) return res.json({ error: 'No URL' });
+  
   if (error) {
     // Store the error entry for traceability
     const id = 'kb_' + Date.now();
@@ -27,10 +28,29 @@ export const add = (req, res) => {
     saveDB(db);
     return res.json({ error: true, id, message: message || 'Failed to fetch content' });
   }
+  
+  // Check for duplicates
+  const exists = db.find(item => item.url === url || (item.title && title && item.title.toLowerCase() === title.toLowerCase()));
+  if (exists) {
+    return res.json({ error: 'Duplicate entry detected', existing: exists.id });
+  }
+  
   const id = 'kb_' + Date.now();
-  db.push({ id, url, title });
+  const entry = {
+    id,
+    url,
+    title,
+    description: description || '',
+    category: category || 'general',
+    relevance: relevance || 5,
+    contentType: contentType || 'unknown',
+    addedAt: new Date().toISOString(),
+    validated: validated || false
+  };
+  
+  db.push(entry);
   saveDB(db);
-  res.json({ success: true, id });
+  res.json({ success: true, id, entry });
 };
 export const list = (req, res) => {
   res.json(loadDB());
@@ -63,4 +83,38 @@ export const remove = (req, res) => {
   db.splice(idx, 1);
   saveDB(db);
   res.json({ success: true });
+};
+
+// New analytics and filtering tools
+export const analytics = (req, res) => {
+  const db = loadDB();
+  const total = db.length;
+  const validated = db.filter(item => item.validated).length;
+  const highRelevance = db.filter(item => item.relevance >= 7).length;
+  const categories = {};
+  
+  db.forEach(item => {
+    categories[item.category || 'general'] = (categories[item.category || 'general'] || 0) + 1;
+  });
+
+  res.json({
+    total,
+    validated,
+    validationRate: total > 0 ? (validated / total * 100).toFixed(1) + '%' : '0%',
+    highQuality: highRelevance,
+    qualityRate: total > 0 ? (highRelevance / total * 100).toFixed(1) + '%' : '0%',
+    categories
+  });
+};
+
+export const filterByCategory = (req, res) => {
+  const db = loadDB();
+  const category = req.params.category;
+  res.json(db.filter(item => item.category === category && !item.error));
+};
+
+export const filterByRelevance = (req, res) => {
+  const db = loadDB();
+  const minRelevance = parseInt(req.query.min) || 0;
+  res.json(db.filter(item => item.relevance >= minRelevance && !item.error));
 };

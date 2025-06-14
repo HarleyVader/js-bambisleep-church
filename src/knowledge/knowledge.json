@@ -1,1 +1,46 @@
-[]
+[
+  {
+    "id": "kb_1749866687505",
+    "url": "https://bambisleep.chat",
+    "title": "BambiSleep.Chat - Hypnotic AI Chat\n  BambiSleep.Chat AIGF",
+    "description": "BambiSleep.Chat will reinstall your OS if you let her",
+    "category": "general",
+    "relevance": 3,
+    "contentType": "text/html; charset=utf-8",
+    "addedAt": "2025-06-14T02:04:47.505Z",
+    "validated": true
+  },
+  {
+    "id": "kb_1749866915846",
+    "url": "https://bambisleep.info",
+    "title": "BambiSleep Wiki",
+    "description": "There's also Transcripts and Session Index if you want to be an extra-informed Bambi.",
+    "category": "official",
+    "relevance": 3,
+    "contentType": "text/html; charset=UTF-8",
+    "addedAt": "2025-06-14T02:08:35.846Z",
+    "validated": true
+  },
+  {
+    "id": "kb_1749866918601",
+    "url": "https://reddit.com/r/BambiSleep",
+    "title": "Reddit - The heart of the internet",
+    "description": "Reddit and its partners use cookies and similar technologies to provide you with a better experience. By accepting all cookies, you agree to our use of cookies to deliver and maintain our services and",
+    "category": "community",
+    "relevance": 4,
+    "contentType": "text/html; charset=utf-8",
+    "addedAt": "2025-06-14T02:08:38.601Z",
+    "validated": true
+  },
+  {
+    "id": "kb_1749866919243",
+    "url": "https://github.com/HarleyVader/js-bambisleep-church",
+    "title": "GitHub - HarleyVader/js-bambisleep-church",
+    "description": "Contribute to HarleyVader/js-bambisleep-church development by creating an account on GitHub.",
+    "category": "tools",
+    "relevance": 3,
+    "contentType": "text/html; charset=utf-8",
+    "addedAt": "2025-06-14T02:08:39.243Z",
+    "validated": true
+  }
+]

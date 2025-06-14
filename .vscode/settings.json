@@ -18,9 +18,6 @@
     "inlineSuggestEnable": true
   },
   "github.copilot.chat.experimental.mcpIntegration": true,
-  "github.copilot.chat.contextSelection": "auto",
-  "github.copilot.chat.welcomeMessage": "never",
-  "github.copilot.chat.followUp": "auto",
   "github.copilot.chat.useProjectTemplates": true,
   "github.copilot.chat.experimental.codeGeneration": true,
   "github.copilot.chat.experimental.contextAwareness": true,
