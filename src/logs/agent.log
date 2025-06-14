@@ -89,3 +89,5 @@
 {"timestamp":"2025-06-14T04:22:35.598Z","level":"info","message":"Creating initial backup","data":null}
 {"timestamp":"2025-06-14T04:42:37.288Z","level":"info","message":"Deploying Knowledge Base Agent","data":null}
 {"timestamp":"2025-06-14T04:42:37.318Z","level":"info","message":"Agent deployed successfully. Discovery: 0 */6 * * *, Backups: 0 0 * * *","data":null}
+{"timestamp":"2025-06-14T04:47:26.652Z","level":"info","message":"Starting knowledge base cleanup","data":null}
+{"timestamp":"2025-06-14T04:47:26.654Z","level":"info","message":"Knowledge base cleanup completed","data":{"original":0,"final":0,"removed":0,"duplicates":0,"invalid":0,"archived":0}}
