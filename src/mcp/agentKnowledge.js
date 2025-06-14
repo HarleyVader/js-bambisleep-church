@@ -40,11 +40,28 @@ const RELEVANCE_KEYWORDS = {
 // Content categories
 const CATEGORIES = {
   official: ['bambisleep.info', 'official'],
-  audio: ['soundcloud', 'youtube', 'audio', 'mp3', 'wav'],
+  audio: ['soundcloud', 'audio', 'mp3', 'wav', 'music', 'podcast'],
+  videos: ['youtube', 'vimeo', 'video', 'mp4', 'stream', 'watch'],
+  images: ['image', 'picture', 'gallery', 'photo', 'artwork'],
+  scripts: ['script', 'transcript', 'text-script', 'session-script'],
   guides: ['guide', 'tutorial', 'howto', 'instruction'],
   community: ['reddit', 'discord', 'forum', 'discussion'],
-  tools: ['github', 'app', 'tool', 'script', 'software'],
-  scripts: ['script', 'transcript', 'text', 'content', 'session']
+  creators: ['creator', 'profile', 'author', 'artist', 'channel'],
+  tools: ['github', 'app', 'tool', 'software']
+};
+
+// Platform detection rules
+const PLATFORMS = {
+  youtube: ['youtube.com', 'youtu.be'],
+  soundcloud: ['soundcloud.com'],
+  vimeo: ['vimeo.com'],
+  patreon: ['patreon.com'],
+  twitter: ['twitter.com', 'x.com'],
+  discord: ['discord.com', 'discord.gg'],
+  reddit: ['reddit.com', 'r/'],
+  bambicloud: ['bambisleep.info', 'bambi-cloud'],
+  hypnotube: ['hypnotube.com'],
+  github: ['github.com']
 };
 
 // Backup configuration
@@ -117,14 +134,42 @@ function calculateRelevance(title, description, url) {
 }
 
 // Determine content category
-function categorizeContent(title, description, url) {
+function categorizeContent(title, description, url, platform, mediaType) {
   const text = `${title} ${description} ${url}`.toLowerCase();
   
+  // First prioritize by mediaType if available
+  if (mediaType) {
+    switch(mediaType) {
+      case 'video':
+        return 'videos';
+      case 'audio':
+        return 'audio';
+      case 'image':
+        return 'images';
+      case 'creator':
+        return 'creators';
+      case 'script':
+        return 'scripts';
+    }
+  }
+  
+  // Then try to categorize by platform
+  if (platform) {
+    if (platform === 'youtube' || platform === 'vimeo') return 'videos';
+    if (platform === 'soundcloud') return 'audio';
+    if (platform === 'patreon' || platform === 'twitter') return 'creators';
+    if (platform === 'reddit' || platform === 'discord') return 'community';
+    if (platform === 'github') return 'tools';
+    if (platform === 'bambicloud') return 'official';
+  }
+  
+  // Fallback to keyword-based categorization
   for (const [category, keywords] of Object.entries(CATEGORIES)) {
     if (keywords.some(keyword => text.includes(keyword))) {
       return category;
     }
   }
+  
   return 'general';
 }
 
@@ -185,15 +230,63 @@ async function extractMetadata(url) {
     
     console.log(`📝 Extracted - Title: "${title}", Description: "${description.substring(0, 100)}..."`);
     
-    // Extract scripts and transcripts
-    const scripts = extractScriptsFromHTML($, response.data);
+    // Extract scripts and transcripts    const scripts = extractScriptsFromHTML($, response.data);
     
     console.log(`🎭 Found ${scripts.length} potential scripts in ${url}`);
+    
+    // Detect platform from URL
+    const platform = detectPlatform(url);
+    console.log(`🌐 Detected platform: ${platform || 'unknown'} for ${url}`);
+    
+    // Determine content type based on metadata and URL
+    let contentType = {
+      type: 'unknown',
+      mimeType: response.headers['content-type']
+    };
+    
+    // Check if it's an image
+    if (response.headers['content-type']?.includes('image/')) {
+      contentType.type = 'image';
+    } 
+    // Check if it's a video
+    else if (
+      response.headers['content-type']?.includes('video/') ||
+      url.includes('youtube.com/watch') ||
+      url.includes('youtu.be/') ||
+      url.includes('vimeo.com') ||
+      $('meta[property="og:video"]').length > 0
+    ) {
+      contentType.type = 'video';
+    } 
+    // Check if it's audio
+    else if (
+      response.headers['content-type']?.includes('audio/') ||
+      url.includes('soundcloud.com') ||
+      $('meta[property="og:audio"]').length > 0
+    ) {
+      contentType.type = 'audio';
+    }
+    // Check if it's a creator profile
+    else if (
+      url.includes('/channel/') ||
+      url.includes('/user/') ||
+      url.includes('/profile/') ||
+      url.includes('patreon.com') ||
+      url.match(/\/(u|user)\/[^\/]+\/?$/)
+    ) {
+      contentType.type = 'creator';
+    }
+    // Check if it's a script
+    else if (scripts.length > 0) {
+      contentType.type = 'script';
+    }
     
     return { 
       title, 
       description, 
       contentType: response.headers['content-type'],
+      platform,
+      mediaType: contentType.type,
       scripts: scripts.length > 0 ? scripts : null
     };
   } catch (error) {
@@ -361,12 +454,17 @@ export async function crawlAndAnalyze(url) {
     if (relevance < relevanceThreshold) {
       const errorMsg = `Low relevance score: ${relevance}/10 (threshold: ${relevanceThreshold}) - Title: "${metadata.title}", Description: "${metadata.description.substring(0, 100)}..."`;
       console.log(`❌ [${url}] ${errorMsg}`);
-      return { url, success: false, error: true, message: errorMsg };
-    }
+      return { url, success: false, error: true, message: errorMsg };    }
 
-    // Step 5: Categorize content
-    const category = categorizeContent(metadata.title, metadata.description, url);
-    console.log(`🏷️ Categorized ${url} as: ${category}`);
+    // Step 5: Categorize content with platform and media type awareness
+    const category = categorizeContent(
+      metadata.title, 
+      metadata.description, 
+      url, 
+      metadata.platform, 
+      metadata.mediaType
+    );
+    console.log(`🏷️ Categorized ${url} as: ${category} (platform: ${metadata.platform || 'unknown'}, type: ${metadata.mediaType || 'unknown'})`);
 
     // Step 6: Create enriched entry
     const entry = {
@@ -375,6 +473,8 @@ export async function crawlAndAnalyze(url) {
       title: metadata.title,
       description: metadata.description,
       category,
+      platform: metadata.platform || null,
+      mediaType: metadata.mediaType || null,
       relevance,
       contentType: validation.contentType,
       addedAt: new Date().toISOString(),
@@ -385,19 +485,21 @@ export async function crawlAndAnalyze(url) {
     // Step 7: Save to knowledge base
     const db = loadDB();
     db.push(entry);
-    
-    // Step 8: If scripts were found, also save them as separate text entries
+      // Step 8: If scripts were found, also save them as separate text entries
     let scriptsAdded = 0;
     if (metadata.scripts && metadata.scripts.length > 0) {
       for (const script of metadata.scripts) {
         const scriptEntry = {
           id: 'script_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-          type: 'text',
-          title: script.title,
+          type: 'text_script', // Explicit type to identify script content
+          title: script.title || `Script from ${metadata.title}`,
           content: script.content,
           source: url,
-          category: 'scripts',
+          category: 'scripts', // Always categorize as scripts
+          platform: metadata.platform || null,
+          wordCount: script.content.split(/\s+/).length,
           relevance: 10, // Auto-extracted scripts get high relevance
+          timestamp: new Date().toISOString(),
           addedAt: new Date().toISOString(),
           validated: true,
           extractedFrom: entry.id
@@ -406,14 +508,22 @@ export async function crawlAndAnalyze(url) {
         scriptsAdded++;
       }
     }
-    
-    saveDB(db);
+      saveDB(db);
     console.log(`✅ Successfully added ${url} to knowledge base with ${scriptsAdded} scripts`);
 
     const result = { success: true, entry };
     if (metadata.scripts && metadata.scripts.length > 0) {
       result.scriptsExtracted = metadata.scripts.length;
       result.message = `Content added with ${metadata.scripts.length} script(s) extracted automatically`;
+    }
+    
+    // Add platform and media type information to the result
+    if (metadata.platform) {
+      result.platform = metadata.platform;
+    }
+    
+    if (metadata.mediaType) {
+      result.mediaType = metadata.mediaType;
     }
 
     return result;
@@ -1382,8 +1492,23 @@ export async function cleanKnowledgeBase(io = null) {
 // Get all text scripts from knowledge base
 export function getTextScripts() {
   const db = loadDB();
-  return db.filter(item => item.type === 'text_script')
-    .sort((a, b) => new Date(b.addedAt) - new Date(a.addedAt));
+  const textScripts = db.filter(item => 
+    item.type === 'text_script' || 
+    (item.category === 'scripts' && item.content)
+  );
+  
+  // Add word count if missing
+  textScripts.forEach(script => {
+    if (!script.wordCount && script.content) {
+      script.wordCount = script.content.split(/\s+/).length;
+    }
+  });
+  
+  return textScripts.sort((a, b) => {
+    const dateA = new Date(a.addedAt || a.timestamp);
+    const dateB = new Date(b.addedAt || b.timestamp);
+    return dateB - dateA;
+  });
 }
 
 // Search text scripts by content
@@ -1392,8 +1517,24 @@ export function searchTextScripts(query) {
   const queryLower = query.toLowerCase();
   
   return textScripts.filter(script => 
-    script.title.toLowerCase().includes(queryLower) ||
-    script.content.toLowerCase().includes(queryLower) ||
-    script.description.toLowerCase().includes(queryLower)
+    (script.title && script.title.toLowerCase().includes(queryLower)) ||
+    (script.content && script.content.toLowerCase().includes(queryLower)) ||
+    (script.description && script.description.toLowerCase().includes(queryLower)) ||
+    (script.platform && script.platform.toLowerCase().includes(queryLower))
   );
+}
+
+// Determine platform from URL
+function detectPlatform(url) {
+  if (!url) return null;
+  
+  const urlLower = url.toLowerCase();
+  
+  for (const [platform, domains] of Object.entries(PLATFORMS)) {
+    if (domains.some(domain => urlLower.includes(domain))) {
+      return platform;
+    }
+  }
+  
+  return null;
 }
