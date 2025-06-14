@@ -157,12 +157,21 @@ async function validateURL(url) {
 // Extract metadata from webpage
 async function extractMetadata(url) {
   try {
+    console.log(`🔍 Attempting to fetch metadata from: ${url}`);
+    
     const response = await axios.get(url, { 
-      timeout: 15000, // Increased timeout
+      timeout: 30000, // Increased timeout to 30 seconds
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      },
+      maxRedirects: 5, // Allow redirects
+      validateStatus: function (status) {
+        return status >= 200 && status < 400; // Accept redirects
       }
     });
+    
+    console.log(`✅ Successfully fetched ${url} - Status: ${response.status}, Content-Type: ${response.headers['content-type']}`);
+    
     const $ = cheerio.load(response.data);
     
     const title = $('title').text().trim() || 
@@ -174,8 +183,12 @@ async function extractMetadata(url) {
                        $('meta[property="og:description"]').attr('content') || 
                        $('p').first().text().trim().slice(0, 200) || '';
     
+    console.log(`📝 Extracted - Title: "${title}", Description: "${description.substring(0, 100)}..."`);
+    
     // Extract scripts and transcripts
     const scripts = extractScriptsFromHTML($, response.data);
+    
+    console.log(`🎭 Found ${scripts.length} potential scripts in ${url}`);
     
     return { 
       title, 
@@ -184,8 +197,13 @@ async function extractMetadata(url) {
       scripts: scripts.length > 0 ? scripts : null
     };
   } catch (error) {
-    console.error(`Metadata extraction error for ${url}:`, error.message);
-    return { title: url, description: '', error: `Failed to extract metadata: ${error.message}` };
+    console.error(`❌ Metadata extraction error for ${url}:`, {
+      message: error.message,
+      code: error.code,
+      status: error.response?.status,
+      statusText: error.response?.statusText
+    });
+    return { title: url, description: '', error: `Failed to extract metadata: ${error.message} (${error.code || error.response?.status})` };
   }
 }
 
@@ -306,32 +324,43 @@ function extractScriptTitle(text) {
 // Main intelligent crawl and analyze function
 export async function crawlAndAnalyze(url) {
   try {
+    console.log(`🚀 Starting analysis of: ${url}`);
+    
     // Step 1: URL Validation
     const validation = await validateURL(url);
     if (!validation.valid) {
-      return { url, error: true, message: `URL validation failed: ${validation.error}` };
+      console.log(`❌ URL validation failed for ${url}: ${validation.error}`);
+      return { url, success: false, error: true, message: `URL validation failed: ${validation.error}` };
     }
+    console.log(`✅ URL validation passed for ${url}`);
 
     // Step 2: Extract metadata and scripts
     const metadata = await extractMetadata(url);
     if (metadata.error) {
-      return { url, error: true, message: `Metadata extraction failed: ${metadata.error}` };
+      console.log(`❌ Metadata extraction failed for ${url}: ${metadata.error}`);
+      return { url, success: false, error: true, message: `Metadata extraction failed: ${metadata.error}` };
     }
+    console.log(`✅ Metadata extracted for ${url}: "${metadata.title}"`);
 
     // Step 3: Advanced duplicate detection
     const existingEntries = loadDB();
     if (isAdvancedDuplicate({ url, title: metadata.title, description: metadata.description }, existingEntries)) {
-      return { url, error: true, message: 'Advanced duplicate detection: Similar content already exists' };
-    }    // Step 4: Calculate advanced relevance with ML-like scoring
+      console.log(`⚠️ Duplicate content detected for ${url}: "${metadata.title}"`);
+      return { url, success: false, error: true, message: 'Advanced duplicate detection: Similar content already exists' };
+    }    
+
+    // Step 4: Calculate advanced relevance with ML-like scoring
     const relevance = calculateAdvancedRelevanceScore(metadata.title, metadata.description, url);
-    console.log(`Relevance score for ${url}: ${relevance}/10 (title: "${metadata.title}", description: "${metadata.description.substring(0, 100)}...")`);
+    console.log(`📊 Relevance score for ${url}: ${relevance}/10 (title: "${metadata.title}", description: "${metadata.description.substring(0, 100)}...")`);
     
     if (relevance < 2) { // Lowered threshold from 3 to 2 for bambisleep.info
-      return { url, error: true, message: `Low relevance score: ${relevance}/10 - Title: "${metadata.title}", Description: "${metadata.description.substring(0, 100)}..."` };
+      console.log(`❌ Low relevance score for ${url}: ${relevance}/10`);
+      return { url, success: false, error: true, message: `Low relevance score: ${relevance}/10 - Title: "${metadata.title}", Description: "${metadata.description.substring(0, 100)}..."` };
     }
 
     // Step 5: Categorize content
     const category = categorizeContent(metadata.title, metadata.description, url);
+    console.log(`🏷️ Categorized ${url} as: ${category}`);
 
     // Step 6: Create enriched entry
     const entry = {
@@ -352,6 +381,7 @@ export async function crawlAndAnalyze(url) {
     db.push(entry);
     
     // Step 8: If scripts were found, also save them as separate text entries
+    let scriptsAdded = 0;
     if (metadata.scripts && metadata.scripts.length > 0) {
       for (const script of metadata.scripts) {
         const scriptEntry = {
@@ -367,10 +397,12 @@ export async function crawlAndAnalyze(url) {
           extractedFrom: entry.id
         };
         db.push(scriptEntry);
+        scriptsAdded++;
       }
     }
     
     saveDB(db);
+    console.log(`✅ Successfully added ${url} to knowledge base with ${scriptsAdded} scripts`);
 
     const result = { success: true, entry };
     if (metadata.scripts && metadata.scripts.length > 0) {
@@ -380,8 +412,8 @@ export async function crawlAndAnalyze(url) {
 
     return result;
   } catch (error) {
-    console.error(`Error analyzing ${url}:`, error.message);
-    return { url, error: true, message: `Analysis error: ${error.message}` };
+    console.error(`💥 Error analyzing ${url}:`, error.message);
+    return { url, success: false, error: true, message: `Analysis error: ${error.message}` };
   }
 }
 
@@ -757,25 +789,52 @@ export async function crawlAndExtractLinks(submittedUrl, io = null) {
           details: `Processing link ${i + 1} of ${linksToProcess.length}: ${link.substring(0, 50)}...`,
           logMessage: `🔗 Analyzing link ${i + 1}/${linksToProcess.length}`
         });
-      }
-        try {
+      }        try {
         // Small delay between requests to be respectful
-        await new Promise(resolve => setTimeout(resolve, 1000));
-          const result = await crawlAndAnalyze(link);
+        await new Promise(resolve => setTimeout(resolve, 2000)); // Increased delay to 2 seconds
+        
+        console.log(`🔗 Processing link ${i + 1}/${linksToProcess.length}: ${link}`);
+        const result = await crawlAndAnalyze(link);
         linkResults.push(result);
         
         if (result.success) {
           successCount++;
+          console.log(`✅ Link ${i + 1} successful: ${link}`);
         } else {
           errorCount++;
+          console.log(`❌ Link ${i + 1} failed: ${link} - ${result.message}`);
+        }
+        
+        // Update progress more frequently
+        if (io) {
+          const progressPercentage = 25 + Math.floor(((i + 1) / linksToProcess.length) * 70);
+          io.emit('crawl:progress', {
+            percentage: progressPercentage,
+            status: 'Analyzing links...',
+            details: `Completed ${i + 1} of ${linksToProcess.length} links (✅${successCount} ❌${errorCount})`,
+            logMessage: result.success ? 
+              `✅ Link ${i + 1}/${linksToProcess.length} analyzed successfully` : 
+              `❌ Link ${i + 1}/${linksToProcess.length} failed: ${result.message}`
+          });
         }
       } catch (error) {
         errorCount++;
+        console.log(`💥 Link ${i + 1} crashed: ${link} - ${error.message}`);
         linkResults.push({
           url: link,
           success: false,
-          error: error.message
+          error: true,
+          message: error.message
         });
+        
+        if (io) {
+          io.emit('crawl:progress', {
+            percentage: 25 + Math.floor(((i + 1) / linksToProcess.length) * 70),
+            status: 'Analyzing links...',
+            details: `Completed ${i + 1} of ${linksToProcess.length} links (✅${successCount} ❌${errorCount})`,
+            logMessage: `💥 Link ${i + 1}/${linksToProcess.length} crashed: ${error.message}`
+          });
+        }
       }
     }
 

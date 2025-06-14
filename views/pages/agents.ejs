@@ -32,10 +32,10 @@
           <span class="stat-value" id="memory">-</span>
         </div>
       </div>
-      
-      <div class="agent-actions">
+        <div class="agent-actions">
         <button class="btn-primary" onclick="triggerDiscovery()">🔍 Discover Content</button>
         <button class="btn-secondary" onclick="refreshStatus()">🔄 Refresh Status</button>
+        <button class="btn-secondary" onclick="testCrawl()">🧪 Test Crawl (Google)</button>
       </div>
       
       <!-- URL Submission Form -->
@@ -172,6 +172,37 @@ async function triggerDiscovery() {
 function refreshStatus() {
   fetchAgentStatus();
   addLogEntry('Status refreshed');
+}
+
+async function testCrawl() {
+  const testButton = event.target;
+  testButton.disabled = true;
+  testButton.textContent = '🧪 Testing...';
+  
+  addLogEntry('🧪 Testing crawl functionality with Google.com');
+  
+  try {
+    const response = await fetch('/api/agent/submit-url', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ url: 'https://www.google.com' })
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      addLogEntry(`🧪 Test successful: Found ${result.linksFound || 0} links, added ${result.added || 0} to knowledge base`);
+    } else {
+      addLogEntry(`🧪 Test failed: ${result.message || 'Unknown error'}`);
+    }
+  } catch (error) {
+    addLogEntry(`🧪 Test error: ${error.message}`);
+  } finally {
+    testButton.disabled = false;
+    testButton.textContent = '🧪 Test Crawl (Google)';
+  }
 }
 
 async function submitUrl() {
@@ -398,7 +429,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setInterval(fetchAgentStatus, 30000);
   // Refresh text scripts every 60 seconds
   setInterval(fetchTextScripts, 60000);
-    // Listen for crawl progress updates
+  // Listen for crawl progress updates
   socket.on('crawl:progress', (data) => {
     // Override simulated progress with real progress if available
     if (data.percentage !== undefined) {
@@ -412,12 +443,22 @@ document.addEventListener('DOMContentLoaded', () => {
   socket.on('crawl:complete', (data) => {
     updateProgress(100, 'Crawl completed!', `✅ Found ${data.linksFound || 0} links, added ${data.added || 0} to knowledge base`);
     addLogEntry(`✅ Crawl completed: ${data.linksFound || 0} links found, ${data.added || 0} added to knowledge base`);
+    
+    // Show detailed success/failure breakdown
+    if (data.summary) {
+      const { totalProcessed, successful, failed } = data.summary;
+      addLogEntry(`📊 Results breakdown: ${totalProcessed} total, ${successful} successful, ${failed} failed`);
+    }
+    
     setTimeout(() => hideProgressBar(), 3000);
   });
   
   socket.on('crawl:error', (data) => {
     updateProgress(100, 'Crawl failed', `❌ ${data.message || 'Unknown error'}`);
     addLogEntry(`❌ Crawl failed: ${data.message || 'Unknown error'}`);
+    if (data.details) {
+      addLogEntry(`🔍 Error details: ${data.details}`);
+    }
     setTimeout(() => hideProgressBar(), 3000);
   });
   
