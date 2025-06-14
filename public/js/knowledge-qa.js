@@ -279,4 +279,143 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Check and initialize knowledge base on page load
   checkAndInitializeKnowledge();
+  
+  // Script preview section functionality
+  const viewAllScriptsBtn = document.querySelector('.view-all-scripts');
+  const scriptItems = document.querySelectorAll('.text-script-item');
+  
+  if (viewAllScriptsBtn) {
+    viewAllScriptsBtn.addEventListener('click', function() {
+      window.location.href = '/knowledge?category=scripts';
+    });
+  }
+  
+  scriptItems.forEach(item => {
+    item.addEventListener('click', function() {
+      const title = this.querySelector('.script-title').textContent;
+      const preview = this.querySelector('.script-preview').textContent;
+      
+      // Create a modal to display the full script content
+      const modal = document.createElement('div');
+      modal.classList.add('script-modal');
+      
+      const modalContent = document.createElement('div');
+      modalContent.classList.add('script-modal-content');
+      
+      const closeBtn = document.createElement('button');
+      closeBtn.classList.add('script-modal-close');
+      closeBtn.innerHTML = '&times;';
+      closeBtn.addEventListener('click', () => modal.remove());
+      
+      const modalTitle = document.createElement('h3');
+      modalTitle.textContent = title;
+      modalTitle.classList.add('script-modal-title');
+      
+      const modalBody = document.createElement('div');
+      modalBody.classList.add('script-modal-body');
+      
+      // Replace this with actual script content fetching if available
+      const scriptContent = preview.length > 100 
+        ? preview 
+        : preview + "\n\n[Full script content would be displayed here. This is a preview.]";
+      
+      modalBody.textContent = scriptContent;
+      
+      const modalFooter = document.createElement('div');
+      modalFooter.classList.add('script-modal-footer');
+      
+      const askButton = document.createElement('button');
+      askButton.textContent = 'Ask about this script';
+      askButton.classList.add('script-ask-btn');
+      askButton.addEventListener('click', () => {
+        const question = `Tell me about the "${title}" script`;
+        document.getElementById('knowledge-question').value = question;
+        document.getElementById('ask-button').click();
+        modal.remove();
+      });
+      
+      modalFooter.appendChild(askButton);
+      modalContent.appendChild(closeBtn);
+      modalContent.appendChild(modalTitle);
+      modalContent.appendChild(modalBody);
+      modalContent.appendChild(modalFooter);
+      modal.appendChild(modalContent);
+      
+      document.body.appendChild(modal);    });
+  });
 });
+
+// CSS for the script modal
+document.head.insertAdjacentHTML('beforeend', `
+  <style>
+    .script-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    
+    .script-modal-content {
+      background: var(--color-bg-dark);
+      border: 1px solid var(--color-accent-magenta);
+      border-radius: var(--radius-md);
+      max-width: 80%;
+      max-height: 80%;
+      overflow-y: auto;
+      padding: var(--spacing-lg);
+      position: relative;
+      box-shadow: 0 0 20px rgba(218, 112, 214, 0.4);
+    }
+    
+    .script-modal-close {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 24px;
+      background: none;
+      border: none;
+      color: var(--color-text-secondary);
+      cursor: pointer;
+    }
+    
+    .script-modal-title {
+      color: var(--color-accent-green);
+      margin-bottom: var(--spacing-md);
+      padding-right: 30px;
+    }
+    
+    .script-modal-body {
+      color: var(--color-text-primary);
+      line-height: 1.6;
+      margin-bottom: var(--spacing-md);
+      white-space: pre-wrap;
+    }
+    
+    .script-modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: var(--spacing-md);
+    }
+    
+    .script-ask-btn {
+      background: var(--color-accent-cyan);
+      color: var(--color-bg-dark);
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 8px 16px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    
+    .script-ask-btn:hover {
+      background: var(--color-accent-magenta);
+      box-shadow: 0 0 10px rgba(218, 112, 214, 0.4);
+    }
+  </style>
+`);

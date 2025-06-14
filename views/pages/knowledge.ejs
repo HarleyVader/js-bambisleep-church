@@ -24,6 +24,124 @@
             </div>
         </div>
 
+        <!-- Scripts Preview Section -->
+        <div class="scripts-preview-section">
+            <h2 class="section-title">Latest Scripts</h2>
+            <p class="section-subtitle">Explore the most recent BambiSleep scripts</p>
+            
+            <div class="text-scripts-preview" id="text-scripts-preview">
+                <div class="text-script-item">
+                    <div class="script-header">
+                        <span class="script-title">Third Party Triggers</span>
+                        <span class="script-relevance">⭐ 10/10</span>
+                    </div>
+                    <div class="script-meta">
+                        <span class="script-category">scripts</span>
+                        <span class="script-platform platform-bambicloud">🌙 bambicloud</span>
+                        <span class="script-wordcount">367 words</span>
+                        <span class="script-date">Added: 14/06/2025</span>
+                    </div>
+                    <div class="script-preview">Third Party Triggers
+                        
+                        From BambiSleep Wiki
+                        
+                        Jump to:navigation, search
+                    
+                    
+                        
+
+                        Creators' Custom Triggers
+bam...</div>
+                </div>
+                <div class="text-script-item">
+                    <div class="script-header">
+                        <span class="script-title">Submitting For Bambis</span>
+                        <span class="script-relevance">⭐ 10/10</span>
+                    </div>
+                    <div class="script-meta">
+                        <span class="script-category">scripts</span>
+                        <span class="script-platform platform-bambicloud">🌙 bambicloud</span>
+                        <span class="script-wordcount">74 words</span>
+                        <span class="script-date">Added: 14/06/2025</span>
+                    </div>
+                    <div class="script-preview">Submitting For Bambis
+                        
+                        From BambiSleep Wiki
+                        
+                        Jump to:navigation, search
+                    
+                    
+                        
+
+                        (WIP outline, under construc...</div>
+                </div>
+                <div class="text-script-item">
+                    <div class="script-header">
+                        <span class="script-title">Dominating Bambi</span>
+                        <span class="script-relevance">⭐ 10/10</span>
+                    </div>
+                    <div class="script-meta">
+                        <span class="script-category">scripts</span>
+                        <span class="script-platform platform-bambicloud">🌙 bambicloud</span>
+                        <span class="script-wordcount">660 words</span>
+                        <span class="script-date">Added: 14/06/2025</span>
+                    </div>
+                    <div class="script-preview">Dominating Bambi
+                        
+                        From BambiSleep Wiki
+                        
+                        Jump to:navigation, search
+                    
+                    
+                        
+
+                        Dominating Bambi From A Bambi's P...</div>
+                </div>
+                <div class="text-script-item">
+                    <div class="script-header">
+                        <span class="script-title">Extracted Script</span>
+                        <span class="script-relevance">⭐ 10/10</span>
+                    </div>
+                    <div class="script-meta">
+                        <span class="script-category">scripts</span>
+                        <span class="script-platform platform-bambicloud">🌙 bambicloud</span>
+                        <span class="script-wordcount">50 words</span>
+                        <span class="script-date">Added: 14/06/2025</span>
+                    </div>
+                    <div class="script-preview">Being a good dominant is about deep care and keeping a growth mindset. It's about learning, unlearning and holding space for your Bambi - not just dur...</div>
+                </div>
+                <div class="text-script-item">
+                    <div class="script-header">
+                        <span class="script-title">What Is A Uniform</span>
+                        <span class="script-relevance">⭐ 10/10</span>
+                    </div>
+                    <div class="script-meta">
+                        <span class="script-category">scripts</span>
+                        <span class="script-platform platform-bambicloud">🌙 bambicloud</span>
+                        <span class="script-wordcount">342 words</span>
+                        <span class="script-date">Added: 14/06/2025</span>
+                    </div>
+                    <div class="script-preview">What Is A Uniform
+                        
+                        From BambiSleep Wiki
+                        
+                        Jump to:navigation, search
+                    
+                    
+                        
+
+                        
+
+
+A uniform is a piece or piece...</div>
+                </div>
+                <div class="scripts-more">
+                    <p>... and 18 more scripts</p>
+                    <button class="view-all-scripts-btn">View All Scripts</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Search Section -->
         <div class="knowledge-search">
             <div class="search-container">
@@ -77,6 +195,119 @@
     color: var(--color-text-secondary);
     text-transform: uppercase;
     font-size: 0.875rem;
+}
+
+/* Scripts Preview Section Styles */
+.scripts-preview-section {
+    margin: 2rem 0;
+}
+
+.section-title {
+    color: var(--color-primary-cyan);
+    margin-bottom: 0.5rem;
+    text-align: center;
+}
+
+.section-subtitle {
+    color: var(--color-text-secondary);
+    margin-bottom: 1.5rem;
+    text-align: center;
+    font-size: 1rem;
+}
+
+.text-scripts-preview {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.text-script-item {
+    background: var(--color-overlay-purple);
+    border: 1px solid var(--color-primary-magenta);
+    border-radius: 8px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.text-script-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px var(--glow-magenta);
+}
+
+.script-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.script-title {
+    color: var(--color-primary-green);
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
+.script-relevance {
+    color: var(--color-primary-cyan);
+}
+
+.script-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+}
+
+.script-category, .script-platform, .script-wordcount, .script-date {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    color: var(--color-text-secondary);
+}
+
+.platform-bambicloud {
+    color: var(--color-primary-magenta);
+}
+
+.script-preview {
+    color: var(--color-text-secondary);
+    line-height: 1.4;
+    font-size: 0.9rem;
+    overflow: hidden;
+    display: -webkit-box;    -webkit-line-clamp: 4;
+    line-clamp: 4;
+    -webkit-box-orient: vertical;
+    margin-top: auto;
+}
+
+.scripts-more {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 1rem;
+    background: var(--color-overlay-purple);
+    border: 1px dashed var(--color-primary-cyan);
+    border-radius: 8px;
+}
+
+.view-all-scripts-btn {
+    background: var(--color-primary-magenta);
+    color: var(--color-bg-dark);
+    border: none;
+    border-radius: 4px;
+    padding: 0.5rem 1.5rem;
+    margin-top: 0.5rem;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.view-all-scripts-btn:hover {
+    background: var(--color-primary-cyan);
+    box-shadow: 0 0 10px var(--glow-cyan);
 }
 
 .knowledge-search {
@@ -443,6 +674,77 @@ function escapeHtml(text) {
 // Add event listeners
 document.getElementById('searchInput').addEventListener('input', searchKnowledge);
 document.getElementById('categoryFilter').addEventListener('change', searchKnowledge);
+
+// Script Preview Section Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle View All Scripts button
+    const viewAllScriptsBtn = document.querySelector('.view-all-scripts-btn');
+    if (viewAllScriptsBtn) {
+        viewAllScriptsBtn.addEventListener('click', function() {
+            document.getElementById('categoryFilter').value = 'scripts';
+            searchKnowledge();
+            
+            // Scroll to knowledge grid
+            document.getElementById('knowledgeGrid').scrollIntoView({ behavior: 'smooth' });
+        });
+    }
+    
+    // Make script items clickable to view details
+    const scriptItems = document.querySelectorAll('.text-script-item');
+    scriptItems.forEach(item => {
+        item.addEventListener('click', function() {
+            const title = this.querySelector('.script-title').textContent;
+            const preview = this.querySelector('.script-preview').textContent;
+            
+            // Find if there's a matching knowledge entry
+            const scriptEntry = allKnowledge.find(k => 
+                (k.metadata?.title || '').toLowerCase() === title.toLowerCase() &&
+                (k.metadata?.category || '').toLowerCase() === 'scripts'
+            );
+            
+            if (scriptEntry) {
+                viewKnowledge(scriptEntry.id);
+            } else {
+                // Create a modal with preview content if no matching entry
+                const modal = document.createElement('div');
+                modal.style.cssText = `
+                    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+                    background: rgba(0,0,0,0.8); z-index: 1000;
+                    display: flex; align-items: center; justify-content: center;
+                    padding: 2rem;
+                `;
+                
+                modal.innerHTML = `
+                    <div style="
+                        background: var(--card-bg); border: 1px solid var(--color-primary-magenta);
+                        border-radius: 8px; padding: 2rem; max-width: 80vw; max-height: 80vh;
+                        overflow-y: auto; position: relative;
+                    ">
+                        <button onclick="this.parentElement.parentElement.remove()" style="
+                            position: absolute; top: 1rem; right: 1rem;
+                            background: none; border: none; color: var(--text-secondary);
+                            font-size: 1.5rem; cursor: pointer;
+                        ">×</button>
+                        <h2 style="color: var(--color-primary-green); margin: 0 0 1rem 0;">
+                            ${escapeHtml(title)}
+                        </h2>
+                        <div style="margin-bottom: 1rem; color: var(--text-secondary);">
+                            Category: scripts | 
+                            Added: ${new Date().toLocaleDateString()}
+                        </div>
+                        <div style="color: var(--text-primary); line-height: 1.6; white-space: pre-wrap;">
+                            ${escapeHtml(preview)}
+                            
+                            [Full script content would be displayed here. This is a preview.]
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+            }
+        });
+    });
+});
 </script>
 
 <%- include('../partials/footer') %>
