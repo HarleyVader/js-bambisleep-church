@@ -98,19 +98,6 @@ function getAvailableDocs() {
   return docs;
 }
 
-// Mock data for templates (to be replaced with real data from knowledge base)
-const mockData = {
-  creators: [
-    { id: 1, url: 'https://example.com/creator1', title: 'Sample Creator 1', votes: 15, views: 120 },
-    { id: 2, url: 'https://example.com/creator2', title: 'Sample Creator 2', votes: 23, views: 180 }
-  ],
-  links: [
-    { id: 1, url: 'https://example.com/video1', title: 'Sample Video', category: 'videos', votes: 10, views: 85 },
-    { id: 2, url: 'https://example.com/audio1', title: 'Sample Audio', category: 'audio', votes: 8, views: 65 },
-    { id: 3, url: 'https://example.com/image1', title: 'Sample Content', category: 'images', votes: 5, views: 45 }
-  ]
-};
-
 // Socket.IO connection handling
 io.on('connection', (socket) => {
   console.log('Client connected:', socket.id);
