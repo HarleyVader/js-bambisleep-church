@@ -49,11 +49,11 @@
 - `views/pages/help.ejs` - Dynamic documentation system with auto-populated sidebar [100%] **ENHANCED: Auto-discovers docs from /docs folder**
 - `views/pages/agents.ejs` - Real-time agent monitoring dashboard [100%] **ENHANCED: Added platform-specific styling, content type indicators, and improved script organization**
 - `views/pages/index.ejs` - Homepage with platform categories and voting system [100%] **ENHANCED: Improved UI with card-styled link lists for better readability**
-- `views/pages/knowledge-qa.ejs` - Page for BambiSleep Q&A interface [100%] **ENHANCED: Added comprehensive categories, question filtering, agent capabilities, and detailed information display**
+- `views/pages/knowledge-qa.ejs` - Page for BambiSleep Q&A interface [100%] **NEW: Provides interface for asking questions about BambiSleep**
 - `views/components/linkCard.ejs` - Link card component [100%] **ENHANCED: Improved styling and organization**
-- `views/components/knowledgeSearch.ejs` - UI component for searching BambiSleep knowledge [100%] **ENHANCED: Improved answer display with confidence levels, metadata, and source references**
+- `views/components/knowledgeSearch.ejs` - UI component for searching BambiSleep knowledge [100%] **NEW: Component for asking questions about BambiSleep**
 - `views/partials/*.ejs` - Header and footer partials [100%]
-- `public/js/knowledge-qa.js` - Client-side script for BambiSleep Q&A interface [100%] **ENHANCED: Added category filtering, feedback handling, and improved metadata display**
+- `public/js/knowledge-qa.js` - Client-side script for BambiSleep Q&A interface [100%] **NEW: Handles question submission and answer display**
 
 ### Static Assets [100%]
 

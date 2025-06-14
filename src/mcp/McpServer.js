@@ -2,6 +2,7 @@
 
 import 'dotenv/config';
 
+import * as agentKnowledge from './agentKnowledge.js';
 import * as knowledgeTools from './tools/knowledgeTools.js';
 
 import express from 'express';
@@ -16,6 +17,32 @@ app.get('/knowledge/search', knowledgeTools.search);
 app.get('/knowledge/get/:id', knowledgeTools.get);
 app.post('/knowledge/update/:id', knowledgeTools.update);
 app.delete('/knowledge/delete/:id', knowledgeTools.remove);
+
+// BambiSleep Knowledge Agent endpoints
+app.post('/bambisleep/fetch', async (req, res) => {
+  const { url } = req.body;
+  if (!url) {
+    return res.status(400).json({ error: 'URL is required' });
+  }
+  
+  const result = await agentKnowledge.fetchAndProcessBambiSleepContent(url);
+  res.json(result);
+});
+
+app.post('/bambisleep/answer', async (req, res) => {
+  const { question } = req.body;
+  if (!question) {
+    return res.status(400).json({ error: 'Question is required' });
+  }
+  
+  const result = await agentKnowledge.answerBambiSleepQuestion(question);
+  res.json(result);
+});
+
+app.post('/bambisleep/initialize', async (req, res) => {
+  const result = await agentKnowledge.initializeBambiSleepKnowledge();
+  res.json(result);
+});
 
 // Start server
 const PORT = process.env.MCP_PORT || 3001;

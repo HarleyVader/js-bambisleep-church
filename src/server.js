@@ -203,6 +203,7 @@ function loadKnowledgeData() {
 app.get('/', (req, res) => res.render('pages/index', loadKnowledgeData()));
 app.get('/agents', (req, res) => res.render('pages/agents', { title: 'AI Agents' }));
 app.get('/knowledge', (req, res) => res.render('pages/knowledge'));
+app.get('/knowledge-qa', (req, res) => res.render('pages/knowledge-qa', { title: 'BambiSleep Knowledge Q&A' }));
 app.get('/help', (req, res) => res.render('pages/help', { 
   isMarkdown: false,
   currentDoc: null,
@@ -394,6 +395,61 @@ app.post('/api/agent/test-webhook', async (req, res) => {
     await sendWebhookNotification('test', { message: 'Test webhook notification', timestamp: new Date().toISOString() });
     res.json({ success: true, message: 'Test webhook sent' });
   } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// BambiSleep Knowledge Agent API routes
+app.post('/api/bambisleep/fetch', async (req, res) => {
+  try {
+    const response = await fetch(`http://localhost:${process.env.MCP_PORT || 3001}/bambisleep/fetch`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(req.body)
+    });
+    
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error('Error proxying to BambiSleep fetch API:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.post('/api/bambisleep/answer', async (req, res) => {
+  try {
+    const response = await fetch(`http://localhost:${process.env.MCP_PORT || 3001}/bambisleep/answer`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(req.body)
+    });
+    
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error('Error proxying to BambiSleep answer API:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.post('/api/bambisleep/initialize', async (req, res) => {
+  try {
+    const response = await fetch(`http://localhost:${process.env.MCP_PORT || 3001}/bambisleep/initialize`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(req.body)
+    });
+    
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error('Error proxying to BambiSleep initialize API:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });

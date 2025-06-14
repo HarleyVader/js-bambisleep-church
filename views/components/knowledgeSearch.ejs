@@ -1,0 +1,70 @@
+<!-- BambiSleep Knowledge Search Component -->
+<div class="knowledge-search-container">
+  <div class="search-form">
+    <h3>Ask About BambiSleep</h3>
+    <div class="input-group">
+      <input type="text" id="knowledge-question" class="form-control" placeholder="What is BambiSleep?" />
+      <button id="ask-button" class="btn btn-primary">Ask</button>
+    </div>
+    <div class="search-tips">
+      <p>Try asking specific questions about BambiSleep concepts, safety information, or usage instructions.</p>
+    </div>
+  </div>
+  
+  <div class="results-container" style="display:none;">
+    <div class="answer-card">
+      <div class="answer-header">
+        <h4>Answer</h4>
+        <span id="confidence-indicator" class="confidence-badge">High Confidence</span>
+      </div>
+      
+      <div id="answer-text" class="answer-content"></div>
+      
+      <div id="answer-sources" class="sources" style="display:none;">
+        <h5>Sources</h5>
+        <div id="sources-content" class="sources-content"></div>
+      </div>
+      
+      <div class="knowledge-metadata">
+        <div class="metadata-item">
+          <span class="metadata-label">Categories:</span>
+          <span id="answer-categories" class="metadata-value">General</span>
+        </div>
+        <div class="metadata-item">
+          <span class="metadata-label">Last Updated:</span>
+          <span id="answer-date" class="metadata-value">June 14, 2025</span>
+        </div>
+      </div>
+      
+      <div id="suggested-questions" class="suggested-questions">
+        <h5>You might also want to know:</h5>
+        <ul id="questions-list" class="questions-list">
+          <!-- Suggested questions will be added here -->
+        </ul>
+      </div>
+      
+      <div class="feedback-section">
+        <p>Was this answer helpful?</p>
+        <div class="feedback-buttons">
+          <button id="feedback-helpful" class="feedback-btn">Yes, helpful</button>
+          <button id="feedback-not-helpful" class="feedback-btn">No, needs improvement</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div id="loading-indicator" class="loading" style="display:none;">
+    <div class="spinner"></div>
+    <p>Searching BambiSleep knowledge...</p>
+  </div>
+  
+  <div id="error-message" class="error-message" style="display:none;">
+    <!-- Error message will be displayed here -->
+  </div>
+  
+  <div id="knowledge-info-section" class="knowledge-info-section" style="display:none;">
+    <h4>About This Answer</h4>
+    <p>This information is compiled from various BambiSleep resources. The agent analyzes content from official BambiSleep websites and community resources to provide the most accurate information possible.</p>
+    <p>For the most up-to-date and authoritative information, please visit the <a href="https://bambisleep.info" target="_blank">official BambiSleep website</a>.</p>
+  </div>
+</div>

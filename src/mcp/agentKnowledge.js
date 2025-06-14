@@ -1,8 +1,12 @@
 // Intelligent Knowledge Base Agent - Content Curation & Validation
 
 import * as cheerio from 'cheerio';
+import * as contentProcessor from './tools/contentProcessor.js';
+import * as knowledgeIndex from './tools/knowledgeIndex.js';
 import * as knowledgeTools from './tools/knowledgeTools.js';
 import * as lmstudio from '../lmstudio/client.js';
+import * as qaSystem from './tools/qaSystem.js';
+import * as urlFetcher from './tools/urlFetcher.js';
 
 import axios from 'axios';
 import cron from 'node-cron';
@@ -1692,4 +1696,180 @@ function updateExistingEntry(url, newMetadata, validationData) {
     entry: existingEntry,
     message: `Entry exists but no changes were detected`
   };
+}
+
+/**
+ * Fetch and process BambiSleep content from a URL
+ * @param {string} url URL to fetch
+ * @returns {Promise<object>} Result of fetching and processing
+ */
+export async function fetchAndProcessBambiSleepContent(url, io = null) {
+  try {
+    // Log operation start
+    console.log(`[BambiSleep QA] Fetching content from ${url}`);
+    if (io) {
+      io.emit('agent:log', { message: `Fetching BambiSleep content from ${url}`, type: 'info' });
+    }
+    
+    // Fetch content
+    const content = await urlFetcher.fetchUrl(url);
+    
+    // Check for fetch error
+    if (content.error) {
+      console.error(`[BambiSleep QA] Error fetching URL: ${content.message}`);
+      if (io) {
+        io.emit('agent:log', { message: `Error fetching URL: ${content.message}`, type: 'error' });
+      }
+      return { success: false, error: content.message };
+    }
+    
+    // Process content
+    console.log(`[BambiSleep QA] Processing content from ${url}`);
+    if (io) {
+      io.emit('agent:log', { message: `Processing BambiSleep content`, type: 'info' });
+    }
+    
+    const processed = contentProcessor.processContent(content);
+    
+    // Check if content is relevant to BambiSleep
+    if (!processed.processed) {
+      console.log(`[BambiSleep QA] Content not relevant to BambiSleep: ${processed.message}`);
+      if (io) {
+        io.emit('agent:log', { message: `Content not relevant to BambiSleep: ${processed.message}`, type: 'warning' });
+      }
+      return { success: false, error: processed.message };
+    }
+    
+    // Save to knowledge base
+    console.log(`[BambiSleep QA] Adding to knowledge base: ${processed.title}`);
+    if (io) {
+      io.emit('agent:log', { message: `Adding to knowledge base: ${processed.title}`, type: 'success' });
+    }
+    
+    // Create entry for knowledge database
+    const entry = {
+      url: processed.url,
+      title: processed.title,
+      description: processed.summary,
+      category: processed.categories[0] || 'general',
+      relevance: processed.relevance,
+      contentType: 'bambisleep-info',
+      validated: true,
+      information: processed.information
+    };
+    
+    // Add to knowledge base
+    const db = loadDB();
+    
+    // Check if entry already exists
+    const existingIndex = db.findIndex(item => item.url === url);
+    if (existingIndex !== -1) {
+      // Update existing entry
+      db[existingIndex] = { ...db[existingIndex], ...entry, updatedAt: new Date().toISOString() };
+      saveDB(db);
+      
+      console.log(`[BambiSleep QA] Updated existing entry in knowledge base`);
+      if (io) {
+        io.emit('agent:log', { message: `Updated existing entry in knowledge base`, type: 'success' });
+      }
+      
+      return { success: true, updated: true, entry: db[existingIndex] };
+    }
+    
+    // Add new entry
+    const id = 'kb_' + Date.now();
+    const newEntry = { id, ...entry, addedAt: new Date().toISOString() };
+    db.push(newEntry);
+    saveDB(db);
+    
+    console.log(`[BambiSleep QA] Added new entry to knowledge base`);
+    if (io) {
+      io.emit('agent:log', { message: `Added new entry to knowledge base`, type: 'success' });
+    }
+    
+    return { success: true, added: true, entry: newEntry };
+  } catch (error) {
+    console.error(`[BambiSleep QA] Error processing content: ${error.message}`);
+    if (io) {
+      io.emit('agent:log', { message: `Error processing content: ${error.message}`, type: 'error' });
+    }
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Answer a question about BambiSleep
+ * @param {string} question Question to answer
+ * @returns {Promise<object>} Answer object
+ */
+export async function answerBambiSleepQuestion(question) {
+  try {
+    console.log(`[BambiSleep QA] Answering question: ${question}`);
+    
+    // Use QA system to answer the question
+    const answer = qaSystem.answerQuestion(question);
+    
+    // Get suggested follow-up questions
+    const suggestedQuestions = qaSystem.getSuggestedQuestions(question);
+    
+    return {
+      success: true,
+      question,
+      answer: answer.answer,
+      citations: answer.citations,
+      confidence: answer.confidence,
+      suggestedQuestions
+    };
+  } catch (error) {
+    console.error(`[BambiSleep QA] Error answering question: ${error.message}`);
+    return {
+      success: false,
+      error: error.message,
+      question,
+      answer: "I couldn't answer your question due to a technical issue. Please try again later."
+    };
+  }
+}
+
+/**
+ * Initialize the BambiSleep knowledge base with core knowledge
+ * @returns {Promise<object>} Result of initialization
+ */
+export async function initializeBambiSleepKnowledge() {
+  try {
+    console.log('[BambiSleep QA] Initializing BambiSleep knowledge base with core knowledge');
+    
+    // Core BambiSleep URLs to fetch
+    const coreUrls = [
+      'https://bambisleep.info/Welcome_to_Bambi_Sleep',
+      'https://bambisleep.info/Bambi_Sleep_FAQ',
+      'https://bambisleep.info/BS,_Consent,_And_You',
+      'https://bambisleep.info/Triggers',
+      'https://bambisleep.info/Beginner%27s_Files'
+    ];
+    
+    const results = [];
+    
+    // Process each URL
+    for (const url of coreUrls) {
+      console.log(`[BambiSleep QA] Processing core URL: ${url}`);
+      const result = await fetchAndProcessBambiSleepContent(url);
+      results.push(result);
+    }
+    
+    // Build knowledge index
+    knowledgeIndex.buildIndex();
+    
+    return {
+      success: true,
+      message: 'BambiSleep knowledge base initialized with core knowledge',
+      results
+    };
+  } catch (error) {
+    console.error(`[BambiSleep QA] Error initializing knowledge: ${error.message}`);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
 }
