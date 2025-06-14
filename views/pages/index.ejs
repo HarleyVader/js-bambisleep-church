@@ -930,6 +930,33 @@
                 }, 300);
             }, 5000);
         }
+
+        // Add crawled URLs from knowledgebase (MCP server)
+        async function loadCrawledUrlsFromServer() {
+            try {
+                const res = await fetch('/knowledge/list');
+                if (!res.ok) return;
+                const data = await res.json();
+                if (Array.isArray(data)) {
+                    // Add to localStorage for compatibility with existing code
+                    localStorage.setItem('crawledUrls', JSON.stringify(data.map(function(item) {
+                return {
+                    id: item.id,
+                    url: item.url,
+                    title: item.title || item.url,
+                    description: item.description || '',
+                    type: 'website',
+                    addedAt: item.addedAt || ''
+                };
+            })));
+                    loadPlatformCategories();
+                }
+            } catch (e) {
+                // fallback: do nothing
+            }
+        }
+        // Call on page load
+        loadCrawledUrlsFromServer();
     </script>
 
     <%- include('../partials/footer') %>

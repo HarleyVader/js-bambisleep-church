@@ -1,37 +1,49 @@
-// Knowledgebase MCP Tools - Full Rebuild
-import KnowledgeStorage from '../../knowledge/storage.js';
-import LMStudioClient from '../../lmstudio/client.js';
+// Minimal knowledgebase tools (add, search, list, get, update, delete)
+const fs = require('fs');
+const path = require('path');
+const dbPath = path.join(__dirname, '../../knowledge/knowledge.json');
 
-const storage = new KnowledgeStorage();
-const lmStudio = new LMStudioClient();
-
-export async function addKnowledge({ content, title, category, tags }) {
-  const metadata = { title, category, tags };
-  const result = await storage.addEntry(content, metadata);
-  return { success: true, id: result.id, message: 'Knowledge entry added' };
+function loadDB() {
+  if (!fs.existsSync(dbPath)) return [];
+  return JSON.parse(fs.readFileSync(dbPath, 'utf8'));
+}
+function saveDB(data) {
+  fs.writeFileSync(dbPath, JSON.stringify(data, null, 2));
 }
 
-export async function searchKnowledge({ query }) {
-  const results = await storage.searchEntries(query);
-  return { results };
-}
-
-export async function listKnowledge() {
-  const entries = await storage.listEntries();
-  return { entries };
-}
-
-export async function getKnowledge({ id }) {
-  const entry = await storage.getEntry(id);
-  return { entry };
-}
-
-export async function updateKnowledge({ id, content, metadata }) {
-  const updated = await storage.updateEntry(id, content, metadata);
-  return { updated };
-}
-
-export async function deleteKnowledge({ id }) {
-  await storage.deleteEntry(id);
-  return { deleted: true };
-}
+exports.add = (req, res) => {
+  const db = loadDB();
+  const { url, title } = req.body;
+  if (!url) return res.json({ error: 'No URL' });
+  const id = 'kb_' + Date.now();
+  db.push({ id, url, title });
+  saveDB(db);
+  res.json({ success: true, id });
+};
+exports.list = (req, res) => {
+  res.json(loadDB());
+};
+exports.search = (req, res) => {
+  const q = req.query.q || '';
+  const db = loadDB();
+  res.json(db.filter(item => item.url.includes(q) || (item.title || '').includes(q)));
+};
+exports.get = (req, res) => {
+  const db = loadDB();
+  const item = db.find(i => i.id === req.params.id);
+  res.json(item || {});
+};
+exports.update = (req, res) => {
+  const db = loadDB();
+  const idx = db.findIndex(i => i.id === req.params.id);
+  if (idx === -1) return res.json({ error: 'Not found' });
+  db[idx] = { ...db[idx], ...req.body };
+  saveDB(db);
+  res.json({ success: true });
+};
+exports.remove = (req, res) => {
+  let db = loadDB();
+  db = db.filter(i => i.id !== req.params.id);
+  saveDB(db);
+  res.json({ success: true });
+};

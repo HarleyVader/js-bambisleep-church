@@ -40,7 +40,7 @@ const client = new OpenAI({
 
 ### Core Components
 
-```
+```mermaid
 ┌─────────────────────────────────────────────────────────────┐
 │                    MCP Client (VS Code)                    │
 └─────────────────────┬───────────────────────────────────────┘
@@ -290,7 +290,7 @@ async function handleToolCall(toolCall) {
 
 ### Server Structure
 
-```
+```tree
 src/
 ├── mcp/
 │   ├── McpKnowledgeServer.js      # Main MCP server

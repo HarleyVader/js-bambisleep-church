@@ -1,22 +1,20 @@
-import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import dotenv from 'dotenv';
-import * as knowledgeTools from './tools/knowledgeTools.js';
+// Minimal MCP Server for Knowledgebase
+const express = require('express');
+const knowledgeTools = require('./tools/knowledgeTools');
 
-// Load environment variables from .env file
-dotenv.config();
+const app = express();
+app.use(express.json());
 
-const server = new Server(
-  {
-    name: 'knowledgebase-mcp',
-    version: '2.0.0',
-  },
-  {
-    capabilities: {
-      tools: knowledgeTools,
-    },
-  }
-);
+// Knowledgebase endpoints
+app.post('/knowledge/add', knowledgeTools.add);
+app.get('/knowledge/list', knowledgeTools.list);
+app.get('/knowledge/search', knowledgeTools.search);
+app.get('/knowledge/get/:id', knowledgeTools.get);
+app.post('/knowledge/update/:id', knowledgeTools.update);
+app.delete('/knowledge/delete/:id', knowledgeTools.remove);
 
-server.start(new StdioServerTransport());
-console.log('Knowledgebase MCP Server running...');
+// Start server
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => {
+  console.log(`MCP Server running on port ${PORT}`);
+});

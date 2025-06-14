@@ -18,15 +18,18 @@
 - `.gitignore` - Git ignore rules [100%]
 
 ### MCP Server & Agent [100%]
+
 - `src/mcp/McpServer.js` - Modern, minimal MCP server entrypoint (uses server.serve) [100%]
 - `src/mcp/tools/knowledgeTools.js` - Modular, up-to-date knowledgebase tools (add, search, list, get, update, delete) [100%]
 - `src/mcp/agentKnowledge.js` - Minimal, modern agent using LMStudio and MCP tools [100%]
 
 ### Knowledgebase & LMStudio [100%]
+
 - `src/knowledge/storage.js` - File-based knowledge storage [100%]
 - `src/lmstudio/client.js` - LM Studio API client [100%]
 
 ### Other
+
 - No irrelevant or legacy code remains in MCP server, agent, or tools.
 - All code is modular, minimal, and up-to-date as of June 14, 2025.
 
