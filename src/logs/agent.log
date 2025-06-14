@@ -87,3 +87,5 @@
 {"timestamp":"2025-06-14T04:22:31.386Z","level":"info","message":"Discovered 1 potential URLs","data":null}
 {"timestamp":"2025-06-14T04:22:32.831Z","level":"info","message":"Content discovery completed","data":{"discovered":1,"successful":0,"errors":1}}
 {"timestamp":"2025-06-14T04:22:35.598Z","level":"info","message":"Creating initial backup","data":null}
+{"timestamp":"2025-06-14T04:42:37.288Z","level":"info","message":"Deploying Knowledge Base Agent","data":null}
+{"timestamp":"2025-06-14T04:42:37.318Z","level":"info","message":"Agent deployed successfully. Discovery: 0 */6 * * *, Backups: 0 0 * * *","data":null}

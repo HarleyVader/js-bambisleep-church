@@ -1349,11 +1349,9 @@ export async function cleanKnowledgeBase(io = null) {
           archivedCount
         }
       });
-    }
-
-    return {
+    }    return {
       success: true,
-      message: `Cleanup completed: ${totalRemoved} entries removed (${duplicatesRemoved} duplicates, ${invalidRemoved} invalid, ${archivedCount} archived)",
+      message: `Cleanup completed: ${totalRemoved} entries removed (${duplicatesRemoved} duplicates, ${invalidRemoved} invalid, ${archivedCount} archived)`,
       summary: {
         originalCount,
         finalCount,
