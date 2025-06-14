@@ -25,7 +25,7 @@
 
 - `src/mcp/McpServer.js` - Modern, minimal MCP server entrypoint (uses server.serve) [100%]
 - `src/mcp/tools/knowledgeTools.js` - Enhanced knowledgebase tools with analytics and filtering [100%] **ENHANCED: Added analytics, category filtering, enhanced metadata support**
-- `src/mcp/agentKnowledge.js` - Intelligent Knowledge Base Agent with full automation, monitoring, and URL crawling [100%] **ENHANCED: Added backup and restore system with automatic daily backups**
+- `src/mcp/agentKnowledge.js` - Intelligent Knowledge Base Agent with full automation, monitoring, and URL crawling [100%] **ENHANCED: Fixed duplicate detection and improved crawl reporting - now properly categorizes results as new/duplicates/errors with accurate batch analysis logging**
 
 ### Tasks & Planning [100%] 🎉
 

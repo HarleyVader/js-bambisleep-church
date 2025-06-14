@@ -329,33 +329,39 @@ export async function crawlAndAnalyze(url) {
     // Step 1: URL Validation
     const validation = await validateURL(url);
     if (!validation.valid) {
-      console.log(`❌ URL validation failed for ${url}: ${validation.error}`);
-      return { url, success: false, error: true, message: `URL validation failed: ${validation.error}` };
+      const errorMsg = `URL validation failed: ${validation.error}`;
+      console.log(`❌ [${url}] ${errorMsg}`);
+      return { url, success: false, error: true, message: errorMsg };
     }
-    console.log(`✅ URL validation passed for ${url}`);
+    console.log(`✅ [${url}] URL validation passed`);
 
     // Step 2: Extract metadata and scripts
     const metadata = await extractMetadata(url);
     if (metadata.error) {
-      console.log(`❌ Metadata extraction failed for ${url}: ${metadata.error}`);
-      return { url, success: false, error: true, message: `Metadata extraction failed: ${metadata.error}` };
+      const errorMsg = `Metadata extraction failed: ${metadata.error}`;
+      console.log(`❌ [${url}] ${errorMsg}`);
+      return { url, success: false, error: true, message: errorMsg };
     }
-    console.log(`✅ Metadata extracted for ${url}: "${metadata.title}"`);
-
+    console.log(`✅ [${url}] Metadata extracted: "${metadata.title}"`);
+    
     // Step 3: Advanced duplicate detection
     const existingEntries = loadDB();
     if (isAdvancedDuplicate({ url, title: metadata.title, description: metadata.description }, existingEntries)) {
-      console.log(`⚠️ Duplicate content detected for ${url}: "${metadata.title}"`);
-      return { url, success: false, error: true, message: 'Advanced duplicate detection: Similar content already exists' };
-    }    
+      const errorMsg = 'Advanced duplicate detection: Similar content already exists';
+      console.log(`⚠️ [${url}] ${errorMsg} - Title: "${metadata.title}"`);
+      return { url, success: false, duplicate: true, message: errorMsg };
+    }
 
     // Step 4: Calculate advanced relevance with ML-like scoring
     const relevance = calculateAdvancedRelevanceScore(metadata.title, metadata.description, url);
-    console.log(`📊 Relevance score for ${url}: ${relevance}/10 (title: "${metadata.title}", description: "${metadata.description.substring(0, 100)}...")`);
+    console.log(`📊 [${url}] Relevance score: ${relevance}/10 (title: "${metadata.title}", description: "${metadata.description.substring(0, 100)}...")`);
     
-    if (relevance < 2) { // Lowered threshold from 3 to 2 for bambisleep.info
-      console.log(`❌ Low relevance score for ${url}: ${relevance}/10`);
-      return { url, success: false, error: true, message: `Low relevance score: ${relevance}/10 - Title: "${metadata.title}", Description: "${metadata.description.substring(0, 100)}..."` };
+    // Special handling for bambisleep.info - lower threshold
+    const relevanceThreshold = url.includes('bambisleep.info') ? 1 : 2;
+    if (relevance < relevanceThreshold) {
+      const errorMsg = `Low relevance score: ${relevance}/10 (threshold: ${relevanceThreshold}) - Title: "${metadata.title}", Description: "${metadata.description.substring(0, 100)}..."`;
+      console.log(`❌ [${url}] ${errorMsg}`);
+      return { url, success: false, error: true, message: errorMsg };
     }
 
     // Step 5: Categorize content
@@ -419,13 +425,23 @@ export async function crawlAndAnalyze(url) {
 
 // Batch analyze multiple URLs
 export async function batchAnalyze(urls) {
+  console.log(`📊 Starting batch analysis of ${urls.length} URLs`);
   const results = [];
+  
   for (const url of urls) {
     const result = await crawlAndAnalyze(url);
     results.push(result);
     // Small delay to avoid overwhelming servers
     await new Promise(resolve => setTimeout(resolve, 500));
   }
+  
+  // Log categorized results
+  const successful = results.filter(r => r.success).length;
+  const duplicates = results.filter(r => r.duplicate).length;
+  const errors = results.filter(r => r.error && !r.duplicate).length;
+  
+  console.log(`📈 Batch analysis completed: ${successful} new, ${duplicates} duplicates, ${errors} errors`);
+  
   return results;
 }
 
@@ -536,25 +552,27 @@ export async function runContentDiscovery() {
     }
     
     logMessage('info', `Discovered ${discoveredUrls.length} potential URLs`);
-    
-    // Process discovered URLs
+      // Process discovered URLs
     const results = await withRetry(
       () => batchAnalyze(discoveredUrls),
       'Batch analysis of discovered content'
     );
     
+    // Categorize results properly
     const successful = results.filter(r => r.success).length;
-    const errors = results.filter(r => r.error).length;
+    const duplicates = results.filter(r => r.duplicate).length;
+    const errors = results.filter(r => r.error && !r.duplicate).length;
+    
       logMessage('info', 'Content discovery completed', {
       discovered: discoveredUrls.length,
       successful,
+      duplicates,
       errors
-    });
-
-    // Send webhook notification for completed discovery
+    });    // Send webhook notification for completed discovery
     await sendWebhookNotification('discovery:complete', {
       discovered: discoveredUrls.length,
       processed: successful,
+      duplicates,
       errors,
       timestamp: new Date().toISOString()
     });
@@ -563,6 +581,7 @@ export async function runContentDiscovery() {
       success: true, 
       discovered: discoveredUrls.length, 
       processed: successful,
+      duplicates,
       errors 
     };
     
@@ -792,17 +811,17 @@ export async function crawlAndExtractLinks(submittedUrl, io = null) {
       }        try {
         // Small delay between requests to be respectful
         await new Promise(resolve => setTimeout(resolve, 2000)); // Increased delay to 2 seconds
-        
-        console.log(`🔗 Processing link ${i + 1}/${linksToProcess.length}: ${link}`);
+          console.log(`🔗 Processing link ${i + 1}/${linksToProcess.length}: ${link}`);
         const result = await crawlAndAnalyze(link);
         linkResults.push(result);
         
         if (result.success) {
           successCount++;
-          console.log(`✅ Link ${i + 1} successful: ${link}`);
+          console.log(`✅ Link ${i + 1} successful: ${link} - "${result.entry?.title || 'No title'}"`);
         } else {
           errorCount++;
-          console.log(`❌ Link ${i + 1} failed: ${link} - ${result.message}`);
+          console.log(`❌ Link ${i + 1} failed: ${link}`);
+          console.log(`   ↳ Error: ${result.message}`);
         }
         
         // Update progress more frequently
@@ -843,15 +862,28 @@ export async function crawlAndExtractLinks(submittedUrl, io = null) {
       success: true,
       results: linkResults,
       summary: { totalProcessed: linksToProcess.length, successful: successCount, failed: errorCount }
+    });    // Categorize results for better reporting
+    let addedCount = 0;
+    let duplicateCount = 0;
+    let finalErrorCount = 0;
+    
+    linkResults.forEach(result => {
+      if (result.success) {
+        addedCount++;
+      } else if (result.message && result.message.includes('duplicate')) {
+        duplicateCount++;
+      } else {
+        finalErrorCount++;
+      }
     });
 
-    // Final progress update
+    // Final progress update with better categorization
     if (io) {
       io.emit('crawl:progress', {
         percentage: 100,
         status: 'Complete!',
-        details: `Processed ${linksToProcess.length} links: ${successCount} successful, ${errorCount} failed`,
-        logMessage: `✅ Crawl complete: ${successCount} successful, ${errorCount} failed`
+        details: `Processed ${linksToProcess.length} links: ${addedCount} new, ${duplicateCount} duplicates, ${finalErrorCount} errors`,
+        logMessage: `✅ Crawl completed: ${addedCount} links found, ${addedCount} added to knowledge base`
       });
       
       io.emit('crawl:complete', {
@@ -859,29 +891,29 @@ export async function crawlAndExtractLinks(submittedUrl, io = null) {
         results: linkResults,
         summary: {
           totalProcessed: linksToProcess.length,
-          successful: successCount,
-          failed: errorCount
+          successful: addedCount,
+          duplicates: duplicateCount,
+          failed: finalErrorCount
         }
       });
-    }    // Calculate total scripts extracted
+    }// Calculate total scripts extracted
     const totalScriptsExtracted = linkResults.reduce((total, result) => {
       if (result.success && result.scriptsExtracted) {
         return total + result.scriptsExtracted;
       }
       return total;
-    }, 0);
-
-    return {
+    }, 0);    return {
       success: true,
-      message: `Successfully processed ${successCount} out of ${linksToProcess.length} links`,
+      message: `Successfully processed ${addedCount} new links out of ${linksToProcess.length} total (${duplicateCount} duplicates, ${finalErrorCount} errors)`,
       results: linkResults,
       summary: {
         totalProcessed: linksToProcess.length,
-        successful: successCount,
-        failed: errorCount
+        successful: addedCount,
+        duplicates: duplicateCount,
+        failed: finalErrorCount
       },
       linksFound: linksToProcess.length,
-      added: successCount,
+      added: addedCount,
       scriptsExtracted: totalScriptsExtracted
     };
   } catch (error) {
@@ -992,31 +1024,49 @@ function calculateSimilarity(str1, str2) {
 }
 
 function isAdvancedDuplicate(newEntry, existingEntries) {
-  const similarityThreshold = 0.8;
+  const similarityThreshold = 0.9; // Increased from 0.8 to be less aggressive
   
   for (const existing of existingEntries) {
-    // Exact URL match
+    // Exact URL match - this is a true duplicate
     if (newEntry.url === existing.url) {
       return true;
     }
     
-    // Title similarity check
+    // For bambisleep.info domains, be more lenient to allow different pages
+    if (newEntry.url.includes('bambisleep.info') && existing.url.includes('bambisleep.info')) {
+      // Only consider duplicates if URLs are very similar or identical titles
+      const urlSimilarity = calculateSimilarity(newEntry.url, existing.url);
+      if (urlSimilarity > 0.9) {
+        return true;
+      }
+      
+      // For bambisleep.info, only flag as duplicate if titles are nearly identical
+      const titleSimilarity = calculateSimilarity(newEntry.title || '', existing.title || '');
+      if (titleSimilarity > 0.95) {
+        return true;
+      }
+      
+      // Skip other similarity checks for bambisleep.info to allow different pages
+      continue;
+    }
+    
+    // Title similarity check (for non-bambisleep domains)
     const titleSimilarity = calculateSimilarity(newEntry.title || '', existing.title || '');
     if (titleSimilarity > similarityThreshold) {
       return true;
     }
     
-    // Description similarity check
+    // Description similarity check (for non-bambisleep domains)
     const descSimilarity = calculateSimilarity(newEntry.description || '', existing.description || '');
     if (descSimilarity > similarityThreshold) {
       return true;
     }
     
-    // Combined content similarity
+    // Combined content similarity (for non-bambisleep domains)
     const combinedNew = `${newEntry.title} ${newEntry.description}`;
     const combinedExisting = `${existing.title} ${existing.description}`;
     const combinedSimilarity = calculateSimilarity(combinedNew, combinedExisting);
-    if (combinedSimilarity > 0.7) {
+    if (combinedSimilarity > 0.8) { // Increased from 0.7
       return true;
     }
   }
@@ -1153,15 +1203,183 @@ function cleanupOldBackups() {
   }
 }
 
-// Export additional functions for API access
-export { 
-  sendWebhookNotification,
-  calculateAdvancedRelevanceScore,
-  isAdvancedDuplicate,
-  archiveExpiredContent
-};
+// ==================== KNOWLEDGE BASE CLEANUP ====================
 
+export async function cleanKnowledgeBase(io = null) {
+  try {
+    logMessage('info', 'Starting knowledge base cleanup');
+    
+    if (io) {
+      io.emit('cleanup:progress', {
+        percentage: 10,
+        status: 'Loading knowledge base...',
+        message: '🔍 Loading current knowledge base'
+      });
+    }
 
+    const db = loadDB();
+    const originalCount = db.length;
+    let cleaned = [];
+    let duplicatesRemoved = 0;
+    let invalidRemoved = 0;
+    let archivedCount = 0;
+
+    if (io) {
+      io.emit('cleanup:progress', {
+        percentage: 20,
+        status: 'Removing duplicates...',
+        message: `📋 Found ${originalCount} entries, removing duplicates`
+      });
+    }
+
+    // Step 1: Remove exact URL duplicates
+    const urlMap = new Map();
+    for (const entry of db) {
+      if (!entry.url || typeof entry.url !== 'string') {
+        invalidRemoved++;
+        continue;
+      }
+      
+      if (urlMap.has(entry.url)) {
+        duplicatesRemoved++;
+        continue;
+      }
+      
+      urlMap.set(entry.url, entry);
+      cleaned.push(entry);
+    }
+
+    if (io) {
+      io.emit('cleanup:progress', {
+        percentage: 40,
+        status: 'Validating entries...',
+        message: `✅ Removed ${duplicatesRemoved} duplicates, ${invalidRemoved} invalid entries`
+      });
+    }
+
+    // Step 2: Validate and clean entries
+    cleaned = cleaned.filter(entry => {
+      // Ensure required fields
+      if (!entry.id || !entry.url || !entry.title) {
+        invalidRemoved++;
+        return false;
+      }
+      
+      // Clean up malformed data
+      if (typeof entry.relevance !== 'number') {
+        entry.relevance = 1;
+      }
+      if (!entry.category) {
+        entry.category = 'general';
+      }
+      if (!entry.addedAt) {
+        entry.addedAt = new Date().toISOString();
+      }
+      
+      return true;
+    });
+
+    if (io) {
+      io.emit('cleanup:progress', {
+        percentage: 60,
+        status: 'Archiving old content...',
+        message: `🧹 Cleaned ${cleaned.length} valid entries`
+      });
+    }
+
+    // Step 3: Archive very old, low-relevance content
+    const now = Date.now();
+    const archiveThreshold = 180 * 24 * 60 * 60 * 1000; // 6 months
+    
+    cleaned = cleaned.filter(entry => {
+      const entryAge = now - new Date(entry.addedAt).getTime();
+      if (entryAge > archiveThreshold && entry.relevance < 3) {
+        archivedCount++;
+        return false;
+      }
+      return true;
+    });
+
+    if (io) {
+      io.emit('cleanup:progress', {
+        percentage: 80,
+        status: 'Sorting and organizing...',
+        message: `📦 Archived ${archivedCount} old entries`
+      });
+    }
+
+    // Step 4: Sort by relevance and date
+    cleaned.sort((a, b) => {
+      if (b.relevance !== a.relevance) {
+        return b.relevance - a.relevance;
+      }
+      return new Date(b.addedAt) - new Date(a.addedAt);
+    });
+
+    // Step 5: Save cleaned database
+    saveDB(cleaned);
+    
+    const finalCount = cleaned.length;
+    const totalRemoved = originalCount - finalCount;
+    
+    logMessage('info', 'Knowledge base cleanup completed', {
+      original: originalCount,
+      final: finalCount,
+      removed: totalRemoved,
+      duplicates: duplicatesRemoved,
+      invalid: invalidRemoved,
+      archived: archivedCount
+    });
+
+    if (io) {
+      io.emit('cleanup:progress', {
+        percentage: 100,
+        status: 'Cleanup complete!',
+        message: `✅ Cleanup finished: ${totalRemoved} entries removed`
+      });
+      
+      io.emit('cleanup:complete', {
+        success: true,
+        summary: {
+          originalCount,
+          finalCount,
+          totalRemoved,
+          duplicatesRemoved,
+          invalidRemoved,
+          archivedCount
+        }
+      });
+    }
+
+    return {
+      success: true,
+      message: `Cleanup completed: ${totalRemoved} entries removed (${duplicatesRemoved} duplicates, ${invalidRemoved} invalid, ${archivedCount} archived)",
+      summary: {
+        originalCount,
+        finalCount,
+        totalRemoved,
+        duplicatesRemoved,
+        invalidRemoved,
+        archivedCount
+      }
+    };
+
+  } catch (error) {
+    const errorMessage = `Cleanup failed: ${error.message}`;
+    logMessage('error', errorMessage, { error: error.stack });
+    
+    if (io) {
+      io.emit('cleanup:error', {
+        error: errorMessage
+      });
+    }
+    
+    return {
+      success: false,
+      error: errorMessage
+    };
+  }
+}
 
 // Get all text scripts from knowledge base
 export function getTextScripts() {
