@@ -368,8 +368,8 @@ app.get('/api/knowledge', (req, res) => {
   }
 });
 
-// Add the missing knowledge/list endpoint that returns all knowledge entries
-app.get('/knowledge/list', (req, res) => {
+// Knowledge list endpoint (needed by the knowledge.ejs page)
+app.get('/api/knowledge/list', (req, res) => {
   try {
     const knowledgePath = path.join(__dirname, 'knowledge', 'knowledge.json');
     const knowledgeData = fs.readFileSync(knowledgePath, 'utf8');
@@ -377,9 +377,58 @@ app.get('/knowledge/list', (req, res) => {
     res.json(entries);
   } catch (error) {
     console.error('Error loading knowledge list:', error);
-    res.status(500).json([]);
+    res.status(500).json({ success: false, error: 'Failed to load knowledge base' });
   }
 });
+
+// Knowledge stats endpoint
+app.get('/api/knowledge/stats', (req, res) => {
+  try {
+    const knowledgePath = path.join(__dirname, 'knowledge', 'knowledge.json');
+    if (!fs.existsSync(knowledgePath)) {
+      return res.json({ 
+        totalEntries: 0, 
+        totalCategories: 0, 
+        lastUpdated: null 
+      });
+    }
+    
+    const knowledgeData = fs.readFileSync(knowledgePath, 'utf8');
+    const entries = JSON.parse(knowledgeData);
+    
+    // Calculate stats
+    const categories = new Set();
+    let lastUpdated = null;
+    
+    entries.forEach(entry => {
+      if (entry.category) {
+        categories.add(entry.category);
+      }
+      
+      const entryDate = new Date(entry.addedAt);
+      if (!lastUpdated || entryDate > new Date(lastUpdated)) {
+        lastUpdated = entry.addedAt;
+      }
+    });
+    
+    res.json({
+      totalEntries: entries.length,
+      totalCategories: categories.size,
+      categories: Array.from(categories),
+      lastUpdated: lastUpdated
+    });
+  } catch (error) {
+    console.error('Error getting knowledge stats:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to get knowledge stats',
+      totalEntries: 0,
+      totalCategories: 0,
+      lastUpdated: null
+    });
+  }
+});
+
 
 // Webhook configuration endpoints
 app.get('/api/agent/webhooks', (req, res) => {

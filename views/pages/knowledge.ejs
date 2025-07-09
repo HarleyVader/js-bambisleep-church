@@ -1140,14 +1140,14 @@ async function loadKnowledge() {
 function updateStats() {
     document.getElementById('totalEntries').textContent = allKnowledge.length;
     
-    const categories = new Set(allKnowledge.map(k => k.metadata?.category || 'general'));
+    const categories = new Set(allKnowledge.map(k => k.category || 'general'));
     document.getElementById('totalCategories').textContent = categories.size;
     
     if (allKnowledge.length > 0) {
         const latest = allKnowledge.reduce((latest, current) => {
-            return new Date(current.metadata?.createdAt || 0) > new Date(latest.metadata?.createdAt || 0) ? current : latest;
+            return new Date(current.addedAt || 0) > new Date(latest.addedAt || 0) ? current : latest;
         });
-        const date = new Date(latest.metadata?.createdAt).toLocaleDateString();
+        const date = new Date(latest.addedAt).toLocaleDateString();
         document.getElementById('lastUpdated').textContent = date;
     }
 }
@@ -1181,13 +1181,12 @@ function renderKnowledge() {
     noResults.style.display = 'none';
     
     grid.innerHTML = filteredKnowledge.map(knowledge => `
-        <div class="knowledge-card">
-            <h3 class="knowledge-title">${escapeHtml(knowledge.metadata?.title || 'Untitled')}</h3>
+        <div class="knowledge-card">            <h3 class="knowledge-title">${escapeHtml(knowledge.title || 'Untitled')}</h3>
             <div class="knowledge-meta">
-                <span class="knowledge-category">${escapeHtml(knowledge.metadata?.category || 'general')}</span>
-                <span class="knowledge-date">${new Date(knowledge.metadata?.createdAt).toLocaleDateString()}</span>
+                <span class="knowledge-category">${escapeHtml(knowledge.category || 'general')}</span>
+                <span class="knowledge-date">${new Date(knowledge.addedAt).toLocaleDateString()}</span>
             </div>
-            <div class="knowledge-content">${escapeHtml(truncateText(knowledge.content, 200))}</div>
+            <div class="knowledge-content">${escapeHtml(truncateText(knowledge.description, 200))}</div>
             <div class="knowledge-actions">
                 <button class="action-btn" onclick="viewKnowledge('${knowledge.id}')">View</button>
                 <button class="action-btn" onclick="copyKnowledge('${knowledge.id}')">Copy</button>
@@ -1199,14 +1198,13 @@ function renderKnowledge() {
 function searchKnowledge() {
     const query = document.getElementById('searchInput').value.toLowerCase();
     const category = document.getElementById('categoryFilter').value;
-    
-    filteredKnowledge = allKnowledge.filter(knowledge => {
+      filteredKnowledge = allKnowledge.filter(knowledge => {
         const matchesQuery = !query || 
-            knowledge.content.toLowerCase().includes(query) ||
-            (knowledge.metadata?.title || '').toLowerCase().includes(query);
+            (knowledge.description || '').toLowerCase().includes(query) ||
+            (knowledge.title || '').toLowerCase().includes(query);
         
         const matchesCategory = !category || 
-            (knowledge.metadata?.category || 'general') === category;
+            (knowledge.category || 'general') === category;
         
         return matchesQuery && matchesCategory;
     });
@@ -1242,16 +1240,14 @@ function viewKnowledge(id) {
                     position: absolute; top: 1rem; right: 1rem;
                     background: none; border: none; color: var(--text-secondary);
                     font-size: 1.5rem; cursor: pointer;
-                ">×</button>
-                <h2 style="color: var(--neon-blue); margin: 0 0 1rem 0;">
-                    ${escapeHtml(knowledge.metadata?.title || 'Untitled')}
+                ">×</button>                <h2 style="color: var(--neon-blue); margin: 0 0 1rem 0;">
+                    ${escapeHtml(knowledge.title || 'Untitled')}
                 </h2>
                 <div style="margin-bottom: 1rem; color: var(--text-secondary);">
-                    Category: ${escapeHtml(knowledge.metadata?.category || 'general')} | 
-                    Created: ${new Date(knowledge.metadata?.createdAt).toLocaleString()}
-                </div>
-                <div style="color: var(--text-primary); line-height: 1.6; white-space: pre-wrap;">
-                    ${escapeHtml(knowledge.content)}
+                    Category: ${escapeHtml(knowledge.category || 'general')} | 
+                    Added: ${new Date(knowledge.addedAt).toLocaleString()}
+                </div>                <div style="color: var(--text-primary); line-height: 1.6; white-space: pre-wrap;">
+                    ${escapeHtml(knowledge.description || 'No description available.')}
                 </div>
             </div>
         `;
@@ -1261,9 +1257,8 @@ function viewKnowledge(id) {
 }
 
 function copyKnowledge(id) {
-    const knowledge = allKnowledge.find(k => k.id === id);
-    if (knowledge) {
-        navigator.clipboard.writeText(knowledge.content).then(() => {
+    const knowledge = allKnowledge.find(k => k.id === id);    if (knowledge) {
+        navigator.clipboard.writeText(knowledge.description || knowledge.title || '').then(() => {
             alert('Knowledge copied to clipboard!');
         }).catch(() => {
             alert('Failed to copy to clipboard');
@@ -1272,6 +1267,7 @@ function copyKnowledge(id) {
 }
 
 function truncateText(text, maxLength) {
+    if (!text) return ''; // Handle undefined or null values
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength) + '...';
 }
