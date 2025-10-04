@@ -93,10 +93,11 @@
 ## Recent Upgrades (Commit 60f6821)
 
 ### Geolocation System
+
 - **Package:** geoip-lite 1.4.10
 - **Middleware:** Automatic IP detection and geolocation lookup
 - **Location Object:** { ip, country, region, city, timezone, coordinates, isLocalhost }
-- **API Endpoints:** 
+- **API Endpoints:**
   - `/api/location` - Returns visitor geolocation + timestamp
   - `/api/stats` - Comprehensive church statistics (visitors, knowledge, church status)
 - **Template Integration:** All 4 pages receive location data

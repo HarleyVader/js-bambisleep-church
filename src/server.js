@@ -24,17 +24,17 @@ app.use(express.json());
 
 // Geolocation middleware
 app.use((req, res, next) => {
-    const ip = req.headers['x-forwarded-for']?.split(',')[0] || 
-               req.connection.remoteAddress || 
-               req.socket.remoteAddress ||
-               req.ip;
-    
+    const ip = req.headers['x-forwarded-for']?.split(',')[0] ||
+        req.connection.remoteAddress ||
+        req.socket.remoteAddress ||
+        req.ip;
+
     // Clean IPv6 localhost format
     const cleanIp = ip.replace('::ffff:', '');
-    
+
     // Get geolocation data
     const geo = geoip.lookup(cleanIp);
-    
+
     req.location = {
         ip: cleanIp,
         country: geo?.country || 'Unknown',
@@ -44,7 +44,7 @@ app.use((req, res, next) => {
         coordinates: geo?.ll || [0, 0],
         isLocalhost: cleanIp === '127.0.0.1' || cleanIp === '::1' || cleanIp.startsWith('192.168')
     };
-    
+
     next();
 });
 
