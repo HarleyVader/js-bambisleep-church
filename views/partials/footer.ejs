@@ -7,6 +7,15 @@
           <span>|</span>
           <a href="https://github.com/HarleyVader/js-bambisleep-church" target="_blank">GitHub</a>
         </div>
+        <% if (typeof location !== 'undefined' && !location.isLocalhost) { %>
+        <div class="location-info" style="margin-top: 1rem; font-size: 0.85rem; opacity: 0.7;">
+          📍 Connected from: <%= location.city %>, <%= location.country %> (<%= location.timezone %>)
+        </div>
+        <% } else if (typeof location !== 'undefined' && location.isLocalhost) { %>
+        <div class="location-info" style="margin-top: 1rem; font-size: 0.85rem; opacity: 0.7;">
+          🏠 Local Development Mode
+        </div>
+        <% } %>
       </div>
     </footer>
     </body>
