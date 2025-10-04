@@ -1,8 +1,0 @@
-<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-  <rect width="120" height="120" fill="#333333" rx="8"/>
-  <circle cx="60" cy="45" r="20" fill="white"/>
-  <polygon points="54,40 54,50 64,45" fill="#333333"/>
-  <rect x="20" y="70" width="80" height="4" fill="white" rx="2"/>
-  <rect x="20" y="70" width="30" height="4" fill="#00ff00" rx="2"/>
-  <text x="60" y="108" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="10" font-weight="bold">Audio</text>
-</svg>

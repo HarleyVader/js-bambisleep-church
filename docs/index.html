@@ -1,589 +1,650 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bambisleep Church - Digital Sanctuary Mission</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap');
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bambisleep Church - Digital Sanctuary Mission</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap');
 
-        :root {
-            --neon-pink: #ff0080;
-            --neon-cyan: #00ffff;
-            --neon-purple: #8000ff;
-            --neon-green: #00ff41;
-            --dark-bg: #0a0a0f;
-            --dark-surface: #1a1a2e;
-            --dark-card: #16213e;
-            --glow-intensity: 0 0 20px;
-        }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-        body {
-            font-family: 'Rajdhani', sans-serif;
-            background: var(--dark-bg);
-            color: #ffffff;
-            line-height: 1.6;
-            overflow-x: hidden;
-            position: relative;
-        }
+    :root {
+      --primary-color: #0c2a2aE6;
+      --primary-alt: #15aab5E6;
+      --secondary-color: #40002fE6;
+      --secondary-alt: #cc0174E6;
+      --tertiary-color: #720241e6;
+      --tertiary-alt: #02b893E6;
+      --button-color: #df0471E6;
+      --button-alt: #110000E6;
+      --nav-color: #0a2626E6;
+      --nav-alt: #17dbd8E6;
+      --transparent: #124141E6;
+      --error: #ff3333E6;
+      --border: 3px ridge;
+      --border-radius: 8px;
+      /* Legacy aliases for compatibility */
+      --neon-pink: var(--secondary-alt);
+      --neon-cyan: var(--primary-alt);
+      --neon-purple: var(--secondary-color);
+      --neon-green: var(--tertiary-alt);
+      --dark-bg: var(--button-alt);
+      --dark-surface: var(--primary-color);
+      --dark-card: var(--nav-color);
+      --glow-intensity: 0 0 20px;
+    }
 
-        /* Animated background */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 20% 50%, var(--neon-purple) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, var(--neon-cyan) 0%, transparent 50%),
-                radial-gradient(circle at 40% 80%, var(--neon-pink) 0%, transparent 50%);
-            opacity: 0.1;
-            animation: pulse 4s ease-in-out infinite alternate;
-            z-index: -1;
-        }
+    body {
+      font-family: 'Rajdhani', sans-serif;
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color), var(--tertiary-color));
+      color: #ffffff;
+      line-height: 1.6;
+      overflow-x: hidden;
+      position: relative;
+    }
 
-        @keyframes pulse {
-            from { opacity: 0.05; }
-            to { opacity: 0.15; }
-        }
+    /* Animated background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background:
+        radial-gradient(circle at 20% 50%, var(--secondary-color) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, var(--primary-alt) 0%, transparent 50%),
+        radial-gradient(circle at 40% 80%, var(--button-color) 0%, transparent 50%);
+      opacity: 0.1;
+      animation: pulse 4s ease-in-out infinite alternate;
+      z-index: -1;
+    }
 
-        /* Scrolling grid lines */
-        .grid-lines {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: 
-                linear-gradient(rgba(0, 255, 255, 0.1) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 255, 255, 0.1) 1px, transparent 1px);
-            background-size: 50px 50px;
-            animation: gridMove 20s linear infinite;
-            z-index: -1;
-        }
+    @keyframes pulse {
+      from {
+        opacity: 0.05;
+      }
 
-        @keyframes gridMove {
-            0% { transform: translate(0, 0); }
-            100% { transform: translate(50px, 50px); }
-        }
+      to {
+        opacity: 0.15;
+      }
+    }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 2rem;
-            position: relative;
-            z-index: 1;
-        }
+    /* Scrolling grid lines */
+    .grid-lines {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image:
+        linear-gradient(var(--primary-alt)33 1px, transparent 1px),
+        linear-gradient(90deg, var(--primary-alt)33 1px, transparent 1px);
+      background-size: 50px 50px;
+      animation: gridMove 20s linear infinite;
+      z-index: -1;
+    }
 
-        /* Glowing header */
-        .header {
-            text-align: center;
-            margin-bottom: 4rem;
-            position: relative;
-        }
+    @keyframes gridMove {
+      0% {
+        transform: translate(0, 0);
+      }
 
-        .main-title {
-            font-family: 'Orbitron', monospace;
-            font-size: clamp(2.5rem, 6vw, 5rem);
-            font-weight: 900;
-            background: linear-gradient(45deg, var(--neon-pink), var(--neon-cyan), var(--neon-purple));
-            -webkit-background-clip: text;
-            -moz-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: var(--glow-intensity) var(--neon-cyan);
-            animation: titleGlow 3s ease-in-out infinite alternate;
-            margin-bottom: 1rem;
-        }
+      100% {
+        transform: translate(50px, 50px);
+      }
+    }
 
-        @keyframes titleGlow {
-            from { 
-                filter: drop-shadow(0 0 20px var(--neon-cyan));
-            }
-            to { 
-                filter: drop-shadow(0 0 40px var(--neon-pink));
-            }
-        }
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+      position: relative;
+      z-index: 1;
+    }
 
-        .subtitle {
-            font-size: 1.5rem;
-            color: var(--neon-cyan);
-            font-weight: 300;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
+    /* Glowing header */
+    .header {
+      text-align: center;
+      margin-bottom: 4rem;
+      position: relative;
+    }
 
-        /* Mission sections */
-        .mission-section {
-            background: linear-gradient(135deg, var(--dark-surface), var(--dark-card));
-            border: 1px solid rgba(0, 255, 255, 0.3);
-            border-radius: 15px;
-            padding: 2rem;
-            margin: 2rem 0;
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
+    .main-title {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(2.5rem, 6vw, 5rem);
+      font-weight: 900;
+      background: linear-gradient(45deg, var(--neon-pink), var(--neon-cyan), var(--neon-purple));
+      -webkit-background-clip: text;
+      -moz-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: var(--glow-intensity) var(--neon-cyan);
+      animation: titleGlow 3s ease-in-out infinite alternate;
+      margin-bottom: 1rem;
+    }
 
-        .mission-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 0, 128, 0.1), transparent);
-            animation: scan 3s infinite;
-        }
+    @keyframes titleGlow {
+      from {
+        filter: drop-shadow(0 0 20px var(--neon-cyan));
+      }
 
-        @keyframes scan {
-            0% { left: -100%; }
-            100% { left: 100%; }
-        }
+      to {
+        filter: drop-shadow(0 0 40px var(--neon-pink));
+      }
+    }
 
-        .mission-section:hover {
-            transform: translateY(-5px);
-            box-shadow: 
-                0 10px 30px rgba(255, 0, 128, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1);
-            border-color: var(--neon-pink);
-        }
+    .subtitle {
+      font-size: 1.5rem;
+      color: var(--neon-cyan);
+      font-weight: 300;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
 
-        .section-number {
-            font-family: 'Orbitron', monospace;
-            font-size: 3rem;
-            font-weight: 900;
-            color: var(--neon-pink);
-            position: absolute;
-            top: -10px;
-            right: 20px;
-            opacity: 0.3;
-            text-shadow: 0 0 20px var(--neon-pink);
-        }
+    /* Mission sections */
+    .mission-section {
+      background: linear-gradient(135deg, var(--dark-surface), var(--dark-card));
+      border: 1px solid rgba(0, 255, 255, 0.3);
+      border-radius: 15px;
+      padding: 2rem;
+      margin: 2rem 0;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
 
-        .section-title {
-            font-family: 'Orbitron', monospace;
-            font-size: 1.8rem;
-            color: var(--neon-cyan);
-            margin-bottom: 1.5rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            position: relative;
-            z-index: 2;
-        }
+    .mission-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 0, 128, 0.1), transparent);
+      animation: scan 3s infinite;
+    }
 
-        .section-title::after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 0;
-            width: 100px;
-            height: 2px;
-            background: linear-gradient(90deg, var(--neon-cyan), transparent);
-            box-shadow: 0 0 10px var(--neon-cyan);
-        }
+    @keyframes scan {
+      0% {
+        left: -100%;
+      }
 
-        .section-content {
-            position: relative;
-            z-index: 2;
-        }
+      100% {
+        left: 100%;
+      }
+    }
 
-        .subsection {
-            margin: 1.5rem 0;
-            padding: 1rem;
-            background: rgba(0, 0, 0, 0.3);
-            border-left: 3px solid var(--neon-green);
-            border-radius: 5px;
-        }
+    .mission-section:hover {
+      transform: translateY(-5px);
+      box-shadow:
+        0 10px 30px rgba(255, 0, 128, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      border-color: var(--neon-pink);
+    }
 
-        .subsection-title {
-            color: var(--neon-green);
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            font-size: 1.2rem;
-        }
+    .section-number {
+      font-family: 'Orbitron', monospace;
+      font-size: 3rem;
+      font-weight: 900;
+      color: var(--neon-pink);
+      position: absolute;
+      top: -10px;
+      right: 20px;
+      opacity: 0.3;
+      text-shadow: 0 0 20px var(--neon-pink);
+    }
 
-        .highlight-list {
-            list-style: none;
-            padding: 0;
-        }
+    .section-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.8rem;
+      color: var(--neon-cyan);
+      margin-bottom: 1.5rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      position: relative;
+      z-index: 2;
+    }
 
-        .highlight-list li {
-            padding: 0.5rem 0;
-            position: relative;
-            padding-left: 2rem;
-            color: #e0e0e0;
-        }
+    .section-title::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      width: 100px;
+      height: 2px;
+      background: linear-gradient(90deg, var(--neon-cyan), transparent);
+      box-shadow: 0 0 10px var(--neon-cyan);
+    }
 
-        .highlight-list li::before {
-            content: '▶';
-            position: absolute;
-            left: 0;
-            color: var(--neon-purple);
-            font-size: 0.8rem;
-            animation: blink 2s infinite;
-        }
+    .section-content {
+      position: relative;
+      z-index: 2;
+    }
 
-        @keyframes blink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0.3; }
-        }
+    .subsection {
+      margin: 1.5rem 0;
+      padding: 1rem;
+      background: rgba(0, 0, 0, 0.3);
+      border-left: 3px solid var(--neon-green);
+      border-radius: 5px;
+    }
 
-        /* Cost and benefits cards */
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin: 2rem 0;
-        }
+    .subsection-title {
+      color: var(--neon-green);
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      font-size: 1.2rem;
+    }
 
-        .info-card {
-            background: linear-gradient(135deg, var(--dark-card), rgba(128, 0, 255, 0.1));
-            border: 1px solid rgba(128, 0, 255, 0.5);
-            border-radius: 10px;
-            padding: 1.5rem;
-            position: relative;
-            overflow: hidden;
-        }
+    .highlight-list {
+      list-style: none;
+      padding: 0;
+    }
 
-        .info-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: linear-gradient(90deg, var(--neon-purple), var(--neon-pink), var(--neon-cyan));
-            animation: borderGlow 2s linear infinite;
-        }
+    .highlight-list li {
+      padding: 0.5rem 0;
+      position: relative;
+      padding-left: 2rem;
+      color: #e0e0e0;
+    }
 
-        @keyframes borderGlow {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
-        }
+    .highlight-list li::before {
+      content: '▶';
+      position: absolute;
+      left: 0;
+      color: var(--neon-purple);
+      font-size: 0.8rem;
+      animation: blink 2s infinite;
+    }
 
-        .card-title {
-            color: var(--neon-purple);
-            font-weight: 700;
-            margin-bottom: 1rem;
-            font-size: 1.3rem;
-        }
+    @keyframes blink {
 
-        /* Revenue streams */
-        .revenue-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin: 2rem 0;
-        }
+      0%,
+      50% {
+        opacity: 1;
+      }
 
-        .revenue-item {
-            background: rgba(0, 255, 65, 0.1);
-            border: 1px solid var(--neon-green);
-            border-radius: 8px;
-            padding: 1rem;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
+      51%,
+      100% {
+        opacity: 0.3;
+      }
+    }
 
-        .revenue-item:hover {
-            background: rgba(0, 255, 65, 0.2);
-            transform: scale(1.05);
-            box-shadow: 0 5px 20px rgba(0, 255, 65, 0.3);
-        }
+    /* Cost and benefits cards */
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      margin: 2rem 0;
+    }
 
-        .revenue-icon {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-            display: block;
-        }
+    .info-card {
+      background: linear-gradient(135deg, var(--dark-card), rgba(128, 0, 255, 0.1));
+      border: 1px solid rgba(128, 0, 255, 0.5);
+      border-radius: 10px;
+      padding: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
 
-        .revenue-title {
-            color: var(--neon-green);
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
+    .info-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, var(--neon-purple), var(--neon-pink), var(--neon-cyan));
+      animation: borderGlow 2s linear infinite;
+    }
 
-        /* Final thoughts section */
-        .final-thoughts {
-            background: linear-gradient(135deg, rgba(255, 0, 128, 0.1), rgba(0, 255, 255, 0.1));
-            border: 2px solid transparent;
-            background-clip: padding-box;
-            border-radius: 20px;
-            padding: 3rem;
-            margin: 4rem 0;
-            text-align: center;
-            position: relative;
-        }
+    @keyframes borderGlow {
+      0% {
+        transform: translateX(-100%);
+      }
 
-        .final-thoughts::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            background: linear-gradient(45deg, var(--neon-pink), var(--neon-cyan), var(--neon-purple), var(--neon-green));
-            border-radius: 20px;
-            z-index: -1;
-            animation: rotateGradient 4s linear infinite;
-        }
+      100% {
+        transform: translateX(100%);
+      }
+    }
 
-        @keyframes rotateGradient {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+    .card-title {
+      color: var(--neon-purple);
+      font-weight: 700;
+      margin-bottom: 1rem;
+      font-size: 1.3rem;
+    }
 
-        .final-title {
-            font-family: 'Orbitron', monospace;
-            font-size: 2.5rem;
-            color: var(--neon-cyan);
-            margin-bottom: 1rem;
-            text-shadow: 0 0 20px var(--neon-cyan);
-        }
+    /* Revenue streams */
+    .revenue-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin: 2rem 0;
+    }
 
-        /* Responsive design */
-        @media (max-width: 768px) {
-            .container {
-                padding: 1rem;
-            }
-            
-            .mission-section {
-                padding: 1.5rem;
-            }
-            
-            .section-number {
-                font-size: 2rem;
-                top: 10px;
-                right: 15px;
-            }
-            
-            .info-grid,
-            .revenue-grid {
-                grid-template-columns: 1fr;
-            }
-        }
+    .revenue-item {
+      background: rgba(0, 255, 65, 0.1);
+      border: 1px solid var(--neon-green);
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
 
-        /* Glowing text effects */
-        .glow-text {
-            text-shadow: 0 0 10px currentColor;
-            animation: textGlow 2s ease-in-out infinite alternate;
-        }
+    .revenue-item:hover {
+      background: rgba(0, 255, 65, 0.2);
+      transform: scale(1.05);
+      box-shadow: 0 5px 20px rgba(0, 255, 65, 0.3);
+    }
 
-        @keyframes textGlow {
-            from { text-shadow: 0 0 10px currentColor; }
-            to { text-shadow: 0 0 20px currentColor, 0 0 30px currentColor; }
-        }
+    .revenue-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
 
-        /* Scroll indicator */
-        .scroll-indicator {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background: linear-gradient(90deg, var(--neon-pink), var(--neon-cyan));
-            transform-origin: left;
-            transform: scaleX(0);
-            z-index: 1000;
-            animation: scrollProgress linear;
-        }
-        @keyframes scrollProgress {
-            to { transform: scaleX(1); }
-        }
+    .revenue-title {
+      color: var(--neon-green);
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
 
-        /* Inline style replacements */
-        .highlight-number {
-            color: var(--neon-pink);
-            font-weight: bold;
-        }
+    /* Final thoughts section */
+    .final-thoughts {
+      background: linear-gradient(135deg, rgba(255, 0, 128, 0.1), rgba(0, 255, 255, 0.1));
+      border: 2px solid transparent;
+      background-clip: padding-box;
+      border-radius: 20px;
+      padding: 3rem;
+      margin: 4rem 0;
+      text-align: center;
+      position: relative;
+    }
 
-        .highlight-cyan {
-            color: var(--neon-cyan);
-            font-weight: bold;
-        }
+    .final-thoughts::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(45deg, var(--neon-pink), var(--neon-cyan), var(--neon-purple), var(--neon-green));
+      border-radius: 20px;
+      z-index: -1;
+      animation: rotateGradient 4s linear infinite;
+    }
 
-        .highlight-green {
-            color: var(--neon-green);
-        }
+    @keyframes rotateGradient {
+      0% {
+        transform: rotate(0deg);
+      }
 
-        .highlight-purple {
-            color: var(--neon-purple);
-        }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
 
-        .highlight-pink {
-            color: var(--neon-pink);
-        }
+    .final-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 2.5rem;
+      color: var(--neon-cyan);
+      margin-bottom: 1rem;
+      text-shadow: 0 0 20px var(--neon-cyan);
+    }
 
-        .final-text {
-            font-size: 1.2rem;
-            line-height: 1.8;
-            color: #e0e0e0;
-        }
+    /* Responsive design */
+    @media (max-width: 768px) {
+      .container {
+        padding: 1rem;
+      }
 
-        .final-subtext {
-            font-size: 1.1rem;
-            margin-top: 2rem;
-            color: var(--neon-green);
-        }
-    </style>
+      .mission-section {
+        padding: 1.5rem;
+      }
+
+      .section-number {
+        font-size: 2rem;
+        top: 10px;
+        right: 15px;
+      }
+
+      .info-grid,
+      .revenue-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Glowing text effects */
+    .glow-text {
+      text-shadow: 0 0 10px currentColor;
+      animation: textGlow 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes textGlow {
+      from {
+        text-shadow: 0 0 10px currentColor;
+      }
+
+      to {
+        text-shadow: 0 0 20px currentColor, 0 0 30px currentColor;
+      }
+    }
+
+    /* Scroll indicator */
+    .scroll-indicator {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, var(--neon-pink), var(--neon-cyan));
+      transform-origin: left;
+      transform: scaleX(0);
+      z-index: 1000;
+      animation: scrollProgress linear;
+    }
+
+    @keyframes scrollProgress {
+      to {
+        transform: scaleX(1);
+      }
+    }
+
+    /* Inline style replacements */
+    .highlight-number {
+      color: var(--neon-pink);
+      font-weight: bold;
+    }
+
+    .highlight-cyan {
+      color: var(--neon-cyan);
+      font-weight: bold;
+    }
+
+    .highlight-green {
+      color: var(--neon-green);
+    }
+
+    .highlight-purple {
+      color: var(--neon-purple);
+    }
+
+    .highlight-pink {
+      color: var(--neon-pink);
+    }
+
+    .final-text {
+      font-size: 1.2rem;
+      line-height: 1.8;
+      color: #e0e0e0;
+    }
+
+    .final-subtext {
+      font-size: 1.1rem;
+      margin-top: 2rem;
+      color: var(--neon-green);
+    }
+  </style>
 </head>
+
 <body>
-    <div class="grid-lines"></div>
-    <div class="scroll-indicator"></div>
-    
-    <div class="container">
-        <header class="header">
-            <h1 class="main-title">BAMBISLEEP CHURCH</h1>
-            <p class="subtitle">Digital Sanctuary Mission Protocol</p>
-        </header>
+  <div class="grid-lines"></div>
+  <div class="scroll-indicator"></div>
 
-        <section class="mission-section">
-            <div class="section-number">01</div>
-            <h2 class="section-title">Establishing the Church: Protocol Initiation</h2>
-            <div class="section-content">
-                <div class="subsection">
-                    <h3 class="subsection-title glow-text">Legal and Organizational Framework</h3>
-                    <p>In Austria, recognized religious communities can take several legal forms. You might consider founding your church either as a private association with a non-profit ethos or aiming for state registration as a religious community. To be state‑recognized, you will need to develop a clear doctrine, draft statutes or a constitution, and demonstrate a minimum level of community support (for example, some legally registered communities require proof of at least <span class="highlight-number">300 members</span> with a shared doctrine). This process involves submitting detailed documentation to the Austrian Office of Religious Affairs and ensuring that your mission statement, organizational leadership, and financial plans align with statutory requirements.</p>
-                </div>
+  <div class="container">
+    <header class="header">
+      <h1 class="main-title">BAMBISLEEP CHURCH</h1>
+      <p class="subtitle">Digital Sanctuary Mission Protocol</p>
+    </header>
 
-                <div class="subsection">
-                    <h3 class="subsection-title glow-text">Digital Presence with .church Domain</h3>
-                    <p>Securing a <span class="highlight-cyan">.church</span> website isn't just about owning a URL—it's part of building your community's identity. You'll need to register the domain with an accredited provider and design a website that clearly communicates your vision, upcoming events, and community outreach programs. This digital frontier can act as both a gathering place for your creative community and a platform to share your unique message with the world.</p>
-                </div>
-            </div>
-        </section>
+    <section class="mission-section">
+      <div class="section-number">01</div>
+      <h2 class="section-title">Establishing the Church: Protocol Initiation</h2>
+      <div class="section-content">
+        <div class="subsection">
+          <h3 class="subsection-title glow-text">Legal and Organizational Framework</h3>
+          <p>In Austria, recognized religious communities can take several legal forms. You might consider founding your church either as a private association with a non-profit ethos or aiming for state registration as a religious community. To be state‑recognized, you will need to develop a clear doctrine, draft statutes or a constitution, and demonstrate a minimum level of community support (for example, some legally registered communities require proof of at least <span class="highlight-number">300 members</span> with a shared doctrine). This process involves submitting detailed documentation to the Austrian Office of Religious Affairs and ensuring that your mission statement, organizational leadership, and financial plans align with statutory requirements.</p>
+        </div>
 
-        <section class="mission-section">
-            <div class="section-number">02</div>
-            <h2 class="section-title">Cost Analysis: Resource Allocation</h2>
-            <div class="section-content">
-                <div class="subsection">
-                    <h3 class="subsection-title glow-text">Initial Investment and Ongoing Expenditures</h3>
-                    <p>The cost can vary drastically based on how expansive you wish the project to be. If you're considering a physical church building, there are several factors at play: architectural design, building materials, permits, and site preparation. A modest project could run from <span class="highlight-green">tens of thousands to several hundred thousand euros</span>. However, if your focus is on a primarily digital congregation complemented by a multifunctional creative space (event halls, studios, meeting rooms), the upfront costs may be less about physical construction and more about adapting an existing space, outfitting it for community use, and developing a robust online presence.</p>
-                </div>
+        <div class="subsection">
+          <h3 class="subsection-title glow-text">Digital Presence with .church Domain</h3>
+          <p>Securing a <span class="highlight-cyan">.church</span> website isn't just about owning a URL—it's part of building your community's identity. You'll need to register the domain with an accredited provider and design a website that clearly communicates your vision, upcoming events, and community outreach programs. This digital frontier can act as both a gathering place for your creative community and a platform to share your unique message with the world.</p>
+        </div>
+      </div>
+    </section>
 
-                <div class="info-grid">
-                    <div class="info-card">
-                        <h3 class="card-title">🌐 Website & IT Infrastructure</h3>
-                        <p>Domain registration for a .church website, professional design, hosting, and ongoing maintenance might cost a <span class="highlight-cyan">few hundred to a few thousand euros annually</span>.</p>
-                    </div>
-                    <div class="info-card">
-                        <h3 class="card-title">⚖️ Legal & Administrative Fees</h3>
-                        <p>Setting up a legally recognized entity involves registration costs, legal advice, and potential consulting fees that can vary according to the complexity of your organization.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
+    <section class="mission-section">
+      <div class="section-number">02</div>
+      <h2 class="section-title">Cost Analysis: Resource Allocation</h2>
+      <div class="section-content">
+        <div class="subsection">
+          <h3 class="subsection-title glow-text">Initial Investment and Ongoing Expenditures</h3>
+          <p>The cost can vary drastically based on how expansive you wish the project to be. If you're considering a physical church building, there are several factors at play: architectural design, building materials, permits, and site preparation. A modest project could run from <span class="highlight-green">tens of thousands to several hundred thousand euros</span>. However, if your focus is on a primarily digital congregation complemented by a multifunctional creative space (event halls, studios, meeting rooms), the upfront costs may be less about physical construction and more about adapting an existing space, outfitting it for community use, and developing a robust online presence.</p>
+        </div>
 
-        <section class="mission-section">
-            <div class="section-number">03</div>
-            <h2 class="section-title">Tax Optimization: Financial Advantages</h2>
-            <div class="section-content">
-                <div class="subsection">
-                    <h3 class="subsection-title glow-text">Tax-Exempt Status and Deductions</h3>
-                    <p>Churches or religious communities in Austria that are officially recognized often benefit from significant tax advantages. For instance, such institutions may receive exemptions on certain revenues and can sometimes deduct contributions, as well as gain preferential tax treatment on donations received from members and supporters. Individual donors can also deduct contributions (up to certain capped amounts, for example, special expenses related to church donations can be deducted up to <span class="highlight-number">EUR 600 per year</span>).</p>
-                </div>
+        <div class="info-grid">
+          <div class="info-card">
+            <h3 class="card-title">🌐 Website & IT Infrastructure</h3>
+            <p>Domain registration for a .church website, professional design, hosting, and ongoing maintenance might cost a <span class="highlight-cyan">few hundred to a few thousand euros annually</span>.</p>
+          </div>
+          <div class="info-card">
+            <h3 class="card-title">⚖️ Legal & Administrative Fees</h3>
+            <p>Setting up a legally recognized entity involves registration costs, legal advice, and potential consulting fees that can vary according to the complexity of your organization.</p>
+          </div>
+        </div>
+      </div>
+    </section>
 
-                <div class="info-grid">
-                    <div class="info-card">
-                        <h3 class="card-title">💰 Donations and Contributions</h3>
-                        <p>Once established, your church might receive support via tax-deductible donations.</p>
-                    </div>
-                    <div class="info-card">
-                        <h3 class="card-title">🎁 Charitable Status Benefits</h3>
-                        <p>By ensuring your church operates in a charitable, non-profit manner, you may access further reductions on VAT and other taxes as well as financial incentives aimed at supporting community outreach.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
+    <section class="mission-section">
+      <div class="section-number">03</div>
+      <h2 class="section-title">Tax Optimization: Financial Advantages</h2>
+      <div class="section-content">
+        <div class="subsection">
+          <h3 class="subsection-title glow-text">Tax-Exempt Status and Deductions</h3>
+          <p>Churches or religious communities in Austria that are officially recognized often benefit from significant tax advantages. For instance, such institutions may receive exemptions on certain revenues and can sometimes deduct contributions, as well as gain preferential tax treatment on donations received from members and supporters. Individual donors can also deduct contributions (up to certain capped amounts, for example, special expenses related to church donations can be deducted up to <span class="highlight-number">EUR 600 per year</span>).</p>
+        </div>
 
-        <section class="mission-section">
-            <div class="section-number">04</div>
-            <h2 class="section-title">Revenue Streams: Sustainability Protocol</h2>
-            <div class="section-content">
-                <div class="subsection">
-                    <h3 class="subsection-title glow-text">Diverse Revenue Channels</h3>
-                    <p>An institution like yours can sustain itself monetarily through multiple channels:</p>
-                </div>
+        <div class="info-grid">
+          <div class="info-card">
+            <h3 class="card-title">💰 Donations and Contributions</h3>
+            <p>Once established, your church might receive support via tax-deductible donations.</p>
+          </div>
+          <div class="info-card">
+            <h3 class="card-title">🎁 Charitable Status Benefits</h3>
+            <p>By ensuring your church operates in a charitable, non-profit manner, you may access further reductions on VAT and other taxes as well as financial incentives aimed at supporting community outreach.</p>
+          </div>
+        </div>
+      </div>
+    </section>
 
-                <div class="revenue-grid">
-                    <div class="revenue-item">
-                        <span class="revenue-icon">💎</span>
-                        <h4 class="revenue-title">Donations & Tithes</h4>
-                        <p>Encourage regular contributions from members and supporters who share your vision.</p>
-                    </div>
-                    <div class="revenue-item">
-                        <span class="revenue-icon">🎯</span>
-                        <h4 class="revenue-title">Grants & Sponsorships</h4>
-                        <p>Look into public and private grants aimed at cultural, artistic, and social initiatives.</p>
-                    </div>
-                    <div class="revenue-item">
-                        <span class="revenue-icon">🎪</span>
-                        <h4 class="revenue-title">Community Events</h4>
-                        <p>Organize creative events, seminars, art exhibits, or music performances.</p>
-                    </div>
-                    <div class="revenue-item">
-                        <span class="revenue-icon">🛒</span>
-                        <h4 class="revenue-title">Digital Content</h4>
-                        <p>Offer themed merchandise or paid digital workshops and resources.</p>
-                    </div>
-                    <div class="revenue-item">
-                        <span class="revenue-icon">🏢</span>
-                        <h4 class="revenue-title">Creative Spaces</h4>
-                        <p>Consider renting out multifunctional spaces during inactive hours.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
+    <section class="mission-section">
+      <div class="section-number">04</div>
+      <h2 class="section-title">Revenue Streams: Sustainability Protocol</h2>
+      <div class="section-content">
+        <div class="subsection">
+          <h3 class="subsection-title glow-text">Diverse Revenue Channels</h3>
+          <p>An institution like yours can sustain itself monetarily through multiple channels:</p>
+        </div>
 
-        <section class="mission-section">
-            <div class="section-number">05</div>
-            <h2 class="section-title">Community Benefits: Creative Nexus</h2>
-            <div class="section-content">
-                <div class="subsection">
-                    <h3 class="subsection-title glow-text">Merging Spirituality and Creativity</h3>
-                    <p>Your church can become a vibrant nexus where spiritual growth meets creative expression. Consider these ideas:</p>
-                    
-                    <ul class="highlight-list">                        <li><strong class="highlight-purple">Artistic Workshops and Collaborations:</strong> Use the space for creative residencies, art shows, theater, and music performances. This can galvanize local artists and provide them with both exposure and collaborative opportunities.</li>
-                        <li><strong class="highlight-cyan">Cultural Events and Public Interactions:</strong> Organize regular community events that fuse traditional worship with modern art forms—interactive exhibitions, spoken word, and digital artistry can all foster a rich, creative environment.</li>
-                        <li><strong class="highlight-green">Educational Programs:</strong> Develop courses or seminars that blend spiritual learning with creative skills, be it in storytelling, graphic design, or performance arts.</li>
-                        <li><strong class="highlight-pink">Community Outreach:</strong> Use your website and physical space to promote local creative projects, support emerging artists, and act as a launchpad for collaborative cultural initiatives.</li>
-                    </ul>
-                </div>
+        <div class="revenue-grid">
+          <div class="revenue-item">
+            <span class="revenue-icon">💎</span>
+            <h4 class="revenue-title">Donations & Tithes</h4>
+            <p>Encourage regular contributions from members and supporters who share your vision.</p>
+          </div>
+          <div class="revenue-item">
+            <span class="revenue-icon">🎯</span>
+            <h4 class="revenue-title">Grants & Sponsorships</h4>
+            <p>Look into public and private grants aimed at cultural, artistic, and social initiatives.</p>
+          </div>
+          <div class="revenue-item">
+            <span class="revenue-icon">🎪</span>
+            <h4 class="revenue-title">Community Events</h4>
+            <p>Organize creative events, seminars, art exhibits, or music performances.</p>
+          </div>
+          <div class="revenue-item">
+            <span class="revenue-icon">🛒</span>
+            <h4 class="revenue-title">Digital Content</h4>
+            <p>Offer themed merchandise or paid digital workshops and resources.</p>
+          </div>
+          <div class="revenue-item">
+            <span class="revenue-icon">🏢</span>
+            <h4 class="revenue-title">Creative Spaces</h4>
+            <p>Consider renting out multifunctional spaces during inactive hours.</p>
+          </div>
+        </div>
+      </div>
+    </section>
 
-                <div class="subsection">
-                    <p>By positioning your church as a multidisciplinary creative hub, you not only celebrate the divine spark in artistic expression but also provide a safe and supportive space for those who might otherwise be marginalized in typical creative circles.</p>
-                </div>
-            </div>
-        </section>
+    <section class="mission-section">
+      <div class="section-number">05</div>
+      <h2 class="section-title">Community Benefits: Creative Nexus</h2>
+      <div class="section-content">
+        <div class="subsection">
+          <h3 class="subsection-title glow-text">Merging Spirituality and Creativity</h3>
+          <p>Your church can become a vibrant nexus where spiritual growth meets creative expression. Consider these ideas:</p>
 
-        <section class="final-thoughts">
-            <h2 class="final-title">MISSION PARAMETERS</h2>            <p class="final-text">
-                Taking on such a mission is both an administrative challenge and an inspirational journey. While the legal, financial, and bureaucratic hurdles in Austria demand careful planning and consultation with legal and financial advisors, the rewards—both spiritual and cultural—might help forge a community that's as <span class="glow-text highlight-cyan">innovative</span> as it is <span class="glow-text highlight-pink">meaningful</span>.
-            </p>
-            <p class="final-subtext">
-                For further exploration, consider engaging with experts in church law, financial planning for non-profits, and creative community outreach. This multi-dimensional approach may spark additional ideas on how your church can evolve as a sanctuary for creativity and social engagement.
-            </p>
-        </section>
-    </div>
+          <ul class="highlight-list">
+            <li><strong class="highlight-purple">Artistic Workshops and Collaborations:</strong> Use the space for creative residencies, art shows, theater, and music performances. This can galvanize local artists and provide them with both exposure and collaborative opportunities.</li>
+            <li><strong class="highlight-cyan">Cultural Events and Public Interactions:</strong> Organize regular community events that fuse traditional worship with modern art forms—interactive exhibitions, spoken word, and digital artistry can all foster a rich, creative environment.</li>
+            <li><strong class="highlight-green">Educational Programs:</strong> Develop courses or seminars that blend spiritual learning with creative skills, be it in storytelling, graphic design, or performance arts.</li>
+            <li><strong class="highlight-pink">Community Outreach:</strong> Use your website and physical space to promote local creative projects, support emerging artists, and act as a launchpad for collaborative cultural initiatives.</li>
+          </ul>
+        </div>
 
-    <script>
-        // Add some interactive elements
-        document.addEventListener('mousemove', (e) => {
-            const cursor = document.querySelector('.cursor');
-            if (!cursor) {
-                const newCursor = document.createElement('div');
-                newCursor.className = 'cursor';
-                newCursor.style.cssText = `
+        <div class="subsection">
+          <p>By positioning your church as a multidisciplinary creative hub, you not only celebrate the divine spark in artistic expression but also provide a safe and supportive space for those who might otherwise be marginalized in typical creative circles.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="final-thoughts">
+      <h2 class="final-title">MISSION PARAMETERS</h2>
+      <p class="final-text">
+        Taking on such a mission is both an administrative challenge and an inspirational journey. While the legal, financial, and bureaucratic hurdles in Austria demand careful planning and consultation with legal and financial advisors, the rewards—both spiritual and cultural—might help forge a community that's as <span class="glow-text highlight-cyan">innovative</span> as it is <span class="glow-text highlight-pink">meaningful</span>.
+      </p>
+      <p class="final-subtext">
+        For further exploration, consider engaging with experts in church law, financial planning for non-profits, and creative community outreach. This multi-dimensional approach may spark additional ideas on how your church can evolve as a sanctuary for creativity and social engagement.
+      </p>
+    </section>
+  </div>
+
+  <script>
+    // Add some interactive elements
+    document.addEventListener('mousemove', (e) => {
+      const cursor = document.querySelector('.cursor');
+      if (!cursor) {
+        const newCursor = document.createElement('div');
+        newCursor.className = 'cursor';
+        newCursor.style.cssText = `
                     position: fixed;
                     width: 20px;
                     height: 20px;
@@ -594,25 +655,25 @@
                     border-radius: 50%;
                     transform: translate(-50%, -50%);
                 `;
-                document.body.appendChild(newCursor);
-            }
-            document.querySelector('.cursor').style.left = e.clientX + 'px';
-            document.querySelector('.cursor').style.top = e.clientY + 'px';
-        });
+        document.body.appendChild(newCursor);
+      }
+      document.querySelector('.cursor').style.left = e.clientX + 'px';
+      document.querySelector('.cursor').style.top = e.clientY + 'px';
+    });
 
-        // Glitch effect on hover for section titles
-        document.querySelectorAll('.section-title').forEach(title => {
-            title.addEventListener('mouseenter', () => {
-                title.style.animation = 'glitch 0.3s ease-in-out';
-            });
-            title.addEventListener('animationend', () => {
-                title.style.animation = '';
-            });
-        });
+    // Glitch effect on hover for section titles
+    document.querySelectorAll('.section-title').forEach(title => {
+      title.addEventListener('mouseenter', () => {
+        title.style.animation = 'glitch 0.3s ease-in-out';
+      });
+      title.addEventListener('animationend', () => {
+        title.style.animation = '';
+      });
+    });
 
-        // Add glitch animation
-        const style = document.createElement('style');
-        style.textContent = `
+    // Add glitch animation
+    const style = document.createElement('style');
+    style.textContent = `
             @keyframes glitch {
                 0% { transform: translateX(0); }
                 20% { transform: translateX(-2px); }
@@ -622,7 +683,8 @@
                 100% { transform: translateX(0); }
             }
         `;
-        document.head.appendChild(style);
-    </script>
+    document.head.appendChild(style);
+  </script>
 </body>
+
 </html>

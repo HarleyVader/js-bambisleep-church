@@ -1,6 +1,0 @@
-<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-  <rect width="120" height="120" fill="#ff7700" rx="8"/>
-  <circle cx="60" cy="50" r="20" fill="white"/>
-  <polygon points="54,40 54,60 70,50" fill="#ff7700"/>
-  <text x="60" y="108" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="9" font-weight="bold">SoundCloud</text>
-</svg>
