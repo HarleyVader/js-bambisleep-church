@@ -1,0 +1,478 @@
+<%- include('../partials/header') %>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap');
+
+  .mission-body {
+    font-family: 'Rajdhani', sans-serif;
+    background: linear-gradient(135deg, #0c2a2a, #40002f, #720241);
+    color: #ffffff;
+    line-height: 1.6;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  .mission-body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background:
+      radial-gradient(circle at 20% 50%, rgba(64, 0, 47, 0.4) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(21, 170, 181, 0.3) 0%, transparent 50%),
+      radial-gradient(circle at 40% 80%, rgba(223, 4, 113, 0.3) 0%, transparent 50%);
+    opacity: 0.1;
+    animation: pulse 4s ease-in-out infinite alternate;
+    z-index: -1;
+  }
+
+  @keyframes pulse {
+    from { opacity: 0.05; }
+    to { opacity: 0.15; }
+  }
+
+  .grid-lines {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image:
+      linear-gradient(rgba(21, 170, 181, 0.2) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(21, 170, 181, 0.2) 1px, transparent 1px);
+    background-size: 50px 50px;
+    animation: gridMove 20s linear infinite;
+    z-index: -1;
+  }
+
+  @keyframes gridMove {
+    0% { transform: translate(0, 0); }
+    100% { transform: translate(50px, 50px); }
+  }
+
+  .mission-header {
+    text-align: center;
+    margin: 4rem 0;
+  }
+
+  .main-title {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    font-weight: 900;
+    background: linear-gradient(45deg, #cc0174, #15aab5, #40002f);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 20px #15aab5;
+    animation: titleGlow 3s ease-in-out infinite alternate;
+    margin-bottom: 1rem;
+  }
+
+  @keyframes titleGlow {
+    from { filter: drop-shadow(0 0 20px #15aab5); }
+    to { filter: drop-shadow(0 0 40px #cc0174); }
+  }
+
+  .subtitle {
+    font-size: 1.5rem;
+    color: #15aab5;
+    font-weight: 300;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .mission-section {
+    background: linear-gradient(135deg, rgba(10, 26, 26, 0.8), rgba(26, 26, 26, 0.8));
+    border: 1px solid rgba(21, 170, 181, 0.3);
+    border-radius: 15px;
+    padding: 2rem;
+    margin: 2rem 0;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .mission-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(204, 1, 116, 0.1), transparent);
+    animation: scan 3s infinite;
+  }
+
+  @keyframes scan {
+    0% { left: -100%; }
+    100% { left: 100%; }
+  }
+
+  .mission-section:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(204, 1, 116, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    border-color: #cc0174;
+  }
+
+  .section-number {
+    font-family: 'Orbitron', monospace;
+    font-size: 3rem;
+    font-weight: 900;
+    color: #cc0174;
+    position: absolute;
+    top: -10px;
+    right: 20px;
+    opacity: 0.3;
+    text-shadow: 0 0 20px #cc0174;
+  }
+
+  .section-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.8rem;
+    color: #15aab5;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 100px;
+    height: 2px;
+    background: linear-gradient(90deg, #15aab5, transparent);
+    box-shadow: 0 0 10px #15aab5;
+  }
+
+  .subsection {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-left: 3px solid #02b893;
+    border-radius: 5px;
+  }
+
+  .subsection-title {
+    color: #02b893;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    font-size: 1.2rem;
+  }
+
+  .highlight-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  .highlight-list li {
+    padding: 0.5rem 0;
+    position: relative;
+    padding-left: 2rem;
+    color: #e0e0e0;
+  }
+
+  .highlight-list li::before {
+    content: '▶';
+    position: absolute;
+    left: 0;
+    color: #40002f;
+    font-size: 0.8rem;
+    animation: blink 2s infinite;
+  }
+
+  @keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0.3; }
+  }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin: 2rem 0;
+  }
+
+  .info-card {
+    background: linear-gradient(135deg, rgba(26, 26, 26, 0.8), rgba(128, 0, 255, 0.1));
+    border: 1px solid rgba(128, 0, 255, 0.5);
+    border-radius: 10px;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .info-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, #40002f, #cc0174, #15aab5);
+    animation: borderGlow 2s linear infinite;
+  }
+
+  @keyframes borderGlow {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  .card-title {
+    color: #40002f;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+  }
+
+  .revenue-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+  }
+
+  .revenue-item {
+    background: rgba(0, 255, 65, 0.1);
+    border: 1px solid #02b893;
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    transition: all 0.3s ease;
+  }
+
+  .revenue-item:hover {
+    background: rgba(0, 255, 65, 0.2);
+    transform: scale(1.05);
+    box-shadow: 0 5px 20px rgba(2, 184, 147, 0.3);
+  }
+
+  .revenue-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+
+  .revenue-title {
+    color: #02b893;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+
+  .final-thoughts {
+    background: linear-gradient(135deg, rgba(204, 1, 116, 0.1), rgba(21, 170, 181, 0.1));
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    border-radius: 20px;
+    padding: 3rem;
+    margin: 4rem 0;
+    text-align: center;
+    position: relative;
+  }
+
+  .final-thoughts::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, #cc0174, #15aab5, #40002f, #02b893);
+    border-radius: 20px;
+    z-index: -1;
+    animation: rotateGradient 4s linear infinite;
+  }
+
+  @keyframes rotateGradient {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .final-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 2.5rem;
+    color: #15aab5;
+    margin-bottom: 1rem;
+    text-shadow: 0 0 20px #15aab5;
+  }
+
+  .highlight-number {
+    color: #cc0174;
+    font-weight: bold;
+  }
+
+  .highlight-cyan {
+    color: #15aab5;
+    font-weight: bold;
+  }
+
+  .highlight-green {
+    color: #02b893;
+  }
+
+  .final-text {
+    font-size: 1.2rem;
+    line-height: 1.8;
+    color: #e0e0e0;
+  }
+
+  .final-subtext {
+    font-size: 1.1rem;
+    margin-top: 2rem;
+    color: #02b893;
+  }
+
+  .glow-text {
+    text-shadow: 0 0 10px currentColor;
+  }
+</style>
+
+<div class="mission-body">
+  <div class="grid-lines"></div>
+
+  <div class="container">
+    <header class="mission-header">
+      <h1 class="main-title">BAMBISLEEP CHURCH</h1>
+      <p class="subtitle">Digital Sanctuary Mission Protocol</p>
+    </header>
+
+    <section class="mission-section">
+      <div class="section-number">01</div>
+      <h2 class="section-title">Establishing the Church: Protocol Initiation</h2>
+      <div class="section-content">
+        <div class="subsection">
+          <h3 class="subsection-title glow-text">Legal and Organizational Framework</h3>
+          <p>In Austria, recognized religious communities can take several legal forms. You might consider founding your church either as a private association with a non-profit ethos or aiming for state registration as a religious community. To be state‑recognized, you will need to develop a clear doctrine, draft statutes or a constitution, and demonstrate a minimum level of community support (for example, some legally registered communities require proof of at least <span class="highlight-number">300 members</span> with a shared doctrine). This process involves submitting detailed documentation to the Austrian Office of Religious Affairs and ensuring that your mission statement, organizational leadership, and financial plans align with statutory requirements.</p>
+        </div>
+
+        <div class="subsection">
+          <h3 class="subsection-title glow-text">Digital Presence with .church Domain</h3>
+          <p>Securing a <span class="highlight-cyan">.church</span> website isn't just about owning a URL—it's part of building your community's identity. You'll need to register the domain with an accredited provider and design a website that clearly communicates your vision, upcoming events, and community outreach programs. This digital frontier can act as both a gathering place for your creative community and a platform to share your unique message with the world.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="mission-section">
+      <div class="section-number">02</div>
+      <h2 class="section-title">Cost Analysis: Resource Allocation</h2>
+      <div class="section-content">
+        <div class="subsection">
+          <h3 class="subsection-title glow-text">Initial Investment and Ongoing Expenditures</h3>
+          <p>The cost can vary drastically based on how expansive you wish the project to be. If you're considering a physical church building, there are several factors at play: architectural design, building materials, permits, and site preparation. A modest project could run from <span class="highlight-green">tens of thousands to several hundred thousand euros</span>. However, if your focus is on a primarily digital congregation complemented by a multifunctional creative space (event halls, studios, meeting rooms), the upfront costs may be less about physical construction and more about adapting an existing space, outfitting it for community use, and developing a robust online presence.</p>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-card">
+            <h3 class="card-title">🌐 Website & IT Infrastructure</h3>
+            <p>Domain registration for a .church website, professional design, hosting, and ongoing maintenance might cost a <span class="highlight-cyan">few hundred to a few thousand euros annually</span>.</p>
+          </div>
+          <div class="info-card">
+            <h3 class="card-title">⚖️ Legal & Administrative Fees</h3>
+            <p>Setting up a legally recognized entity involves registration costs, legal advice, and potential consulting fees that can vary according to the complexity of your organization.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mission-section">
+      <div class="section-number">03</div>
+      <h2 class="section-title">Tax Optimization: Financial Advantages</h2>
+      <div class="section-content">
+        <div class="subsection">
+          <h3 class="subsection-title glow-text">Tax-Exempt Status and Deductions</h3>
+          <p>Churches or religious communities in Austria that are officially recognized often benefit from significant tax advantages. For instance, such institutions may receive exemptions on certain revenues and can sometimes deduct contributions, as well as gain preferential tax treatment on donations received from members and supporters. Individual donors can also deduct contributions (up to certain capped amounts, for example, special expenses related to church donations can be deducted up to <span class="highlight-number">EUR 600 per year</span>).</p>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-card">
+            <h3 class="card-title">💰 Donations and Contributions</h3>
+            <p>Once established, your church might receive support via tax-deductible donations.</p>
+          </div>
+          <div class="info-card">
+            <h3 class="card-title">🎁 Charitable Status Benefits</h3>
+            <p>By ensuring your church operates in a charitable, non-profit manner, you may access further reductions on VAT and other taxes as well as financial incentives aimed at supporting community outreach.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mission-section">
+      <div class="section-number">04</div>
+      <h2 class="section-title">Revenue Streams: Sustainability Protocol</h2>
+      <div class="section-content">
+        <div class="subsection">
+          <h3 class="subsection-title glow-text">Diverse Revenue Channels</h3>
+          <p>An institution like yours can sustain itself monetarily through multiple channels:</p>
+        </div>
+
+        <div class="revenue-grid">
+          <div class="revenue-item">
+            <span class="revenue-icon">💳</span>
+            <div class="revenue-title">Donations & Tithes</div>
+            <p>Regular contributions from members</p>
+          </div>
+          <div class="revenue-item">
+            <span class="revenue-icon">🎨</span>
+            <div class="revenue-title">Creative Workshops</div>
+            <p>Ticketed events and classes</p>
+          </div>
+          <div class="revenue-item">
+            <span class="revenue-icon">🏢</span>
+            <div class="revenue-title">Venue Rentals</div>
+            <p>Space for community events</p>
+          </div>
+          <div class="revenue-item">
+            <span class="revenue-icon">📚</span>
+            <div class="revenue-title">Digital Content</div>
+            <p>Courses, guides, and materials</p>
+          </div>
+          <div class="revenue-item">
+            <span class="revenue-icon">🎯</span>
+            <div class="revenue-title">Grants & Sponsorships</div>
+            <p>Cultural and religious funding</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mission-section">
+      <div class="section-number">05</div>
+      <h2 class="section-title">Community Benefits: Creative Nexus</h2>
+      <div class="section-content">
+        <div class="subsection">
+          <h3 class="subsection-title glow-text">Merging Spirituality and Creativity</h3>
+          <p>Your church can become a vibrant nexus where spiritual growth meets creative expression. Consider these ideas:</p>
+
+          <ul class="highlight-list">
+            <li><strong>Art Studios & Galleries:</strong> Provide workspace for visual artists and host rotating exhibitions</li>
+            <li><strong>Music & Performance Spaces:</strong> Enable rehearsals, recordings, and live performances</li>
+            <li><strong>Writing & Media Labs:</strong> Support content creators, podcasters, and digital storytellers</li>
+            <li><strong>Wellness & Mindfulness:</strong> Offer meditation spaces and holistic practices</li>
+            <li><strong>Community Events:</strong> Regular gatherings, workshops, and celebrations</li>
+          </ul>
+        </div>
+
+        <div class="subsection">
+          <p>By positioning your church as a multidisciplinary creative hub, you not only celebrate the divine spark in artistic expression but also provide a safe and supportive space for those who might otherwise be marginalized in typical creative circles.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="final-thoughts">
+      <h2 class="final-title">MISSION PARAMETERS</h2>
+      <p class="final-text">
+        Taking on such a mission is both an administrative challenge and an inspirational journey. While the legal, financial, and bureaucratic hurdles in Austria demand careful planning and consultation with legal and financial advisors, the rewards—both spiritual and cultural—might help forge a community that's as <span class="glow-text highlight-cyan">innovative</span> as it is <span class="glow-text highlight-cyan">meaningful</span>.
+      </p>
+      <p class="final-subtext">
+        For further exploration, consider engaging with experts in church law, financial planning for non-profits, and creative community outreach. This multi-dimensional approach may spark additional ideas on how your church can evolve as a sanctuary for creativity and social engagement.
+      </p>
+    </section>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

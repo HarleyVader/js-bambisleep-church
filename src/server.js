@@ -47,6 +47,20 @@ app.get('/knowledge', (req, res) => {
     });
 });
 
+app.get('/mission', (req, res) => {
+    res.render('pages/mission', {
+        title: 'Our Mission',
+        description: 'Establishing BambiSleep Church as a legal Austrian religious community'
+    });
+});
+
+app.get('/roadmap', (req, res) => {
+    res.render('pages/roadmap', {
+        title: 'Mission Roadmap',
+        description: 'Strategic timeline for church establishment'
+    });
+});
+
 // API endpoint for knowledge
 app.get('/api/knowledge', (req, res) => {
     res.json(knowledgeData);
