@@ -79,6 +79,7 @@ js-bambisleep-church/
 ### MCP Server (stdio)
 
 **Tools Available:**
+
 - `search_knowledge` - Search the BambiSleep knowledge base
 - `get_knowledge_stats` - Get statistics about knowledge entries
 

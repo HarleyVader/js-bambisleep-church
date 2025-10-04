@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -43,14 +44,19 @@
       width: 100%;
       height: 100%;
       background: radial-gradient(circle at 20% 50%, rgba(204, 1, 116, 0.1) 0%, transparent 50%),
-                  radial-gradient(circle at 80% 20%, rgba(21, 170, 181, 0.1) 0%, transparent 50%);
+        radial-gradient(circle at 80% 20%, rgba(21, 170, 181, 0.1) 0%, transparent 50%);
       animation: pulse 4s ease-in-out infinite alternate;
       z-index: -1;
     }
 
     @keyframes pulse {
-      from { opacity: 0.05; }
-      to { opacity: 0.15; }
+      from {
+        opacity: 0.05;
+      }
+
+      to {
+        opacity: 0.15;
+      }
     }
 
     .container {
@@ -205,8 +211,15 @@
     }
 
     @keyframes pulse-marker {
-      0%, 100% { transform: translateX(-50%) scale(1); }
-      50% { transform: translateX(-50%) scale(1.1); }
+
+      0%,
+      100% {
+        transform: translateX(-50%) scale(1);
+      }
+
+      50% {
+        transform: translateX(-50%) scale(1.1);
+      }
     }
 
     .phase-header {
@@ -282,8 +295,16 @@
     }
 
     @keyframes blink {
-      0%, 50% { opacity: 1; }
-      51%, 100% { opacity: 0.3; }
+
+      0%,
+      50% {
+        opacity: 1;
+      }
+
+      51%,
+      100% {
+        opacity: 0.3;
+      }
     }
 
     .metrics-grid {
@@ -372,6 +393,7 @@
     }
   </style>
 </head>
+
 <body>
   <div class="container">
     <header>
@@ -651,4 +673,5 @@
     });
   </script>
 </body>
+
 </html>
