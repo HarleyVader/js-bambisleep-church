@@ -189,6 +189,31 @@ main {
     box-shadow: 0 10px 30px rgba(255, 0, 255, 0.3);
 }
 
+.feature-card.highlight {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+    border: 2px solid var(--secondary-blue);
+    position: relative;
+    overflow: hidden;
+}
+
+.feature-card.highlight::before {
+    content: '✨ NEW';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: var(--accent);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+
+.feature-card.highlight:hover {
+    box-shadow: 0 10px 40px rgba(102, 126, 234, 0.5);
+    border-color: var(--accent);
+}
+
 .feature-card h3 {
     color: var(--secondary);
     margin-bottom: 1rem;
@@ -210,6 +235,16 @@ main {
 .btn:hover {
     background: var(--secondary);
     box-shadow: 0 0 20px var(--secondary);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #764ba2, #667eea);
+    box-shadow: 0 0 25px rgba(102, 126, 234, 0.6);
 }
 
 /* About Section */
