@@ -16,9 +16,13 @@ class McpAgent {
         this.temperature = config.temperature || 0.7;
         this.conversationHistory = [];
         this.knowledgeData = [];
+        this.modelCheckInterval = null;
 
         // Load knowledge base
         this.loadKnowledge();
+        
+        // Check model on initialization
+        this.checkModel();
     }
 
     loadKnowledge() {
@@ -28,6 +32,41 @@ class McpAgent {
             console.log(`✅ Agent: Loaded ${this.knowledgeData.length} knowledge entries`);
         } catch (error) {
             console.error('❌ Agent: Error loading knowledge:', error.message);
+        }
+    }
+
+    // Check if LMStudio has a model loaded
+    async checkModel() {
+        try {
+            const baseUrl = this.lmstudioUrl.replace('/v1/chat/completions', '');
+            const response = await axios.get(`${baseUrl}/v1/models`, { timeout: 5000 });
+            const models = response.data.data;
+
+            if (models.length === 0) {
+                console.log('\n⚠️  WARNING: LMStudio has NO MODELS LOADED!');
+                console.log('   Server:', baseUrl);
+                console.log('   📝 Action needed: Load model in LMStudio');
+                console.log(`   Model required: ${this.model}`);
+                console.log('   ℹ️  Agent will retry automatically...\n');
+                
+                // Set up auto-retry every 30 seconds
+                if (!this.modelCheckInterval) {
+                    this.modelCheckInterval = setInterval(() => this.checkModel(), 30000);
+                }
+            } else {
+                console.log('✅ Agent: LMStudio model check passed');
+                console.log(`   Loaded models: ${models.map(m => m.id).join(', ')}`);
+                
+                // Stop checking if model is found
+                if (this.modelCheckInterval) {
+                    clearInterval(this.modelCheckInterval);
+                    this.modelCheckInterval = null;
+                }
+            }
+        } catch (error) {
+            console.error('❌ Agent: Cannot reach LMStudio server');
+            console.error(`   Error: ${error.message}`);
+            console.error(`   URL: ${this.lmstudioUrl}`);
         }
     }
 
@@ -259,6 +298,20 @@ class McpAgent {
 
         } catch (error) {
             console.error('❌ LMStudio API error:', error.message);
+            
+            // Better error messages
+            if (error.response?.data?.error) {
+                const lmsError = error.response.data.error;
+                if (lmsError.code === 'model_not_found') {
+                    throw new Error('No model loaded in LMStudio. Please load a model and try again.');
+                }
+                throw new Error(`LMStudio error: ${lmsError.message}`);
+            }
+            
+            if (error.code === 'ECONNREFUSED') {
+                throw new Error('Cannot connect to LMStudio server. Is it running?');
+            }
+            
             throw new Error(`LMStudio call failed: ${error.message}`);
         }
     }

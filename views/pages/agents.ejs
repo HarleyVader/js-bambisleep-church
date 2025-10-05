@@ -6,6 +6,7 @@
       opacity: 0;
       transform: translateY(10px);
     }
+
     to {
       opacity: 1;
       transform: translateY(0);
@@ -13,10 +14,14 @@
   }
 
   @keyframes typing {
-    0%, 60%, 100% {
+
+    0%,
+    60%,
+    100% {
       transform: translateY(0);
       opacity: 0.4;
     }
+
     30% {
       transform: translateY(-10px);
       opacity: 1;
@@ -24,9 +29,12 @@
   }
 
   @keyframes pulseStatus {
-    0%, 100% {
+
+    0%,
+    100% {
       opacity: 1;
     }
+
     50% {
       opacity: 0.5;
     }
@@ -93,8 +101,7 @@
 
       <div style="padding: 1.5rem; background: var(--dark-card); border-top: 2px solid var(--primary);">
         <div style="display: flex; gap: 1rem;">
-          <input type="text" id="chatInput" placeholder="Ask me anything about BambiSleep..." onkeypress="handleKeyPress(event)" 
-                 style="flex: 1; padding: 0.75rem 1rem; background: var(--dark); border: 2px solid var(--primary); border-radius: 8px; color: var(--text); font-size: 1rem; font-family: var(--font-primary); transition: all 0.3s;">
+          <input type="text" id="chatInput" placeholder="Ask me anything about BambiSleep..." onkeypress="handleKeyPress(event)" style="flex: 1; padding: 0.75rem 1rem; background: var(--dark); border: 2px solid var(--primary); border-radius: 8px; color: var(--text); font-size: 1rem; font-family: var(--font-primary); transition: all 0.3s;">
           <button id="sendButton" onclick="sendMessage()" class="btn" style="margin: 0; white-space: nowrap; box-shadow: 0 0 15px rgba(255, 0, 255, 0.3);">
             Send 🚀
           </button>
