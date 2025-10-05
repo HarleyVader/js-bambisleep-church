@@ -25,7 +25,7 @@ const AUDIO_URL = 'https://cdn.bambicloud.com/8eca4b4a-ba32-480f-b90f-9bd8eb54eb
 
 // Initialize MCP Agent
 const mcpAgent = new McpAgent({
-    lmstudioUrl: process.env.LMSTUDIO_URL || 'http://192.168.0.118:7777/v1/chat/completions',
+    lmstudioUrl: process.env.LMSTUDIO_URL || 'http://localhost:7777/v1/chat/completions',
     model: 'llama-3.2-8x3b-moe-dark-champion-instruct-uncensored-abliterated-18.4b',
     maxIterations: 10,
     temperature: 0.7
