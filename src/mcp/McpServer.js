@@ -8,6 +8,8 @@ import {
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import axios from 'axios';
+import * as cheerio from 'cheerio';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -67,6 +69,24 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                 inputSchema: {
                     type: 'object',
                     properties: {},
+                },
+            },
+            {
+                name: 'fetch_webpage',
+                description: 'Fetch and extract text content from a webpage. Returns clean text from the page.',
+                inputSchema: {
+                    type: 'object',
+                    properties: {
+                        url: {
+                            type: 'string',
+                            description: 'The URL of the webpage to fetch (must start with http:// or https://)',
+                        },
+                        selector: {
+                            type: 'string',
+                            description: 'Optional: CSS selector to extract specific content (e.g., "article", "#content", ".main")',
+                        },
+                    },
+                    required: ['url'],
                 },
             },
         ],
@@ -150,6 +170,111 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 },
             ],
         };
+    }
+
+    if (name === 'fetch_webpage') {
+        const url = args.url;
+        const selector = args.selector;
+
+        // Validate URL
+        if (!url || (!url.startsWith('http://') && !url.startsWith('https://'))) {
+            throw new Error('Invalid URL. Must start with http:// or https://');
+        }
+
+        try {
+            // Fetch the webpage
+            const response = await axios.get(url, {
+                timeout: 10000,
+                headers: {
+                    'User-Agent': 'BambiSleep-Church-Bot/1.0',
+                },
+                maxRedirects: 5,
+            });
+
+            // Parse HTML
+            const $ = cheerio.load(response.data);
+
+            // Remove script and style elements
+            $('script, style, nav, footer, header, aside, .advertisement, .ad').remove();
+
+            // Extract text content
+            let textContent;
+            if (selector) {
+                // Use specific selector if provided
+                textContent = $(selector).text();
+                if (!textContent) {
+                    throw new Error(`No content found with selector: ${selector}`);
+                }
+            } else {
+                // Extract main content (try common content selectors)
+                const contentSelectors = [
+                    'main',
+                    'article',
+                    '#content',
+                    '#main',
+                    '.content',
+                    '.main',
+                    'body',
+                ];
+                
+                for (const sel of contentSelectors) {
+                    const content = $(sel).text();
+                    if (content && content.length > 100) {
+                        textContent = content;
+                        break;
+                    }
+                }
+
+                if (!textContent) {
+                    textContent = $('body').text();
+                }
+            }
+
+            // Clean up whitespace
+            textContent = textContent
+                .replace(/\s+/g, ' ')
+                .replace(/\n\s*\n/g, '\n')
+                .trim();
+
+            // Get page title
+            const title = $('title').text().trim();
+
+            // Limit content length to avoid overwhelming responses
+            const maxLength = 10000;
+            if (textContent.length > maxLength) {
+                textContent = textContent.substring(0, maxLength) + '\n\n... (content truncated)';
+            }
+
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: JSON.stringify({
+                            url: url,
+                            title: title,
+                            contentLength: textContent.length,
+                            content: textContent,
+                            status: 'success',
+                        }, null, 2),
+                    },
+                ],
+            };
+
+        } catch (error) {
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: JSON.stringify({
+                            url: url,
+                            status: 'error',
+                            error: error.message,
+                            errorType: error.code || 'UNKNOWN',
+                        }, null, 2),
+                    },
+                ],
+            };
+        }
     }
 
     throw new Error(`Unknown tool: ${name}`);

@@ -1,7 +1,7 @@
 # How to Use the MCP Tools - Complete Guide
 
-**BambiSleep Church MCP Server**  
-**For:** AI Models, Developers, and Users  
+**BambiSleep Church MCP Server**
+**For:** AI Models, Developers, and Users
 **Date:** October 4, 2025
 
 ---
@@ -9,10 +9,12 @@
 ## 🎯 Quick Answer
 
 You have **2 MCP tools** available:
+
 1. **`search_knowledge`** - Search the knowledge base
 2. **`get_knowledge_stats`** - Get analytics
 
 **How to use them:**
+
 - **From AI (Claude Desktop):** Just ask questions naturally
 - **From Code:** Use MCP SDK client
 - **From Terminal:** Start the MCP server via stdio
@@ -51,6 +53,7 @@ In Claude Desktop, look for the 🔌 icon showing "2 tools available"
 Claude will automatically use the tools!
 
 **Examples:**
+
 ```
 You: "Find files about uniform triggers"
 Claude: *automatically calls search_knowledge(query="uniform")*
@@ -79,6 +82,7 @@ node src/mcp/McpServer.js
 ```
 
 **Output:**
+
 ```
 ✅ MCP: Loaded 39 knowledge entries
 🚀 BambiSleep Church MCP Server running on stdio
@@ -93,8 +97,9 @@ npm start
 ```
 
 **Starts both:**
+
 - MCP server on stdio
-- Web server on http://localhost:8888
+- Web server on <http://localhost:8888>
 
 ---
 
@@ -120,13 +125,13 @@ import { spawn } from 'child_process';
 async function testMcpTools() {
     // Start MCP server process
     const serverProcess = spawn('node', ['src/mcp/McpServer.js']);
-    
+
     // Create client transport
     const transport = new StdioClientTransport({
         command: 'node',
         args: ['src/mcp/McpServer.js']
     });
-    
+
     // Create and connect client
     const client = new Client({
         name: 'test-client',
@@ -134,16 +139,16 @@ async function testMcpTools() {
     }, {
         capabilities: {}
     });
-    
+
     await client.connect(transport);
-    
+
     // List available tools
     const toolsList = await client.request({
         method: 'tools/list'
     }, {});
-    
+
     console.log('Available tools:', JSON.stringify(toolsList, null, 2));
-    
+
     // Call search_knowledge tool
     const searchResult = await client.request({
         method: 'tools/call',
@@ -155,9 +160,9 @@ async function testMcpTools() {
             }
         }
     }, {});
-    
+
     console.log('Search results:', JSON.stringify(searchResult, null, 2));
-    
+
     // Call get_knowledge_stats tool
     const statsResult = await client.request({
         method: 'tools/call',
@@ -166,9 +171,9 @@ async function testMcpTools() {
             arguments: {}
         }
     }, {});
-    
+
     console.log('Stats:', JSON.stringify(statsResult, null, 2));
-    
+
     // Cleanup
     await client.close();
     serverProcess.kill();
@@ -188,6 +193,7 @@ node test-mcp-tools.js
 ## 📋 Tool #1: `search_knowledge` - Detailed Usage
 
 ### **Purpose**
+
 Search the BambiSleep knowledge base by keyword
 
 ### **Parameters**
@@ -201,6 +207,7 @@ Search the BambiSleep knowledge base by keyword
 ### **Examples**
 
 #### Example 1: Basic Search
+
 ```json
 {
   "name": "search_knowledge",
@@ -213,6 +220,7 @@ Search the BambiSleep knowledge base by keyword
 **Returns:** First 10 entries containing "bambi" in title, description, or URL
 
 #### Example 2: Category Filter
+
 ```json
 {
   "name": "search_knowledge",
@@ -226,6 +234,7 @@ Search the BambiSleep knowledge base by keyword
 **Returns:** Only official documents about "sleep"
 
 #### Example 3: Limited Results
+
 ```json
 {
   "name": "search_knowledge",
@@ -239,6 +248,7 @@ Search the BambiSleep knowledge base by keyword
 **Returns:** Top 3 entries about "trigger"
 
 #### Example 4: All Entries in Category
+
 ```json
 {
   "name": "search_knowledge",
@@ -278,9 +288,9 @@ Search the BambiSleep knowledge base by keyword
 
 ### **Use Cases**
 
-✅ **Find specific files:** "Search for files about safety"  
-✅ **Filter by category:** "Show me only official BambiSleep content"  
-✅ **Quick lookups:** "Find the uniform lock file"  
+✅ **Find specific files:** "Search for files about safety"
+✅ **Filter by category:** "Show me only official BambiSleep content"
+✅ **Quick lookups:** "Find the uniform lock file"
 ✅ **Browse topics:** "What files mention triggers?"
 
 ---
@@ -288,6 +298,7 @@ Search the BambiSleep knowledge base by keyword
 ## 📊 Tool #2: `get_knowledge_stats` - Detailed Usage
 
 ### **Purpose**
+
 Get comprehensive analytics about the knowledge base
 
 ### **Parameters**
@@ -337,9 +348,9 @@ Get comprehensive analytics about the knowledge base
 
 ### **Use Cases**
 
-✅ **Overview:** "Tell me about the knowledge base"  
-✅ **Quality check:** "What's the average quality rating?"  
-✅ **Content distribution:** "How many official vs community files?"  
+✅ **Overview:** "Tell me about the knowledge base"
+✅ **Quality check:** "What's the average quality rating?"
+✅ **Content distribution:** "How many official vs community files?"
 ✅ **Analytics:** "Where does most content come from?"
 
 ---
@@ -360,10 +371,12 @@ Get comprehensive analytics about the knowledge base
 LM Studio doesn't have native MCP support yet, but you can:
 
 **Option A: Use as HTTP API**
+
 - Expose MCP server via HTTP wrapper
 - Call from LM Studio's tool use feature
 
 **Option B: Use Claude Desktop Instead**
+
 - LM Studio focuses on local model inference
 - Claude Desktop has better MCP integration
 
@@ -426,6 +439,7 @@ Server responds:
 **Goal:** Find safety-related resources
 
 **Claude Desktop:**
+
 ```
 User: "What safety resources are available?"
 Claude: *uses search_knowledge(query="safety")*
@@ -433,6 +447,7 @@ Claude: "I found 2 safety resources: Safety Guidelines Booklet and Risk Mitigati
 ```
 
 **Programmatic:**
+
 ```javascript
 const result = await client.request({
     method: 'tools/call',
@@ -450,6 +465,7 @@ const result = await client.request({
 **Goal:** Understand knowledge base composition
 
 **Claude Desktop:**
+
 ```
 User: "Tell me about the knowledge base"
 Claude: *uses get_knowledge_stats()*
@@ -457,6 +473,7 @@ Claude: "The knowledge base contains 39 entries (avg 9.62/10): 6 official, 32 sc
 ```
 
 **Programmatic:**
+
 ```javascript
 const stats = await client.request({
     method: 'tools/call',
@@ -474,6 +491,7 @@ const stats = await client.request({
 **Goal:** Find only official content
 
 **Claude Desktop:**
+
 ```
 User: "Show me only official BambiSleep content"
 Claude: *uses search_knowledge(query="", category="official")*
@@ -481,6 +499,7 @@ Claude: "Here are all 6 official documents: [list]"
 ```
 
 **Programmatic:**
+
 ```javascript
 const official = await client.request({
     method: 'tools/call',
@@ -498,6 +517,7 @@ const official = await client.request({
 ### **Issue 1: "Tools not showing in Claude Desktop"**
 
 **Solutions:**
+
 - ✅ Check config file path: `%APPDATA%\Claude\claude_desktop_config.json`
 - ✅ Verify absolute path to McpServer.js
 - ✅ Restart Claude Desktop completely
@@ -506,6 +526,7 @@ const official = await client.request({
 ### **Issue 2: "ENOENT: knowledge.json not found"**
 
 **Solution:**
+
 ```bash
 # Check file exists
 ls src/knowledge/knowledge.json
@@ -517,6 +538,7 @@ ls src/knowledge/knowledge.json
 ### **Issue 3: "Server not responding"**
 
 **Solutions:**
+
 - ✅ Ensure server is running
 - ✅ Check for errors in terminal
 - ✅ Verify Node.js version (need v18+)
@@ -525,11 +547,13 @@ ls src/knowledge/knowledge.json
 ### **Issue 4: "No results found"**
 
 **Possible causes:**
+
 - Query too specific (try broader terms)
 - Category filter excludes results
 - Knowledge base empty (check file loaded)
 
 **Solution:**
+
 ```json
 // Try without filters first
 {
@@ -545,9 +569,9 @@ ls src/knowledge/knowledge.json
 
 ### **Best Practices**
 
-✅ **Use specific queries** - "uniform" better than "bambi"  
-✅ **Limit results** - Request only what you need  
-✅ **Cache stats** - get_knowledge_stats rarely changes  
+✅ **Use specific queries** - "uniform" better than "bambi"
+✅ **Limit results** - Request only what you need
+✅ **Cache stats** - get_knowledge_stats rarely changes
 ✅ **Batch searches** - Multiple queries? Send in sequence
 
 ### **Performance Characteristics**
@@ -564,13 +588,15 @@ ls src/knowledge/knowledge.json
 ## 🔗 Additional Resources
 
 ### **Documentation**
+
 - `docs/mcp-server-explained.md` - Complete architecture guide
 - `docs/mcp-tools-reference.md` - Quick reference card
 - `src/mcp/McpServer.js` - Source code (169 lines)
 
 ### **Related Tools**
+
 - Knowledge base: `src/knowledge/knowledge.json` (39 entries)
-- Web interface: http://localhost:8888/knowledge
+- Web interface: <http://localhost:8888/knowledge>
 - MCP test report: Previously in `.github/mcp-test-report.md`
 
 ---
@@ -578,18 +604,21 @@ ls src/knowledge/knowledge.json
 ## 🎓 Summary
 
 ### **Easiest Way: Claude Desktop**
+
 1. Add config to `claude_desktop_config.json`
 2. Restart Claude
 3. Ask questions naturally
 4. Claude uses tools automatically
 
 ### **For Developers: MCP SDK**
+
 1. Install `@modelcontextprotocol/sdk`
 2. Create client with StdioClientTransport
 3. Send JSON-RPC requests
 4. Parse responses
 
 ### **Quick Test: Command Line**
+
 ```bash
 # Start server
 node src/mcp/McpServer.js

@@ -1,7 +1,7 @@
 # Codebase Website Fetcher Analysis
 
-**Question:** Does our codebase have a website fetcher tool?  
-**Answer:** ⚠️ **PACKAGES INSTALLED, BUT NOT USED**  
+**Question:** Does our codebase have a website fetcher tool?
+**Answer:** ⚠️ **PACKAGES INSTALLED, BUT NOT USED**
 **Date:** October 4, 2025
 
 ---
@@ -11,6 +11,7 @@
 ### ✅ **Dependencies Installed**
 
 Found in `package.json`:
+
 ```json
 "dependencies": {
   "axios": "^1.9.0",        // ✅ HTTP client (installed)
@@ -23,6 +24,7 @@ Both packages required for web fetching ARE installed!
 ### ❌ **But NOT Implemented**
 
 **Searched for usage:**
+
 - ❌ No `import axios` or `require('axios')` in codebase
 - ❌ No `import cheerio` or `require('cheerio')` in codebase
 - ❌ No `fetch_webpage` tool in MCP server
@@ -30,6 +32,7 @@ Both packages required for web fetching ARE installed!
 - ❌ No HTTP request code in src/ folder
 
 **Files checked:**
+
 - `src/server.js` - Only uses Express, EJS, geoip-lite
 - `src/mcp/McpServer.js` - Only has search_knowledge + get_knowledge_stats tools
 - No other JavaScript files in src/
@@ -52,11 +55,13 @@ Both packages required for web fetching ARE installed!
 ## 💡 What This Means
 
 ### **Situation:**
+
 - Someone installed axios & cheerio (probably planning to use them)
 - But never actually implemented the web fetching functionality
 - Packages are just sitting unused in node_modules/
 
 ### **Why Packages Might Be There:**
+
 1. **Planned feature** - Intended to add web fetching but never did
 2. **Testing** - Installed to test, then didn't implement
 3. **Future use** - Reserved for later implementation
@@ -65,17 +70,22 @@ Both packages required for web fetching ARE installed!
 ### **What You Can Do:**
 
 #### Option 1: **Remove Unused Packages** (Recommended)
+
 ```bash
 npm uninstall axios cheerio
 ```
+
 **Pros:**
+
 - ✅ Cleaner dependencies
 - ✅ Smaller node_modules
 - ✅ Faster npm install
 - ✅ Less confusion
 
 #### Option 2: **Implement Web Fetching Tool**
+
 Add to `src/mcp/McpServer.js`:
+
 ```javascript
 import axios from 'axios';
 import * as cheerio from 'cheerio';
@@ -92,18 +102,23 @@ import * as cheerio from 'cheerio';
   }
 }
 ```
+
 **Pros:**
+
 - ✅ AI can fetch live web data
 - ✅ Link validation capability
 - ✅ Uses existing packages
 
 **Cons:**
+
 - ⚠️ Security concerns (SSRF attacks)
 - ⚠️ Complexity (error handling, rate limits)
 - ⚠️ Not needed for church mission (yet)
 
 #### Option 3: **Keep for Future Use**
+
 Leave packages installed, document intent:
+
 ```json
 // package.json - Add comment in README
 "axios": "^1.9.0",     // Reserved for future web fetching
@@ -117,6 +132,7 @@ Leave packages installed, document intent:
 ### **REMOVE THE UNUSED PACKAGES** ✅
 
 **Reasons:**
+
 1. ✅ Not currently used anywhere
 2. ✅ Church mission doesn't need web fetching (local knowledge base works)
 3. ✅ Can always reinstall later if needed
@@ -124,6 +140,7 @@ Leave packages installed, document intent:
 5. ✅ YAGNI principle (You Ain't Gonna Need It)
 
 ### **How to Remove:**
+
 ```bash
 npm uninstall axios cheerio
 git add package.json package-lock.json
@@ -166,6 +183,7 @@ If you want to KEEP them for future use, update codebase inventory:
 It's like having a hammer and nails in your toolbox but no birdhouse built yet. The materials are there, but the work hasn't been done.
 
 **Decision Time:**
+
 - 🗑️ Remove if not planning to use soon
 - 📚 Document if keeping for future
 - 🛠️ Implement if needed now (not recommended yet)

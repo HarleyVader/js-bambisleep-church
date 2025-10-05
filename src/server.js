@@ -9,7 +9,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 8888;
+const PORT = process.env.PORT || 7070;
 const HOST = process.env.HOST || '0.0.0.0';
 
 // Set EJS as the view engine

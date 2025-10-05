@@ -18,11 +18,12 @@
     "start:simple": "node src/mcp/McpServer.js --http & node src/server.js",
     "start:mcp": "node src/mcp/McpServer.js --http",
     "start:web": "node src/server.js",
+    "agent": "node src/agents/lmstudio-agent.js",
     "test": "jest",
     "test:lmstudio": "node test/lmstudio-integration.test.js"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^0.5.0",
+    "@modelcontextprotocol/sdk": "^1.19.1",
     "axios": "^1.9.0",
     "cheerio": "^1.1.0",
     "cors": "^2.8.5",
@@ -32,6 +33,7 @@
     "geoip-lite": "^1.4.10",
     "marked": "^12.0.0",
     "node-cron": "^4.1.0",
+    "openai": "^6.1.0",
     "p-limit": "^6.2.0",
     "socket.io": "^4.8.1"
   },
