@@ -1,0 +1,198 @@
+<%- include('../partials/header') %>
+
+<div class="agents-hero">
+  <h2>🤖 AI Agents & Tools</h2>
+  <p>Intelligent agents powered by MCP (Model Context Protocol) for enhanced BambiSleep Church experience</p>
+</div>
+
+<!-- Web Agent Chat Interface -->
+<div class="chat-container">
+  <div class="chat-header">
+    <span style="font-size: 2rem;">🤖</span>
+    <div>
+      <h3>SimpleWebAgent - Live Chat</h3>
+      <p style="margin: 0; opacity: 0.9; font-size: 0.9rem;">Ask me about the knowledge base!</p>
+    </div>
+  </div>
+  <div id="chat-messages" class="chat-messages">
+    <!-- Messages will appear here -->
+  </div>
+  <div class="chat-input-area">
+    <input type="text" id="chat-input" class="chat-input" placeholder="Type your message... (try: 'search triggers' or 'show stats')" autocomplete="off" />
+    <button id="send-button" class="chat-button">Send</button>
+    <button id="clear-button" class="chat-button secondary">Clear</button>
+  </div>
+</div>
+
+<!-- LM Studio Agent -->
+<div class="agents-grid">
+  <div class="agent-card">
+    <h3>
+      <span class="agent-icon">🧠</span>
+      LM Studio Agent
+    </h3>
+    <span class="agent-status status-active">✓ Active</span>
+    <p class="agent-description">
+      A powerful AI agent that connects LM Studio with MCP tools, enabling natural language interactions with the knowledge base and web content.
+    </p>
+    <ul class="agent-features">
+      <li>Search knowledge base with natural language</li>
+      <li>Get statistics and analytics</li>
+      <li>Fetch content from any website</li>
+      <li>Interactive terminal chat interface</li>
+      <li>Multi-turn conversations with context</li>
+      <li>Automatic tool execution</li>
+    </ul>
+    <div class="agent-actions">
+      <button class="btn btn-primary" onclick="showAgentHelp('lmstudio')">Learn More</button>
+      <button class="btn btn-secondary" onclick="copyCommand('npm run agent')">Quick Start</button>
+    </div>
+  </div>
+</div>
+
+<!-- MCP Tools Section -->
+<div class="tools-section">
+  <h3>🛠️ Available MCP Tools</h3>
+  <p style="font-size: 1.1rem; margin-bottom: 20px;">
+    These tools are available to all agents through the Model Context Protocol (MCP).
+  </p>
+
+  <div class="tools-grid">
+    <div class="tool-card">
+      <div class="tool-name">🔍 search_knowledge</div>
+      <div class="tool-description">
+        Search the BambiSleep knowledge base with filters for category and result limits.
+      </div>
+    </div>
+
+    <div class="tool-card">
+      <div class="tool-name">📊 get_knowledge_stats</div>
+      <div class="tool-description">
+        Get comprehensive statistics about the knowledge base including categories and relevance scores.
+      </div>
+    </div>
+
+    <div class="tool-card">
+      <div class="tool-name">🌐 fetch_webpage</div>
+      <div class="tool-description">
+        Fetch and extract clean text content from any website with smart content detection.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Getting Started -->
+<div class="getting-started">
+  <h3>🚀 Getting Started with LM Studio Agent</h3>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-number">1</div>
+      <div class="step-content">
+        <h4>Install LM Studio</h4>
+        <p>Download and install LM Studio from <a href="https://lmstudio.ai" target="_blank">lmstudio.ai</a>. Load a model that supports function calling (recommended: Qwen2.5-7B or Llama-3.1-8B).</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">2</div>
+      <div class="step-content">
+        <h4>Start LM Studio Server</h4>
+        <p>In LM Studio, go to the <strong>Developer</strong> tab and click <strong>"Start Server"</strong>. The server will run on <code>http://localhost:1234</code>.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">3</div>
+      <div class="step-content">
+        <h4>Run the Agent</h4>
+        <p>Open a terminal in the project directory and run:</p>
+        <div class="code-block">
+          <code>npm run agent</code>
+        </div>
+        <p>The agent will start and connect to both LM Studio and the MCP server.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">4</div>
+      <div class="step-content">
+        <h4>Start Chatting!</h4>
+        <p>Type your questions naturally. Examples:</p>
+        <ul style="margin-top: 10px;">
+          <li>"Find files about triggers"</li>
+          <li>"How many entries are in the knowledge base?"</li>
+          <li>"Fetch bambisleep.info and summarize it"</li>
+        </ul>
+        <p style="margin-top: 10px;">The agent will automatically use the appropriate tools to answer your questions.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Stats Section -->
+<div style="margin-bottom: 50px;">
+  <h3 style="text-align: center; font-size: 2rem; margin-bottom: 30px;">📈 System Statistics</h3>
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-value">3</div>
+      <div class="stat-label">MCP Tools</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">2</div>
+      <div class="stat-label">Active Agents</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value"><%= typeof knowledgeCount !== 'undefined' ? knowledgeCount : '16' %></div>
+      <div class="stat-label">Knowledge Entries</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">100%</div>
+      <div class="stat-label">Uptime</div>
+    </div>
+  </div>
+</div>
+
+<!-- Documentation Links -->
+<div style="background: #f8f9fa; padding: 40px; border-radius: 15px; text-align: center;">
+  <h3 style="margin-bottom: 20px;">📚 Documentation</h3>
+  <p style="font-size: 1.1rem; margin-bottom: 30px;">
+    Learn more about our agents and tools with comprehensive guides.
+  </p>
+  <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+    <a href="/docs/LMSTUDIO-AGENT-GUIDE.md" class="btn btn-primary">Agent Guide</a>
+    <a href="/docs/FETCH-WEBPAGE-TOOL.md" class="btn btn-secondary">Tool Documentation</a>
+    <a href="/docs/HOW-TO-USE-MCP-TOOLS.md" class="btn btn-secondary">MCP Tools Reference</a>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/agent-chat.js"></script>
+
+<script>
+  function showAgentHelp(agentName) {
+    if (agentName === 'lmstudio') {
+      alert('LM Studio Agent Documentation\n\n' +
+        '📖 Full Guide: docs/LMSTUDIO-AGENT-GUIDE.md\n\n' +
+        'Quick Commands:\n' +
+        '• npm run agent - Start the agent\n' +
+        '• Type "exit" to quit\n\n' +
+        'Features:\n' +
+        '• Natural language queries\n' +
+        '• Automatic tool execution\n' +
+        '• Multi-turn conversations\n' +
+        '• Real-time feedback\n\n' +
+        'Requires LM Studio running on localhost:1234');
+    }
+  }
+
+  function copyCommand(command) {
+    navigator.clipboard.writeText(command).then(() => {
+      alert('✓ Command copied to clipboard!\n\n' + command);
+    }).catch(() => {
+      prompt('Copy this command:', command);
+    });
+  }
+</script>
+
+<%- include('../partials/footer') %>

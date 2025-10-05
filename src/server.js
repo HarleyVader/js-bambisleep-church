@@ -1,14 +1,19 @@
 // Minimal Express web server for BambiSleep Church
 import express from 'express';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
 import { fileURLToPath } from 'url';
 import path from 'path';
 import fs from 'fs';
 import geoip from 'geoip-lite';
+import { webAgent } from './services/SimpleWebAgent.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+const httpServer = createServer(app);
+const io = new Server(httpServer);
 const PORT = process.env.PORT || 7070;
 const HOST = process.env.HOST || '0.0.0.0';
 
@@ -92,6 +97,15 @@ app.get('/roadmap', (req, res) => {
     });
 });
 
+app.get('/agents', (req, res) => {
+    res.render('pages/agents', {
+        title: 'AI Agents',
+        description: 'Intelligent agents powered by MCP for enhanced BambiSleep Church experience',
+        location: req.location,
+        knowledgeCount: knowledgeData.length
+    });
+});
+
 // API endpoint for knowledge
 app.get('/api/knowledge', (req, res) => {
     res.json(knowledgeData);
@@ -154,8 +168,67 @@ app.get('/api/stats', (req, res) => {
     });
 });
 
+// Socket.io for agent chat
+io.on('connection', (socket) => {
+    console.log('💬 Agent chat client connected:', socket.id);
+
+    socket.on('agent:message', async (data) => {
+        try {
+            const { message } = data;
+            console.log('📩 User message:', message);
+
+            // Send typing indicator
+            socket.emit('agent:typing', { isTyping: true });
+
+            // Process message with agent
+            const result = await webAgent.chat(message);
+
+            // Send response
+            socket.emit('agent:typing', { isTyping: false });
+            socket.emit('agent:response', {
+                message: result.response,
+                tool: result.tool,
+                success: result.success,
+                timestamp: new Date().toISOString()
+            });
+
+        } catch (error) {
+            console.error('❌ Agent error:', error.message);
+            socket.emit('agent:error', {
+                error: error.message,
+                timestamp: new Date().toISOString()
+            });
+        }
+    });
+
+    socket.on('disconnect', () => {
+        console.log('👋 Agent chat client disconnected:', socket.id);
+    });
+});
+
+// Initialize web agent
+async function initializeAgent() {
+    console.log('🤖 Initializing SimpleWebAgent...');
+    const success = await webAgent.initialize();
+    if (success) {
+        console.log('✅ SimpleWebAgent ready for web chat');
+    } else {
+        console.error('❌ SimpleWebAgent initialization failed');
+    }
+}
+
 // Start server
-app.listen(PORT, HOST, () => {
+httpServer.listen(PORT, HOST, async () => {
     console.log(`🌟 BambiSleep Church server running on http://${HOST}:${PORT}`);
     console.log(`📚 Knowledge entries: ${knowledgeData.length}`);
+
+    // Initialize agent after server starts
+    await initializeAgent();
+});
+
+// Cleanup on exit
+process.on('SIGINT', async () => {
+    console.log('\n⚠️  Shutting down...');
+    await webAgent.cleanup();
+    process.exit(0);
 });

@@ -216,7 +216,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                     '.main',
                     'body',
                 ];
-                
+
                 for (const sel of contentSelectors) {
                     const content = $(sel).text();
                     if (content && content.length > 100) {

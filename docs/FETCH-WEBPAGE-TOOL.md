@@ -1,6 +1,6 @@
 # fetch_webpage Tool - Added to MCP Server
 
-**Date:** October 5, 2025  
+**Date:** October 5, 2025
 **Status:** ✅ **PRODUCTION READY**
 
 ---
@@ -8,6 +8,7 @@
 ## 🎯 What Was Added
 
 A new MCP tool `fetch_webpage` that allows the LM Studio agent to:
+
 - ✅ Fetch content from any website
 - ✅ Extract clean text (removes scripts, styles, ads)
 - ✅ Support CSS selectors for specific content
@@ -21,6 +22,7 @@ A new MCP tool `fetch_webpage` that allows the LM Studio agent to:
 ### **Tool Name:** `fetch_webpage`
 
 ### **Description:**
+
 Fetch and extract text content from a webpage. Returns clean text from the page.
 
 ### **Parameters:**
@@ -60,6 +62,7 @@ Fetch and extract text content from a webpage. Returns clean text from the page.
 ### **Changes Made:**
 
 1. **Added imports:**
+
    ```javascript
    import axios from 'axios';
    import * as cheerio from 'cheerio';
@@ -72,25 +75,29 @@ Fetch and extract text content from a webpage. Returns clean text from the page.
 ### **Features:**
 
 ✅ **Smart Content Detection**
-   - Tries common selectors: `main`, `article`, `#content`, `.content`, `body`
-   - Falls back to body if no main content found
+
+- Tries common selectors: `main`, `article`, `#content`, `.content`, `body`
+- Falls back to body if no main content found
 
 ✅ **Content Cleaning**
-   - Removes scripts, styles, nav, footer, header, aside
-   - Removes ads and advertisements
-   - Cleans up whitespace
+
+- Removes scripts, styles, nav, footer, header, aside
+- Removes ads and advertisements
+- Cleans up whitespace
 
 ✅ **Error Handling**
-   - Validates URLs (must start with http:// or https://)
-   - 10-second timeout
-   - Returns structured error messages
-   - Handles network failures gracefully
+
+- Validates URLs (must start with http:// or https://)
+- 10-second timeout
+- Returns structured error messages
+- Handles network failures gracefully
 
 ✅ **Response Formatting**
-   - Returns page title
-   - Returns content length
-   - Truncates to 10,000 characters max
-   - Clean JSON structure
+
+- Returns page title
+- Returns content length
+- Truncates to 10,000 characters max
+- Clean JSON structure
 
 ---
 
@@ -219,17 +226,18 @@ You: Fetch https://example.com and use selector "article"
 
 ### **Expected Results:**
 
-✅ Successful fetch returns page title and content  
-✅ Invalid URLs return error messages  
-✅ Content is cleaned (no scripts/styles)  
-✅ Large pages are truncated  
-✅ Agent can summarize fetched content  
+✅ Successful fetch returns page title and content
+✅ Invalid URLs return error messages
+✅ Content is cleaned (no scripts/styles)
+✅ Large pages are truncated
+✅ Agent can summarize fetched content
 
 ---
 
 ## 📦 Dependencies
 
 Already installed:
+
 - ✅ `axios` v1.9.0 (HTTP client)
 - ✅ `cheerio` v1.1.0 (HTML parser)
 
@@ -240,30 +248,35 @@ No new dependencies needed!
 ## 🎯 Use Cases
 
 ### **1. Research Assistant**
+
 Agent can fetch and summarize web pages
 
 ### **2. Content Discovery**
+
 Fetch BambiSleep wiki pages on demand
 
 ### **3. Link Verification**
+
 Check if URLs are valid and what they contain
 
 ### **4. Knowledge Expansion**
+
 Fetch content to answer questions not in local knowledge base
 
 ### **5. Real-time Updates**
+
 Get current information from live websites
 
 ---
 
 ## 🔒 Security Features
 
-✅ **URL Validation** - Only http:// and https:// allowed  
-✅ **Timeout** - 10 second limit prevents hanging  
-✅ **Max Redirects** - Limited to 5 redirects  
-✅ **User Agent** - Identifies as "BambiSleep-Church-Bot/1.0"  
-✅ **Content Length Limit** - 10,000 character max  
-✅ **Error Handling** - No sensitive data in error messages  
+✅ **URL Validation** - Only http:// and https:// allowed
+✅ **Timeout** - 10 second limit prevents hanging
+✅ **Max Redirects** - Limited to 5 redirects
+✅ **User Agent** - Identifies as "BambiSleep-Church-Bot/1.0"
+✅ **Content Length Limit** - 10,000 character max
+✅ **Error Handling** - No sensitive data in error messages
 
 ---
 
@@ -286,6 +299,7 @@ You now have **3 MCP tools** available:
 3. **fetch_webpage** - Fetch content from any website (NEW!)
 
 The agent can now:
+
 - ✅ Search local knowledge
 - ✅ Get statistics
 - ✅ **Fetch live websites** (NEW!)
@@ -301,11 +315,11 @@ npm run agent
 
 ---
 
-**Status:** ✅ **READY TO USE**  
+**Status:** ✅ **READY TO USE**
 **Next Step:** Test with LM Studio running!
 
 ---
 
-*Added: October 5, 2025*  
-*Location: src/mcp/McpServer.js*  
+*Added: October 5, 2025*
+*Location: src/mcp/McpServer.js*
 *Tool count: 3 (was 2)*

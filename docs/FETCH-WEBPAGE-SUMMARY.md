@@ -1,6 +1,6 @@
 # ✅ fetch_webpage Tool - COMPLETE
 
-**Date:** October 5, 2025  
+**Date:** October 5, 2025
 **Status:** 🎉 **READY TO USE**
 
 ---
@@ -16,6 +16,7 @@
 ### **New MCP Tool: `fetch_webpage`**
 
 Added to `src/mcp/McpServer.js`:
+
 - ✅ Fetches content from any website (http/https)
 - ✅ Extracts clean text (removes scripts, styles, ads)
 - ✅ Supports CSS selectors for specific content
@@ -115,23 +116,27 @@ User: Gets answer based on website content!
 ## ✨ Features
 
 ### **Smart Content Extraction**
+
 - Auto-detects main content areas: `main`, `article`, `#content`, `.content`
 - Falls back to `body` if no main content found
 - Custom CSS selector support
 
 ### **Content Cleaning**
+
 - Removes: `<script>`, `<style>`, `<nav>`, `<footer>`, `<header>`, `<aside>`
 - Removes: `.advertisement`, `.ad`
 - Cleans whitespace and formatting
 - Returns only readable text
 
 ### **Error Handling**
+
 - 10-second timeout
 - URL validation
 - Network error handling
 - Structured error responses
 
 ### **Security**
+
 - Only http:// and https:// URLs allowed
 - Max 5 redirects
 - User-Agent: "BambiSleep-Church-Bot/1.0"
@@ -205,7 +210,7 @@ You: What's on bambisleep.info right now?
 📝 Arguments: { "url": "https://bambisleep.info" }
 ✅ Tool executed successfully
 
-Agent: I fetched the BambiSleep wiki. It's the main landing page 
+Agent: I fetched the BambiSleep wiki. It's the main landing page
 with several sections:
 
 1. FAQ for beginners
@@ -220,12 +225,12 @@ The site was last updated on July 5, 2025...
 
 ---
 
-**Status:** ✅ **PRODUCTION READY**  
-**Dependencies:** Already installed (axios, cheerio)  
+**Status:** ✅ **PRODUCTION READY**
+**Dependencies:** Already installed (axios, cheerio)
 **Next Step:** Test with LM Studio!
 
 ---
 
-*Added: October 5, 2025*  
-*Tool count: 3 (was 2)*  
+*Added: October 5, 2025*
+*Tool count: 3 (was 2)*
 *Agent can now browse the web!* 🌐
