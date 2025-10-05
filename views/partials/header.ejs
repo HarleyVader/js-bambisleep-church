@@ -24,6 +24,11 @@
           <li><a href="/agents">Agents</a></li>
         </ul>
       </nav>
+      <div class="audio-controls" style="margin-top: 1rem; text-align: center;">
+        <button id="playAudio" onclick="playBambiAudio()" style="padding: 0.5rem 1rem; margin-right: 0.5rem; cursor: pointer; background: #ff69b4; color: white; border: none; border-radius: 4px;">▶️ Play Bambi</button>
+        <button id="stopAudio" onclick="stopBambiAudio()" style="padding: 0.5rem 1rem; cursor: pointer; background: #dc143c; color: white; border: none; border-radius: 4px;">⏹️ Stop</button>
+        <span id="audioStatus" style="margin-left: 1rem; font-size: 0.9rem;"></span>
+      </div>
     </div>
   </header>
   <main class="container">

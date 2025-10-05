@@ -19,8 +19,11 @@
     "start:mcp": "node src/mcp/McpServer.js --http",
     "start:web": "node src/server.js",
     "agent": "node src/agents/lmstudio-agent.js",
+    "agent:cli": "node src/mcp/agent-cli.js",
+    "agent:mcp": "node src/mcp/agent-cli.js",
     "test": "jest",
-    "test:lmstudio": "node test/lmstudio-integration.test.js"
+    "test:lmstudio": "node test/lmstudio-integration.test.js",
+    "test:agent": "node src/mcp/test-agent.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.19.1",

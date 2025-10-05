@@ -6,7 +6,9 @@ import { fileURLToPath } from 'url';
 import path from 'path';
 import fs from 'fs';
 import geoip from 'geoip-lite';
+import { spawn } from 'child_process';
 import { webAgent } from './services/SimpleWebAgent.js';
+import { McpAgent } from './mcp/McpAgent.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -16,6 +18,18 @@ const httpServer = createServer(app);
 const io = new Server(httpServer);
 const PORT = process.env.PORT || 7070;
 const HOST = process.env.HOST || '0.0.0.0';
+
+// Audio playback state
+let audioProcess = null;
+const AUDIO_URL = 'https://cdn.bambicloud.com/8eca4b4a-ba32-480f-b90f-9bd8eb54ebb7.mp3';
+
+// Initialize MCP Agent
+const mcpAgent = new McpAgent({
+    lmstudioUrl: process.env.LMSTUDIO_URL || 'http://192.168.0.118:7777/v1/chat/completions',
+    model: 'llama-3.2-8x3b-moe-dark-champion-instruct-uncensored-abliterated-18.4b',
+    maxIterations: 10,
+    temperature: 0.7
+});
 
 // Set EJS as the view engine
 app.set('view engine', 'ejs');
@@ -168,10 +182,157 @@ app.get('/api/stats', (req, res) => {
     });
 });
 
+// Audio playback endpoint
+app.post('/api/audio/play', (req, res) => {
+    try {
+        // Stop existing playback if any
+        if (audioProcess) {
+            audioProcess.kill();
+            audioProcess = null;
+        }
+
+        // Spawn FFMPEG to play audio directly to device
+        audioProcess = spawn('ffmpeg', [
+            '-i', AUDIO_URL,
+            '-f', 'wav',
+            '-'
+        ]);
+
+        // Pipe to Windows audio (use 'aplay' for Linux, 'afplay' for macOS)
+        const playProcess = spawn('powershell', [
+            '-Command',
+            `Add-Type -AssemblyName presentationCore; $player = New-Object system.windows.media.mediaplayer; $player.open('${AUDIO_URL}'); $player.Play(); Start-Sleep -Seconds 999`
+        ]);
+
+        playProcess.on('error', (error) => {
+            console.error('❌ Audio playback error:', error.message);
+        });
+
+        res.json({
+            success: true,
+            message: 'Audio playback started',
+            url: AUDIO_URL,
+            timestamp: new Date().toISOString()
+        });
+
+    } catch (error) {
+        console.error('❌ Audio error:', error.message);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+app.post('/api/audio/stop', (req, res) => {
+    try {
+        if (audioProcess) {
+            audioProcess.kill();
+            audioProcess = null;
+            res.json({ success: true, message: 'Audio stopped' });
+        } else {
+            res.json({ success: false, message: 'No audio playing' });
+        }
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// MCP Agent endpoints
+app.post('/api/mcp/chat', async (req, res) => {
+    try {
+        const { message } = req.body;
+
+        if (!message) {
+            return res.status(400).json({ error: 'Message is required' });
+        }
+
+        const result = await mcpAgent.chat(message);
+
+        res.json({
+            success: true,
+            response: result.response,
+            iterations: result.iterations,
+            toolsUsed: result.toolsUsed,
+            timestamp: new Date().toISOString()
+        });
+
+    } catch (error) {
+        console.error('❌ MCP Chat error:', error.message);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+app.post('/api/mcp/reset', (req, res) => {
+    try {
+        mcpAgent.reset();
+        res.json({ success: true, message: 'Conversation reset' });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+app.get('/api/mcp/stats', (req, res) => {
+    try {
+        const summary = mcpAgent.getSummary();
+        res.json({ success: true, ...summary });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+app.get('/api/mcp/tools', (req, res) => {
+    try {
+        const tools = mcpAgent.getTools();
+        res.json({
+            success: true,
+            tools: tools.map(t => ({
+                name: t.function.name,
+                description: t.function.description,
+                parameters: t.function.parameters
+            }))
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // Socket.io for agent chat
 io.on('connection', (socket) => {
     console.log('💬 Agent chat client connected:', socket.id);
 
+    // Handle MCP Agent messages
+    socket.on('mcp:message', async (data) => {
+        try {
+            const { message } = data;
+            console.log('📩 MCP User message:', message);
+
+            socket.emit('mcp:typing', { isTyping: true });
+
+            // Process with MCP Agent
+            const result = await mcpAgent.chat(message);
+
+            socket.emit('mcp:typing', { isTyping: false });
+            socket.emit('mcp:response', {
+                message: result.response,
+                iterations: result.iterations,
+                toolsUsed: result.toolsUsed,
+                timestamp: new Date().toISOString()
+            });
+
+        } catch (error) {
+            console.error('❌ MCP Agent error:', error.message);
+            socket.emit('mcp:error', {
+                error: error.message,
+                timestamp: new Date().toISOString()
+            });
+        }
+    });
+
+    // Handle SimpleWebAgent messages (original)
     socket.on('agent:message', async (data) => {
         try {
             const { message } = data;
@@ -229,6 +390,9 @@ httpServer.listen(PORT, HOST, async () => {
 // Cleanup on exit
 process.on('SIGINT', async () => {
     console.log('\n⚠️  Shutting down...');
+    if (audioProcess) {
+        audioProcess.kill();
+    }
     await webAgent.cleanup();
     process.exit(0);
 });

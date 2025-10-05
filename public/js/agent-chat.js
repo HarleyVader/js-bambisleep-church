@@ -44,6 +44,19 @@
             addErrorMessage(data.error);
         });
 
+        // MCP Agent events
+        socket.on('mcp:typing', (data) => {
+            handleTypingIndicator(data.isTyping);
+        });
+
+        socket.on('mcp:response', (data) => {
+            addMcpAgentMessage(data.message, data.iterations, data.toolsUsed);
+        });
+
+        socket.on('mcp:error', (data) => {
+            addErrorMessage(data.error);
+        });
+
         // Add welcome message
         addSystemMessage('🤖 Welcome to SimpleWebAgent! Ask me about the knowledge base.');
         addSystemMessage('💡 Try: "search triggers", "show stats", or "help"');
@@ -165,6 +178,27 @@
             chatMessages.appendChild(typingDiv);
             scrollToBottom();
         }
+    }
+
+    // Add MCP agent message with stats
+    function addMcpAgentMessage(text, iterations, toolsUsed) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'chat-message agent-message mcp-message';
+
+        const formattedText = formatAgentText(text);
+
+        messageDiv.innerHTML = `
+            <div class="message-avatar">🧠</div>
+            <div class="message-content">
+                <div class="message-text">${formattedText}</div>
+                <div class="mcp-stats" style="margin-top: 0.5rem; font-size: 0.85rem; opacity: 0.7;">
+                    ⚡ ${iterations} iterations | 🔧 ${toolsUsed} tool(s) used
+                </div>
+                <div class="message-time">${getTimestamp()}</div>
+            </div>
+        `;
+        chatMessages.appendChild(messageDiv);
+        scrollToBottom();
     }
 
     // Format agent text with basic markdown
