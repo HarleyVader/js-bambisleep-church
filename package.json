@@ -31,6 +31,7 @@
     "ejs": "^3.1.10",
     "express": "^5.1.0",
     "geoip-lite": "^1.4.10",
+    "mongodb": "^6.20.0",
     "node-fetch": "^3.3.2",
     "socket.io": "^4.8.1",
     "zod": "^3.25.76"
@@ -48,8 +49,8 @@
     "@types/jest": "^29.5.14",
     "concurrently": "^9.1.2",
     "jest": "^30.0.0",
+    "nodemon": "^3.0.2",
     "socket.io-client": "^4.8.1",
-    "supertest": "^7.1.1",
-    "nodemon": "^3.0.2"
+    "supertest": "^7.1.1"
   }
 }

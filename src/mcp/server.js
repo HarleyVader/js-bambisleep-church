@@ -9,6 +9,8 @@ import { log } from '../utils/logger.js';
 
 // Import BambiSleep tools
 import { bambiTools } from './tools/bambi-tools.js';
+import { mongodbTools } from './tools/mongodb/mongodbTools.js';
+import { mongoService } from '../services/MongoDBService.js';
 
 class BambiMcpServer {
     constructor() {
@@ -16,7 +18,7 @@ class BambiMcpServer {
             {
                 name: "bambisleep-church-server",
                 version: "1.0.0",
-                description: "BambiSleep Church MCP server with community tools and resources"
+                description: "BambiSleep Church MCP server with community tools and MongoDB database"
             },
             {
                 capabilities: {
@@ -27,6 +29,13 @@ class BambiMcpServer {
 
         this.knowledgeData = [];
         this.isInitialized = false;
+
+        // Combine all tools
+        this.allTools = {
+            ...bambiTools,
+            ...Object.fromEntries(mongodbTools.map(tool => [tool.name, tool]))
+        };
+
         this.setupHandlers();
     }
 
@@ -36,7 +45,7 @@ class BambiMcpServer {
     setupHandlers() {
         // List available tools
         this.server.setRequestHandler(ListToolsRequestSchema, async () => {
-            const tools = Object.values(bambiTools).map(tool => ({
+            const tools = Object.values(this.allTools).map(tool => ({
                 name: tool.name,
                 description: tool.description,
                 inputSchema: tool.inputSchema
@@ -50,13 +59,19 @@ class BambiMcpServer {
             const { name, arguments: args } = request.params;
 
             // Find the tool
-            const tool = Object.values(bambiTools).find(t => t.name === name);
+            const tool = Object.values(this.allTools).find(t => t.name === name);
             if (!tool) {
                 throw new Error(`Unknown tool: ${name}`);
             }
 
             try {
-                // Validate arguments using the tool's schema
+                // For MongoDB tools, use their direct handler format
+                if (name.startsWith('mongodb-')) {
+                    const result = await tool.handler(args || {});
+                    return result;
+                }
+
+                // For Bambi tools, validate arguments using Zod schema
                 const validatedArgs = tool.inputSchema.parse(args || {});
 
                 // Call the tool handler with validated arguments
@@ -88,11 +103,25 @@ class BambiMcpServer {
     }
 
     /**
-     * Initialize the MCP server with knowledge data
+     * Initialize the MCP server with knowledge data and MongoDB connection
      */
     async initialize(knowledgeData = []) {
         try {
             this.knowledgeData = knowledgeData;
+
+            // Initialize MongoDB connection
+            if (process.env.MONGODB_URL) {
+                log.info('Initializing MongoDB connection...');
+                const mongoConnected = await mongoService.connect();
+                if (mongoConnected) {
+                    log.success('✅ MongoDB connected successfully');
+                } else {
+                    log.warn('⚠️ MongoDB connection failed, MongoDB tools may not work');
+                }
+            } else {
+                log.warn('⚠️ MONGODB_URL not configured, MongoDB tools will not be available');
+            }
+
             this.isInitialized = true;
             log.success('BambiMcpServer initialized successfully');
             return true;
@@ -113,7 +142,7 @@ class BambiMcpServer {
                 // Handle JSON-RPC 2.0 requests
                 let response;
                 if (method === 'tools/list') {
-                    const tools = Object.values(bambiTools).map(tool => ({
+                    const tools = Object.values(this.allTools).map(tool => ({
                         name: tool.name,
                         description: tool.description,
                         inputSchema: tool.inputSchema
@@ -121,21 +150,27 @@ class BambiMcpServer {
                     response = { tools };
                 } else if (method === 'tools/call') {
                     const { name, arguments: args } = params;
-                    const tool = Object.values(bambiTools).find(t => t.name === name);
+                    const tool = Object.values(this.allTools).find(t => t.name === name);
 
                     if (!tool) {
                         throw new Error(`Unknown tool: ${name}`);
                     }
 
-                    const validatedArgs = tool.inputSchema.parse(args || {});
-                    const result = await tool.handler(validatedArgs, {
-                        knowledgeData: this.knowledgeData,
-                        server: this
-                    });
+                    // For MongoDB tools, use their direct handler format
+                    if (name.startsWith('mongodb-')) {
+                        response = await tool.handler(args || {});
+                    } else {
+                        // For Bambi tools, validate arguments using Zod schema
+                        const validatedArgs = tool.inputSchema.parse(args || {});
+                        const result = await tool.handler(validatedArgs, {
+                            knowledgeData: this.knowledgeData,
+                            server: this
+                        });
 
-                    response = {
-                        content: [{ type: "text", text: result }]
-                    };
+                        response = {
+                            content: [{ type: "text", text: result }]
+                        };
+                    }
                 } else {
                     throw new Error(`Unknown method: ${method}`);
                 }
@@ -167,10 +202,13 @@ class BambiMcpServer {
         return {
             name: "bambisleep-church-server",
             version: "1.0.0",
-            description: "BambiSleep Church MCP server",
-            toolCount: Object.keys(bambiTools).length,
+            description: "BambiSleep Church MCP server with MongoDB database",
+            toolCount: Object.keys(this.allTools).length,
+            bambiToolCount: Object.keys(bambiTools).length,
+            mongodbToolCount: mongodbTools.length,
             isInitialized: this.isInitialized,
             knowledgeEntries: this.knowledgeData.length,
+            mongodbConnected: mongoService.isConnected,
             capabilities: ["tools"],
             transport: ["stdio", "http"]
         };
@@ -198,6 +236,12 @@ class BambiMcpServer {
             if (this.server) {
                 await this.server.close();
             }
+
+            // Close MongoDB connection
+            if (mongoService.isConnected) {
+                await mongoService.disconnect();
+            }
+
             this.isInitialized = false;
             log.info('MCP Server cleaned up');
         } catch (error) {
