@@ -15,15 +15,10 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "test": "echo \"No tests configured yet\"",
+    "test": "node tests/test.cjs",
+    "test:full": "node tests/unified-test-suite.cjs",
     "config": "node scripts/generate-config.js",
-    "config:readme": "node scripts/generate-readme.js",
-    "inspector": "node scripts/mcp-inspector.js http",
-    "inspector:stdio": "node scripts/mcp-inspector.js stdio",
-    "inspector:test": "node test-inspector.js",
-    "inspector:dev": "concurrently \"npm run dev\" \"npm run inspector\"",
-    "inspector:help": "node scripts/mcp-inspector.js help",
-    "mcp:client": "node mcp-client.js"
+    "config:readme": "node scripts/generate-readme.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.20.0",

@@ -1,0 +1,30 @@
+{
+    "mcpServers": {
+        "bambi-church": {
+            "command": "node",
+            "args": [
+                "src/server.js"
+            ],
+            "env": {
+                "NODE_ENV": "production"
+            },
+            "description": "BambiSleep Church MCP Server with 43 autonomous AI tools",
+            "capabilities": [
+                "tools",
+                "resources",
+                "prompts"
+            ],
+            "toolCategories": [
+                "bambi",
+                "mongodb",
+                "lmstudio",
+                "crawler",
+                "agentic"
+            ]
+        }
+    },
+    "version": "0.1.0",
+    "description": "BambiSleep Church Model Context Protocol Configuration",
+    "author": "BambiSleep Church Dev Team",
+    "license": "MIT"
+}

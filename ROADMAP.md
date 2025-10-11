@@ -31,7 +31,7 @@ This roadmap outlines the path from concept to fully operational church, combini
 ### 1.2 Legal Research & Documentation [20% Complete] 🔄
 
 **Timeline**: Q4 2025
-**Budget**: €2,000 - €5,000
+**Budget**: €0,005 - €5,000
 
 - [x] Research Austrian religious community laws
 - [x] Document establishment requirements (300+ members)
