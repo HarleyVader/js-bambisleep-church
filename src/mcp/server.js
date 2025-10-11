@@ -10,7 +10,9 @@ import { log } from '../utils/logger.js';
 // Import BambiSleep tools
 import { bambiTools } from './tools/bambi-tools.js';
 import { mongodbTools } from './tools/mongodb/mongodbTools.js';
+import { lmstudioTools } from './tools/lmstudio/lmstudioTools.js';
 import { mongoService } from '../services/MongoDBService.js';
+import { lmStudioService } from '../services/LMStudioService.js';
 
 class BambiMcpServer {
     constructor() {
@@ -33,7 +35,8 @@ class BambiMcpServer {
         // Combine all tools
         this.allTools = {
             ...bambiTools,
-            ...Object.fromEntries(mongodbTools.map(tool => [tool.name, tool]))
+            ...Object.fromEntries(mongodbTools.map(tool => [tool.name, tool])),
+            ...Object.fromEntries(lmstudioTools.map(tool => [tool.name, tool]))
         };
 
         this.setupHandlers();
@@ -67,6 +70,12 @@ class BambiMcpServer {
             try {
                 // For MongoDB tools, use their direct handler format
                 if (name.startsWith('mongodb-')) {
+                    const result = await tool.handler(args || {});
+                    return result;
+                }
+
+                // For LMStudio tools, use their direct handler format
+                if (name.startsWith('lmstudio-')) {
                     const result = await tool.handler(args || {});
                     return result;
                 }
@@ -122,6 +131,19 @@ class BambiMcpServer {
                 log.warn('⚠️ MONGODB_URL not configured, MongoDB tools will not be available');
             }
 
+            // Initialize LMStudio connection
+            if (process.env.LMSTUDIO_URL) {
+                log.info('Initializing LMStudio connection...');
+                const lmstudioHealthy = await lmStudioService.isHealthy();
+                if (lmstudioHealthy) {
+                    log.success('✅ LMStudio server connected successfully');
+                } else {
+                    log.warn('⚠️ LMStudio server connection failed, LMStudio tools may not work');
+                }
+            } else {
+                log.warn('⚠️ LMSTUDIO_URL not configured, using default localhost:1234');
+            }
+
             this.isInitialized = true;
             log.success('BambiMcpServer initialized successfully');
             return true;
@@ -158,6 +180,9 @@ class BambiMcpServer {
 
                     // For MongoDB tools, use their direct handler format
                     if (name.startsWith('mongodb-')) {
+                        response = await tool.handler(args || {});
+                    } else if (name.startsWith('lmstudio-')) {
+                        // For LMStudio tools, use their direct handler format
                         response = await tool.handler(args || {});
                     } else {
                         // For Bambi tools, validate arguments using Zod schema
@@ -198,17 +223,21 @@ class BambiMcpServer {
     /**
      * Get server information
      */
-    getInfo() {
+    async getInfo() {
+        const lmstudioHealthy = await lmStudioService.isHealthy().catch(() => false);
+        
         return {
             name: "bambisleep-church-server",
             version: "1.0.0",
-            description: "BambiSleep Church MCP server with MongoDB database",
+            description: "BambiSleep Church MCP server with MongoDB and LMStudio",
             toolCount: Object.keys(this.allTools).length,
             bambiToolCount: Object.keys(bambiTools).length,
             mongodbToolCount: mongodbTools.length,
+            lmstudioToolCount: lmstudioTools.length,
             isInitialized: this.isInitialized,
             knowledgeEntries: this.knowledgeData.length,
             mongodbConnected: mongoService.isConnected,
+            lmstudioHealthy: lmstudioHealthy,
             capabilities: ["tools"],
             transport: ["stdio", "http"]
         };
