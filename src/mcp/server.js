@@ -11,8 +11,10 @@ import { log } from '../utils/logger.js';
 import { bambiTools } from './tools/bambi-tools.js';
 import { mongodbTools } from './tools/mongodb/mongodbTools.js';
 import { lmstudioTools } from './tools/lmstudio/lmstudioTools.js';
+import { crawlerTools } from './tools/crawler/crawlerTools.js';
 import { mongoService } from '../services/MongoDBService.js';
 import { lmStudioService } from '../services/LMStudioService.js';
+import { webCrawlerService } from '../services/WebCrawlerService.js';
 
 class BambiMcpServer {
     constructor() {
@@ -36,7 +38,8 @@ class BambiMcpServer {
         this.allTools = {
             ...bambiTools,
             ...Object.fromEntries(mongodbTools.map(tool => [tool.name, tool])),
-            ...Object.fromEntries(lmstudioTools.map(tool => [tool.name, tool]))
+            ...Object.fromEntries(lmstudioTools.map(tool => [tool.name, tool])),
+            ...Object.fromEntries(crawlerTools.map(tool => [tool.name, tool]))
         };
 
         this.setupHandlers();
@@ -144,6 +147,16 @@ class BambiMcpServer {
                 log.warn('⚠️ LMSTUDIO_URL not configured, using default localhost:1234');
             }
 
+            // Initialize Web Crawler service
+            log.info('Initializing Web Crawler service...');
+            webCrawlerService.configure({
+                userAgent: 'BambiSleep-Church-Crawler/1.0 (+https://github.com/HarleyVader/js-bambisleep-church)',
+                timeout: 10000,
+                maxRetries: 3,
+                crawlDelay: 1000
+            });
+            log.success('✅ Web Crawler service initialized');
+
             this.isInitialized = true;
             log.success('BambiMcpServer initialized successfully');
             return true;
@@ -183,6 +196,9 @@ class BambiMcpServer {
                         response = await tool.handler(args || {});
                     } else if (name.startsWith('lmstudio-')) {
                         // For LMStudio tools, use their direct handler format
+                        response = await tool.handler(args || {});
+                    } else if (name.startsWith('crawler-')) {
+                        // For Crawler tools, use their direct handler format
                         response = await tool.handler(args || {});
                     } else {
                         // For Bambi tools, validate arguments using Zod schema
@@ -229,11 +245,12 @@ class BambiMcpServer {
         return {
             name: "bambisleep-church-server",
             version: "1.0.0",
-            description: "BambiSleep Church MCP server with MongoDB and LMStudio",
+            description: "BambiSleep Church MCP server with MongoDB, LMStudio, and Web Crawler",
             toolCount: Object.keys(this.allTools).length,
             bambiToolCount: Object.keys(bambiTools).length,
             mongodbToolCount: mongodbTools.length,
             lmstudioToolCount: lmstudioTools.length,
+            crawlerToolCount: crawlerTools.length,
             isInitialized: this.isInitialized,
             knowledgeEntries: this.knowledgeData.length,
             mongodbConnected: mongoService.isConnected,
