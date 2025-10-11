@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Search, Filter, ExternalLink, Star, Calendar, Globe } from 'lucide-react';
+import { Search, ExternalLink, ThumbsUp, ThumbsDown, TrendingUp, Globe } from 'lucide-react';
 import styles from './KnowledgeBase.module.css';
 import { knowledgeService } from '@services/api';
 import { LoadingSpinner, ErrorMessage } from '@components';
@@ -10,6 +10,7 @@ const KnowledgeBase = () => {
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [votes, setVotes] = useState({});
 
     useEffect(() => {
         const loadKnowledge = async () => {
@@ -17,6 +18,12 @@ const KnowledgeBase = () => {
                 setIsLoading(true);
                 const data = await knowledgeService.getAll();
                 setKnowledge(data || {});
+
+                // Load voting data from localStorage
+                const savedVotes = localStorage.getItem('knowledge-votes');
+                if (savedVotes) {
+                    setVotes(JSON.parse(savedVotes));
+                }
             } catch (err) {
                 console.error('Failed to load knowledge:', err);
                 setError('Failed to load knowledge base. Please try again later.');
@@ -76,6 +83,35 @@ const KnowledgeBase = () => {
         setSearchTerm(e.target.value);
     };
 
+    const handleVote = (entryId, voteType) => {
+        const newVotes = { ...votes };
+        if (!newVotes[entryId]) {
+            newVotes[entryId] = { up: 0, down: 0, userVote: null };
+        }
+
+        const entry = newVotes[entryId];
+
+        // Remove previous vote if exists
+        if (entry.userVote === 'up') entry.up--;
+        if (entry.userVote === 'down') entry.down--;
+
+        // Add new vote if different from current
+        if (entry.userVote !== voteType) {
+            if (voteType === 'up') entry.up++;
+            if (voteType === 'down') entry.down++;
+            entry.userVote = voteType;
+        } else {
+            entry.userVote = null; // Remove vote if clicking same button
+        }
+
+        setVotes(newVotes);
+        localStorage.setItem('knowledge-votes', JSON.stringify(newVotes));
+    };
+
+    const getVoteStats = (entryId) => {
+        return votes[entryId] || { up: 0, down: 0, userVote: null };
+    };
+
     const getCategoryClassName = (category) => {
         switch (category?.toLowerCase()) {
             case 'official': return 'official';
@@ -84,11 +120,6 @@ const KnowledgeBase = () => {
             case 'safety': return 'safety';
             default: return 'community';
         }
-    };
-
-    const formatRelevanceScore = (score) => {
-        if (typeof score !== 'number') return 'N/A';
-        return `${Math.round(score * 100)}%`;
     };
 
     if (isLoading) {
@@ -156,57 +187,72 @@ const KnowledgeBase = () => {
             {/* Knowledge Grid */}
             {filteredEntries.length > 0 ? (
                 <div className={styles.grid}>
-                    {filteredEntries.map(([key, entry]) => (
-                        <article key={key} className={styles.card}>
-                            <div className={styles.cardMeta}>
-                                <span className={`${styles.category} ${styles[getCategoryClassName(entry.category)]}`}>
-                                    {entry.category || 'General'}
-                                </span>
-                                {entry.platform && (
-                                    <span className={styles.platform}>
-                                        <Globe size={12} />
-                                        {entry.platform}
-                                    </span>
-                                )}
-                            </div>
+                    {filteredEntries.map(([key, entry]) => {
+                        const voteStats = getVoteStats(key);
+                        const netVotes = voteStats.up - voteStats.down;
 
-                            <h3 className={styles.cardTitle}>
-                                {entry.url ? (
-                                    <a
-                                        href={entry.url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        aria-label={`Visit ${entry.title}`}
-                                    >
-                                        {entry.title}
-                                        <ExternalLink size={16} style={{ marginLeft: '0.5rem' }} />
-                                    </a>
-                                ) : (
-                                    entry.title
-                                )}
-                            </h3>
+                        return (
+                            <article key={key} className={styles.linkCard}>
+                                <div className={styles.cardHeader}>
+                                    <div className={styles.cardMeta}>
+                                        <span className={`${styles.category} ${styles[getCategoryClassName(entry.category)]}`}>
+                                            {entry.category || 'General'}
+                                        </span>
+                                        {entry.platform && (
+                                            <span className={styles.platform}>
+                                                <Globe size={12} />
+                                                {entry.platform}
+                                            </span>
+                                        )}
+                                    </div>
 
-                            <p className={styles.cardDescription}>
-                                {entry.description}
-                            </p>
+                                    <div className={styles.voteControls}>
+                                        <button
+                                            className={`${styles.voteButton} ${styles.upvote} ${voteStats.userVote === 'up' ? styles.active : ''}`}
+                                            onClick={() => handleVote(key, 'up')}
+                                            title="Upvote this resource"
+                                        >
+                                            <ThumbsUp size={16} />
+                                            <span>{voteStats.up}</span>
+                                        </button>
 
-                            <footer className={styles.cardFooter}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                    {entry.lastUpdated && (
-                                        <>
-                                            <Calendar size={14} />
-                                            <span>{new Date(entry.lastUpdated).toLocaleDateString()}</span>
-                                        </>
+                                        <button
+                                            className={`${styles.voteButton} ${styles.downvote} ${voteStats.userVote === 'down' ? styles.active : ''}`}
+                                            onClick={() => handleVote(key, 'down')}
+                                            title="Downvote this resource"
+                                        >
+                                            <ThumbsDown size={16} />
+                                            <span>{voteStats.down}</span>
+                                        </button>
+
+                                        <div className={`${styles.netScore} ${netVotes > 0 ? styles.positive : netVotes < 0 ? styles.negative : ''}`}>
+                                            <TrendingUp size={14} />
+                                            <span>{netVotes > 0 ? '+' : ''}{netVotes}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className={styles.linkContainer}>
+                                    {entry.url ? (
+                                        <a
+                                            href={entry.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className={styles.mainLink}
+                                            title={entry.description}
+                                        >
+                                            <span className={styles.linkTitle}>{entry.title}</span>
+                                            <ExternalLink size={18} className={styles.linkIcon} />
+                                        </a>
+                                    ) : (
+                                        <div className={styles.linkTitle}>
+                                            {entry.title}
+                                        </div>
                                     )}
                                 </div>
-
-                                <div className={styles.relevance}>
-                                    <Star size={14} />
-                                    {formatRelevanceScore(entry.relevanceScore)}
-                                </div>
-                            </footer>
-                        </article>
-                    ))}
+                            </article>
+                        );
+                    })}
                 </div>
             ) : (
                 <div className={styles.noResults}>
