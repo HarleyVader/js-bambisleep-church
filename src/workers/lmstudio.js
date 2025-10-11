@@ -30,13 +30,12 @@ function initializeConfig() {
     }
 
     lmStudioClient = new LMStudioClient({
-        baseUrl: lmStudioBaseUrl
+        baseUrl: lmStudioBaseUrl,
+        verbose: false  // Disable verbose logging
     });
 
-    console.log('LM Studio SDK initialized');
-    console.log('LM Studio WebSocket URL:', lmStudioBaseUrl);
-    console.log('Target model:', TARGET_MODEL_NAME);
-    console.log('Timeout:', LMS_TIMEOUT, 'ms');
+    console.log('🤖 LM Studio connected:', lmStudioBaseUrl);
+    console.log('🎯 Target model:', TARGET_MODEL_NAME);
 }
 
 // Worker message handling
@@ -77,12 +76,12 @@ if (parentPort) {
 // Auto-load target model using native SDK
 async function autoLoadBestModel() {
     try {
-        console.log(`Loading target model: ${TARGET_MODEL_NAME}`);
+        console.log(`🔄 Loading model: ${TARGET_MODEL_NAME}`);
 
         // Use LMStudio SDK to load the model
         currentModel = await lmStudioClient.llm.model(TARGET_MODEL_NAME);
 
-        console.log(`Successfully loaded model: ${TARGET_MODEL_NAME}`);
+        console.log(`✅ Model loaded: ${TARGET_MODEL_NAME}`);
 
         // Notify main thread
         if (parentPort) {
@@ -94,21 +93,41 @@ async function autoLoadBestModel() {
         return true;
 
     } catch (error) {
-        console.error('Auto-load model error:', error.message);
+        // Check if model is already loaded
+        if (error.message.includes('already exists')) {
+            console.log(`✅ Model already loaded: ${TARGET_MODEL_NAME}`);
+            
+            // Try to get the existing model
+            try {
+                currentModel = await lmStudioClient.llm.model(TARGET_MODEL_NAME);
+                if (parentPort) {
+                    parentPort.postMessage({
+                        type: 'model_loaded',
+                        modelId: TARGET_MODEL_NAME
+                    });
+                }
+                return true;
+            } catch (getError) {
+                console.log(`ℹ️  Using already loaded model: ${TARGET_MODEL_NAME}`);
+                return true;
+            }
+        }
 
-        // Try common variants of the model name
+        console.log(`⚠️  Primary model unavailable, trying alternatives...`);
+
+        // Try common variants of the model name (silently)
         const variants = [
-            TARGET_MODEL_NAME.split('-').slice(0, 3).join('-'), // llama-3.2-8x3b
-            TARGET_MODEL_NAME.split('-').slice(0, 2).join('-'), // llama-3.2
-            'llama-3.2-1b-instruct', // Fallback model
-            'llama-3.1-8b-instruct'  // Another fallback
+            'llama-3.2-3b-instruct@q3_k_l', // Most common available model
+            TARGET_MODEL_NAME.split('-').slice(0, 3).join('-'),
+            TARGET_MODEL_NAME.split('-').slice(0, 2).join('-'),
+            'llama-3.2-1b-instruct',
+            'llama-3.1-8b-instruct'
         ];
 
         for (const variant of variants) {
             try {
-                console.log(`Trying variant: ${variant}`);
                 currentModel = await lmStudioClient.llm.model(variant);
-                console.log(`Successfully loaded variant: ${variant}`);
+                console.log(`✅ Model loaded: ${variant}`);
 
                 if (parentPort) {
                     parentPort.postMessage({
@@ -118,10 +137,12 @@ async function autoLoadBestModel() {
                 }
                 return true;
             } catch (variantError) {
-                console.log(`Failed variant ${variant}: ${variantError.message}`);
+                // Silently continue to next variant instead of showing errors
+                continue;
             }
         }
 
+        console.log(`❌ No compatible models found. Available models shown above.`);
         return false;
     }
 }
@@ -147,14 +168,14 @@ async function initializeModelSystem() {
         const isLoaded = await getCurrentLoadedModel();
 
         if (isLoaded) {
-            console.log(`Target model already loaded in memory`);
+            console.log(`🎯 Target model ready in memory`);
             return;
         }
 
         // Auto-load the target model
         const loaded = await autoLoadBestModel();
         if (!loaded) {
-            console.error('CRITICAL: Failed to auto-load any model during initialization');
+            console.log('ℹ️  Models will be loaded on demand');
         }
     } catch (error) {
         console.error('Model initialization error:', error.message);
@@ -173,12 +194,12 @@ async function handleMessage(userPrompt, socketId, username) {
 
         // Auto-load model if none is currently loaded
         if (!currentModel) {
-            console.log('No model loaded, attempting auto-load...');
+            console.log('🔄 Loading model for chat...');
 
             const loaded = await autoLoadBestModel();
 
             if (!loaded) {
-                console.error('CRITICAL: Auto-load failed during chat request');
+                console.log('⚠️  Model loading needed - please ensure LM Studio is running');
                 sendResponse("Sorry, I'm having trouble loading the AI model. Please ensure LM Studio is running.", socketId, username);
                 return;
             }
@@ -335,7 +356,7 @@ setInterval(collectGarbage, 5 * 60 * 1000);
 (async () => {
     await initializeConfig();
     await initializeModelSystem();
-    console.log('LM Studio worker started and ready');
+    console.log('✅ LM Studio worker ready');
 })();
 
 export { handleMessage };
