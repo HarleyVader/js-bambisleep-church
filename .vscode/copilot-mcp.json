@@ -7,11 +7,13 @@
         "description": "BambiSleep Church Knowledge Base MCP Server - Local knowledge search and content analysis",
         "endpoint": "stdio",
         "command": "node",
-        "args": ["src/mcp/McpServer.js"],
+        "args": [
+          "src/mcp/McpServer.js"
+        ],
         "cwd": "f:\\js-bambisleep-church",
         "tools": [
           "search_knowledge",
-          "get_knowledge_stats", 
+          "get_knowledge_stats",
           "fetch_webpage"
         ],
         "capabilities": {
@@ -24,7 +26,7 @@
       {
         "name": "bambisleep-church-remote",
         "description": "BambiSleep Church Remote MCP Server with agent orchestration",
-        "endpoint": "https://fickdichselber.com:9999",
+        "endpoint": "https://bambisleep-church-remote.com:9999",
         "tools": [
           "get_links",
           "add_link",
@@ -60,7 +62,9 @@
       "requireConfirmation": false,
       "timeoutMs": 45000,
       "retryAttempts": 2,
-      "trustedServers": ["bambisleep-church"]
+      "trustedServers": [
+        "bambisleep-church"
+      ]
     },
     "knowledgeIntegration": {
       "enableSemanticSearch": true,
