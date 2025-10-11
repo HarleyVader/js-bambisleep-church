@@ -22,7 +22,7 @@ export const config = {
         url: (() => {
             const isWindows = process.platform === 'win32';
             const isLocalhost = ['localhost', '127.0.0.1', '0.0.0.0'].includes(process.env.SERVER || '0.0.0.0');
-            
+
             if (isWindows && isLocalhost) {
                 return process.env.LMSTUDIO_URL_LOCAL || process.env.LMSTUDIO_URL_REMOTE || 'http://localhost:7777/v1/chat/completions';
             } else {

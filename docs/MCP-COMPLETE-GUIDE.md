@@ -4,24 +4,44 @@
 
 ### 🎯 Overview
 
-BambiSleep Church successfully integrates the Model Context Protocol (MCP) with a comprehensive inspector system for monitoring, testing, and configuration management.
+BambiSleep Church implements a comprehensive MCP (Model Context Protocol) server with **43 specialized tools** across 5 categories, featuring smart platform-aware configuration and autonomous AI-driven knowledge management.
 
 ## 🏗️ Architecture
 
 ### Core Components
 
-- **MCP Server** (`src/mcp/server.js`) - Main MCP server with HTTP transport
-- **BambiSleep Tools** - 5 specialized tools for community resources
+- **MCP Server** (`src/mcp/server.js`) - Advanced MCP server with HTTP transport and 43 tools
+- **Smart Configuration** - Platform-aware LMStudio endpoint selection
+- **Autonomous System** - AI-driven knowledge building with AgenticKnowledgeBuilder
 - **Web Inspector** - Built-in monitoring interface at `/inspector`
-- **Test Suite** - Comprehensive validation system
+- **Comprehensive Test Suite** - Full system validation and monitoring
 
-### BambiSleep Tools
+### Complete Tool Suite (43 Tools)
 
-1. 🔍 **search-knowledge** - Search the BambiSleep knowledge base
-2. 🛡️ **get-safety-info** - Access safety guidelines and best practices
-3. 🏛️ **church-status** - Check development progress and milestones
-4. 📋 **community-guidelines** - Get community rules and conduct
-5. 📚 **resource-recommendations** - Personalized resource suggestions
+#### 🎯 Agentic Orchestration (7 tools)
+1. `agentic-initialize` - Initialize autonomous AI system
+2. `agentic-start-building` - Start autonomous knowledge building
+3. `agentic-get-status` - Check system status and progress
+4. `agentic-query-knowledge` - Intelligent knowledge base search
+5. `agentic-get-stats` - Knowledge base statistics
+6. `agentic-get-learning-path` - AI-recommended learning paths
+7. `agentic-stop-building` - Stop autonomous operations
+
+#### 🌸 BambiSleep Community (5 tools)
+1. `search-knowledge` - Search the BambiSleep knowledge base
+2. `get-safety-info` - Access safety guidelines and best practices
+3. `church-status` - Check development progress and milestones
+4. `community-guidelines` - Get community rules and conduct
+5. `resource-recommendations` - Personalized resource suggestions
+
+#### 🗄️ MongoDB Management (15 tools)
+Complete database operations, CRUD, aggregation, indexing, schema analysis
+
+#### 🧠 LMStudio AI (10 tools)
+AI-powered content analysis, completion, embeddings, safety assessment
+
+#### 🕷️ Web Crawler (6 tools)
+Intelligent content discovery, extraction, processing, and session management
 
 ## 🚀 Quick Start
 
@@ -52,21 +72,38 @@ Default URLs (when PORT=7070):
 - **Inspector**: <http://localhost:7070/inspector>
 - **MCP Status**: <http://localhost:7070/api/mcp/status>
 
-## 🔧 Configuration
+## 🔧 Smart Configuration System
+
+### Platform-Aware LMStudio Integration
+
+The system automatically detects the runtime environment and selects the appropriate LMStudio endpoint:
+
+- **Windows Development** → Uses `LMSTUDIO_URL_LOCAL` (localhost:7777)
+- **Linux Production** → Uses `LMSTUDIO_URL_REMOTE` (192.168.0.118:7777)
 
 ### Environment Variables
 
 ```bash
+# Server Configuration
+PORT=7070
+SERVER=0.0.0.0
+BASE_URL=http://localhost:7070
+MCP_ENDPOINT=/mcp
+
+# Smart LMStudio Configuration
+LMSTUDIO_URL_REMOTE=http://192.168.0.118:7777/v1/chat/completions  # Linux deployment
+LMSTUDIO_URL_LOCAL=http://localhost:7777/v1/chat/completions        # Windows development
+LMSTUDIO_MODEL=llama-3.2-3b-instruct@q3_k_l
+
 # MCP Configuration
 MCP_ENABLED=true
-MCP_PORT=3001
+MCP_PORT=7070
 MCP_AUTO_DISCOVERY=true
 MCP_CACHE_TIMEOUT=300000
 MCP_MAX_TOOLS=50
 
-# Server Configuration
-PORT=7070
-NODE_ENV=development
+# MongoDB Configuration
+MONGODB_URL=mongodb+srv://username:password@cluster.mongodb.net/
 ```
 
 ### MCP Inspector Config (`mcp-inspector.json`)
