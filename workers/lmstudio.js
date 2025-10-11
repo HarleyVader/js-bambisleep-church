@@ -21,14 +21,14 @@ function initializeConfig() {
 
     // Initialize LMStudio SDK client with proper WebSocket URL
     let lmStudioBaseUrl = config.lmstudio.url.replace('/v1/chat/completions', '').replace('/v1', '');
-    
+
     // Convert HTTP URL to WebSocket URL for LMStudio SDK
     if (lmStudioBaseUrl.startsWith('http://')) {
         lmStudioBaseUrl = lmStudioBaseUrl.replace('http://', 'ws://');
     } else if (lmStudioBaseUrl.startsWith('https://')) {
         lmStudioBaseUrl = lmStudioBaseUrl.replace('https://', 'wss://');
     }
-    
+
     lmStudioClient = new LMStudioClient({
         baseUrl: lmStudioBaseUrl
     });
