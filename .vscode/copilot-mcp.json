@@ -21,17 +21,6 @@
           "communityVoting": true,
           "contentGeneration": true
         }
-      },
-      {
-        "name": "gistpad",
-        "description": "Local development MCP server",
-        "endpoint": "stdio",
-        "command": "node",
-        "args": ["build/index.js"],
-        "capabilities": {
-          "codeGeneration": true,
-          "fileManagement": true
-        }
       }
     ],
     "contextSharing": {

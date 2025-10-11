@@ -6,18 +6,6 @@
                 "src/mcp/McpServer.js"
             ],
             "cwd": "f:\\js-bambisleep-church"
-        },
-        "gistpad": {
-            "command": "node",
-            "args": [
-                "build/index.js"
-            ],
-            "dev": {
-                "watch": "build/**/*.js",
-                "debug": {
-                    "type": "node"
-                }
-            }
         }
     }
 }
