@@ -20,7 +20,7 @@ export const config = {
     lmstudio: {
         url: process.env.LMSTUDIO_URL || 'http://localhost:7777/v1/chat/completions',
         apiKey: process.env.LMSTUDIO_API_KEY || '',
-        model: process.env.LMSTUDIO_MODEL || 'llama-3.2-8x3b-moe-dark-champion-instruct-uncensored-abliterated-18.4b',
+        model: process.env.LMSTUDIO_MODEL || 'llama-3.2',
         timeout: parseInt(process.env.LMSTUDIO_TIMEOUT || '30000'),
         maxTokens: parseInt(process.env.LMSTUDIO_MAX_TOKENS || '1000'),
         temperature: parseFloat(process.env.LMSTUDIO_TEMPERATURE || '0.7'),

@@ -30,8 +30,7 @@ function initializeConfig() {
     }
 
     lmStudioClient = new LMStudioClient({
-        baseUrl: lmStudioBaseUrl,
-        verbose: false  // Disable verbose logging
+        baseUrl: lmStudioBaseUrl
     });
 
     console.log('🤖 LM Studio connected:', lmStudioBaseUrl);
@@ -79,7 +78,7 @@ async function autoLoadBestModel() {
         console.log(`🔄 Loading model: ${TARGET_MODEL_NAME}`);
 
         // Use LMStudio SDK to load the model
-        currentModel = await lmStudioClient.llm.model(TARGET_MODEL_NAME);
+        currentModel = await lmStudioClient.llm.model(TARGET_MODEL_NAME, { verbose: false });
 
         console.log(`✅ Model loaded: ${TARGET_MODEL_NAME}`);
 
@@ -96,10 +95,10 @@ async function autoLoadBestModel() {
         // Check if model is already loaded
         if (error.message.includes('already exists')) {
             console.log(`✅ Model already loaded: ${TARGET_MODEL_NAME}`);
-            
+
             // Try to get the existing model
             try {
-                currentModel = await lmStudioClient.llm.model(TARGET_MODEL_NAME);
+                currentModel = await lmStudioClient.llm.model(TARGET_MODEL_NAME, { verbose: false });
                 if (parentPort) {
                     parentPort.postMessage({
                         type: 'model_loaded',
@@ -126,7 +125,7 @@ async function autoLoadBestModel() {
 
         for (const variant of variants) {
             try {
-                currentModel = await lmStudioClient.llm.model(variant);
+                currentModel = await lmStudioClient.llm.model(variant, { verbose: false });
                 console.log(`✅ Model loaded: ${variant}`);
 
                 if (parentPort) {

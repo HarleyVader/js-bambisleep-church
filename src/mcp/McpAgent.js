@@ -118,7 +118,7 @@ class McpAgent {
         try {
             // First check if this is a local BambiSleep Church tool
             const localTools = ['search_knowledge', 'get_knowledge_stats', 'fetch_webpage'];
-            
+
             if (localTools.includes(toolName)) {
                 return await this.executeLocalTool(toolName, args);
             }
@@ -426,9 +426,9 @@ class McpAgent {
     getAllTools() {
         const localTools = this.getTools();
         const serverStatus = this.mcpOrchestrator.getServerStatus();
-        
+
         const allTools = [...localTools];
-        
+
         // Add tools from available MCP servers
         for (const [serverName, serverInfo] of Object.entries(serverStatus)) {
             if (serverInfo.health === 'healthy' && serverInfo.tools) {
@@ -442,7 +442,7 @@ class McpAgent {
                 }
             }
         }
-        
+
         return allTools;
     }
 
