@@ -1,0 +1,206 @@
+/* Home Page CSS Module */
+.page {
+    min-height: 70vh;
+    padding: 3rem 0;
+}
+
+.hero {
+    text-align: center;
+    padding: 4rem 0;
+    background: linear-gradient(135deg, rgba(255, 0, 255, 0.1), rgba(0, 255, 255, 0.1));
+    border-radius: 15px;
+    margin-bottom: 4rem;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 0, 255, 0.2);
+}
+
+.heroTitle {
+    font-size: 3rem;
+    color: var(--primary);
+    margin-bottom: 1.5rem;
+    font-family: var(--font-heading);
+    font-weight: 900;
+    text-shadow: 0 0 20px rgba(255, 0, 255, 0.5);
+    animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+    from {
+        text-shadow: 0 0 20px rgba(255, 0, 255, 0.5);
+    }
+
+    to {
+        text-shadow: 0 0 30px rgba(255, 0, 255, 0.8);
+    }
+}
+
+.heroSubtitle {
+    font-size: 1.3rem;
+    color: var(--text-light);
+    margin-bottom: 2rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.heroDescription {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    max-width: 800px;
+    margin: 0 auto 2rem;
+    line-height: 1.8;
+}
+
+.ctaButton {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: var(--dark);
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: all 0.3s;
+    display: inline-block;
+    box-shadow: 0 5px 20px rgba(255, 0, 255, 0.3);
+}
+
+.ctaButton:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(255, 0, 255, 0.5);
+    filter: brightness(1.1);
+}
+
+.featureGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2.5rem;
+    margin: 4rem 0;
+}
+
+.featureCard {
+    background: var(--dark-card);
+    padding: 2.5rem;
+    border-radius: 15px;
+    border: 1px solid var(--secondary);
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+}
+
+.featureCard::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+}
+
+.featureCard:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 40px rgba(255, 0, 255, 0.3);
+    border-color: var(--primary);
+}
+
+.featureIcon {
+    font-size: 3rem;
+    color: var(--primary);
+    margin-bottom: 1.5rem;
+    display: block;
+}
+
+.featureTitle {
+    color: var(--secondary);
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    font-family: var(--font-heading);
+}
+
+.featureDescription {
+    color: var(--text-muted);
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+}
+
+.featureLink {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: bold;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.featureLink:hover {
+    color: var(--secondary);
+    text-shadow: 0 0 10px var(--secondary);
+}
+
+.stats {
+    background: var(--dark-card);
+    padding: 3rem;
+    border-radius: 15px;
+    margin: 4rem 0;
+    text-align: center;
+    border: 1px solid var(--accent);
+}
+
+.statsTitle {
+    color: var(--primary);
+    margin-bottom: 2rem;
+    font-size: 2rem;
+    font-family: var(--font-heading);
+}
+
+.statsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+}
+
+.statItem {
+    padding: 1.5rem;
+}
+
+.statNumber {
+    font-size: 2.5rem;
+    color: var(--secondary);
+    font-weight: bold;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.statLabel {
+    color: var(--text-muted);
+    font-size: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .heroTitle {
+        font-size: 2rem;
+    }
+
+    .heroSubtitle {
+        font-size: 1.1rem;
+    }
+
+    .featureGrid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+
+    .featureCard {
+        padding: 2rem;
+    }
+
+    .stats {
+        padding: 2rem;
+    }
+
+    .statsGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

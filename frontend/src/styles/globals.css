@@ -1,0 +1,154 @@
+/* BambiSleep Church - Global CSS Variables and Base Styles */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap');
+
+:root {
+    /* Primary Color Palette */
+    --primary: #ff00ff;
+    --primary-pink: #cc0174;
+    --primary-cyan: #15aab5;
+    --primary-purple: #40002f;
+
+    /* Secondary Colors */
+    --secondary: #00ffff;
+    --secondary-green: #02b893;
+    --secondary-blue: #667eea;
+    --secondary-purple: #764ba2;
+
+    /* Tertiary Colors */
+    --tertiary-pink: #f093fb;
+    --tertiary-red: #f5576c;
+    --tertiary-green: #84fab0;
+    --tertiary-blue: #8fd3f4;
+
+    /* Dark Theme */
+    --dark: #0a0a0a;
+    --dark-card: #1a1a1a;
+    --dark-transparent: rgba(10, 26, 26, 0.8);
+    --dark-card-transparent: rgba(26, 26, 26, 0.8);
+
+    /* Text Colors */
+    --text: #ffffff;
+    --text-muted: #888888;
+    --text-light: #e0e0e0;
+
+    /* Accent Colors */
+    --accent: #ff006e;
+    --accent-success: #10b981;
+    --accent-warning: #f59e0b;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, #0c2a2a, #40002f, #720241);
+    --gradient-purple: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --gradient-pink: linear-gradient(135deg, #f093fb15 0%, #f5576c15 100%);
+    --gradient-green: linear-gradient(135deg, #84fab015 0%, #8fd3f415 100%);
+
+    /* Fonts */
+    --font-primary: 'Rajdhani', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    --font-heading: 'Orbitron', monospace;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-primary);
+    background: var(--dark);
+    color: var(--text);
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+/* Universal Background Effects */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background:
+        radial-gradient(circle at 20% 50%, rgba(64, 0, 47, 0.4) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(21, 170, 181, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 40% 80%, rgba(223, 4, 113, 0.3) 0%, transparent 50%);
+    opacity: 0.1;
+    animation: pulse 4s ease-in-out infinite alternate;
+    z-index: -1;
+    pointer-events: none;
+}
+
+@keyframes pulse {
+    from {
+        opacity: 0.05;
+    }
+
+    to {
+        opacity: 0.15;
+    }
+}
+
+.grid-lines {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image:
+        linear-gradient(rgba(21, 170, 181, 0.2) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(21, 170, 181, 0.2) 1px, transparent 1px);
+    background-size: 50px 50px;
+    animation: gridMove 20s linear infinite;
+    z-index: -1;
+    pointer-events: none;
+}
+
+@keyframes gridMove {
+    0% {
+        transform: translate(0, 0);
+    }
+
+    100% {
+        transform: translate(50px, 50px);
+    }
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Global Button Styles */
+.btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background: var(--primary);
+    color: var(--dark);
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: all 0.3s;
+    margin-top: 1rem;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.btn:hover {
+    background: var(--secondary);
+    box-shadow: 0 0 20px var(--secondary);
+    transform: translateY(-2px);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+/* Responsive breakpoints */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 15px;
+    }
+}

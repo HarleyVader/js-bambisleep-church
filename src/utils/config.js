@@ -79,8 +79,6 @@ export const config = {
     },
 
     paths: {
-        views: path.join(__dirname, '../../views'),
-        public: path.join(__dirname, '../../public'),
         knowledge: path.join(__dirname, '../knowledge/knowledge.json')
     },
 

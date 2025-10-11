@@ -28,12 +28,14 @@ if (config.mcp.enabled) {
     mcpServer = new BambiMcpServer();
 }
 
-// Set EJS as the view engine
-app.set('view engine', 'ejs');
-app.set('views', config.paths.views);
-
-// Serve static files from public/
-app.use(express.static(config.paths.public));
+// Always serve React build (built by Vite)
+const distPath = path.join(__dirname, '../dist');
+if (fs.existsSync(distPath)) {
+    app.use(express.static(distPath));
+    log.info(`Serving React build from: ${distPath}`);
+} else {
+    log.warn('React build not found. Run "npm run build" to create production build.');
+}
 
 // Parse JSON bodies
 app.use(express.json());
@@ -72,62 +74,15 @@ try {
     log.error(`Knowledge loading failed: ${error.message}`);
 }
 
-// Routes
-app.get('/', (req, res) => {
-    const mcpStatus = mcpServer ? mcpServer.getInfo() : null;
-
-    res.render('pages/index', {
-        title: 'Bambi Sleep Church',
-        description: 'Digital Sanctuary for the BambiSleep Community - AI-Powered Spiritual Community',
-        location: req.location,
-        knowledgeCount: knowledgeData.length,
-        mcpEnabled: config.mcp.enabled,
-        mcpStatus: mcpStatus,
-        stats: {
-            members: 42,
-            tools: mcpStatus ? mcpStatus.toolCount : 7,
-            progress: 14,
-            phase: 'Foundation'
-        }
-    });
-});
-
-app.get('/knowledge', (req, res) => {
-    res.render('pages/knowledge', {
-        title: 'Knowledge Base',
-        description: 'Explore our comprehensive BambiSleep knowledge base',
-        knowledge: knowledgeData,
-        location: req.location
-    });
-});
-
-app.get('/mission', (req, res) => {
-    res.render('pages/mission', {
-        title: 'Our Mission',
-        description: 'Establishing BambiSleep Church as a legal Austrian religious community',
-        location: req.location
-    });
-});
-
-app.get('/roadmap', (req, res) => {
-    res.render('pages/roadmap', {
-        title: 'Mission Roadmap',
-        description: 'Strategic timeline for church establishment',
-        location: req.location
-    });
-});
-
-app.get('/agents', (req, res) => {
-    res.render('pages/agents', {
-        title: 'Chat Agent',
-        description: 'Chat with our simple web agent about BambiSleep Church',
-        location: req.location,
-        knowledgeCount: knowledgeData.length,
-        config: config
-    });
-});
-
-
+// React SPA fallback - Serve index.html for all frontend routes
+const serveReactApp = (req, res) => {
+    const indexPath = path.join(__dirname, '../dist/index.html');
+    if (fs.existsSync(indexPath)) {
+        res.sendFile(indexPath);
+    } else {
+        res.status(404).send('React app not built. Run "npm run build" first.');
+    }
+};
 
 // API endpoint for knowledge
 app.get('/api/knowledge', (req, res) => {
@@ -137,12 +92,82 @@ app.get('/api/knowledge', (req, res) => {
 // API endpoint for knowledge search
 app.get('/api/knowledge/search', (req, res) => {
     const query = req.query.q?.toLowerCase() || '';
-    const filtered = knowledgeData.filter(item =>
-        item.title?.toLowerCase().includes(query) ||
-        item.description?.toLowerCase().includes(query) ||
-        item.category?.toLowerCase().includes(query)
-    );
+    const category = req.query.category?.toLowerCase();
+
+    let filtered = knowledgeData;
+
+    if (query) {
+        filtered = filtered.filter(item =>
+            item.title?.toLowerCase().includes(query) ||
+            item.description?.toLowerCase().includes(query) ||
+            item.category?.toLowerCase().includes(query)
+        );
+    }
+
+    if (category && category !== 'all') {
+        filtered = filtered.filter(item =>
+            item.category?.toLowerCase() === category
+        );
+    }
+
     res.json(filtered);
+});
+
+// API endpoint for knowledge by ID
+app.get('/api/knowledge/:id', (req, res) => {
+    const { id } = req.params;
+    const entry = knowledgeData[id];
+
+    if (!entry) {
+        return res.status(404).json({ error: 'Knowledge entry not found' });
+    }
+
+    res.json(entry);
+});
+
+// MCP API endpoints
+app.get('/api/mcp/status', (req, res) => {
+    if (!mcpServer) {
+        return res.status(503).json({
+            status: 'unavailable',
+            message: 'MCP server not initialized'
+        });
+    }
+
+    try {
+        const info = mcpServer.getInfo();
+        res.json({
+            status: 'operational',
+            ...info,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        res.status(500).json({
+            status: 'error',
+            message: error.message
+        });
+    }
+});
+
+app.get('/api/mcp/tools', async (req, res) => {
+    if (!mcpServer) {
+        return res.status(503).json({
+            error: 'MCP server not available'
+        });
+    }
+
+    try {
+        const tools = await mcpServer.listTools();
+        res.json({
+            tools: tools,
+            count: tools.length,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        res.status(500).json({
+            error: error.message
+        });
+    }
 });
 
 // Health check
@@ -500,6 +525,9 @@ async function initializeAgent() {
         log.error('❌ SimpleWebAgent initialization failed');
     }
 }
+
+// Catch-all handler for React Router (must be last)
+app.get(/.*/, serveReactApp);
 
 // Start server
 httpServer.listen(PORT, HOST, async () => {

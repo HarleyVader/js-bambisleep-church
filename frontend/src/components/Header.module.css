@@ -1,0 +1,135 @@
+/* Header Component CSS Module */
+.header {
+    background: var(--dark-card);
+    padding: 1.5rem 0;
+    border-bottom: 2px solid var(--primary);
+    box-shadow: 0 0 20px rgba(255, 0, 255, 0.3);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    color: var(--primary);
+    font-size: 2rem;
+    margin: 0;
+    font-family: var(--font-heading);
+    font-weight: 900;
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+.logo:hover {
+    text-shadow: 0 0 15px var(--primary);
+    transform: scale(1.05);
+}
+
+.nav {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.navLink {
+    color: var(--secondary);
+    text-decoration: none;
+    transition: all 0.3s;
+    font-weight: 500;
+    font-size: 1.1rem;
+    position: relative;
+    padding: 0.5rem 0;
+}
+
+.navLink:hover {
+    color: var(--primary);
+    text-shadow: 0 0 10px var(--primary);
+}
+
+.navLink::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--primary);
+    transition: width 0.3s;
+}
+
+.navLink:hover::after {
+    width: 100%;
+}
+
+.navLink.active {
+    color: var(--primary);
+}
+
+.navLink.active::after {
+    width: 100%;
+}
+
+/* Mobile menu */
+.mobileToggle {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--secondary);
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.mobileToggle:hover {
+    color: var(--primary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 15px;
+    }
+
+    .logo {
+        font-size: 1.5rem;
+    }
+
+    .mobileToggle {
+        display: block;
+    }
+
+    .nav {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: var(--dark-card);
+        flex-direction: column;
+        padding: 1rem;
+        border-top: 1px solid var(--primary);
+    }
+
+    .nav.open {
+        display: flex;
+    }
+
+    .navLink {
+        padding: 0.75rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .navLink:last-child {
+        border-bottom: none;
+    }
+}

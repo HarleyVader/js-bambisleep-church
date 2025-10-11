@@ -1,0 +1,306 @@
+/* Mission Page CSS Module */
+.page {
+    min-height: 70vh;
+    padding: 3rem 0;
+}
+
+.hero {
+    text-align: center;
+    padding: 4rem 0;
+    margin-bottom: 4rem;
+    background: linear-gradient(135deg, rgba(255, 0, 255, 0.1), rgba(0, 255, 255, 0.1));
+    border-radius: 15px;
+    border: 1px solid rgba(255, 0, 255, 0.2);
+}
+
+.title {
+    color: var(--primary);
+    font-size: 3.5rem;
+    margin-bottom: 1.5rem;
+    font-family: var(--font-heading);
+    font-weight: 900;
+    text-shadow: 0 0 20px rgba(255, 0, 255, 0.5);
+}
+
+.subtitle {
+    color: var(--text-light);
+    font-size: 1.3rem;
+    max-width: 800px;
+    margin: 0 auto;
+    line-height: 1.7;
+}
+
+.content {
+    display: grid;
+    gap: 4rem;
+}
+
+.section {
+    background: var(--dark-card);
+    padding: 3rem;
+    border-radius: 15px;
+    border-left: 4px solid var(--accent);
+    position: relative;
+    overflow: hidden;
+}
+
+.section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    opacity: 0.7;
+}
+
+.sectionIcon {
+    font-size: 3rem;
+    color: var(--primary);
+    margin-bottom: 1.5rem;
+    display: block;
+}
+
+.sectionTitle {
+    color: var(--primary);
+    margin-bottom: 2rem;
+    font-size: 2rem;
+    font-family: var(--font-heading);
+    font-weight: 700;
+}
+
+.sectionText {
+    color: var(--text-muted);
+    line-height: 1.8;
+    margin-bottom: 1.5rem;
+    font-size: 1.1rem;
+}
+
+.sectionText:last-child {
+    margin-bottom: 0;
+}
+
+.highlightBox {
+    background: linear-gradient(135deg, rgba(255, 0, 255, 0.1), rgba(0, 255, 255, 0.1));
+    padding: 2rem;
+    border-radius: 10px;
+    border: 1px solid var(--secondary);
+    margin: 2rem 0;
+}
+
+.highlightTitle {
+    color: var(--secondary);
+    margin-bottom: 1rem;
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+}
+
+.highlightText {
+    color: var(--text-light);
+    line-height: 1.7;
+    font-size: 1.05rem;
+}
+
+.valuesList {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.valueItem {
+    background: var(--dark);
+    padding: 2rem;
+    border-radius: 10px;
+    border: 1px solid var(--text-muted);
+    transition: all 0.3s;
+}
+
+.valueItem:hover {
+    border-color: var(--secondary);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 255, 255, 0.2);
+}
+
+.valueIcon {
+    font-size: 2.5rem;
+    color: var(--secondary);
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.valueTitle {
+    color: var(--primary);
+    margin-bottom: 1rem;
+    font-family: var(--font-heading);
+    font-size: 1.3rem;
+}
+
+.valueDescription {
+    color: var(--text-muted);
+    line-height: 1.6;
+}
+
+.timeline {
+    position: relative;
+    padding: 2rem 0;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(180deg, var(--primary), var(--secondary));
+    transform: translateX(-50%);
+}
+
+.timelineItem {
+    display: flex;
+    align-items: center;
+    margin-bottom: 3rem;
+    position: relative;
+}
+
+.timelineItem:nth-child(odd) {
+    flex-direction: row-reverse;
+}
+
+.timelineContent {
+    background: var(--dark-card);
+    padding: 2rem;
+    border-radius: 15px;
+    border: 1px solid var(--secondary);
+    width: 45%;
+    position: relative;
+}
+
+.timelineContent::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 20px;
+    height: 20px;
+    background: var(--primary);
+    border: 3px solid var(--dark);
+    border-radius: 50%;
+    transform: translateY(-50%);
+}
+
+.timelineItem:nth-child(odd) .timelineContent::before {
+    left: -40px;
+}
+
+.timelineItem:nth-child(even) .timelineContent::before {
+    right: -40px;
+}
+
+.timelineDate {
+    color: var(--primary);
+    font-weight: bold;
+    margin-bottom: 1rem;
+    font-family: var(--font-heading);
+}
+
+.timelineTitle {
+    color: var(--secondary);
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+}
+
+.timelineDescription {
+    color: var(--text-muted);
+    line-height: 1.6;
+}
+
+.callToAction {
+    text-align: center;
+    padding: 4rem;
+    background: linear-gradient(135deg, var(--gradient-purple));
+    border-radius: 15px;
+    border: 1px solid var(--primary);
+    margin-top: 4rem;
+}
+
+.ctaTitle {
+    color: var(--primary);
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+    font-family: var(--font-heading);
+    font-weight: 900;
+}
+
+.ctaText {
+    color: var(--text-light);
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.7;
+}
+
+.ctaButton {
+    background: var(--primary);
+    color: var(--dark);
+    padding: 1.25rem 2.5rem;
+    font-size: 1.1rem;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: all 0.3s;
+    display: inline-block;
+    box-shadow: 0 5px 20px rgba(255, 0, 255, 0.3);
+    font-family: inherit;
+    border: none;
+    cursor: pointer;
+}
+
+.ctaButton:hover {
+    background: var(--secondary);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(0, 255, 255, 0.5);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .title {
+        font-size: 2.5rem;
+    }
+
+    .section {
+        padding: 2rem;
+    }
+
+    .valuesList {
+        grid-template-columns: 1fr;
+    }
+
+    .timeline::before {
+        left: 20px;
+    }
+
+    .timelineItem {
+        flex-direction: row !important;
+        padding-left: 50px;
+    }
+
+    .timelineContent {
+        width: 100%;
+    }
+
+    .timelineContent::before {
+        left: -40px !important;
+    }
+
+    .callToAction {
+        padding: 3rem 2rem;
+    }
+
+    .ctaTitle {
+        font-size: 2rem;
+    }
+}
