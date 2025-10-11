@@ -7,7 +7,7 @@ Wants=network.target
 Type=simple
 User=brandynette
 WorkingDirectory=/home/brandynette/web/at.bambisleep.church/js-bambisleep-church
-ExecStart=/home/brandynette/.nvm/versions/node/v24.8.0/bin/npx concurrently "node src/mcp/McpServer.js --http" "node src/server.js"
+ExecStart=/home/brandynette/.nvm/versions/node/v24.8.0/bin/node src/server.js
 Restart=always
 RestartSec=10
 Environment=NODE_ENV=production

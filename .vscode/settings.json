@@ -17,41 +17,6 @@
     "listCount": 3,
     "inlineSuggestEnable": true
   },
-  "github.copilot.chat.experimental.mcpIntegration": true,
   "github.copilot.chat.useProjectTemplates": true,
-  "github.copilot.chat.experimental.codeGeneration": true,
-  "github.copilot.chat.experimental.contextAwareness": true,
-  
-  "github.copilot.chat.instructions": [
-    {
-      "file": "#file:copilot-instructions.md",
-      "description": "AI Framework: 3-Step Agent Loop MK-XII methodology - Core rules for function over form, working code over perfect code, and KEEP IT SIMPLE approach"
-    },
-    {
-      "file": "#file:model-context-protocol.md", 
-      "description": "Model Context Protocol specifications for JSON-RPC 2.0, LMStudio integration, tool orchestration, and structured output requirements"
-    },
-    {
-      "file": "#file:codebase-inventory.md",
-      "description": "Complete file inventory with completion percentages for js-bambisleep-church project including MCP server infrastructure and smolagents integration"
-    },
-    {
-      "file": "#file:copilot-ssh-agent.md",
-      "description": "SSH deployment agent configuration for bambisleep.chat, bambisleep.church, fickdichselber.com with git workflow automation"
-    },
-    {
-      "file": ".vscode/copilot-mcp.json",
-      "description": "MCP server integration configuration for GitHub Copilot with fickdichselber-mcp-server connection"
-    }
-  ],
-  "chat.mcp.serverSampling": {
-    "js-bambisleep-church/.vscode/mcp.json: fickdichselber-mcp-server": {
-      "allowedModels": [
-        "github.copilot-chat/claude-opus-4",
-        "github.copilot-chat/claude-3.7-sonnet",
-        "github.copilot-chat/claude-3.7-sonnet-thought",
-        "github.copilot-chat/claude-sonnet-4"
-      ]
-    }
-  }
+  "github.copilot.chat.projectTemplates": [
 }

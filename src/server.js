@@ -7,7 +7,6 @@ import path from 'path';
 import fs from 'fs';
 import geoip from 'geoip-lite';
 import { webAgent } from './services/SimpleWebAgent.js';
-import { McpAgent } from './mcp/McpAgent.js';
 import { log } from './utils/logger.js';
 import { config } from './utils/config.js';
 
@@ -21,16 +20,6 @@ const PORT = config.server.port;
 const HOST = config.server.host;
 
 const AUDIO_URL = config.audio.url;
-
-// Initialize MCP Agent with worker system
-const mcpAgent = new McpAgent({
-    lmstudioUrl: config.lmstudio.url,
-    model: config.lmstudio.model,
-    maxIterations: config.agent.maxIterations,
-    temperature: config.lmstudio.temperature
-});
-
-// Worker system initialized in McpAgent constructor
 
 // Set EJS as the view engine
 app.set('view engine', 'ejs');
@@ -112,46 +101,14 @@ app.get('/roadmap', (req, res) => {
 
 app.get('/agents', (req, res) => {
     res.render('pages/agents', {
-        title: 'AI Agents',
-        description: 'Intelligent agents powered by MCP for enhanced BambiSleep Church experience',
+        title: 'Chat Agent',
+        description: 'Chat with our simple web agent about BambiSleep Church',
         location: req.location,
         knowledgeCount: knowledgeData.length
     });
 });
 
-// API endpoint for MCP orchestration status
-app.get('/api/mcp/status', async (req, res) => {
-    try {
-        const mcpStatus = mcpAgent.getMcpStatus();
-        res.json({
-            success: true,
-            ...mcpStatus,
-            timestamp: new Date().toISOString()
-        });
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-    }
-});
 
-// API endpoint for all available tools (local + orchestrated)
-app.get('/api/mcp/tools', async (req, res) => {
-    try {
-        const allTools = mcpAgent.getAllTools();
-        res.json({
-            success: true,
-            tools: allTools,
-            count: allTools.length
-        });
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-    }
-});
 
 // API endpoint for knowledge
 app.get('/api/knowledge', (req, res) => {
@@ -243,136 +200,11 @@ app.post('/api/audio/stop', (req, res) => {
     }
 });
 
-// MCP Agent endpoints
-app.post('/api/mcp/chat', async (req, res) => {
-    try {
-        const { message } = req.body;
 
-        if (!message) {
-            return res.status(400).json({ error: 'Message is required' });
-        }
-
-        const result = await mcpAgent.chat(message);
-
-        res.json({
-            success: true,
-            response: result.response,
-            iterations: result.iterations,
-            toolsUsed: result.toolsUsed,
-            timestamp: new Date().toISOString()
-        });
-
-    } catch (error) {
-
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-    }
-});
-
-app.post('/api/mcp/reset', (req, res) => {
-    try {
-        mcpAgent.reset();
-        res.json({ success: true, message: 'Conversation reset' });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-app.get('/api/mcp/stats', (req, res) => {
-    try {
-        const summary = mcpAgent.getSummary();
-        res.json({ success: true, ...summary });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-app.get('/api/mcp/tools', (req, res) => {
-    try {
-        const tools = mcpAgent.getTools();
-        res.json({
-            success: true,
-            tools: tools.map(t => ({
-                name: t.function.name,
-                description: t.function.description,
-                parameters: t.function.parameters
-            }))
-        });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
 
 // Socket.io for agent chat
 io.on('connection', (socket) => {
-
-
-    // Handle MCP Agent messages
-    socket.on('mcp:message', async (data) => {
-        try {
-            const { message } = data;
-            log.info('MCP message received:', message);
-
-            socket.emit('mcp:typing', { isTyping: true });
-
-            // Process with MCP Agent (now with orchestration)
-            const result = await mcpAgent.chat(message);
-
-            socket.emit('mcp:typing', { isTyping: false });
-            socket.emit('mcp:response', {
-                message: result.response,
-                iterations: result.iterations,
-                toolsUsed: result.toolsUsed,
-                timestamp: new Date().toISOString()
-            });
-
-        } catch (error) {
-            log.error('MCP message processing failed:', error);
-            socket.emit('mcp:error', {
-                error: error.message,
-                timestamp: new Date().toISOString()
-            });
-        }
-    });
-
-    // Handle MCP orchestration status requests
-    socket.on('mcp:status', async (data) => {
-        try {
-            const mcpStatus = mcpAgent.getMcpStatus();
-            socket.emit('mcp:status:response', {
-                success: true,
-                ...mcpStatus,
-                timestamp: new Date().toISOString()
-            });
-        } catch (error) {
-            log.error('MCP status request failed:', error);
-            socket.emit('mcp:status:error', {
-                error: error.message,
-                timestamp: new Date().toISOString()
-            });
-        }
-    });
-
-    // Handle MCP tools list requests
-    socket.on('mcp:tools', async (data) => {
-        try {
-            const allTools = mcpAgent.getAllTools();
-            socket.emit('mcp:tools:response', {
-                success: true,
-                tools: allTools,
-                count: allTools.length,
-                timestamp: new Date().toISOString()
-            });
-        } catch (error) {
-            log.error('MCP tools request failed:', error);
-            socket.emit('mcp:tools:error', {
-                error: error.message,
-                timestamp: new Date().toISOString()
-            });
-        }
-    });
+    log.info('Client connected to chat');
 
     // Handle SimpleWebAgent messages (original)
     socket.on('agent:message', async (data) => {
@@ -405,7 +237,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('disconnect', () => {
-
+        log.info('Client disconnected from chat');
     });
 });
 

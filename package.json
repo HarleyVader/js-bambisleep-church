@@ -13,33 +13,15 @@
   },
   "homepage": "https://github.com/HarleyVader/js-bambisleep-church#readme",
   "scripts": {
-    "start": "npx concurrently \"node src/mcp/McpServer.js --http\" \"node src/server.js\"",
-    "start:stdio": "npx concurrently \"node src/mcp/McpServer.js\" \"node src/server.js\"",
-    "start:simple": "node src/mcp/McpServer.js --http & node src/server.js",
-    "start:mcp": "node src/mcp/McpServer.js --http",
-    "start:web": "node src/server.js",
-    "mcp:start": "node src/mcp/McpServer.js",
-    "mcp:http": "node src/mcp/McpServer.js --http",
-    "mcp:dev": "nodemon src/mcp/McpServer.js",
-    "mcp:lmstudio": "node src/mcp/McpServer.js --http",
-    "test": "node tests/lmstudio-mcp-test.js",
-    "test:mcp": "node tests/lmstudio-mcp-test.js",
-    "test:lmstudio": "node tests/lmstudio-mcp-test.js"
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "echo \"No tests configured yet\""
   },
   "dependencies": {
-    "@lmstudio/sdk": "^1.5.0",
-    "@modelcontextprotocol/sdk": "^0.5.0",
-    "axios": "^1.9.0",
-    "cheerio": "^1.1.0",
-    "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "ejs": "^3.1.10",
     "express": "^5.1.0",
     "geoip-lite": "^1.4.10",
-    "marked": "^12.0.0",
-    "node-cron": "^4.1.0",
-    "openai": "^4.104.0",
-    "p-limit": "^6.2.0",
     "socket.io": "^4.8.1"
   },
   "keywords": [

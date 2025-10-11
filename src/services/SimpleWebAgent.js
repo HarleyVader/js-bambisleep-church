@@ -1,78 +1,80 @@
-/**
- * Simple Web Agent for BambiSleep Church
- * Provides web chat capabilities using the MCP system
- */
-
-import { McpAgent } from '../mcp/McpAgent.js';
+// Simple Web Agent for basic chat functionality
 import { log } from '../utils/logger.js';
-import { config } from '../utils/config.js';
 
 class SimpleWebAgent {
     constructor() {
-        this.mcpAgent = new McpAgent();
-        this.isInitialized = false;
+        this.initialized = false;
     }
 
     async initialize() {
         try {
-            log.info('🤖 Initializing SimpleWebAgent...');
-
-            // Initialize MCP Agent worker system
-            await this.mcpAgent.initializeWorker();
-
-            this.isInitialized = true;
-            log.success('SimpleWebAgent initialized successfully');
+            log.info('SimpleWebAgent initializing...');
+            this.initialized = true;
             return true;
         } catch (error) {
             log.error(`SimpleWebAgent initialization failed: ${error.message}`);
             return false;
         }
-    } async chat(message) {
-        if (!this.isInitialized) {
-            throw new Error('SimpleWebAgent not initialized');
-        }
+    }
 
+    async chat(message) {
         try {
-            log.info(`Processing chat message: ${message.substring(0, 100)}...`);
+            // Simple response system - can be enhanced later
+            if (!this.initialized) {
+                return {
+                    response: 'Agent not initialized. Please refresh the page.',
+                    tool: null,
+                    success: false
+                };
+            }
 
-            // Use MCP Agent for chat
-            const response = await this.mcpAgent.chat(message);
+            // Basic responses based on message content
+            const lowerMessage = message.toLowerCase();
 
-            const result = {
-                response: response.response || 'I apologize, but I couldn\'t generate a response.',
-                iterations: response.iterations || 0,
-                tools_used: response.toolsUsed || 0,
-                timestamp: new Date().toISOString()
+            if (lowerMessage.includes('help') || lowerMessage.includes('what can you do')) {
+                return {
+                    response: '🤖 I can help with basic information about BambiSleep Church. Try asking about our mission, knowledge base, or community.',
+                    tool: 'help',
+                    success: true
+                };
+            }
+
+            if (lowerMessage.includes('knowledge') || lowerMessage.includes('resources')) {
+                return {
+                    response: '📚 Check out our Knowledge Base page for comprehensive BambiSleep resources and safety information.',
+                    tool: 'knowledge_guide',
+                    success: true
+                };
+            }
+
+            if (lowerMessage.includes('mission') || lowerMessage.includes('church')) {
+                return {
+                    response: '⛪ BambiSleep Church is a digital sanctuary merging spirituality with creative expression. Visit our Mission page to learn more.',
+                    tool: 'mission_info',
+                    success: true
+                };
+            }
+
+            // Default response
+            return {
+                response: `I received your message: "${message}". This is a basic response system. For more information, explore our Knowledge Base or Mission pages.`,
+                tool: null,
+                success: true
             };
 
-            log.success(`Chat response generated (${result.response.length} chars)`);
-            return result;
-
         } catch (error) {
-            log.error(`Chat error: ${error.message}`);
+            log.error(`SimpleWebAgent chat error: ${error.message}`);
             return {
-                response: 'I apologize, but I encountered an error while processing your message. Please try again.',
-                error: error.message,
-                timestamp: new Date().toISOString()
+                response: 'Sorry, I encountered an error processing your message.',
+                tool: null,
+                success: false
             };
         }
     }
 
     async cleanup() {
-        try {
-            log.info('Cleaning up SimpleWebAgent...');
-
-            if (this.mcpAgent) {
-                await this.mcpAgent.cleanup();
-            }
-
-            this.isInitialized = false;
-            log.success('SimpleWebAgent cleanup completed');
-        } catch (error) {
-            log.error(`SimpleWebAgent cleanup error: ${error.message}`);
-        }
+        log.info('SimpleWebAgent cleanup complete');
     }
 }
 
-// Create and export singleton instance
 export const webAgent = new SimpleWebAgent();

@@ -1,73 +1,82 @@
-# GitHub Copilot Instructions - AI Framework
-# **IMPORTANT: DO NOT CHANGE THIS FILE**
+# GitHub Copilot Instructions - BambiSleep Church
 
-## Core Rules:
-- **Function over form.**
-- **Working code over perfect code.**
-- **Less is more.**
-- **NO HARDCODED VALUES.** Use config system always.
-- **DONT MAKE MORE FILES IF POSSIBLE.**
-- **ALWAYS READ FILES** before making changes.
-- **UNDERSTAND FILE RELATIONSHIPS** before coding.
-- **STORE IMPLEMENTATION PLAN** in .tasks/ before coding.
+## Project Overview
+BambiSleep Church is an Express.js web application serving as a digital sanctuary for the BambiSleep community. It features:
+- Knowledge base with curated BambiSleep resources (`src/knowledge/knowledge.json`)
+- Real-time chat interface with Socket.IO
+- MCP (Model Context Protocol) integration for AI agents
+- Geolocation-based visitor tracking
+- EJS templating with cyberpunk-themed UI
 
-## Core Methodology: KEEP IT SIMPLE => 3 STEPS AGENT LOOP | MK-XII
+## Core Architecture
 
-### 1. IMAGINE (Planning & Solutions) - **DO 3 TIMES**
-**First IMAGINE Round:**
-- Fetch **.tasks/<build_name.task>.md** tasks [IF] <doesnt_exist> ignore.
-- What's the absolute minimum I need to write?
-- What's the minimal viable code approach?
-- What must I avoid touching entirely?
-- Can I solve this with existing code or tools?
+### Entry Point & Server (`src/server.js`)
+- Main Express server with Socket.IO for real-time communication
+- Serves EJS views from `views/` with cyberpunk styling
+- Loads knowledge data from JSON file
+- Handles geolocation middleware for visitor tracking
+- References MCP agent system (not yet implemented)
 
-**Second IMAGINE Round:**
-- Fetch required **.github/codebase-inventory.md** files.
-- What code structure will I use with the least words?
-- What files do I need to touch to keep coding to a minimum?
-- What configurations do I need to know to successfully implement this?
-- What is the least amount of work I can do to get this done correctly?
-- Create a **.tasks/<build_name.task>.md** file with the task description and requirements, add [%COMPLEX%]
+### Configuration Pattern
+- **Environment variables in `.env`** - All settings (ports, URLs, API keys)
+- **NO hardcoded values** - Use process.env directly or create config utility
+- **LMStudio integration** - Configured via LMSTUDIO_* env vars
 
-**Third IMAGINE Round:**
-### RULE: Think More, Code Less
-- Can I reuse something that already exists?
-- Always do the LEAST possible amount of work, even if it means thinking longer.
-- Final sanity check: Is this the laziest yet correct possible solution?
-- Update **.tasks/<build_name.task>.md** with [%COMPLEX%] percentages for each item.
+### Knowledge System
+- Structured JSON in `src/knowledge/knowledge.json`
+- Categories: official, community, safety resources
+- Each entry: title, description, URL, category, platform, relevance score
 
-**IMPORTANT: DO NOT FORGET TO THINK BEFORE DOING THIS**
+### Styling & UI (`public/css/style.css`)
+- **Cyberpunk theme** with CSS custom properties (--primary, --secondary, etc.)
+- **Orbitron + Rajdhani fonts** for futuristic aesthetic
+- **Gradient backgrounds** using CSS custom properties
+- **Responsive grid layouts** for feature cards
 
-### 2. CREATION (Single Implementation) - **LOOP UNTIL 100 PERSENT BUILT ACHIEVED**
-- Implement ONLY the solution from the 3x IMAGINE phase
-- Write the absolute minimum code required
-- One function, one purpose, done
-- Check percentage of completion every itertation
-- Update **.github/codebase-inventory.md** with full list of files with [%COMPLEX%] percentages for each item.
-- If not 100% complete, go back to **Third IMAGINE Round:**
+## Development Workflows
 
-**IMPORTANT: DO NOT FORGET TO THINK BEFORE DOING THIS**
+### Starting the Application
+```bash
+npm run start        # Concurrent MCP + web server
+npm run start:web    # Web server only
+npm run start:mcp    # MCP server only (when implemented)
+```
 
-### 3. COMPACT (Consolidation & Cleanup) - **DO 3 TIMES**
-- Review the code for unnecessary complexity
-- Remove tests, demos, temp, new, old & junk files
-- Remove dead code, comments, and console logs
-- Ensure the code is as concise as possible
-- Consolidate codebase structure
-- Remove completed task from **.tasks/<build_name.task>.md**
+### Key File Structure
+```
+src/server.js           # Main Express application
+src/knowledge/          # JSON knowledge base
+src/utils/logger.js     # Simple emoji-based logging
+views/pages/            # EJS page templates
+views/partials/         # Reusable EJS components
+public/css/style.css    # Cyberpunk theme CSS
+.env                    # All configuration
+mcp.json               # MCP server configuration
+```
 
-**CRITICAL: When task is complete, STOP. Don't add features, don't improve, don't optimize.**
+## Coding Conventions
 
-## Environment Configuration Rules:
-- **ALL configuration must use `import { config } from './utils/config.js'`**
-- **NO hardcoded URLs, ports, paths, or API keys**
-- **Update .env file for all new configuration values**
-- **Use config.section.property pattern for organization**
-- **Provide sensible defaults in config.js**
+### Minimalist Approach
+- **Function over form** - Working code over perfect code
+- **ES6 modules** - Use import/export throughout
+- **Simple logging** - Use existing emoji-based logger (`log.info`, `log.error`)
 
-## File Relationship Awareness:
-- **server.js** → Main entry point, uses config, McpAgent, webAgent
-- **McpAgent.js** → Uses config, LMStudioManager, knowledge data
-- **LMStudioManager.js** → Uses config for all LMStudio settings
-- **config.js** → Central configuration, loads from .env
-- **All paths** → Use config.paths.* instead of hardcoded paths
+### Missing Components (Implement When Needed)
+- `src/utils/config.js` - Configuration utility (referenced but doesn't exist)
+- `src/mcp/` directory - MCP agent implementation
+- `src/services/` directory - Service layer components
+
+### EJS Template Pattern
+- Use `<%- include('../partials/header') %>` for consistent layout
+- Pass `location` object for geolocation features
+- Structure: pages call partials, not nested deeply
+
+### Socket.IO Integration
+- Real-time features in `public/js/agent-chat.js`
+- Server-side Socket.IO setup in main server file
+
+## Critical Notes
+- **BambiSleep context** - Adult hypnosis content, handle with appropriate safety warnings
+- **Austrian religious community goal** - Legal/cultural context for "Church" branding
+- **MCP integration planned** - Architecture ready but implementation missing
+- **Geolocation tracking** - Privacy-conscious visitor analytics
