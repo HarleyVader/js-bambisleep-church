@@ -135,6 +135,20 @@ export class LMStudioManager {
         this.sendMessage({ type: 'health' });
     }
 
+    // Check if model is loaded
+    async checkModel() {
+        return new Promise((resolve) => {
+            if (!this.worker || !this.isInitialized) {
+                resolve(false);
+                return;
+            }
+            
+            // For now, assume model is loaded if worker is running
+            // This could be enhanced to actually check model status
+            resolve(this.isInitialized);
+        });
+    }
+
     // Auto-load model
     autoLoadModel() {
         this.sendMessage({ type: 'auto_load_model' });
