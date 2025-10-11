@@ -215,8 +215,14 @@ class BambiMcpServer {
                         // For Crawler tools, use their direct handler format
                         response = await tool.handler(args || {});
                     } else {
-                        // For Bambi tools, validate arguments using Zod schema
-                        const validatedArgs = tool.inputSchema.parse(args || {});
+                        // For Bambi tools, validate arguments using Zod schema if available
+                        let validatedArgs = args || {};
+                        if (tool.inputSchema && typeof tool.inputSchema.parse === 'function') {
+                            // Zod schema - use parse method
+                            validatedArgs = tool.inputSchema.parse(args || {});
+                        }
+                        // If inputSchema is JSON Schema format, skip validation for now
+
                         const result = await tool.handler(validatedArgs, {
                             knowledgeData: this.knowledgeData,
                             server: this

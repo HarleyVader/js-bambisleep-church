@@ -429,8 +429,9 @@ if (config.mcp.enabled && mcpServer) {
                 });
             }
 
-            const result = await mcpServer.handleRequest(req.body);
-            res.json(result);
+            // Use the MCP server's HTTP handler
+            const handler = mcpServer.createHttpHandler();
+            await handler(req, res);
         } catch (error) {
             log.error(`MCP request failed: ${error.message}`);
             res.status(500).json({

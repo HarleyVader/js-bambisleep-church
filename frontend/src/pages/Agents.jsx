@@ -22,13 +22,30 @@ const Agents = () => {
         crawler: 'unknown',
         agentic: 'unknown'
     });
-    const [messages, setMessages] = useState([
-        {
-            type: 'system',
-            content: 'Welcome to the BambiSleep Church AI Agent interface. How can I assist you today?',
-            timestamp: new Date()
+    const [messages, setMessages] = useState(() => {
+        // Try to load messages from localStorage
+        try {
+            const savedMessages = localStorage.getItem('bambisleep-chat-messages');
+            if (savedMessages) {
+                const parsed = JSON.parse(savedMessages);
+                // Convert timestamp strings back to Date objects
+                return parsed.map(msg => ({
+                    ...msg,
+                    timestamp: new Date(msg.timestamp)
+                }));
+            }
+        } catch (error) {
+            console.warn('Failed to load saved messages:', error);
         }
-    ]);
+        // Return default welcome message if no saved messages
+        return [
+            {
+                type: 'system',
+                content: 'Welcome to the BambiSleep Church AI Agent interface. How can I assist you today?',
+                timestamp: new Date()
+            }
+        ];
+    });
     const [inputMessage, setInputMessage] = useState('');
     const [isSending, setIsSending] = useState(false);
     const [availableTools, setAvailableTools] = useState([]);
@@ -85,6 +102,13 @@ const Agents = () => {
     useEffect(() => {
         // Scroll to bottom when new messages arrive
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+
+        // Save messages to localStorage
+        try {
+            localStorage.setItem('bambisleep-chat-messages', JSON.stringify(messages));
+        } catch (error) {
+            console.warn('Failed to save messages:', error);
+        }
     }, [messages]);
 
     const handleSendMessage = async (e) => {
@@ -106,17 +130,17 @@ const Agents = () => {
         try {
             // Try to get MCP status first
             const mcpStatus = await mcpService.getStatus();
-            
+
             if (mcpStatus.status === 'operational') {
                 // Try to get a response from the agentic system
                 const response = await agenticService.queryKnowledge(messageToSend);
-                
+
                 let agentResponse = {
                     type: 'agent',
                     content: response.result?.content?.[0]?.text || 'I received your message and am processing it.',
                     timestamp: new Date()
                 };
-                
+
                 setMessages(prev => [...prev, agentResponse]);
             } else {
                 // MCP not available, provide fallback response
@@ -128,10 +152,10 @@ const Agents = () => {
             }
         } catch (error) {
             console.error('Failed to get agent response:', error);
-            
+
             // Provide helpful fallback response based on message content
             let fallbackContent = `I received your message about "${messageToSend}". `;
-            
+
             if (messageToSend.toLowerCase().includes('knowledge') || messageToSend.toLowerCase().includes('learn')) {
                 fallbackContent += 'For knowledge resources, please visit the Knowledge Base section.';
             } else if (messageToSend.toLowerCase().includes('help') || messageToSend.toLowerCase().includes('guide')) {
@@ -139,7 +163,7 @@ const Agents = () => {
             } else {
                 fallbackContent += 'The AI system is currently being set up. Thank you for your patience!';
             }
-            
+
             setMessages(prev => [...prev, {
                 type: 'system',
                 content: fallbackContent,
@@ -173,6 +197,17 @@ const Agents = () => {
                 timestamp: new Date()
             }]);
         }
+    };
+
+    const handleClearChat = () => {
+        const welcomeMessage = {
+            type: 'system',
+            content: 'Welcome to the BambiSleep Church AI Agent interface. How can I assist you today?',
+            timestamp: new Date()
+        };
+        setMessages([welcomeMessage]);
+        // Clear from localStorage
+        localStorage.removeItem('bambisleep-chat-messages');
     };
 
     const getStatusColor = (serviceStatus) => {
@@ -281,6 +316,13 @@ const Agents = () => {
                             <MessageCircle size={24} />
                             Chat with AI Agent
                         </h2>
+                        <button
+                            onClick={handleClearChat}
+                            className={styles.clearButton}
+                            title="Clear chat history"
+                        >
+                            Clear Chat
+                        </button>
                     </header>
 
                     <div className={styles.chatMessages}>
