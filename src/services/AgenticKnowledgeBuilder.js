@@ -267,12 +267,23 @@ Respond with a structured organization plan in JSON format.`
                         max_tokens: 2000
                     });
 
-                    const aiResponse = result.response.choices[0].message.content;
+                    // Validate AI response structure
+                    if (!result || !result.response || !result.response.choices || result.response.choices.length === 0) {
+                        throw new Error('Invalid AI prioritization response - no choices returned');
+                    }
+
+                    const choice = result.response.choices[0];
+                    if (!choice || !choice.message || !choice.message.content) {
+                        throw new Error('Invalid AI prioritization response - no message content');        
+                    }
+
+                    const aiResponse = choice.message.content;
                     const priorities = JSON.parse(aiResponse);
                     prioritizedLinks.push(...priorities);
 
                 } catch (error) {
                     log.warn(`⚠️ AI prioritization failed for batch, using basic prioritization: ${error.message}`);
+                    log.debug(`🔍 AI prioritization error details:`, error);
                     // Fallback to basic prioritization for this batch
                     const basicBatch = this.basicPrioritization(batch);
                     prioritizedLinks.push(...basicBatch);
@@ -430,7 +441,17 @@ Links: ${crawlData.metrics?.linkCount}`
                         max_tokens: 1000
                     });
 
-                    const aiAnalysis = JSON.parse(result.response.choices[0].message.content);
+                    // Validate AI response structure
+                    if (!result || !result.response || !result.response.choices || result.response.choices.length === 0) {
+                        throw new Error('Invalid AI response structure - no choices returned');
+                    }
+
+                    const choice = result.response.choices[0];
+                    if (!choice || !choice.message || !choice.message.content) {
+                        throw new Error('Invalid AI response structure - no message content');
+                    }
+
+                    const aiAnalysis = JSON.parse(choice.message.content);
 
                     // Merge AI analysis with basic analysis
                     return {
@@ -442,6 +463,7 @@ Links: ${crawlData.metrics?.linkCount}`
 
                 } catch (error) {
                     log.warn(`⚠️ AI analysis failed, using basic analysis: ${error.message}`);
+                    log.debug(`🔍 AI analysis error details:`, error);
                 }
             }
 

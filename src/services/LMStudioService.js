@@ -92,6 +92,17 @@ class LMStudioService {
         for (let attempt = 1; attempt <= this.retries; attempt++) {
             try {
                 const response = await this.client.post('/chat/completions', payload);
+                
+                // Validate response structure
+                if (!response.data) {
+                    throw new Error('LMStudio API returned no data');
+                }
+                
+                if (!response.data.choices || response.data.choices.length === 0) {
+                    log.warn('⚠️ LMStudio API returned empty choices array');
+                    log.debug('🔍 Response data:', JSON.stringify(response.data, null, 2));
+                }
+                
                 return {
                     success: true,
                     response: response.data,

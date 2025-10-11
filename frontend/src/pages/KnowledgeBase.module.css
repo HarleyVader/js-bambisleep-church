@@ -528,6 +528,7 @@
 }
 
 @media (max-width: 480px) {
+
     .voteButton,
     .netScore {
         padding: 0.3rem 0.5rem;
