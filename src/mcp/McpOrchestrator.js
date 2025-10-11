@@ -28,10 +28,10 @@ export class McpOrchestrator {
                 this.orchestrationConfig = mcpConfig.orchestration;
                 log.info(`🔗 MCP Orchestrator loaded with ${mcpConfig.mcpServers.length} servers`);
             } else {
-                log.info('ℹ️  MCP orchestration running with default configuration');
+                log.info('MCP orchestration running with default configuration');
             }
         } catch (error) {
-            log.info('ℹ️  MCP orchestration using basic configuration');
+            log.info('MCP orchestration using basic configuration');
         }
     }
 

@@ -30,15 +30,7 @@ const mcpAgent = new McpAgent({
     temperature: config.lmstudio.temperature
 });
 
-// Start worker system
-(async () => {
-    try {
-        await mcpAgent.lmstudioManager.initialize();
-        log.success('LMStudio worker system initialized');
-    } catch (error) {
-        log.error(`Worker initialization failed: ${error.message}`);
-    }
-})();
+// Worker system initialized in McpAgent constructor
 
 // Set EJS as the view engine
 app.set('view engine', 'ejs');

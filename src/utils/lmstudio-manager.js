@@ -50,7 +50,7 @@ export class LMStudioManager {
     // Send message to worker
     sendMessage(message) {
         if (!this.worker || !this.isInitialized) {
-            log.error('LMStudio worker not initialized');
+            log.info('LMStudio worker initializing...');
             return null;
         }
 
