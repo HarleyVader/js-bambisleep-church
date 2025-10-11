@@ -26,7 +26,7 @@ class MongoDBService {
             this.client = new MongoClient(this.connectionString, {
                 serverApi: {
                     version: ServerApiVersion.v1,
-                    strict: true,
+                    strict: false,  // Allow text indexes for full search capability
                     deprecationErrors: true,
                 }
             });

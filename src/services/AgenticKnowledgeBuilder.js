@@ -111,27 +111,33 @@ Respond with a structured organization plan in JSON format.`
      */
     async setupDatabase() {
         try {
-            // Create indexes for efficient searching
+            // Create text search index for content searching
+            log.info('📝 Creating text search index...');
             await mongoService.createIndex(this.knowledgeCollection, {
                 'content.title': 'text',
                 'content.description': 'text',
                 'analysis.summary': 'text'
-            });
+            }, { name: 'content_text_search' });
 
+            // Create compound index for filtering
+            log.info('🔍 Creating category and priority index...');
             await mongoService.createIndex(this.knowledgeCollection, {
                 'category': 1,
                 'analysis.safetyLevel': 1,
                 'analysis.priority': -1
-            });
+            }, { name: 'category_safety_priority' });
 
+            // Create unique URL index to prevent duplicates
+            log.info('🔗 Creating unique URL index...');
             await mongoService.createIndex(this.knowledgeCollection, {
                 'url': 1
-            }, { unique: true });
+            }, { unique: true, name: 'unique_url' });
 
             log.success('✅ Database collections and indexes ready');
 
         } catch (error) {
             log.warn(`⚠️ Database setup warning: ${error.message}`);
+            // Continue anyway - indexes are not critical for basic functionality
         }
     }
 
