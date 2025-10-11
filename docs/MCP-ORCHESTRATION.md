@@ -1,6 +1,7 @@
 # MCP Orchestration System - Technical Documentation
 
 ## Overview
+
 The BambiSleep Church application has been upgraded with a comprehensive Model Context Protocol (MCP) orchestration system that enables multi-server tool routing, load balancing, and capability-based task distribution.
 
 ## Architecture
@@ -26,16 +27,18 @@ The BambiSleep Church application has been upgraded with a comprehensive Model C
 ### Supported MCP Servers
 
 #### Core Servers
+
 1. **bambisleep-church** (Local) - Priority 1
    - Tools: search_knowledge, get_knowledge_stats, fetch_webpage
    - Capabilities: Knowledge management, web scraping, local data access
 
 2. **bambisleep-church-remote** (Remote) - Priority 2
-   - Endpoint: https://at.bambisleep.church:9999
+   - Endpoint: <https://at.bambisleep.church:9999>
    - Tools: get_links, add_link, vote_link, create_agent, prompt_agent
    - Capabilities: Link management, agent orchestration, community voting
 
 #### Development Servers
+
 3. **vscode-mcp-server** (VS Code Integration) - Priority 3
    - Tools: read_file, write_file, list_directory, run_command, search_files
    - Capabilities: File system operations, workspace integration
@@ -45,6 +48,7 @@ The BambiSleep Church application has been upgraded with a comprehensive Model C
    - Capabilities: Workflow automation, agent management, task scheduling
 
 #### Cloud Servers (Optional)
+
 5. **azure-mcp-server** (Azure Integration) - Priority 5
    - Tools: list_resources, deploy_resource, monitor_service, query_logs
    - Capabilities: Cloud deployment, resource management, monitoring
@@ -56,6 +60,7 @@ The BambiSleep Church application has been upgraded with a comprehensive Model C
 ## Configuration
 
 ### Environment Variables
+
 ```properties
 # MCP Orchestration Configuration
 MCP_ORCHESTRATION_ENABLED=true
@@ -74,7 +79,9 @@ MCP_DATAMATES_ENABLED=false
 ```
 
 ### VS Code Configuration (.vscode/copilot-mcp.json)
+
 The configuration includes:
+
 - Server definitions with endpoints and capabilities
 - Orchestration settings for priority and load balancing
 - Health checking parameters
@@ -83,11 +90,13 @@ The configuration includes:
 ## API Endpoints
 
 ### New Orchestration Endpoints
+
 - `GET /api/mcp/status` - Get MCP orchestration status
 - `GET /api/mcp/tools` - List all available tools across servers
 - Socket events: `mcp:status`, `mcp:tools` for real-time updates
 
 ### Enhanced Agent Interface
+
 - Real-time server health monitoring in web UI
 - Comprehensive tool listing with server attribution
 - Orchestration metrics and statistics
@@ -104,11 +113,13 @@ The configuration includes:
 ## Health Checking System
 
 ### Automatic Monitoring
+
 - Periodic health checks every 30 seconds (configurable)
 - Real-time status updates in web interface
 - Automatic server failover on health degradation
 
 ### Health Check Methods
+
 - **Local Servers**: Direct availability check
 - **Remote Servers**: HTTP health endpoint ping
 - **Stdio Servers**: Process existence verification
@@ -116,6 +127,7 @@ The configuration includes:
 ## Usage Examples
 
 ### Tool Execution Flow
+
 ```javascript
 // Request routed through orchestrator
 const result = await mcpAgent.executeTool('search_knowledge', { query: 'sleep triggers' });
@@ -125,6 +137,7 @@ const result = await mcpAgent.executeTool('search_knowledge', { query: 'sleep tr
 ```
 
 ### Status Monitoring
+
 ```javascript
 // Get comprehensive MCP status
 const status = mcpAgent.getMcpStatus();
@@ -138,12 +151,14 @@ const tools = mcpAgent.getAllTools();
 ## Development Integration
 
 ### VS Code Extensions Required
+
 1. **Copilot MCP** - Core MCP integration
 2. **Agent Smith** - Workflow automation (optional)
 3. **MCP Explorer** - Server monitoring and debugging
 4. **Azure MCP Server** - Cloud integration (optional)
 
 ### Installation Commands
+
 ```bash
 # Install core MCP extensions
 code --install-extension automatalabs.copilot-mcp
@@ -154,11 +169,13 @@ code --install-extension moonolgerdai.mcp-explorer
 ## Deployment Considerations
 
 ### Server Requirements
+
 - Node.js 18+ for MCP server compatibility
 - VS Code with MCP extensions for development
 - Network access to remote MCP servers if configured
 
 ### Production Setup
+
 1. Configure only required MCP servers (disable unused ones)
 2. Set appropriate health check intervals
 3. Monitor server performance and adjust priorities
@@ -167,12 +184,14 @@ code --install-extension moonolgerdai.mcp-explorer
 ## Troubleshooting
 
 ### Common Issues
+
 1. **Server Unavailable** - Check network connectivity and server status
 2. **Tool Not Found** - Verify server has the requested tool/capability
 3. **Timeout Errors** - Adjust MCP_SERVER_TIMEOUT setting
 4. **Health Check Failures** - Review server configuration and logs
 
 ### Debug Commands
+
 ```bash
 # Check MCP status via API
 curl http://localhost:7070/api/mcp/status
@@ -187,12 +206,14 @@ npm run logs
 ## Future Enhancements
 
 ### Planned Features
+
 1. **Dynamic Server Discovery** - Automatic server detection and registration
 2. **Load Metrics** - Real-time performance monitoring and routing optimization
 3. **Caching Layer** - Tool result caching for performance improvement
 4. **Security Layer** - Authentication and authorization for MCP servers
 
 ### Extension Points
+
 - Custom server adapters for new MCP server types
 - Plugin system for specialized capability routing
 - Integration with external monitoring systems
@@ -201,12 +222,14 @@ npm run logs
 ## Performance Metrics
 
 ### Current Capabilities
+
 - **Server Count**: 6 configured servers (4 active by default)
 - **Tool Count**: 20+ total tools across all servers
 - **Health Check Overhead**: <100ms per server per check
 - **Failover Time**: <1 second for server switching
 
 ### Optimization Notes
+
 - Local tools prioritized for minimal latency
 - Health checks run asynchronously to avoid blocking
 - Tool routing cached to reduce lookup overhead

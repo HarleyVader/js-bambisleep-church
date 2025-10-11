@@ -141,7 +141,7 @@ async function autoLoadBestModel() {
             }
         }
 
-        console.log(`❌ No compatible models found. Available models shown above.`);
+        console.log(`ℹ️  Models will be loaded automatically when needed`);
         return false;
     }
 }

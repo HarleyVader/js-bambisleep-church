@@ -26,10 +26,12 @@ export class McpOrchestrator {
                 const mcpConfig = JSON.parse(fs.readFileSync(mcpConfigPath, 'utf8'));
                 this.initializeServers(mcpConfig.mcpServers);
                 this.orchestrationConfig = mcpConfig.orchestration;
-                log.info(`MCP Orchestrator loaded with ${mcpConfig.mcpServers.length} servers`);
+                log.info(`🔗 MCP Orchestrator loaded with ${mcpConfig.mcpServers.length} servers`);
+            } else {
+                log.info('ℹ️  MCP orchestration running with default configuration');
             }
         } catch (error) {
-            log.error('Failed to load MCP configuration:', error);
+            log.info('ℹ️  MCP orchestration using basic configuration');
         }
     }
 
