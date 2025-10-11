@@ -81,7 +81,10 @@ Respond with a structured organization plan in JSON format.`
 
             const lmStudioHealthy = await lmStudioService.isHealthy();
             if (!lmStudioHealthy) {
+                const connInfo = lmStudioService.getConnectionInfo();
                 log.warn('⚠️ LMStudio not available - using basic content analysis');
+                log.info(`🔍 Connection: ${connInfo.url} (${connInfo.platform})`);
+                log.info('💡 Ensure LMStudio is running with a model loaded');
             }
 
             // Configure web crawler for respectful BambiSleep crawling
@@ -129,9 +132,23 @@ Respond with a structured organization plan in JSON format.`
 
             // Create unique URL index to prevent duplicates
             log.info('🔗 Creating unique URL index...');
-            await mongoService.createIndex(this.knowledgeCollection, {
-                'url': 1
-            }, { unique: true, name: 'unique_url' });
+            try {
+                await mongoService.createIndex(this.knowledgeCollection, {
+                    'url': 1
+                }, { unique: true, name: 'unique_url' });
+            } catch (indexError) {
+                if (indexError.message.includes('E11000 duplicate key')) {
+                    log.warn('⚠️ Duplicate URLs found, cleaning up before creating unique index...');
+                    await this.removeDuplicateUrls();
+                    // Try creating the index again after cleanup
+                    await mongoService.createIndex(this.knowledgeCollection, {
+                        'url': 1
+                    }, { unique: true, name: 'unique_url' });
+                    log.success('✅ Duplicate URLs cleaned up and unique index created');
+                } else {
+                    throw indexError;
+                }
+            }
 
             log.success('✅ Database collections and indexes ready');
 
@@ -196,6 +213,50 @@ Respond with a structured organization plan in JSON format.`
     }
 
     /**
+     * Remove duplicate URLs from the collection
+     */
+    async removeDuplicateUrls() {
+        try {
+            const mongoService = this.container.get('mongoService');
+
+            // Find all documents grouped by URL
+            const duplicates = await mongoService.collection(this.knowledgeCollection).aggregate([
+                {
+                    $group: {
+                        _id: "$url",
+                        count: { $sum: 1 },
+                        docs: { $push: "$_id" }
+                    }
+                },
+                {
+                    $match: {
+                        count: { $gt: 1 }
+                    }
+                }
+            ]).toArray();
+
+            log.info(`🧹 Found ${duplicates.length} URLs with duplicates`);
+
+            // Remove all but the first document for each duplicate URL
+            for (const duplicate of duplicates) {
+                const [keepId, ...removeIds] = duplicate.docs;
+
+                if (removeIds.length > 0) {
+                    await mongoService.collection(this.knowledgeCollection).deleteMany({
+                        _id: { $in: removeIds }
+                    });
+                    log.info(`🗑️ Removed ${removeIds.length} duplicate entries for URL: ${duplicate._id}`);
+                }
+            }
+
+            log.success(`✅ Cleaned up ${duplicates.length} duplicate URL groups`);
+        } catch (error) {
+            log.error('❌ Error removing duplicate URLs:', error.message);
+            throw error;
+        }
+    }
+
+    /**
      * Discover all relevant BambiSleep content
      */
     async discoverContent() {
@@ -251,7 +312,9 @@ Respond with a structured organization plan in JSON format.`
             log.info('🧠 Using AI to prioritize content...');
 
             if (!await lmStudioService.isHealthy()) {
+                const connInfo = lmStudioService.getConnectionInfo();
                 log.warn('⚠️ LMStudio not available - using basic prioritization');
+                log.info(`🔍 Connection: ${connInfo.url} (${connInfo.platform})`);
                 return this.basicPrioritization(links);
             }
 
@@ -280,7 +343,7 @@ Respond with a structured organization plan in JSON format.`
 
                     const choice = result.response.choices[0];
                     if (!choice || !choice.message || !choice.message.content) {
-                        throw new Error('Invalid AI prioritization response - no message content');        
+                        throw new Error('Invalid AI prioritization response - no message content');
                     }
 
                     const aiResponse = choice.message.content;
@@ -473,7 +536,9 @@ Links: ${crawlData.metrics?.linkCount}`
                     log.debug(`🔍 AI analysis error details:`, error);
                 }
             } else {
-                log.info('🤖 AI service not available, using basic analysis');
+                const connInfo = lmStudioService.getConnectionInfo();
+                log.info('🤖 AI service not available, using basic analysis');  
+                log.info(`🔍 Connection: ${connInfo.url} (${connInfo.platform})`);
             }
 
             return {

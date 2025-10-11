@@ -5,15 +5,30 @@ import { config } from '../utils/config.js';
 
 class LMStudioService {
     constructor() {
-        // Smart URL selection: prefer REMOTE on Linux/production, LOCAL on Windows/development
-        const isWindows = process.platform === 'win32';
-        const isLocalhost = ['localhost', '127.0.0.1', '0.0.0.0'].includes(process.env.SERVER || '0.0.0.0');
+        // Helper function to normalize URLs (remove specific endpoints to get base URL)
+        const normalizeUrl = (url) => {
+            if (!url) return null;
+            // Remove specific endpoints to get base URL
+            return url.replace(/\/(chat\/completions|completions|models)$/, '').replace(/\/v1$/, '') + '/v1';
+        };
 
-        if (isWindows && isLocalhost) {
-            this.baseUrl = process.env.LMSTUDIO_URL_LOCAL || process.env.LMSTUDIO_URL_REMOTE || 'http://localhost:7777/v1';
-        } else {
-            this.baseUrl = process.env.LMSTUDIO_URL_REMOTE || process.env.LMSTUDIO_URL_LOCAL || 'http://192.168.0.118:7777/v1';
-        }
+        // Get environment URLs and normalize them
+        const isWindows = process.platform === 'win32';
+        const localUrl = normalizeUrl(process.env.LMSTUDIO_URL_LOCAL);
+        const remoteUrl = normalizeUrl(process.env.LMSTUDIO_URL_REMOTE);
+
+        // Use ONLY the two configured URLs - LOCAL and REMOTE
+        this.urls = {
+            local: localUrl,
+            remote: remoteUrl
+        };
+
+        // Smart selection: Windows prefers LOCAL, Linux prefers REMOTE
+        this.primaryUrl = isWindows ? localUrl : remoteUrl;
+        this.secondaryUrl = isWindows ? remoteUrl : localUrl;
+        
+        this.baseUrl = this.primaryUrl;
+        this.currentUrl = 'primary';
 
         this.apiKey = process.env.LMSTUDIO_API_KEY || 'lm-studio';
         this.model = process.env.LMSTUDIO_MODEL || 'model-identifier';
@@ -37,18 +52,103 @@ class LMStudioService {
                 'Authorization': `Bearer ${this.apiKey}`
             }
         });
+
+        // Log configuration for debugging
+        log.info(`🔌 LMStudio configured: PRIMARY=${this.primaryUrl}, SECONDARY=${this.secondaryUrl} (${isWindows ? 'Windows' : 'Linux'})`);
+    }
+
+    /**
+     * Try to connect to LMStudio - PRIMARY first, then SECONDARY
+     */
+    async findWorkingUrl() {
+        // Try PRIMARY URL first
+        if (await this.testConnection(this.primaryUrl)) {
+            this.baseUrl = this.primaryUrl;
+            this.currentUrl = 'primary';
+            this.updateClient();
+            log.success(`✅ LMStudio connected at PRIMARY: ${this.primaryUrl}`);
+            return true;
+        }
+
+        // Try SECONDARY URL
+        if (await this.testConnection(this.secondaryUrl)) {
+            this.baseUrl = this.secondaryUrl;
+            this.currentUrl = 'secondary';
+            this.updateClient();
+            log.success(`✅ LMStudio connected at SECONDARY: ${this.secondaryUrl}`);
+            return true;
+        }
+        
+        log.error(`❌ Unable to connect to LMStudio at PRIMARY: ${this.primaryUrl} or SECONDARY: ${this.secondaryUrl}`);
+        return false;
+    }
+
+    /**
+     * Test connection to a specific URL
+     */
+    async testConnection(url) {
+        try {
+            log.debug(`🔍 Testing LMStudio at: ${url}`);
+            
+            const testClient = axios.create({
+                baseURL: url,
+                timeout: 5000, // Quick timeout for connection test
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${this.apiKey}`
+                }
+            });
+
+            const response = await testClient.get('/models');
+            return response.status === 200 && response.data;
+        } catch (error) {
+            log.debug(`⚠️ Failed to connect to ${url}: ${error.message}`);
+            return false;
+        }
+    }
+
+    /**
+     * Update the main client with current URL
+     */
+    updateClient() {
+        this.client = axios.create({
+            baseURL: this.baseUrl,
+            timeout: this.timeout,
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.apiKey}`
+            }
+        });
+    }
+
+    /**
+     * Get connection information for debugging
+     */
+    getConnectionInfo() {
+        return {
+            currentUrl: this.baseUrl,
+            urlType: this.currentUrl,
+            primaryUrl: this.primaryUrl,
+            secondaryUrl: this.secondaryUrl,
+            platform: process.platform,
+            isWindows: process.platform === 'win32',
+            timeout: this.timeout,
+            retries: this.retries
+        };
     }
 
     // Health check - verify LMStudio server is running and model can respond
     async isHealthy() {
         try {
-            // First check if server is running
-            const modelsResponse = await this.client.get('/models');
-            if (modelsResponse.status !== 200) {
-                return false;
+            // First try to find a working URL if not already connected
+            if (!await this.testConnection(this.baseUrl)) {
+                log.debug('Current URL not working, trying to find working connection...');
+                if (!await this.findWorkingUrl()) {
+                    return false;
+                }
             }
 
-            // Then test if model can actually respond with a simple query
+            // Test if model can actually respond with a simple query
             const testResponse = await this.client.post('/chat/completions', {
                 model: this.model,
                 messages: [{ role: 'user', content: 'Hi' }],
@@ -57,26 +157,40 @@ class LMStudioService {
             });
 
             // Check if we get a valid response with choices
-            return testResponse.data && 
-                   testResponse.data.choices && 
-                   testResponse.data.choices.length > 0;
+            return testResponse.data &&
+                testResponse.data.choices &&
+                testResponse.data.choices.length > 0;
         } catch (error) {
-            log.debug('LMStudio health check failed:', error.message);
+            log.debug(`LMStudio health check failed: ${error.message}`);
+            
+            // Try the other URL if current one fails
+            if (this.currentUrl === 'primary' && this.secondaryUrl) {
+                log.debug('Trying secondary URL...');
+                this.baseUrl = this.secondaryUrl;
+                this.currentUrl = 'secondary';
+                this.updateClient();
+                return this.isHealthy(); // Recursive call with secondary URL
+            } else if (this.currentUrl === 'secondary' && this.primaryUrl) {
+                log.debug('Trying primary URL...');
+                this.baseUrl = this.primaryUrl;
+                this.currentUrl = 'primary';
+                this.updateClient();
+                return this.isHealthy(); // Recursive call with primary URL
+            }
+            
             return false;
         }
     }
 
     // Get available models
     async getModels() {
-        try {
+        return await this.executeWithFallback(async () => {
             const response = await this.client.get('/models');
             return {
                 success: true,
                 models: response.data.data || response.data
             };
-        } catch (error) {
-            throw new Error(`Failed to get models: ${error.message}`);
-        }
+        });
     }
 
     // Chat completion with retry logic
@@ -105,39 +219,74 @@ class LMStudioService {
             }
         });
 
-        let lastError;
-        for (let attempt = 1; attempt <= this.retries; attempt++) {
-            try {
-                const response = await this.client.post('/chat/completions', payload);
-                
-                // Validate response structure
-                if (!response.data) {
-                    throw new Error('LMStudio API returned no data');
-                }
-                
-                if (!response.data.choices || response.data.choices.length === 0) {
-                    log.warn('⚠️ LMStudio API returned empty choices array');
-                    log.debug('🔍 Response data:', JSON.stringify(response.data, null, 2));
-                    throw new Error('LMStudio API returned empty choices array - model may not be loaded or responding');
-                }
-                
-                return {
-                    success: true,
-                    response: response.data,
-                    usage: response.data.usage,
-                    model: response.data.model
-                };
-            } catch (error) {
-                lastError = error;
-                log.warn(`LMStudio request attempt ${attempt} failed: ${error.message}`);
+        return await this.executeWithFallback(async () => {
+            const response = await this.client.post('/chat/completions', payload);
 
-                if (attempt < this.retries) {
-                    await new Promise(resolve => setTimeout(resolve, this.retryDelay * attempt));
+            // Validate response structure
+            if (!response.data) {
+                throw new Error('LMStudio API returned no data');
+            }
+
+            if (!response.data.choices || response.data.choices.length === 0) {
+                log.warn('⚠️ LMStudio API returned empty choices array');
+                log.debug('🔍 Response data:', JSON.stringify(response.data, null, 2));
+                throw new Error('LMStudio API returned empty choices array - model may not be loaded or responding');
+            }
+
+            return {
+                success: true,
+                response: response.data,
+                usage: response.data.usage,
+                model: response.data.model
+            };
+        });
+    }
+
+    /**
+     * Execute a function with automatic URL fallback and retry logic
+     */
+    async executeWithFallback(requestFunction) {
+        let lastError;
+        const urls = [this.baseUrl, (this.currentUrl === 'primary' ? this.secondaryUrl : this.primaryUrl)];
+        
+        for (const url of urls) {
+            // Update to current URL
+            if (this.baseUrl !== url) {
+                log.info(`🔄 Switching to ${url === this.primaryUrl ? 'PRIMARY' : 'SECONDARY'} URL: ${url}`);
+                this.baseUrl = url;
+                this.currentUrl = url === this.primaryUrl ? 'primary' : 'secondary';
+                this.updateClient();
+            }
+
+            // Try with retries on this URL
+            for (let attempt = 1; attempt <= this.retries; attempt++) {
+                try {
+                    return await requestFunction();
+                } catch (error) {
+                    lastError = error;
+
+                    // Provide helpful error messages
+                    if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
+                        log.warn(`⚠️ Connection failed to ${url} (attempt ${attempt})`);
+                    } else if (error.response?.status === 404) {
+                        log.warn(`⚠️ API endpoint not found at ${url} - check if model is loaded`);
+                    } else {
+                        log.warn(`⚠️ Request failed at ${url} (attempt ${attempt}): ${error.message}`);
+                    }
+
+                    // Don't retry connection errors, switch URL immediately
+                    if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
+                        break;
+                    }
+
+                    if (attempt < this.retries) {
+                        await new Promise(resolve => setTimeout(resolve, this.retryDelay * attempt));
+                    }
                 }
             }
         }
 
-        throw new Error(`LMStudio request failed after ${this.retries} attempts: ${lastError.message}`);
+        throw new Error(`LMStudio request failed on both URLs after ${this.retries} attempts each: ${lastError.message}`);
     }
 
     // Tool-enhanced chat completion

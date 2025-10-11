@@ -151,11 +151,14 @@ class BambiMcpServer {
             // Initialize LMStudio connection
             if (process.env.LMSTUDIO_URL_LOCAL || process.env.LMSTUDIO_URL_REMOTE) {
                 log.info('Initializing LMStudio connection...');
-                const lmstudioHealthy = await lmStudioService.isHealthy();
-                if (lmstudioHealthy) {
-                    log.success('✅ LMStudio server connected successfully');
+                const connected = await lmStudioService.findWorkingUrl();
+                if (connected) {
+                    const connInfo = lmStudioService.getConnectionInfo();
+                    log.success(`✅ LMStudio connected via ${connInfo.urlType.toUpperCase()}: ${connInfo.currentUrl}`);
                 } else {
                     log.warn('⚠️ LMStudio server connection failed, LMStudio tools may not work');
+                    const connInfo = lmStudioService.getConnectionInfo();
+                    log.info(`🔍 Tried: PRIMARY=${connInfo.primaryUrl}, SECONDARY=${connInfo.secondaryUrl}`);
                 }
             } else {
                 log.warn('⚠️ LMSTUDIO_URL not configured, using default localhost:7777');
