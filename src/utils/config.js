@@ -16,16 +16,39 @@ export const config = {
         host: process.env.SERVER || '0.0.0.0'
     },
 
-    // LMStudio Configuration
+    // LMStudio Configuration - OpenAI Compatible API
     lmstudio: {
-        url: process.env.LMSTUDIO_URL || 'http://localhost:7777/v1/chat/completions',
-        apiKey: process.env.LMSTUDIO_API_KEY || '',
-        model: process.env.LMSTUDIO_MODEL || 'llama-3.2',
+        // Base configuration
+        baseUrl: process.env.LMSTUDIO_BASE_URL || 'http://localhost:1234/v1',
+        apiKey: process.env.LMSTUDIO_API_KEY || 'lm-studio',
+        model: process.env.LMSTUDIO_MODEL || 'model-identifier',
+
+        // Connection settings
         timeout: parseInt(process.env.LMSTUDIO_TIMEOUT || '30000'),
+        retries: parseInt(process.env.LMSTUDIO_RETRIES || '3'),
+        retryDelay: parseInt(process.env.LMSTUDIO_RETRY_DELAY || '1000'),
+
+        // Generation parameters
         maxTokens: parseInt(process.env.LMSTUDIO_MAX_TOKENS || '1000'),
         temperature: parseFloat(process.env.LMSTUDIO_TEMPERATURE || '0.7'),
-        retries: parseInt(process.env.LMSTUDIO_RETRIES || '3'),
-        retryDelay: parseInt(process.env.LMSTUDIO_RETRY_DELAY || '1000')
+        topP: parseFloat(process.env.LMSTUDIO_TOP_P || '1.0'),
+        topK: parseInt(process.env.LMSTUDIO_TOP_K || '50'),
+        frequencyPenalty: parseFloat(process.env.LMSTUDIO_FREQUENCY_PENALTY || '0.0'),
+        presencePenalty: parseFloat(process.env.LMSTUDIO_PRESENCE_PENALTY || '0.0'),
+        repeatPenalty: parseFloat(process.env.LMSTUDIO_REPEAT_PENALTY || '1.1'),
+        seed: parseInt(process.env.LMSTUDIO_SEED || '-1'),
+
+        // Endpoint-specific settings
+        endpoints: {
+            models: '/v1/models',
+            chat: '/v1/chat/completions',
+            responses: '/v1/responses',
+            embeddings: '/v1/embeddings',
+            completions: '/v1/completions'
+        },
+
+        // Legacy compatibility
+        url: process.env.LMSTUDIO_URL || 'http://localhost:1234/v1/chat/completions'
     },
 
     // Agent Configuration
@@ -38,7 +61,9 @@ export const config = {
 
     // MCP Configuration
     mcp: {
-        transport: process.env.MCP_TRANSPORT || 'stdio'
+        transport: process.env.MCP_TRANSPORT || 'stdio',
+        httpPort: parseInt(process.env.MCP_HTTP_PORT || '9999'),
+        enableLMStudioAPI: process.env.MCP_ENABLE_LMSTUDIO_API === 'true'
     },
 
     // Audio Configuration

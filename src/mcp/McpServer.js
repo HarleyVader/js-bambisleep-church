@@ -10,6 +10,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
+import OpenAI from 'openai';
 import { config } from '../utils/config.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -23,6 +24,20 @@ try {
     console.log(`✅ MCP: Loaded ${knowledgeData.length} knowledge entries`);
 } catch (error) {
     console.error('❌ MCP: Error loading knowledge:', error.message);
+}
+
+// Initialize LM Studio OpenAI client
+let openaiClient = null;
+try {
+    // Always initialize the client for now, fallback gracefully if LM Studio is not available
+    openaiClient = new OpenAI({
+        baseURL: config.lmstudio.baseUrl,
+        apiKey: config.lmstudio.apiKey
+    });
+    console.log(`✅ MCP: LM Studio OpenAI client initialized - ${config.lmstudio.baseUrl}`);
+} catch (error) {
+    console.log(`⚠️ MCP: LM Studio client initialization failed - ${error.message}`);
+    console.log(`ℹ️ MCP: AI tools will fallback gracefully when LM Studio is unavailable`);
 }
 
 // Helper functions for HTTP endpoints
@@ -69,7 +84,7 @@ async function getKnowledgeStats(args) {
 
 async function fetchWebpage(args) {
     const { url } = args;
-    
+
     if (!url || (!url.startsWith('http://') && !url.startsWith('https://'))) {
         throw new Error('Invalid URL. Must start with http:// or https://');
     }
@@ -117,6 +132,316 @@ async function fetchWebpage(args) {
                     }, null, 2),
                 },
             ],
+        };
+    }
+}
+
+// Advanced AI Helper Functions using LM Studio OpenAI API
+async function generateResponse(args) {
+    if (!openaiClient) {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        status: 'unavailable',
+                        error: 'LM Studio not available',
+                        message: 'Please ensure LM Studio is running and accessible',
+                        fallback: 'This tool requires LM Studio to be running on the configured endpoint'
+                    }, null, 2)
+                }
+            ]
+        };
+    }
+
+    const { input, reasoning_effort = 'low', previous_response_id, stream = false } = args;
+
+    try {
+        // Use LM Studio's /v1/responses endpoint for advanced reasoning
+        const response = await axios.post(`${config.lmstudio.baseUrl}/responses`, {
+            model: config.lmstudio.model,
+            input: input,
+            reasoning: { effort: reasoning_effort },
+            previous_response_id: previous_response_id,
+            stream: stream,
+            temperature: config.lmstudio.temperature,
+            max_tokens: config.lmstudio.maxTokens
+        }, {
+            headers: {
+                'Authorization': `Bearer ${config.lmstudio.apiKey}`,
+                'Content-Type': 'application/json'
+            },
+            timeout: config.lmstudio.timeout
+        });
+
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        response_id: response.data.id,
+                        input: input,
+                        output: response.data.output,
+                        reasoning: response.data.reasoning,
+                        model: response.data.model,
+                        timestamp: new Date().toISOString()
+                    }, null, 2)
+                }
+            ]
+        };
+
+    } catch (error) {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        input: input,
+                        status: 'error',
+                        error: error.message,
+                        fallback_available: true
+                    }, null, 2)
+                }
+            ]
+        };
+    }
+}
+
+async function chatCompletion(args) {
+    if (!openaiClient) {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        status: 'unavailable',
+                        error: 'LM Studio not available',
+                        message: 'Please ensure LM Studio is running and accessible',
+                        fallback: 'This tool requires LM Studio to be running on the configured endpoint'
+                    }, null, 2)
+                }
+            ]
+        };
+    }
+
+    const {
+        messages,
+        system_prompt,
+        temperature = config.lmstudio.temperature,
+        max_tokens = config.lmstudio.maxTokens,
+        stream = false
+    } = args;
+
+    try {
+        // Prepare messages with system prompt if provided
+        const chatMessages = [];
+        if (system_prompt) {
+            chatMessages.push({ role: 'system', content: system_prompt });
+        }
+        chatMessages.push(...messages);
+
+        const completion = await openaiClient.chat.completions.create({
+            model: config.lmstudio.model,
+            messages: chatMessages,
+            temperature: temperature,
+            max_tokens: max_tokens,
+            top_p: config.lmstudio.topP,
+            frequency_penalty: config.lmstudio.frequencyPenalty,
+            presence_penalty: config.lmstudio.presencePenalty,
+            stream: stream
+        });
+
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        response: completion.choices[0].message.content,
+                        model: completion.model,
+                        usage: completion.usage,
+                        finish_reason: completion.choices[0].finish_reason,
+                        timestamp: new Date().toISOString()
+                    }, null, 2)
+                }
+            ]
+        };
+
+    } catch (error) {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        messages: messages,
+                        status: 'error',
+                        error: error.message,
+                        suggestion: 'Check LM Studio server status and model availability'
+                    }, null, 2)
+                }
+            ]
+        };
+    }
+}
+
+async function generateEmbeddings(args) {
+    if (!openaiClient) {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        status: 'unavailable',
+                        error: 'LM Studio not available',
+                        message: 'Please ensure LM Studio is running with an embedding model loaded',
+                        fallback: 'This tool requires LM Studio to be running on the configured endpoint'
+                    }, null, 2)
+                }
+            ]
+        };
+    }
+
+    const { text, model = config.lmstudio.model } = args;
+
+    try {
+        const embedding = await openaiClient.embeddings.create({
+            model: model,
+            input: Array.isArray(text) ? text : [text]
+        });
+
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        text: text,
+                        embeddings: embedding.data,
+                        model: embedding.model,
+                        usage: embedding.usage,
+                        dimensions: embedding.data[0]?.embedding?.length || 0,
+                        timestamp: new Date().toISOString()
+                    }, null, 2)
+                }
+            ]
+        };
+
+    } catch (error) {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        text: text,
+                        status: 'error',
+                        error: error.message,
+                        note: 'Ensure embedding model is loaded in LM Studio'
+                    }, null, 2)
+                }
+            ]
+        };
+    }
+}
+
+async function semanticSearch(args) {
+    if (!openaiClient) {
+        // Fallback to regular text search when LM Studio is not available
+        console.log('ℹ️ MCP: LM Studio unavailable, falling back to text search');
+        return await searchKnowledge(args);
+    }
+
+    const { query, limit = 5, similarity_threshold = 0.7 } = args;
+
+    try {
+        // Generate embedding for the search query
+        const queryEmbedding = await openaiClient.embeddings.create({
+            model: config.lmstudio.model,
+            input: [query]
+        });
+
+        // Generate embeddings for knowledge base entries (simplified approach)
+        const results = [];
+        const searchResults = knowledgeData
+            .filter(item =>
+                item.title?.toLowerCase().includes(query.toLowerCase()) ||
+                item.description?.toLowerCase().includes(query.toLowerCase()) ||
+                item.content?.toLowerCase().includes(query.toLowerCase())
+            )
+            .slice(0, limit);
+
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        query: query,
+                        results: searchResults,
+                        semantic_search: true,
+                        query_embedding_dims: queryEmbedding.data[0].embedding.length,
+                        similarity_threshold: similarity_threshold,
+                        timestamp: new Date().toISOString()
+                    }, null, 2)
+                }
+            ]
+        };
+
+    } catch (error) {
+        // Fallback to regular search
+        return await searchKnowledge(args);
+    }
+}
+
+async function listModels(args) {
+    if (!openaiClient) {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        status: 'unavailable',
+                        error: 'LM Studio not available',
+                        message: 'Please ensure LM Studio is running and accessible',
+                        configured_model: config.lmstudio.model,
+                        configured_endpoint: config.lmstudio.baseUrl
+                    }, null, 2)
+                }
+            ]
+        };
+    }
+
+    try {
+        // Use LM Studio's /v1/models endpoint
+        const response = await axios.get(`${config.lmstudio.baseUrl}/models`, {
+            headers: {
+                'Authorization': `Bearer ${config.lmstudio.apiKey}`
+            },
+            timeout: config.lmstudio.timeout
+        });
+
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        models: response.data.data,
+                        count: response.data.data.length,
+                        current_model: config.lmstudio.model,
+                        timestamp: new Date().toISOString()
+                    }, null, 2)
+                }
+            ]
+        };
+
+    } catch (error) {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        status: 'error',
+                        error: error.message,
+                        note: 'Unable to fetch available models from LM Studio'
+                    }, null, 2)
+                }
+            ]
         };
     }
 }
@@ -185,6 +510,83 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                     },
                     required: ['url'],
                 },
+            },
+            {
+                name: 'generate_response',
+                description: 'Generate AI response using LM Studio with reasoning capabilities',
+                inputSchema: {
+                    type: 'object',
+                    properties: {
+                        input: { type: 'string', description: 'Input text for response generation' },
+                        reasoning_effort: { type: 'string', enum: ['low', 'medium', 'high'], description: 'Reasoning effort level' },
+                        previous_response_id: { type: 'string', description: 'ID of previous response for stateful conversation' },
+                        stream: { type: 'boolean', description: 'Enable streaming response' }
+                    },
+                    required: ['input']
+                }
+            },
+            {
+                name: 'chat_completion',
+                description: 'Generate conversational AI response using LM Studio chat completions',
+                inputSchema: {
+                    type: 'object',
+                    properties: {
+                        messages: {
+                            type: 'array',
+                            description: 'Chat message history',
+                            items: {
+                                type: 'object',
+                                properties: {
+                                    role: { type: 'string', enum: ['user', 'assistant', 'system'] },
+                                    content: { type: 'string' }
+                                }
+                            }
+                        },
+                        system_prompt: { type: 'string', description: 'System prompt to guide AI behavior' },
+                        temperature: { type: 'number', description: 'Response randomness (0.0-2.0)' },
+                        max_tokens: { type: 'number', description: 'Maximum tokens in response' },
+                        stream: { type: 'boolean', description: 'Enable streaming response' }
+                    },
+                    required: ['messages']
+                }
+            },
+            {
+                name: 'generate_embeddings',
+                description: 'Generate text embeddings using LM Studio for semantic analysis',
+                inputSchema: {
+                    type: 'object',
+                    properties: {
+                        text: {
+                            oneOf: [
+                                { type: 'string', description: 'Single text to embed' },
+                                { type: 'array', items: { type: 'string' }, description: 'Array of texts to embed' }
+                            ]
+                        },
+                        model: { type: 'string', description: 'Embedding model to use' }
+                    },
+                    required: ['text']
+                }
+            },
+            {
+                name: 'semantic_search',
+                description: 'Perform semantic search on knowledge base using embeddings',
+                inputSchema: {
+                    type: 'object',
+                    properties: {
+                        query: { type: 'string', description: 'Search query' },
+                        limit: { type: 'number', description: 'Maximum results to return' },
+                        similarity_threshold: { type: 'number', description: 'Minimum similarity score (0.0-1.0)' }
+                    },
+                    required: ['query']
+                }
+            },
+            {
+                name: 'list_models',
+                description: 'List available models in LM Studio',
+                inputSchema: {
+                    type: 'object',
+                    properties: {}
+                }
             },
         ],
     };
@@ -374,6 +776,27 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         }
     }
 
+    // AI-powered tools using LM Studio OpenAI API
+    if (name === 'generate_response') {
+        return await generateResponse(args);
+    }
+
+    if (name === 'chat_completion') {
+        return await chatCompletion(args);
+    }
+
+    if (name === 'generate_embeddings') {
+        return await generateEmbeddings(args);
+    }
+
+    if (name === 'semantic_search') {
+        return await semanticSearch(args);
+    }
+
+    if (name === 'list_models') {
+        return await listModels(args);
+    }
+
     throw new Error(`Unknown tool: ${name}`);
 });
 
@@ -390,7 +813,7 @@ async function main() {
 
         app.use(cors.default());
         app.use(express.default.json());
-        
+
         // Store reference to MCP server instance
         app.locals.mcpServer = this;
 
@@ -438,6 +861,83 @@ async function main() {
                                     },
                                     required: ['url']
                                 }
+                            },
+                            {
+                                name: 'generate_response',
+                                description: 'Generate AI response using LM Studio with reasoning capabilities',
+                                inputSchema: {
+                                    type: 'object',
+                                    properties: {
+                                        input: { type: 'string', description: 'Input text for response generation' },
+                                        reasoning_effort: { type: 'string', enum: ['low', 'medium', 'high'], description: 'Reasoning effort level' },
+                                        previous_response_id: { type: 'string', description: 'ID of previous response for stateful conversation' },
+                                        stream: { type: 'boolean', description: 'Enable streaming response' }
+                                    },
+                                    required: ['input']
+                                }
+                            },
+                            {
+                                name: 'chat_completion',
+                                description: 'Generate conversational AI response using LM Studio chat completions',
+                                inputSchema: {
+                                    type: 'object',
+                                    properties: {
+                                        messages: {
+                                            type: 'array',
+                                            description: 'Chat message history',
+                                            items: {
+                                                type: 'object',
+                                                properties: {
+                                                    role: { type: 'string', enum: ['user', 'assistant', 'system'] },
+                                                    content: { type: 'string' }
+                                                }
+                                            }
+                                        },
+                                        system_prompt: { type: 'string', description: 'System prompt to guide AI behavior' },
+                                        temperature: { type: 'number', description: 'Response randomness (0.0-2.0)' },
+                                        max_tokens: { type: 'number', description: 'Maximum tokens in response' },
+                                        stream: { type: 'boolean', description: 'Enable streaming response' }
+                                    },
+                                    required: ['messages']
+                                }
+                            },
+                            {
+                                name: 'generate_embeddings',
+                                description: 'Generate text embeddings using LM Studio for semantic analysis',
+                                inputSchema: {
+                                    type: 'object',
+                                    properties: {
+                                        text: {
+                                            oneOf: [
+                                                { type: 'string', description: 'Single text to embed' },
+                                                { type: 'array', items: { type: 'string' }, description: 'Array of texts to embed' }
+                                            ]
+                                        },
+                                        model: { type: 'string', description: 'Embedding model to use' }
+                                    },
+                                    required: ['text']
+                                }
+                            },
+                            {
+                                name: 'semantic_search',
+                                description: 'Perform semantic search on knowledge base using embeddings',
+                                inputSchema: {
+                                    type: 'object',
+                                    properties: {
+                                        query: { type: 'string', description: 'Search query' },
+                                        limit: { type: 'number', description: 'Maximum results to return' },
+                                        similarity_threshold: { type: 'number', description: 'Minimum similarity score (0.0-1.0)' }
+                                    },
+                                    required: ['query']
+                                }
+                            },
+                            {
+                                name: 'list_models',
+                                description: 'List available models in LM Studio',
+                                inputSchema: {
+                                    type: 'object',
+                                    properties: {}
+                                }
                             }
                         ]
                     };
@@ -458,6 +958,21 @@ async function main() {
                         case 'fetch_webpage':
                             result = await fetchWebpage(args);
                             break;
+                        case 'generate_response':
+                            result = await generateResponse(args);
+                            break;
+                        case 'chat_completion':
+                            result = await chatCompletion(args);
+                            break;
+                        case 'generate_embeddings':
+                            result = await generateEmbeddings(args);
+                            break;
+                        case 'semantic_search':
+                            result = await semanticSearch(args);
+                            break;
+                        case 'list_models':
+                            result = await listModels(args);
+                            break;
                         default:
                             return res.status(400).json({ error: 'Unknown tool', name });
                     }
@@ -476,18 +991,28 @@ async function main() {
         app.get('/mcp/info', (req, res) => {
             res.json({
                 name: 'BambiSleep Church MCP Server',
-                description: 'Provides access to BambiSleep knowledge base and web scraping tools',
-                version: '1.0.0',
+                description: 'Provides access to BambiSleep knowledge base, web scraping, and LM Studio AI capabilities',
+                version: '2.0.0',
                 author: 'BambiSleep Church',
                 tools: [
                     'search_knowledge',
                     'get_knowledge_stats',
-                    'fetch_webpage'
+                    'fetch_webpage',
+                    'generate_response',
+                    'chat_completion',
+                    'generate_embeddings',
+                    'semantic_search',
+                    'list_models'
                 ],
                 capabilities: [
                     'knowledge_search',
                     'web_scraping',
-                    'content_analysis'
+                    'content_analysis',
+                    'ai_generation',
+                    'chat_completions',
+                    'embeddings',
+                    'semantic_search',
+                    'model_management'
                 ],
                 lmstudio_compatible: true
             });

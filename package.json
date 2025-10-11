@@ -38,6 +38,7 @@
     "geoip-lite": "^1.4.10",
     "marked": "^12.0.0",
     "node-cron": "^4.1.0",
+    "openai": "^4.104.0",
     "p-limit": "^6.2.0",
     "socket.io": "^4.8.1"
   },
