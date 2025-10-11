@@ -25,6 +25,102 @@ try {
     console.error('❌ MCP: Error loading knowledge:', error.message);
 }
 
+// Helper functions for HTTP endpoints
+async function searchKnowledge(args) {
+    const { query, limit = 10 } = args;
+    const results = knowledgeData.filter(item =>
+        item.title?.toLowerCase().includes(query.toLowerCase()) ||
+        item.description?.toLowerCase().includes(query.toLowerCase()) ||
+        item.tags?.some(tag => tag.toLowerCase().includes(query.toLowerCase())) ||
+        item.content?.toLowerCase().includes(query.toLowerCase())
+    ).slice(0, limit);
+
+    return {
+        content: [
+            {
+                type: 'text',
+                text: JSON.stringify({
+                    query,
+                    results,
+                    count: results.length
+                }, null, 2)
+            }
+        ]
+    };
+}
+
+async function getKnowledgeStats(args) {
+    const stats = {
+        totalEntries: knowledgeData.length,
+        categories: [...new Set(knowledgeData.map(item => item.category))],
+        tags: [...new Set(knowledgeData.flatMap(item => item.tags || []))],
+        lastUpdated: new Date().toISOString()
+    };
+
+    return {
+        content: [
+            {
+                type: 'text',
+                text: JSON.stringify(stats, null, 2)
+            }
+        ]
+    };
+}
+
+async function fetchWebpage(args) {
+    const { url } = args;
+    
+    if (!url || (!url.startsWith('http://') && !url.startsWith('https://'))) {
+        throw new Error('Invalid URL. Must start with http:// or https://');
+    }
+
+    try {
+        const response = await axios.get(url, {
+            timeout: 10000,
+            headers: {
+                'User-Agent': 'BambiSleep-Church-Bot/1.0',
+            },
+            maxRedirects: 5,
+        });
+
+        const $ = cheerio.load(response.data);
+        $('script, style, nav, footer, header, aside, .advertisement, .ad').remove();
+
+        const title = $('title').text().trim() || 'No title';
+        const content = $('body').text().replace(/\s+/g, ' ').trim().slice(0, 5000);
+
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        url: url,
+                        title: title,
+                        content: content,
+                        status: 'success',
+                        timestamp: new Date().toISOString(),
+                    }, null, 2),
+                },
+            ],
+        };
+
+    } catch (error) {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        url: url,
+                        status: 'error',
+                        error: error.message,
+                        errorType: error.code || 'UNKNOWN',
+                    }, null, 2),
+                },
+            ],
+        };
+    }
+}
+
 // Create server instance
 const server = new Server(
     {
@@ -281,14 +377,138 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     throw new Error(`Unknown tool: ${name}`);
 });
 
-// Start server
+// Start server with support for both stdio and HTTP
 async function main() {
-    const transport = new StdioServerTransport();
-    await server.connect(transport);
-    console.error('🚀 BambiSleep Church MCP Server running on stdio');
+    const args = process.argv.slice(2);
+    const useHttp = args.includes('--http') || process.env.MCP_TRANSPORT === 'http';
+
+    if (useHttp) {
+        // HTTP transport for LM Studio integration
+        const express = await import('express');
+        const cors = await import('cors');
+        const app = express.default();
+
+        app.use(cors.default());
+        app.use(express.default.json());
+        
+        // Store reference to MCP server instance
+        app.locals.mcpServer = this;
+
+        // Health check endpoint
+        app.get('/health', (req, res) => {
+            res.json({ status: 'healthy', server: 'bambisleep-church-mcp', version: '1.0.0' });
+        });
+
+        // MCP endpoint for LM Studio
+        app.post('/mcp', async (req, res) => {
+            try {
+                const { method, params } = req.body;
+
+                if (method === 'tools/list') {
+                    // Return tools list directly
+                    const tools = {
+                        tools: [
+                            {
+                                name: 'search_knowledge',
+                                description: 'Search the BambiSleep knowledge base',
+                                inputSchema: {
+                                    type: 'object',
+                                    properties: {
+                                        query: { type: 'string', description: 'Search query' },
+                                        limit: { type: 'number', description: 'Maximum results to return' }
+                                    },
+                                    required: ['query']
+                                }
+                            },
+                            {
+                                name: 'get_knowledge_stats',
+                                description: 'Get statistics about the knowledge base',
+                                inputSchema: {
+                                    type: 'object',
+                                    properties: {}
+                                }
+                            },
+                            {
+                                name: 'fetch_webpage',
+                                description: 'Fetch and extract content from a webpage',
+                                inputSchema: {
+                                    type: 'object',
+                                    properties: {
+                                        url: { type: 'string', description: 'URL to fetch' }
+                                    },
+                                    required: ['url']
+                                }
+                            }
+                        ]
+                    };
+                    return res.json(tools);
+                }
+
+                if (method === 'tools/call') {
+                    const { name, arguments: args } = params;
+                    let result;
+
+                    switch (name) {
+                        case 'search_knowledge':
+                            result = await searchKnowledge(args);
+                            break;
+                        case 'get_knowledge_stats':
+                            result = await getKnowledgeStats(args);
+                            break;
+                        case 'fetch_webpage':
+                            result = await fetchWebpage(args);
+                            break;
+                        default:
+                            return res.status(400).json({ error: 'Unknown tool', name });
+                    }
+
+                    return res.json(result);
+                }
+
+                res.status(400).json({ error: 'Unknown method', method });
+            } catch (error) {
+                console.error('❌ HTTP MCP error:', error);
+                res.status(500).json({ error: error.message });
+            }
+        });
+
+        // LM Studio specific metadata endpoint
+        app.get('/mcp/info', (req, res) => {
+            res.json({
+                name: 'BambiSleep Church MCP Server',
+                description: 'Provides access to BambiSleep knowledge base and web scraping tools',
+                version: '1.0.0',
+                author: 'BambiSleep Church',
+                tools: [
+                    'search_knowledge',
+                    'get_knowledge_stats',
+                    'fetch_webpage'
+                ],
+                capabilities: [
+                    'knowledge_search',
+                    'web_scraping',
+                    'content_analysis'
+                ],
+                lmstudio_compatible: true
+            });
+        });
+
+        const port = process.env.MCP_HTTP_PORT || 9999;
+        app.listen(port, '0.0.0.0', () => {
+            console.log(`🚀 BambiSleep Church MCP Server running on HTTP port ${port}`);
+            console.log(`📍 Health check: http://localhost:${port}/health`);
+            console.log(`🔗 MCP endpoint: http://localhost:${port}/mcp`);
+            console.log(`ℹ️  LM Studio info: http://localhost:${port}/mcp/info`);
+        });
+    } else {
+        // Stdio transport for local MCP integration
+        const transport = new StdioServerTransport();
+        await server.connect(transport);
+        console.error('🚀 BambiSleep Church MCP Server running on stdio');
+    }
 }
 
 main().catch((error) => {
-    console.error('Fatal error:', error);
+    console.error('❌ MCP Server fatal error:', error);
     process.exit(1);
 });

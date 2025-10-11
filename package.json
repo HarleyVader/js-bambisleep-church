@@ -18,8 +18,13 @@
     "start:simple": "node src/mcp/McpServer.js --http & node src/server.js",
     "start:mcp": "node src/mcp/McpServer.js --http",
     "start:web": "node src/server.js",
-    "test": "jest",
-    "test:lmstudio": "node test/lmstudio-integration.test.js"
+    "mcp:start": "node src/mcp/McpServer.js",
+    "mcp:http": "node src/mcp/McpServer.js --http",
+    "mcp:dev": "nodemon src/mcp/McpServer.js",
+    "mcp:lmstudio": "node src/mcp/McpServer.js --http",
+    "test": "node tests/lmstudio-mcp-test.js",
+    "test:mcp": "node tests/lmstudio-mcp-test.js",
+    "test:lmstudio": "node tests/lmstudio-mcp-test.js"
   },
   "dependencies": {
     "@lmstudio/sdk": "^1.5.0",
