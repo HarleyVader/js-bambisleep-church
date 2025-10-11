@@ -272,18 +272,25 @@
 
   <div class="info-section">
     <h2 class="info-title">📡 MCP Connection Information</h2>
-    <p>Connect MCP clients to these endpoints:</p>
+    <div id="connection-info-content">
+      <p>Connect MCP clients to these endpoints (development mode only):</p>
 
-    <div class="connection-info">
-      <strong>HTTP Endpoint:</strong><br>
-      POST http://localhost:<%= typeof PORT !== 'undefined' ? PORT : '7070' %>/mcp<br><br>
+      <div class="connection-info">
+        <strong>HTTP Endpoint:</strong><br>
+        POST http://localhost:<%= typeof PORT !== 'undefined' ? PORT : '7070' %>/mcp<br><br>
 
-      <strong>VS Code Integration:</strong><br>
-      <code>code --add-mcp "{\"name\":\"bambisleep-church\",\"type\":\"http\",\"url\":\"http://localhost:<%= typeof PORT !== 'undefined' ? PORT : '7070' %>/mcp\"}"</code><br><br>
+        <strong>VS Code Integration:</strong><br>
+        <code>code --add-mcp "{\"name\":\"bambisleep-church\",\"type\":\"http\",\"url\":\"http://localhost:<%= typeof PORT !== 'undefined' ? PORT : '7070' %>/mcp\"}"</code><br><br>
 
-      <strong>MCP Inspector:</strong><br>
-      <code>npx @modelcontextprotocol/inspector</code><br>
-      Then connect to: http://localhost:<%= typeof PORT !== 'undefined' ? PORT : '7070' %>/mcp
+        <strong>MCP Inspector:</strong><br>
+        <code>npx @modelcontextprotocol/inspector</code><br>
+        Then connect to: http://localhost:<%= typeof PORT !== 'undefined' ? PORT : '7070' %>/mcp<br><br>
+
+        <strong>GitHub Repository:</strong><br>
+        <a href="https://github.com/HarleyVader/js-bambisleep-church" target="_blank" style="color: var(--primary);">
+          https://github.com/HarleyVader/js-bambisleep-church
+        </a>
+      </div>
     </div>
   </div>
 </div>
@@ -374,14 +381,66 @@
     }
   };
 
+  // Check if we're on production or development
+  function isProduction() {
+    return window.location.hostname.includes('bambisleep.church');
+  }
+
   // Check MCP server status
   async function checkMcpStatus() {
     const statusElement = document.getElementById('mcpStatus');
     const statusText = document.getElementById('statusText');
 
+    // If on production domain, show development instructions
+    if (isProduction()) {
+      statusElement.className = 'status-indicator status-offline';
+      statusText.textContent = 'MCP Tools - Development Mode Only';
+
+      // Show helpful message for production users
+      const toolsGrid = document.getElementById('toolsGrid');
+      if (toolsGrid) {
+        toolsGrid.innerHTML = `
+          <div style="text-align: center; padding: 3rem; background: rgba(255, 193, 7, 0.1); border: 1px solid #ffc107; border-radius: 10px; margin: 2rem 0;">
+            <h3 style="color: #ffc107; margin-bottom: 1rem;">🚧 Development Tools</h3>
+            <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
+              MCP tools are available in development mode only. To test these features:
+            </p>
+            <div style="text-align: left; max-width: 600px; margin: 0 auto;">
+              <ol style="color: var(--text); line-height: 1.6;">
+                <li><strong>Clone the repository:</strong><br>
+                    <code style="background: rgba(0,0,0,0.3); padding: 0.3rem; border-radius: 3px;">git clone https://github.com/HarleyVader/js-bambisleep-church.git</code>
+                </li>
+                <li><strong>Install dependencies:</strong><br>
+                    <code style="background: rgba(0,0,0,0.3); padding: 0.3rem; border-radius: 3px;">npm install</code>
+                </li>
+                <li><strong>Start the development server:</strong><br>
+                    <code style="background: rgba(0,0,0,0.3); padding: 0.3rem; border-radius: 3px;">npm start</code>
+                </li>
+                <li><strong>Access MCP tools at:</strong><br>
+                    <code style="background: rgba(0,0,0,0.3); padding: 0.3rem; border-radius: 3px;">http://localhost:7070/mcp-tools</code>
+                </li>
+              </ol>
+            </div>
+            <p style="color: var(--text-muted); margin-top: 1.5rem; font-size: 0.9rem;">
+              <strong>Features available in development:</strong><br>
+              🔍 Knowledge base search • 🛡️ Safety information • 🏛️ Church status • 📋 Community guidelines • 📚 Resource recommendations
+            </p>
+          </div>
+        `;
+      }
+      return;
+    }
+
+    // Development mode - try to connect to local MCP server
     try {
       statusText.textContent = 'Checking...';
+
       const response = await fetch('/api/mcp/status');
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
       const data = await response.json();
 
       if (data.success) {
@@ -393,12 +452,10 @@
       }
     } catch (error) {
       statusElement.className = 'status-indicator status-offline';
-      statusText.textContent = 'MCP Server Offline';
+      statusText.textContent = 'MCP Server Offline (Check server: npm start)';
       console.error('MCP Status Error:', error);
     }
-  }
-
-  // Load and display tools
+  } // Load and display tools
   function loadTools() {
     const toolsGrid = document.getElementById('toolsGrid');
     if (!toolsGrid) return;
@@ -523,6 +580,11 @@
         }
       });
 
+      // Check if on production - tools don't work there
+      if (isProduction()) {
+        throw new Error('MCP tools are only available in development mode. Please run the project locally.');
+      }
+
       // Call MCP endpoint
       const response = await fetch('/mcp', {
         method: 'POST',
@@ -567,9 +629,10 @@
   // Initialize on page load
   document.addEventListener('DOMContentLoaded', function() {
     checkMcpStatus();
-    <% if (mcpEnabled) { %>
-    loadTools();
-    <% } %>
+    // Only load tools if not on production (development mode only)
+    if (!isProduction()) {
+      loadTools();
+    }
   });
 </script>
 
