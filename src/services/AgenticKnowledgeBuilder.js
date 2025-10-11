@@ -15,7 +15,7 @@ class AgenticKnowledgeBuilder {
     async initialize() {
         try {
             log.info('🤖 Initializing Agentic Knowledge Builder...');
-            
+
             if (!await mongoService.connect()) {
                 throw new Error('MongoDB connection required');
             }
@@ -60,7 +60,7 @@ class AgenticKnowledgeBuilder {
 
     async startAutonomousBuilding() {
         if (this.isRunning) return log.warn('⚠️ Already running');
-        
+
         try {
             this.isRunning = true;
             this.crawlStats.startTime = new Date();
@@ -104,7 +104,7 @@ class AgenticKnowledgeBuilder {
         try {
             log.info('🔍 Discovering content...');
             const mainPageResult = await webCrawlerService.crawlSingle(this.baseUrl, { storeResults: false });
-            
+
             if (!mainPageResult.success) {
                 throw new Error(`Failed to crawl main page: ${mainPageResult.error}`);
             }
@@ -134,7 +134,7 @@ class AgenticKnowledgeBuilder {
     async prioritizeLinks(links) {
         try {
             log.info('🧠 Prioritizing links...');
-            
+
             if (!await lmStudioService.isHealthy()) {
                 return this.basicPrioritization(links);
             }
@@ -183,8 +183,8 @@ class AgenticKnowledgeBuilder {
         return links.map(url => ({
             url,
             priority: url.includes('FAQ') || url.includes('Consent') ? 10 :
-                     url.includes('Beginner') ? 9 :
-                     url.includes('Safety') ? 8 : 5,
+                url.includes('Beginner') ? 9 :
+                    url.includes('Safety') ? 8 : 5,
             reason: 'Basic prioritization'
         }));
     }
@@ -192,11 +192,11 @@ class AgenticKnowledgeBuilder {
     async intelligentCrawl(prioritizedLinks) {
         try {
             log.info('🕷️ Starting intelligent crawl...');
-            
+
             for (const linkInfo of prioritizedLinks.slice(0, 50)) { // Limit to top 50
                 try {
                     const crawlResult = await webCrawlerService.crawlSingle(linkInfo.url, { storeResults: false });
-                    
+
                     if (!crawlResult.success) {
                         this.crawlStats.errors++;
                         continue;
@@ -214,21 +214,61 @@ class AgenticKnowledgeBuilder {
                         version: 1
                     };
 
-                    await mongoService.insertOne(this.knowledgeCollection, knowledgeEntry);
-                    this.crawlStats.processedPages++;
-                    
-                    log.success(`✅ Processed: ${analysis.title || 'Unknown'}`);
+                    // Use upsert to handle duplicates gracefully
+                    try {
+                        await mongoService.updateOne(
+                            this.knowledgeCollection,
+                            { url: linkInfo.url },
+                            { $set: knowledgeEntry },
+                            { upsert: true }
+                        );
+                        this.crawlStats.processedPages++;
+                        log.success(`✅ Processed: ${analysis.title || 'Unknown'} (${linkInfo.url})`);
+                    } catch (insertError) {
+                        // If upsert fails, try regular insert as fallback
+                        if (insertError.message.includes('E11000')) {
+                            log.info(`🔄 URL already exists, updating: ${linkInfo.url}`);
+                            await mongoService.updateOne(
+                                this.knowledgeCollection,
+                                { url: linkInfo.url },
+                                {
+                                    $set: {
+                                        ...knowledgeEntry,
+                                        lastUpdated: new Date(),
+                                        version: (knowledgeEntry.version || 1) + 1
+                                    }
+                                }
+                            );
+                            log.success(`✅ Updated existing: ${analysis.title || 'Unknown'}`);
+                        } else {
+                            throw insertError;
+                        }
+                    }
+
                     await new Promise(resolve => setTimeout(resolve, 2000)); // Rate limiting
                 } catch (error) {
-                    log.error(`❌ Failed to process ${linkInfo.url}: ${error.message}`);
+                    log.warn(`⚠️ Skipping ${linkInfo.url}: ${error.message}`);
                     this.crawlStats.errors++;
+                    // Continue crawling instead of stopping
                 }
             }
 
             log.success(`🎉 Crawl completed: ${this.crawlStats.processedPages} pages processed`);
+            
+            return {
+                success: true,
+                processed: this.crawlStats.processedPages,
+                errors: this.crawlStats.errors,
+                message: `Crawl completed: ${this.crawlStats.processedPages} pages processed, ${this.crawlStats.errors} errors`
+            };
         } catch (error) {
             log.error(`❌ Crawl failed: ${error.message}`);
-            throw error;
+            return {
+                success: false,
+                error: error.message,
+                processed: this.crawlStats.processedPages || 0,
+                errors: this.crawlStats.errors || 0
+            };
         }
     }
 
@@ -287,7 +327,7 @@ class AgenticKnowledgeBuilder {
     categorizeContent(analysis) {
         const url = analysis.url || '';
         const title = analysis.title?.toLowerCase() || '';
-        
+
         if (title.includes('consent') || title.includes('safety')) return { main: 'safety', priority: 10 };
         if (title.includes('faq') || title.includes('beginner')) return { main: 'beginners', priority: 9 };
         if (title.includes('session')) return { main: 'sessions', priority: 8 };
@@ -314,12 +354,12 @@ class AgenticKnowledgeBuilder {
         if (!content) return [];
         const lowerContent = content.toLowerCase();
         const topics = [];
-        
+
         if (lowerContent.includes('hypnosis')) topics.push('hypnosis');
         if (lowerContent.includes('trigger')) topics.push('triggers');
         if (lowerContent.includes('safety')) topics.push('safety');
         if (lowerContent.includes('session')) topics.push('sessions');
-        
+
         return topics;
     }
 
