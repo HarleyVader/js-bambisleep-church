@@ -114,6 +114,12 @@ Respond with a structured organization plan in JSON format.`
      */
     async setupDatabase() {
         try {
+            // Ensure MongoDB is connected
+            if (!mongoService.isConnected) {
+                log.info('🔌 MongoDB not connected, attempting connection...');
+                await mongoService.connect();
+            }
+
             // Create text search index for content searching
             log.info('📝 Creating text search index...');
             await mongoService.createIndex(this.knowledgeCollection, {
@@ -217,10 +223,15 @@ Respond with a structured organization plan in JSON format.`
      */
     async removeDuplicateUrls() {
         try {
-            const mongoService = this.container.get('mongoService');
+            // Ensure MongoDB is connected before cleanup
+            if (!mongoService.isConnected) {
+                log.info('🔌 Connecting to MongoDB for duplicate cleanup...');
+                await mongoService.connect();
+            }
 
             // Find all documents grouped by URL
-            const duplicates = await mongoService.collection(this.knowledgeCollection).aggregate([
+            const collection = await mongoService.getCollection(this.knowledgeCollection);
+            const duplicates = await collection.aggregate([
                 {
                     $group: {
                         _id: "$url",
@@ -242,7 +253,8 @@ Respond with a structured organization plan in JSON format.`
                 const [keepId, ...removeIds] = duplicate.docs;
 
                 if (removeIds.length > 0) {
-                    await mongoService.collection(this.knowledgeCollection).deleteMany({
+                    const collection = await mongoService.getCollection(this.knowledgeCollection);
+                    await collection.deleteMany({
                         _id: { $in: removeIds }
                     });
                     log.info(`🗑️ Removed ${removeIds.length} duplicate entries for URL: ${duplicate._id}`);

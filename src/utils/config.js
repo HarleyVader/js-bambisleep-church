@@ -79,7 +79,10 @@ export const config = {
     },
 
     paths: {
-        knowledge: path.join(__dirname, '../knowledge/knowledge.json')
+        knowledge: path.join(__dirname, '../knowledge/knowledge.json'),
+        public: path.join(__dirname, '../../public'),
+        views: path.join(__dirname, '../../views'),
+        dist: path.join(__dirname, '../../dist')
     },
 
     // Helper functions to generate URLs

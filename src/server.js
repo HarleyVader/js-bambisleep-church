@@ -28,14 +28,12 @@ if (config.mcp.enabled) {
     mcpServer = new BambiMcpServer();
 }
 
-// Always serve React build (built by Vite)
-const distPath = path.join(__dirname, '../dist');
-if (fs.existsSync(distPath)) {
-    app.use(express.static(distPath));
-    log.info(`Serving React build from: ${distPath}`);
-} else {
-    log.warn('React build not found. Run "npm run build" to create production build.');
-}
+// Set EJS as the view engine
+app.set('view engine', 'ejs');
+app.set('views', config.paths.views);
+
+// Serve static files from public/
+app.use(express.static(config.paths.public));
 
 // Parse JSON bodies
 app.use(express.json());
@@ -68,106 +66,110 @@ app.use((req, res, next) => {
 
 // Load knowledge data
 let knowledgeData = [];
+let originalKnowledgeData = {};
 try {
-    knowledgeData = JSON.parse(fs.readFileSync(config.paths.knowledge, 'utf-8'));
+    originalKnowledgeData = JSON.parse(fs.readFileSync(config.paths.knowledge, 'utf-8'));
+    
+    // Convert knowledge data to array format for services
+    if (Array.isArray(originalKnowledgeData)) {
+        knowledgeData = originalKnowledgeData;
+    } else if (originalKnowledgeData && originalKnowledgeData.categories) {
+        // Convert object structure to array
+        Object.keys(originalKnowledgeData.categories).forEach(categoryKey => {
+            const categoryData = originalKnowledgeData.categories[categoryKey];
+            if (categoryData.entries && Array.isArray(categoryData.entries)) {
+                categoryData.entries.forEach(entry => {
+                    knowledgeData.push({
+                        ...entry,
+                        category: categoryKey
+                    });
+                });
+            }
+        });
+    }
 } catch (error) {
     log.error(`Knowledge loading failed: ${error.message}`);
 }
 
-// React SPA fallback - Serve index.html for all frontend routes
-const serveReactApp = (req, res) => {
-    const indexPath = path.join(__dirname, '../dist/index.html');
-    if (fs.existsSync(indexPath)) {
-        res.sendFile(indexPath);
-    } else {
-        res.status(404).send('React app not built. Run "npm run build" first.');
-    }
-};
+// Routes
+app.get('/', (req, res) => {
+    const mcpStatus = mcpServer ? mcpServer.getInfo() : null;
+
+    res.render('pages/index', {
+        title: 'Bambi Sleep Church',
+        description: 'Digital Sanctuary for the BambiSleep Community - AI-Powered Spiritual Community',
+        location: req.location,
+        knowledgeCount: knowledgeData.length,
+        mcpEnabled: config.mcp.enabled,
+        mcpStatus: mcpStatus,
+        stats: {
+            members: 42,
+            tools: mcpStatus ? mcpStatus.toolCount : 7,
+            progress: 14,
+            phase: 'Foundation'
+        }
+    });
+});
+
+app.get('/knowledge', (req, res) => {
+    res.render('pages/knowledge', {
+        title: 'Knowledge Base',
+        description: 'Explore our comprehensive BambiSleep knowledge base',
+        knowledge: knowledgeData,
+        location: req.location
+    });
+});
+
+app.get('/mission', (req, res) => {
+    res.render('pages/mission', {
+        title: 'Our Mission',
+        description: 'Establishing BambiSleep Church as a legal Austrian religious community',
+        location: req.location
+    });
+});
+
+app.get('/roadmap', (req, res) => {
+    res.render('pages/roadmap', {
+        title: 'Mission Roadmap',
+        description: 'Strategic timeline for church establishment',
+        location: req.location
+    });
+});
+
+app.get('/agents', (req, res) => {
+    res.render('pages/agents', {
+        title: 'Chat Agent',
+        description: 'Chat with our simple web agent about BambiSleep Church',
+        location: req.location,
+        knowledgeCount: knowledgeData.length
+    });
+});
+
+app.get('/mcp-tools', (req, res) => {
+    res.render('pages/mcp-tools', {
+        title: 'MCP Tools',
+        description: 'Model Context Protocol tool integration for BambiSleep Church',
+        location: req.location,
+        mcpEnabled: config.mcp.enabled
+    });
+});
+
+
 
 // API endpoint for knowledge
 app.get('/api/knowledge', (req, res) => {
-    res.json(knowledgeData);
+    res.json(originalKnowledgeData);
 });
 
 // API endpoint for knowledge search
 app.get('/api/knowledge/search', (req, res) => {
     const query = req.query.q?.toLowerCase() || '';
-    const category = req.query.category?.toLowerCase();
-
-    let filtered = knowledgeData;
-
-    if (query) {
-        filtered = filtered.filter(item =>
-            item.title?.toLowerCase().includes(query) ||
-            item.description?.toLowerCase().includes(query) ||
-            item.category?.toLowerCase().includes(query)
-        );
-    }
-
-    if (category && category !== 'all') {
-        filtered = filtered.filter(item =>
-            item.category?.toLowerCase() === category
-        );
-    }
-
+    const filtered = knowledgeData.filter(item =>
+        item.title?.toLowerCase().includes(query) ||
+        item.description?.toLowerCase().includes(query) ||
+        item.category?.toLowerCase().includes(query)
+    );
     res.json(filtered);
-});
-
-// API endpoint for knowledge by ID
-app.get('/api/knowledge/:id', (req, res) => {
-    const { id } = req.params;
-    const entry = knowledgeData[id];
-
-    if (!entry) {
-        return res.status(404).json({ error: 'Knowledge entry not found' });
-    }
-
-    res.json(entry);
-});
-
-// MCP API endpoints
-app.get('/api/mcp/status', (req, res) => {
-    if (!mcpServer) {
-        return res.status(503).json({
-            status: 'unavailable',
-            message: 'MCP server not initialized'
-        });
-    }
-
-    try {
-        const info = mcpServer.getInfo();
-        res.json({
-            status: 'operational',
-            ...info,
-            timestamp: new Date().toISOString()
-        });
-    } catch (error) {
-        res.status(500).json({
-            status: 'error',
-            message: error.message
-        });
-    }
-});
-
-app.get('/api/mcp/tools', async (req, res) => {
-    if (!mcpServer) {
-        return res.status(503).json({
-            error: 'MCP server not available'
-        });
-    }
-
-    try {
-        const tools = await mcpServer.listTools();
-        res.json({
-            tools: tools,
-            count: tools.length,
-            timestamp: new Date().toISOString()
-        });
-    } catch (error) {
-        res.status(500).json({
-            error: error.message
-        });
-    }
 });
 
 // Health check
@@ -176,16 +178,6 @@ app.get('/api/health', (req, res) => {
         status: 'ok',
         timestamp: new Date().toISOString(),
         knowledgeCount: knowledgeData.length
-    });
-});
-
-app.get('/health', (req, res) => {
-    res.json({
-        status: 'ok',
-        timestamp: new Date().toISOString(),
-        knowledgeCount: knowledgeData.length,
-        mcpEnabled: config.mcp.enabled,
-        mcpStatus: mcpServer ? mcpServer.getInfo() : null
     });
 });
 
@@ -226,7 +218,6 @@ app.get('/api/stats', (req, res) => {
     });
 });
 
-
 // Audio playback endpoint - client-side HTML audio
 app.post('/api/audio/play', (req, res) => {
     try {
@@ -255,192 +246,10 @@ app.post('/api/audio/stop', (req, res) => {
     }
 });
 
-// Agentic Knowledge Builder API endpoints
-app.post('/api/agentic/initialize', async (req, res) => {
-    try {
-        if (!mcpServer) {
-            return res.status(503).json({
-                success: false,
-                error: 'MCP server not available'
-            });
-        }
-
-        // Call the agentic-initialize tool through MCP
-        const result = await mcpServer.callTool('agentic-initialize', {});
-        const response = JSON.parse(result.content[0].text);
-
-        res.json(response);
-    } catch (error) {
-        log.error(`Agentic initialize error: ${error.message}`);
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-    }
-});
-
-app.post('/api/agentic/start-building', async (req, res) => {
-    try {
-        if (!mcpServer) {
-            return res.status(503).json({
-                success: false,
-                error: 'MCP server not available'
-            });
-        }
-
-        const { forceRestart } = req.body;
-        const result = await mcpServer.callTool('agentic-start-building', { forceRestart });
-        const response = JSON.parse(result.content[0].text);
-
-        res.json(response);
-    } catch (error) {
-        log.error(`Agentic start building error: ${error.message}`);
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-    }
-});
-
-app.post('/api/agentic/stop-building', async (req, res) => {
-    try {
-        if (!mcpServer) {
-            return res.status(503).json({
-                success: false,
-                error: 'MCP server not available'
-            });
-        }
-
-        const result = await mcpServer.callTool('agentic-stop-building', {});
-        const response = JSON.parse(result.content[0].text);
-
-        res.json(response);
-    } catch (error) {
-        log.error(`Agentic stop building error: ${error.message}`);
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-    }
-});
-
-app.get('/api/agentic/status', async (req, res) => {
-    try {
-        if (!mcpServer) {
-            return res.status(503).json({
-                success: false,
-                error: 'MCP server not available'
-            });
-        }
-
-        const result = await mcpServer.callTool('agentic-get-status', {});
-        const response = JSON.parse(result.content[0].text);
-
-        res.json(response);
-    } catch (error) {
-        log.error(`Agentic status error: ${error.message}`);
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-    }
-});
-
-app.get('/api/agentic/stats', async (req, res) => {
-    try {
-        if (!mcpServer) {
-            return res.status(503).json({
-                success: false,
-                error: 'MCP server not available'
-            });
-        }
-
-        const result = await mcpServer.callTool('agentic-get-stats', {});
-        const response = JSON.parse(result.content[0].text);
-
-        res.json(response);
-    } catch (error) {
-        log.error(`Agentic stats error: ${error.message}`);
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-    }
-});
-
-app.post('/api/agentic/query', async (req, res) => {
-    try {
-        if (!mcpServer) {
-            return res.status(503).json({
-                success: false,
-                error: 'MCP server not available'
-            });
-        }
-
-        const { query, limit, sortBy } = req.body;
-        const result = await mcpServer.callTool('agentic-query-knowledge', { query, limit, sortBy });
-        const response = JSON.parse(result.content[0].text);
-
-        res.json(response);
-    } catch (error) {
-        log.error(`Agentic query error: ${error.message}`);
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-    }
-});
-
-app.post('/api/agentic/learning-path', async (req, res) => {
-    try {
-        if (!mcpServer) {
-            return res.status(503).json({
-                success: false,
-                error: 'MCP server not available'
-            });
-        }
-
-        const { userType, interests } = req.body;
-        const result = await mcpServer.callTool('agentic-get-learning-path', { userType, interests });
-        const response = JSON.parse(result.content[0].text);
-
-        res.json(response);
-    } catch (error) {
-        log.error(`Agentic learning path error: ${error.message}`);
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-    }
-});
-
 // MCP endpoint - only if MCP is enabled
 if (config.mcp.enabled && mcpServer) {
     app.use(express.json({ limit: '10mb' }));
-
-    // Handle MCP JSON-RPC calls
-    app.post('/mcp', async (req, res) => {
-        try {
-            if (!mcpServer) {
-                return res.status(503).json({
-                    jsonrpc: '2.0',
-                    id: req.body.id || null,
-                    error: { code: -32603, message: 'MCP server not available' }
-                });
-            }
-
-            // Use the MCP server's HTTP handler
-            const handler = mcpServer.createHttpHandler();
-            await handler(req, res);
-        } catch (error) {
-            log.error(`MCP request failed: ${error.message}`);
-            res.status(500).json({
-                jsonrpc: '2.0',
-                id: req.body.id || null,
-                error: { code: -32603, message: error.message }
-            });
-        }
-    });
+    app.post('/mcp', mcpServer.createHttpHandler());
 
     // MCP status endpoint
     app.get('/api/mcp/status', (req, res) => {
@@ -482,30 +291,6 @@ if (config.mcp.enabled && mcpServer) {
     });
 
     log.info('MCP endpoints configured at /mcp');
-} else {
-    // Fallback endpoints when MCP is disabled
-    app.post('/mcp', (req, res) => {
-        res.status(503).json({
-            jsonrpc: '2.0',
-            id: req.body.id || null,
-            error: { code: -32603, message: 'MCP server is disabled' }
-        });
-    });
-
-    app.get('/api/mcp/status', (req, res) => {
-        res.status(503).json({
-            status: 'disabled',
-            message: 'MCP server is not enabled in configuration'
-        });
-    });
-
-    app.get('/api/mcp/tools', (req, res) => {
-        res.status(503).json({
-            error: 'MCP server is not enabled',
-            tools: [],
-            count: 0
-        });
-    });
 }
 
 // Socket.io for agent chat
@@ -572,9 +357,6 @@ async function initializeAgent() {
         log.error('❌ SimpleWebAgent initialization failed');
     }
 }
-
-// Catch-all handler for React Router (must be last)
-app.get(/.*/, serveReactApp);
 
 // Start server
 httpServer.listen(PORT, HOST, async () => {

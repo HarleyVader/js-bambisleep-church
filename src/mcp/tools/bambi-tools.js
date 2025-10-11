@@ -18,14 +18,33 @@ const searchKnowledge = {
         const { query, category, limit } = args;
         const { knowledgeData } = context;
 
-        if (!knowledgeData || knowledgeData.length === 0) {
+        // Handle both array format (legacy) and object format (new structure)
+        let searchArray = [];
+        if (Array.isArray(knowledgeData)) {
+            searchArray = knowledgeData;
+        } else if (knowledgeData && knowledgeData.categories) {
+            // Convert categories object to flat array
+            Object.keys(knowledgeData.categories).forEach(categoryKey => {
+                const categoryData = knowledgeData.categories[categoryKey];
+                if (categoryData.entries && Array.isArray(categoryData.entries)) {
+                    categoryData.entries.forEach(entry => {
+                        searchArray.push({
+                            ...entry,
+                            category: categoryKey
+                        });
+                    });
+                }
+            });
+        }
+
+        if (!searchArray || searchArray.length === 0) {
             return "No knowledge base available. Please ensure the knowledge data is loaded.";
         }
 
         // Filter by category if specified
-        let searchData = knowledgeData;
+        let searchData = searchArray;
         if (category) {
-            searchData = knowledgeData.filter(item => item.category === category);
+            searchData = searchArray.filter(item => item.category === category);
         }
 
         // Search by query
