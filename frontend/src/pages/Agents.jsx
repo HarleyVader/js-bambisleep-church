@@ -16,6 +16,15 @@ import { mcpService, agenticService, socketService } from '@services/api';
 import { LoadingSpinner, ErrorMessage } from '@components';
 
 const Agents = () => {
+    // Helper function to safely extract text content from MCP responses
+    const extractTextContent = (response) => {
+        if (typeof response === 'string') return response;
+        if (response?.result?.content?.[0]?.text) return response.result.content[0].text;
+        if (response?.content?.[0]?.text) return response.content[0].text;
+        if (response?.text) return response.text;
+        return typeof response === 'object' ? JSON.stringify(response) : String(response || '');
+    };
+
     const [status, setStatus] = useState({
         lmstudio: 'unknown',
         mongodb: 'unknown',
@@ -50,6 +59,8 @@ const Agents = () => {
     const [isSending, setIsSending] = useState(false);
     const [availableTools, setAvailableTools] = useState([]);
     const messagesEndRef = useRef(null);
+    const chatMessagesRef = useRef(null);
+    const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
 
     useEffect(() => {
         const loadStatus = async () => {
@@ -99,9 +110,20 @@ const Agents = () => {
         };
     }, []);
 
+    // Handle scroll detection to determine if we should auto-scroll
+    const handleScroll = () => {
+        if (chatMessagesRef.current) {
+            const { scrollTop, scrollHeight, clientHeight } = chatMessagesRef.current;
+            const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+            setShouldAutoScroll(isNearBottom);
+        }
+    };
+
     useEffect(() => {
-        // Scroll to bottom when new messages arrive
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        // Only auto-scroll if user is near bottom or explicitly requested
+        if (shouldAutoScroll && messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
 
         // Save messages to localStorage
         try {
@@ -109,7 +131,7 @@ const Agents = () => {
         } catch (error) {
             console.warn('Failed to save messages:', error);
         }
-    }, [messages]);
+    }, [messages, shouldAutoScroll]);
 
     const handleSendMessage = async (e) => {
         e.preventDefault();
@@ -123,6 +145,7 @@ const Agents = () => {
 
         setMessages(prev => [...prev, userMessage]);
         setIsSending(true);
+        setShouldAutoScroll(true); // Always scroll when user sends a message
 
         const messageToSend = inputMessage.trim();
         setInputMessage('');
@@ -137,7 +160,7 @@ const Agents = () => {
 
                 let agentResponse = {
                     type: 'agent',
-                    content: response.result?.content?.[0]?.text || 'I received your message and am processing it.',
+                    content: extractTextContent(response) || 'I received your message and am processing it.',
                     timestamp: new Date()
                 };
 
@@ -186,8 +209,7 @@ const Agents = () => {
 
             setMessages(prev => [...prev, {
                 type: 'agent',
-                content: `Tool "${toolName}" executed successfully. ${response.result?.content?.[0]?.text || 'Tool completed without detailed output.'
-                    }`,
+                content: `Tool "${toolName}" executed successfully. ${extractTextContent(response) || 'Tool completed without detailed output.'}`,
                 timestamp: new Date()
             }]);
         } catch (error) {
@@ -325,10 +347,14 @@ const Agents = () => {
                         </button>
                     </header>
 
-                    <div className={styles.chatMessages}>
+                    <div
+                        className={styles.chatMessages}
+                        ref={chatMessagesRef}
+                        onScroll={handleScroll}
+                    >
                         {messages.map((message, index) => (
                             <div key={index} className={`${styles.message} ${styles[message.type]}`}>
-                                <div>{message.content}</div>
+                                <div>{typeof message.content === 'string' ? message.content : JSON.stringify(message.content)}</div>
                                 <div style={{ fontSize: '0.8rem', opacity: 0.7, marginTop: '0.5rem' }}>
                                     {formatTimestamp(message.timestamp)}
                                 </div>
