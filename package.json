@@ -18,11 +18,9 @@
     "test": "echo \"No tests configured yet\"",
     "inspector": "node scripts/mcp-inspector.js http",
     "inspector:stdio": "node scripts/mcp-inspector.js stdio",
-
     "inspector:test": "node test-inspector.js",
     "inspector:dev": "concurrently \"npm run dev\" \"npm run inspector\"",
     "inspector:help": "node scripts/mcp-inspector.js help",
-
     "mcp:client": "node mcp-client.js"
   },
   "dependencies": {

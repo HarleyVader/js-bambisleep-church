@@ -69,10 +69,10 @@ async function checkServerRunning() {
 
 async function checkInspectorAvailable() {
     try {
-        const checkCommand = isWindows 
+        const checkCommand = isWindows
             ? 'where npx'
             : 'which npx';
-            
+
         await execAsync(checkCommand);
         return true;
     } catch (error) {
@@ -158,7 +158,7 @@ async function runInspector(mode = 'http', options = {}) {
         log('  1. Use web interface: http://localhost:7070/inspector', 'cyan');
         log('  2. Test directly: node test-inspector.js', 'cyan');
         log('  3. Export config for VS Code or Claude Desktop', 'cyan');
-        
+
         if (serverProcess && !serverProcess.killed) {
             serverProcess.kill('SIGTERM');
         }
@@ -171,7 +171,7 @@ async function runInspector(mode = 'http', options = {}) {
         // On Windows, use PowerShell to run npx
         const fullCommand = `npx @modelcontextprotocol/inspector ${inspectorArgs.join(' ')}`;
         log(`💻 Running: ${fullCommand}`, 'cyan');
-        
+
         inspectorProcess = spawn('powershell.exe', ['-Command', fullCommand], {
             stdio: 'inherit',
             env: { ...process.env }
@@ -203,7 +203,7 @@ async function runInspector(mode = 'http', options = {}) {
     inspectorProcess.on('close', (code) => {
         if (code !== 0) {
             log(`❌ Inspector exited with code ${code}`, 'red');
-            
+
             if (isWindows) {
                 log('\n💡 Alternative solutions:', 'yellow');
                 log('  1. Use web interface: http://localhost:7070/inspector', 'cyan');
@@ -223,14 +223,14 @@ async function runInspector(mode = 'http', options = {}) {
     inspectorProcess.on('error', (err) => {
         log('❌ Failed to start MCP Inspector', 'red');
         log(`   Error: ${err.message}`, 'red');
-        
+
         if (isWindows && err.code === 'ENOENT') {
             log('\n💡 Alternative solutions:', 'yellow');
             log('  1. Use web interface: http://localhost:7070/inspector', 'cyan');
             log('  2. Test directly: node test-inspector.js', 'cyan');
             log('  3. Export config for MCP clients', 'cyan');
         }
-        
+
         if (serverProcess && !serverProcess.killed) {
             log('🛑 Stopping server...', 'yellow');
             serverProcess.kill('SIGTERM');
@@ -241,7 +241,7 @@ async function runInspector(mode = 'http', options = {}) {
 async function runTests() {
     log('🧪 Running MCP tests...', 'cyan');
     log('💡 Using direct test script for reliable testing', 'yellow');
-    
+
     return new Promise((resolve) => {
         const testProcess = spawn('node', ['test-inspector.js'], {
             stdio: 'inherit',
