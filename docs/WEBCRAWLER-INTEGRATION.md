@@ -7,6 +7,7 @@ The BambiSleep Church MCP Server now includes a comprehensive web crawling syste
 ## 🎯 Features
 
 ### Web Crawler Service
+
 - **Intelligent Crawling**: Respects robots.txt, rate limits, and implements retry logic
 - **Data Extraction**: Comprehensive HTML parsing with Cheerio
 - **MongoDB Integration**: Automatic storage with timestamps and organization
@@ -43,6 +44,7 @@ BambiSleep Church MCP Server (v1.0.0)
 ## 🚀 Usage Examples
 
 ### 1. Single URL Crawling
+
 ```javascript
 {
     "name": "crawler-single-url",
@@ -55,6 +57,7 @@ BambiSleep Church MCP Server (v1.0.0)
 ```
 
 **Response:**
+
 ```json
 {
     "success": true,
@@ -70,6 +73,7 @@ BambiSleep Church MCP Server (v1.0.0)
 ```
 
 ### 2. Multi-URL Deep Crawling
+
 ```javascript
 {
     "name": "crawler-multiple-urls",
@@ -84,6 +88,7 @@ BambiSleep Church MCP Server (v1.0.0)
 ```
 
 ### 3. Search Crawled Data
+
 ```javascript
 {
     "name": "crawler-search-data",
@@ -99,6 +104,7 @@ BambiSleep Church MCP Server (v1.0.0)
 ```
 
 ### 4. Domain Analysis
+
 ```javascript
 {
     "name": "crawler-analyze-domain",
@@ -111,6 +117,7 @@ BambiSleep Church MCP Server (v1.0.0)
 ```
 
 ### 5. Get Statistics
+
 ```javascript
 {
     "name": "crawler-get-statistics",
@@ -119,6 +126,7 @@ BambiSleep Church MCP Server (v1.0.0)
 ```
 
 **Response:**
+
 ```json
 {
     "success": true,
@@ -137,6 +145,7 @@ BambiSleep Church MCP Server (v1.0.0)
 ```
 
 ### 6. Export Data
+
 ```javascript
 {
     "name": "crawler-export-data",
@@ -154,6 +163,7 @@ BambiSleep Church MCP Server (v1.0.0)
 ## 🔧 Configuration
 
 ### Environment Variables
+
 All crawler settings can be configured via environment variables or method parameters:
 
 ```bash
@@ -167,6 +177,7 @@ CRAWLER_MAX_PAGES=50
 ```
 
 ### Service Configuration
+
 ```javascript
 webCrawlerService.configure({
     userAgent: 'Custom-Agent/1.0',
@@ -181,6 +192,7 @@ webCrawlerService.configure({
 ## 📊 Data Structure
 
 ### Stored Crawl Results
+
 ```json
 {
     "_id": "ObjectId",
@@ -232,15 +244,18 @@ webCrawlerService.configure({
 ## 🗄️ MongoDB Collections
 
 ### Default Collections
+
 - **`crawl_results`** - General crawl results
 - **`domain_analysis`** - Domain-specific analysis results
 
 ### Custom Collections
+
 All tools support custom collection names via the `collection` parameter.
 
 ## 🛡️ Safety & Ethics
 
 ### Respectful Crawling
+
 - **Rate Limiting**: 1-second default delay between requests
 - **User Agent**: Clearly identifies as BambiSleep Church crawler
 - **Timeout Limits**: 10-second default timeout prevents hanging
@@ -248,12 +263,14 @@ All tools support custom collection names via the `collection` parameter.
 - **Depth Limits**: Maximum depth of 3 to prevent infinite crawling
 
 ### Data Privacy
+
 - **Local Storage**: All data stored in your MongoDB instance
 - **No External Transmission**: Crawled data never leaves your system
 - **Configurable Retention**: You control data storage and cleanup
 - **Selective Collection**: Only collects publicly available web content
 
 ### Legal Compliance
+
 - **Robots.txt**: Respects robots.txt directives (planned feature)
 - **Terms of Service**: Users responsible for compliance with target site ToS
 - **Rate Limiting**: Prevents server overload on target sites
@@ -262,6 +279,7 @@ All tools support custom collection names via the `collection` parameter.
 ## 🔍 Advanced Features
 
 ### Smart Content Extraction
+
 - **Title & Meta**: Extracts titles, descriptions, keywords, authors
 - **Structured Data**: Parses JSON-LD structured data
 - **Forms**: Analyzes form structure and input types
@@ -271,6 +289,7 @@ All tools support custom collection names via the `collection` parameter.
 - **Reading Time**: Calculated based on word count
 
 ### Analytics & Insights
+
 - **Domain Analysis**: Comprehensive site structure analysis
 - **Content Metrics**: Word counts, reading times, media counts
 - **Link Analysis**: Internal/external link patterns
@@ -278,6 +297,7 @@ All tools support custom collection names via the `collection` parameter.
 - **Temporal Analysis**: Crawl history and trends
 
 ### Performance Optimization
+
 - **Connection Pooling**: Efficient HTTP connection reuse
 - **Memory Management**: Streaming for large content
 - **Error Recovery**: Graceful handling of failed requests
@@ -286,21 +306,25 @@ All tools support custom collection names via the `collection` parameter.
 ## 🎯 Use Cases for BambiSleep Church
 
 ### 1. Community Resource Discovery
+
 - Crawl BambiSleep-related websites for new resources
 - Discover community discussions and guides
 - Track resource availability and changes
 
 ### 2. Safety Information Aggregation
+
 - Monitor safety guidelines across platforms
 - Collect best practices from trusted sources
 - Maintain up-to-date safety resources
 
 ### 3. Content Quality Assessment
+
 - Analyze content quality across BambiSleep resources
 - Identify high-quality educational materials
 - Track content evolution over time
 
 ### 4. Community Platform Monitoring
+
 - Monitor forum discussions and new posts
 - Track community sentiment and topics
 - Identify emerging trends and interests
@@ -308,6 +332,7 @@ All tools support custom collection names via the `collection` parameter.
 ## 📈 Performance Metrics
 
 ### Test Results
+
 - **Single URL Crawl**: ~500ms average response time
 - **Multi-URL Crawl**: ~1.5 seconds per page (including delays)
 - **Data Extraction**: ~50ms per page for HTML parsing
@@ -315,6 +340,7 @@ All tools support custom collection names via the `collection` parameter.
 - **Search Performance**: ~20ms for typical queries
 
 ### Scalability
+
 - **Concurrent Crawls**: Supports multiple simultaneous operations
 - **Large Sites**: Handles sites with hundreds of pages
 - **Data Volume**: Efficiently processes and stores large amounts of content
@@ -323,6 +349,7 @@ All tools support custom collection names via the `collection` parameter.
 ## 🔮 Future Enhancements
 
 ### Planned Features
+
 - **Robots.txt Compliance**: Automatic robots.txt parsing and respect
 - **JavaScript Rendering**: Support for dynamic content (Puppeteer integration)
 - **Content Change Detection**: Monitor pages for changes over time
@@ -331,6 +358,7 @@ All tools support custom collection names via the `collection` parameter.
 - **Export Formats**: Additional export formats (XML, PDF reports)
 
 ### Integration Opportunities
+
 - **LMStudio Integration**: AI-powered content analysis and summarization
 - **Knowledge Base**: Automatic knowledge base updates from crawled content
 - **Community Features**: Integration with church community tools
@@ -341,7 +369,7 @@ The Web Crawler integration adds powerful data collection and analysis capabilit
 
 - **6 New Tools** for comprehensive web crawling and analysis
 - **Full MongoDB Integration** with automatic data storage and organization
-- **Respectful Crawling** with proper rate limiting and error handling  
+- **Respectful Crawling** with proper rate limiting and error handling
 - **Rich Data Extraction** including content, metadata, and analytics
 - **Flexible Search & Export** for analysis and reporting
 - **Production Ready** with comprehensive testing and documentation

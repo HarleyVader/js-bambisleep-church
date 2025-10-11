@@ -45,7 +45,7 @@ class WebCrawlerService {
     async fetchPage(url, retryCount = 0) {
         try {
             log.info(`🕷️ Crawling: ${url}`);
-            
+
             const response = await axios.get(url, {
                 timeout: this.timeout,
                 headers: {
@@ -94,16 +94,16 @@ class WebCrawlerService {
     extractPageData(html, url) {
         try {
             const $ = cheerio.load(html);
-            
+
             // Extract basic page information
             const title = $('title').text().trim();
             const description = $('meta[name="description"]').attr('content') || '';
             const keywords = $('meta[name="keywords"]').attr('content') || '';
             const author = $('meta[name="author"]').attr('content') || '';
-            
+
             // Extract all text content
             const textContent = $('body').text().replace(/\s+/g, ' ').trim();
-            
+
             // Extract headings
             const headings = [];
             $('h1, h2, h3, h4, h5, h6').each((i, el) => {
@@ -157,7 +157,7 @@ class WebCrawlerService {
                 const action = $(el).attr('action') || '';
                 const method = $(el).attr('method') || 'GET';
                 const inputs = [];
-                
+
                 $(el).find('input, select, textarea').each((j, input) => {
                     inputs.push({
                         type: $(input).attr('type') || 'text',
@@ -249,11 +249,11 @@ class WebCrawlerService {
      */
     async crawlSingle(url, options = {}) {
         const startTime = Date.now();
-        
+
         try {
             // Fetch the page
             const pageResult = await this.fetchPage(url);
-            
+
             if (!pageResult.success) {
                 return {
                     success: false,
@@ -312,7 +312,7 @@ class WebCrawlerService {
 
         const results = [];
         const errors = [];
-        
+
         // Initialize queue with start URLs
         for (const url of startUrls) {
             this.crawlQueue.push({ url, depth: 0, parent: null });
@@ -340,7 +340,7 @@ class WebCrawlerService {
 
             // Crawl the page
             const result = await this.crawlSingle(url, { ...options, storeResults: false });
-            
+
             if (result.success) {
                 result.crawlDepth = depth;
                 result.parentUrl = parent;
@@ -396,7 +396,7 @@ class WebCrawlerService {
     async storeResult(result, collectionName = 'crawl_results') {
         try {
             await mongoService.connect();
-            
+
             const document = {
                 ...result,
                 domain: new URL(result.url).hostname,
@@ -420,7 +420,7 @@ class WebCrawlerService {
     async storeMultipleResults(results, collectionName = 'crawl_results') {
         try {
             await mongoService.connect();
-            
+
             const documents = results.map(result => ({
                 ...result,
                 domain: new URL(result.url).hostname,
@@ -444,34 +444,34 @@ class WebCrawlerService {
     async searchResults(query, options = {}) {
         try {
             await mongoService.connect();
-            
+
             const collection = options.collection || 'crawl_results';
             const limit = options.limit || 10;
-            
+
             // Build search filter
             const filter = {};
-            
+
             if (query.domain) {
                 filter.domain = query.domain;
             }
-            
+
             if (query.title) {
                 filter['data.title'] = { $regex: query.title, $options: 'i' };
             }
-            
+
             if (query.content) {
                 filter['data.textContent'] = { $regex: query.content, $options: 'i' };
             }
-            
+
             if (query.dateFrom || query.dateTo) {
                 filter.timestamp = {};
                 if (query.dateFrom) filter.timestamp.$gte = query.dateFrom;
                 if (query.dateTo) filter.timestamp.$lte = query.dateTo;
             }
 
-            const results = await mongoService.findMany(collection, filter, { 
-                limit, 
-                sort: { timestamp: -1 } 
+            const results = await mongoService.findMany(collection, filter, {
+                limit,
+                sort: { timestamp: -1 }
             });
 
             return {
@@ -492,9 +492,9 @@ class WebCrawlerService {
     async getCrawlStats(options = {}) {
         try {
             await mongoService.connect();
-            
+
             const collection = options.collection || 'crawl_results';
-            
+
             const stats = await mongoService.aggregate(collection, [
                 {
                     $group: {

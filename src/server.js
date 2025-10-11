@@ -230,6 +230,165 @@ app.post('/api/audio/stop', (req, res) => {
     }
 });
 
+// Agentic Knowledge Builder API endpoints
+app.post('/api/agentic/initialize', async (req, res) => {
+    try {
+        if (!mcpServer) {
+            return res.status(503).json({
+                success: false,
+                error: 'MCP server not available'
+            });
+        }
+
+        // Call the agentic-initialize tool through MCP
+        const result = await mcpServer.callTool('agentic-initialize', {});
+        const response = JSON.parse(result.content[0].text);
+
+        res.json(response);
+    } catch (error) {
+        log.error(`Agentic initialize error: ${error.message}`);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+app.post('/api/agentic/start-building', async (req, res) => {
+    try {
+        if (!mcpServer) {
+            return res.status(503).json({
+                success: false,
+                error: 'MCP server not available'
+            });
+        }
+
+        const { forceRestart } = req.body;
+        const result = await mcpServer.callTool('agentic-start-building', { forceRestart });
+        const response = JSON.parse(result.content[0].text);
+
+        res.json(response);
+    } catch (error) {
+        log.error(`Agentic start building error: ${error.message}`);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+app.post('/api/agentic/stop-building', async (req, res) => {
+    try {
+        if (!mcpServer) {
+            return res.status(503).json({
+                success: false,
+                error: 'MCP server not available'
+            });
+        }
+
+        const result = await mcpServer.callTool('agentic-stop-building', {});
+        const response = JSON.parse(result.content[0].text);
+
+        res.json(response);
+    } catch (error) {
+        log.error(`Agentic stop building error: ${error.message}`);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+app.get('/api/agentic/status', async (req, res) => {
+    try {
+        if (!mcpServer) {
+            return res.status(503).json({
+                success: false,
+                error: 'MCP server not available'
+            });
+        }
+
+        const result = await mcpServer.callTool('agentic-get-status', {});
+        const response = JSON.parse(result.content[0].text);
+
+        res.json(response);
+    } catch (error) {
+        log.error(`Agentic status error: ${error.message}`);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+app.get('/api/agentic/stats', async (req, res) => {
+    try {
+        if (!mcpServer) {
+            return res.status(503).json({
+                success: false,
+                error: 'MCP server not available'
+            });
+        }
+
+        const result = await mcpServer.callTool('agentic-get-stats', {});
+        const response = JSON.parse(result.content[0].text);
+
+        res.json(response);
+    } catch (error) {
+        log.error(`Agentic stats error: ${error.message}`);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+app.post('/api/agentic/query', async (req, res) => {
+    try {
+        if (!mcpServer) {
+            return res.status(503).json({
+                success: false,
+                error: 'MCP server not available'
+            });
+        }
+
+        const { query, limit, sortBy } = req.body;
+        const result = await mcpServer.callTool('agentic-query-knowledge', { query, limit, sortBy });
+        const response = JSON.parse(result.content[0].text);
+
+        res.json(response);
+    } catch (error) {
+        log.error(`Agentic query error: ${error.message}`);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+app.post('/api/agentic/learning-path', async (req, res) => {
+    try {
+        if (!mcpServer) {
+            return res.status(503).json({
+                success: false,
+                error: 'MCP server not available'
+            });
+        }
+
+        const { userType, interests } = req.body;
+        const result = await mcpServer.callTool('agentic-get-learning-path', { userType, interests });
+        const response = JSON.parse(result.content[0].text);
+
+        res.json(response);
+    } catch (error) {
+        log.error(`Agentic learning path error: ${error.message}`);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
 // MCP endpoint - only if MCP is enabled
 if (config.mcp.enabled && mcpServer) {
     app.use(express.json({ limit: '10mb' }));

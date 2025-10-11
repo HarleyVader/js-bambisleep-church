@@ -36,7 +36,7 @@ export const crawlSingleUrl = {
     async handler(args) {
         try {
             log.info(`🕷️ Starting single URL crawl: ${args.url}`);
-            
+
             // Configure crawler if custom options provided
             if (args.timeout) {
                 webCrawlerService.configure({ timeout: args.timeout });
@@ -137,7 +137,7 @@ export const crawlMultipleUrls = {
     async handler(args) {
         try {
             log.info(`🕷️ Starting multiple URL crawl: ${args.urls.length} starting URLs`);
-            
+
             const options = {
                 maxDepth: args.maxDepth || 2,
                 maxPages: args.maxPages || 25,
@@ -236,7 +236,7 @@ export const searchCrawledData = {
     async handler(args) {
         try {
             log.info(`🔍 Searching crawled data with query: ${JSON.stringify(args.query)}`);
-            
+
             const result = await webCrawlerService.searchResults(args.query, {
                 limit: args.limit || 10,
                 collection: args.collection || 'crawl_results'
@@ -294,7 +294,7 @@ export const getCrawlStatistics = {
     async handler(args) {
         try {
             log.info('📊 Generating crawl statistics');
-            
+
             const result = await webCrawlerService.getCrawlStats({
                 collection: args.collection || 'crawl_results'
             });
@@ -372,7 +372,7 @@ export const analyzeDomain = {
     async handler(args) {
         try {
             log.info(`🔍 Analyzing domain: ${args.domain}`);
-            
+
             // Build URLs to crawl
             const paths = args.paths || ['/'];
             const urls = paths.map(path => {
@@ -419,23 +419,23 @@ export const analyzeDomain = {
             for (const result of crawlResult.results) {
                 if (result.success && result.data) {
                     const data = result.data;
-                    
+
                     // Aggregate metrics
                     analysis.contentAnalysis.totalWords += data.metrics?.wordCount || 0;
                     analysis.contentAnalysis.totalLinks += data.metrics?.linkCount || 0;
                     analysis.contentAnalysis.totalImages += data.metrics?.imageCount || 0;
-                    
+
                     // Collect titles and headings
                     if (data.title) analysis.commonElements.titles.push(data.title);
                     if (data.headings) {
                         data.headings.forEach(h => analysis.commonElements.headings.push(h.text));
                     }
-                    
+
                     // Collect forms
                     if (data.forms) {
                         analysis.commonElements.forms.push(...data.forms);
                     }
-                    
+
                     // Detect page types based on content
                     const url = result.url.toLowerCase();
                     if (url.includes('/blog') || url.includes('/article')) {
@@ -452,7 +452,7 @@ export const analyzeDomain = {
 
             // Calculate averages
             if (crawlResult.totalCrawled > 0) {
-                analysis.contentAnalysis.averageReadingTime = 
+                analysis.contentAnalysis.averageReadingTime =
                     Math.round(analysis.contentAnalysis.totalWords / 200 / crawlResult.totalCrawled);
             }
 
@@ -527,7 +527,7 @@ export const exportCrawledData = {
     async handler(args) {
         try {
             log.info(`📤 Exporting crawled data in ${args.format || 'summary'} format`);
-            
+
             const filter = args.filter || {};
             const results = await mongoService.findMany(
                 args.collection || 'crawl_results',

@@ -12,6 +12,7 @@ import { bambiTools } from './tools/bambi-tools.js';
 import { mongodbTools } from './tools/mongodb/mongodbTools.js';
 import { lmstudioTools } from './tools/lmstudio/lmstudioTools.js';
 import { crawlerTools } from './tools/crawler/crawlerTools.js';
+import { agenticTools } from './tools/agentic/agenticTools.js';
 import { mongoService } from '../services/MongoDBService.js';
 import { lmStudioService } from '../services/LMStudioService.js';
 import { webCrawlerService } from '../services/WebCrawlerService.js';
@@ -39,7 +40,8 @@ class BambiMcpServer {
             ...bambiTools,
             ...Object.fromEntries(mongodbTools.map(tool => [tool.name, tool])),
             ...Object.fromEntries(lmstudioTools.map(tool => [tool.name, tool])),
-            ...Object.fromEntries(crawlerTools.map(tool => [tool.name, tool]))
+            ...Object.fromEntries(crawlerTools.map(tool => [tool.name, tool])),
+            ...Object.fromEntries(agenticTools.map(tool => [tool.name, tool]))
         };
 
         this.setupHandlers();
@@ -79,6 +81,18 @@ class BambiMcpServer {
 
                 // For LMStudio tools, use their direct handler format
                 if (name.startsWith('lmstudio-')) {
+                    const result = await tool.handler(args || {});
+                    return result;
+                }
+
+                // For Crawler tools, use their direct handler format
+                if (name.startsWith('crawler-')) {
+                    const result = await tool.handler(args || {});
+                    return result;
+                }
+
+                // For Agentic tools, use their direct handler format
+                if (name.startsWith('agentic-')) {
                     const result = await tool.handler(args || {});
                     return result;
                 }
@@ -237,6 +251,43 @@ class BambiMcpServer {
     }
 
     /**
+     * Call a tool directly (for HTTP API usage)
+     */
+    async callTool(toolName, args = {}) {
+        try {
+            const tool = Object.values(this.allTools).find(t => t.name === toolName);
+            if (!tool) {
+                throw new Error(`Unknown tool: ${toolName}`);
+            }
+
+            // Handle different tool types
+            if (toolName.startsWith('mongodb-')) {
+                return await tool.handler(args);
+            } else if (toolName.startsWith('lmstudio-')) {
+                return await tool.handler(args);
+            } else if (toolName.startsWith('crawler-')) {
+                return await tool.handler(args);
+            } else if (toolName.startsWith('agentic-')) {
+                return await tool.handler(args);
+            } else {
+                // For Bambi tools, validate arguments using Zod schema
+                const validatedArgs = tool.inputSchema.parse(args);
+                const result = await tool.handler(validatedArgs, {
+                    knowledgeData: this.knowledgeData,
+                    server: this
+                });
+
+                return {
+                    content: [{ type: "text", text: result }]
+                };
+            }
+        } catch (error) {
+            log.error(`Tool call error for ${toolName}: ${error.message}`);
+            throw error;
+        }
+    }
+
+    /**
      * Get server information
      */
     async getInfo() {
@@ -245,17 +296,18 @@ class BambiMcpServer {
         return {
             name: "bambisleep-church-server",
             version: "1.0.0",
-            description: "BambiSleep Church MCP server with MongoDB, LMStudio, and Web Crawler",
+            description: "BambiSleep Church MCP server with MongoDB, LMStudio, Web Crawler, and Agentic System",
             toolCount: Object.keys(this.allTools).length,
             bambiToolCount: Object.keys(bambiTools).length,
             mongodbToolCount: mongodbTools.length,
             lmstudioToolCount: lmstudioTools.length,
             crawlerToolCount: crawlerTools.length,
+            agenticToolCount: 7,
             isInitialized: this.isInitialized,
             knowledgeEntries: this.knowledgeData.length,
             mongodbConnected: mongoService.isConnected,
             lmstudioHealthy: lmstudioHealthy,
-            capabilities: ["tools"],
+            capabilities: ["tools", "agentic"],
             transport: ["stdio", "http"]
         };
     }
