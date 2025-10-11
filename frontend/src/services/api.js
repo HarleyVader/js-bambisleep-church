@@ -3,11 +3,43 @@ import axios from 'axios';
 // Create axios instance with default config
 const api = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL || '',
-    timeout: 10000,
+    timeout: 30000, // Increased to 30 seconds for MCP operations
     headers: {
         'Content-Type': 'application/json',
     },
 });
+
+// Create a separate instance for long-running operations like crawling
+const apiLongRunning = axios.create({
+    baseURL: import.meta.env.VITE_API_BASE_URL || '',
+    timeout: 120000, // 2 minutes for crawling operations
+    headers: {
+        'Content-Type': 'application/json',
+    },
+});
+
+// Add interceptors for long-running API
+apiLongRunning.interceptors.request.use(
+    (config) => {
+        console.log(`Long-running API Request: ${config.method?.toUpperCase()} ${config.url}`);
+        return config;
+    },
+    (error) => {
+        console.error('Long-running API Request Error:', error);
+        return Promise.reject(error);
+    }
+);
+
+apiLongRunning.interceptors.response.use(
+    (response) => {
+        console.log(`Long-running API Response: ${response.status} ${response.config.url}`);
+        return response;
+    },
+    (error) => {
+        console.error('Long-running API Response Error:', error.response?.data || error.message);
+        return Promise.reject(error);
+    }
+);
 
 // Request interceptor
 api.interceptors.request.use(
@@ -64,10 +96,17 @@ export const mcpService = {
         }
     },
 
-    // Call MCP tool via JSON-RPC
+    // Call MCP tool via JSON-RPC with appropriate timeout
     async callTool(toolName, args = {}) {
         try {
-            const response = await api.post('/mcp', {
+            // Use long-running API for crawler and agentic operations
+            const isLongRunning = toolName.startsWith('crawler-') ||
+                toolName.startsWith('agentic-') ||
+                toolName.includes('build');
+
+            const apiInstance = isLongRunning ? apiLongRunning : api;
+
+            const response = await apiInstance.post('/mcp', {
                 jsonrpc: '2.0',
                 id: Date.now(),
                 method: 'tools/call',
@@ -78,11 +117,18 @@ export const mcpService = {
             });
             return response.data;
         } catch (error) {
-            console.warn(`MCP tool call failed for ${toolName}:`, error.message);
+            const errorMessage = error.response?.data?.error?.message || error.message;
+            console.warn(`MCP tool call failed for ${toolName}:`, errorMessage);
+
+            // Return more detailed error information
             return {
                 jsonrpc: '2.0',
                 id: Date.now(),
-                error: { code: -32603, message: `Tool ${toolName} unavailable` }
+                error: {
+                    code: error.response?.status || -32603,
+                    message: `Tool ${toolName}: ${errorMessage}`,
+                    details: error.response?.data
+                }
             };
         }
     },
@@ -199,16 +245,44 @@ export const healthService = {
 
 // Knowledge Base Service - Comprehensive MCP tool integration
 export const knowledgeBaseService = {
+    // Retry mechanism for failed operations
+    async retryOperation(operation, maxRetries = 3, delay = 1000) {
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                const result = await operation();
+                if (result.result || (result.error && result.error.code !== -32603)) {
+                    return result; // Success or non-retryable error
+                }
+
+                if (attempt === maxRetries) {
+                    return result; // Final attempt, return whatever we got
+                }
+
+                console.warn(`Operation failed (attempt ${attempt}/${maxRetries}), retrying in ${delay}ms...`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+                delay *= 2; // Exponential backoff
+            } catch (error) {
+                if (attempt === maxRetries) {
+                    throw error;
+                }
+                console.warn(`Operation failed (attempt ${attempt}/${maxRetries}), retrying in ${delay}ms...`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+                delay *= 2;
+            }
+        }
+    },
     // Crawler operations
     async crawlSingleUrl(url, options = {}) {
-        return await mcpService.callTool('crawler-single-url', {
-            url,
-            storeResults: options.storeResults !== false,
-            collection: options.collection || 'crawl_results',
-            timeout: options.timeout || 15000
-        });
+        return await this.retryOperation(() =>
+            mcpService.callTool('crawler-single-url', {
+                url,
+                storeResults: options.storeResults !== false,
+                collection: options.collection || 'crawl_results',
+                timeout: options.timeout || 60000
+            }), 2 // Only retry twice for crawling
+        );
     },
-    
+
     async crawlMultipleUrls(urls, options = {}) {
         return await mcpService.callTool('crawler-multiple-urls', {
             urls,
@@ -218,7 +292,7 @@ export const knowledgeBaseService = {
             collection: options.collection || 'crawl_results'
         });
     },
-    
+
     async batchCrawl(urls, options = {}) {
         return await mcpService.callTool('crawler-batch-crawl', {
             urls,
@@ -227,16 +301,16 @@ export const knowledgeBaseService = {
             storeResults: options.storeResults !== false
         });
     },
-    
+
     async getCrawlStats() {
         return await mcpService.callTool('crawler-get-stats');
     },
-    
+
     // Agentic system operations
     async initializeAgentic() {
         return await mcpService.callTool('agentic-initialize');
     },
-    
+
     async startAgenticBuilding(options = {}) {
         return await mcpService.callTool('agentic-start-building', {
             sources: options.sources || ['crawl_results'],
@@ -244,15 +318,15 @@ export const knowledgeBaseService = {
             maxItems: options.maxItems || 100
         });
     },
-    
+
     async stopAgenticBuilding() {
         return await mcpService.callTool('agentic-stop-building');
     },
-    
+
     async getAgenticStats() {
         return await mcpService.callTool('agentic-get-stats');
     },
-    
+
     async generateLearningPath(topic, options = {}) {
         return await mcpService.callTool('agentic-get-learning-path', {
             topic,
@@ -260,16 +334,16 @@ export const knowledgeBaseService = {
             difficulty: options.difficulty || 'beginner'
         });
     },
-    
+
     // MongoDB operations
     async listDatabases() {
         return await mcpService.callTool('mongodb-list-databases');
     },
-    
+
     async listCollections(database = 'bambisleep-church') {
         return await mcpService.callTool('mongodb-list-collections', { database });
     },
-    
+
     async findDocuments(collection, query = {}, options = {}) {
         return await mcpService.callTool('mongodb-find-documents', {
             collection,
@@ -278,23 +352,23 @@ export const knowledgeBaseService = {
             sort: options.sort || {}
         });
     },
-    
+
     async getCollectionStats(collection) {
         return await mcpService.callTool('mongodb-collection-stats', { collection });
     },
-    
+
     async aggregateData(collection, pipeline) {
         return await mcpService.callTool('mongodb-aggregate-data', {
             collection,
             pipeline
         });
     },
-    
+
     // LMStudio operations
     async getLMStudioStatus() {
         return await mcpService.callTool('lmstudio-get-status');
     },
-    
+
     async generateText(prompt, options = {}) {
         return await mcpService.callTool('lmstudio-generate-text', {
             prompt,
@@ -302,46 +376,48 @@ export const knowledgeBaseService = {
             temperature: options.temperature || 0.7
         });
     },
-    
+
     async analyzeContent(content, analysisType = 'general') {
         return await mcpService.callTool('lmstudio-analyze-content', {
             content,
             analysisType
         });
     },
-    
+
     async categorizeContent(content) {
         return await mcpService.callTool('lmstudio-categorize-content', {
             content,
             categories: ['official', 'community', 'scripts', 'safety', 'guides', 'resources']
         });
     },
-    
+
     // Bambi-specific knowledge operations
     async searchKnowledge(query, options = {}) {
-        return await mcpService.callTool('search-knowledge', {
-            query,
-            category: options.category,
-            limit: options.limit || 10
-        });
+        return await this.retryOperation(() =>
+            mcpService.callTool('search-knowledge', {
+                query,
+                category: options.category,
+                limit: Math.min(options.limit || 10, 20) // Ensure limit doesn't exceed 20
+            })
+        );
     },
-    
+
     async getSafetyInfo() {
         return await mcpService.callTool('get-safety-info');
     },
-    
+
     async getChurchStatus() {
         return await mcpService.callTool('get-church-status');
     },
-    
+
     async getCommunityGuidelines() {
         return await mcpService.callTool('get-community-guidelines');
     },
-    
+
     async getResourceRecommendations(topic) {
         return await mcpService.callTool('get-resource-recommendations', { topic });
     },
-    
+
     // Comprehensive system operations
     async getSystemOverview() {
         try {
@@ -351,7 +427,7 @@ export const knowledgeBaseService = {
                 this.getAgenticStats(),
                 this.listDatabases()
             ]);
-            
+
             return {
                 mcp: mcpStatus.status === 'fulfilled' ? mcpStatus.value : null,
                 crawler: crawlerStats.status === 'fulfilled' ? crawlerStats.value : null,
@@ -363,9 +439,42 @@ export const knowledgeBaseService = {
             return null;
         }
     },
-    
+
     async getMcpStatus() {
         return await mcpService.getStatus();
+    },
+
+    // Test connection to all services
+    async testConnections() {
+        const tests = {
+            mcp: null,
+            mongodb: null,
+            lmstudio: null,
+            crawler: null,
+            agentic: null
+        };
+
+        try {
+            // Test MCP connection
+            tests.mcp = await mcpService.getStatus();
+
+            // Test MongoDB
+            tests.mongodb = await mcpService.callTool('mongodb-list-databases');
+
+            // Test LMStudio
+            tests.lmstudio = await mcpService.callTool('lmstudio-get-status');
+
+            // Test Crawler
+            tests.crawler = await mcpService.callTool('crawler-get-stats');
+
+            // Test Agentic
+            tests.agentic = await mcpService.callTool('agentic-get-stats');
+
+        } catch (error) {
+            console.error('Connection test failed:', error);
+        }
+
+        return tests;
     }
 };
 

@@ -73,7 +73,7 @@ const AgentKnowledgeBase = () => {
 
     // Categories for knowledge organization
     const categories = [
-        'all', 'official', 'community', 'scripts', 'safety', 
+        'all', 'official', 'community', 'scripts', 'safety',
         'guides', 'resources', 'research', 'discussions'
     ];
 
@@ -94,25 +94,25 @@ const AgentKnowledgeBase = () => {
 
     const initializeSystem = async () => {
         addLog('🚀 Initializing Agent Knowledge Base System...', 'info');
-        
+
         try {
             // Initialize all systems
             const mcpStatus = await mcpService.getStatus();
-            
+
             if (mcpStatus.status === 'operational') {
                 addLog('✅ MCP Server connected', 'success');
-                
-            // Initialize agentic system
-            const agenticInit = await knowledgeBaseService.initializeAgentic();
-            if (agenticInit.result) {
-                addLog('✅ Agentic Knowledge Builder initialized', 'success');
-                setAgenticStatus('ready');
-            }                // Load existing knowledge base
+
+                // Initialize agentic system
+                const agenticInit = await knowledgeBaseService.initializeAgentic();
+                if (agenticInit.result) {
+                    addLog('✅ Agentic Knowledge Builder initialized', 'success');
+                    setAgenticStatus('ready');
+                }                // Load existing knowledge base
                 await loadKnowledgeBase();
-                
+
                 // Update system status
                 await updateSystemStatus();
-                
+
             } else {
                 addLog('❌ MCP Server unavailable', 'error');
             }
@@ -149,12 +149,12 @@ const AgentKnowledgeBase = () => {
     const loadKnowledgeBase = async () => {
         try {
             addLog('📚 Loading knowledge base...', 'info');
-            
+
             // Get MongoDB collections for knowledge data
             const collections = await mcpService.callTool('mongodb-list-collections', {
                 database: 'bambisleep-church'
             });
-            
+
             if (collections.result) {
                 const data = JSON.parse(collections.result.content[0].text);
                 if (data.success) {
@@ -165,13 +165,15 @@ const AgentKnowledgeBase = () => {
             // Load existing knowledge entries
             const knowledge = await mcpService.callTool('search-knowledge', {
                 query: '',
-                limit: 100
+                limit: 20 // Fixed: was 100, max allowed is 20
             });
 
             if (knowledge.result) {
                 // Parse knowledge data if available
                 setKnowledgeBase([]);
                 addLog('📚 Knowledge base loaded', 'success');
+            } else if (knowledge.error) {
+                addLog(`⚠️ Knowledge search failed: ${knowledge.error.message}`, 'warning');
             }
 
         } catch (error) {
@@ -197,11 +199,14 @@ const AgentKnowledgeBase = () => {
             }
 
             const result = await mcpService.callTool('search-knowledge', searchParams);
-            
+
             if (result.result) {
                 const content = result.result.content[0].text;
                 setSearchResults([{ content, timestamp: new Date() }]);
                 addLog(`✅ Search completed: found results`, 'success');
+            } else if (result.error) {
+                addLog(`❌ Search failed: ${result.error.message}`, 'error');
+                setSearchResults([]);
             }
         } catch (error) {
             addLog(`❌ Search failed: ${error.message}`, 'error');
@@ -217,7 +222,7 @@ const AgentKnowledgeBase = () => {
         setCrawlerStatus('running');
         setCrawlerProgress(0);
         setCrawlerResults([]);
-        
+
         const validUrls = crawlerUrls.filter(url => url.trim());
         addLog(`🕷️ Starting crawl of ${validUrls.length} URLs...`, 'info');
 
@@ -229,7 +234,7 @@ const AgentKnowledgeBase = () => {
                 const result = await mcpService.callTool('crawler-single-url', {
                     url,
                     storeResults: config.storeResults,
-                    timeout: 15000,
+                    timeout: 60000, // Increased to 60 seconds
                     collection: 'crawl_results'
                 });
 
@@ -237,6 +242,9 @@ const AgentKnowledgeBase = () => {
                     const crawlData = JSON.parse(result.result.content[0].text);
                     setCrawlerResults(prev => [...prev, crawlData]);
                     addLog(`✅ Crawled: ${url}`, 'success');
+                } else if (result.error) {
+                    const errorMsg = result.error.message || 'Unknown error';
+                    addLog(`❌ Failed to crawl ${url}: ${errorMsg}`, 'error');
                 } else {
                     addLog(`❌ Failed to crawl: ${url}`, 'error');
                 }
@@ -245,7 +253,7 @@ const AgentKnowledgeBase = () => {
             }
 
             addLog('🎉 Crawling completed!', 'success');
-            
+
             // Auto-analyze if enabled
             if (config.autoAnalyze) {
                 await startAgenticAnalysis();
@@ -274,10 +282,13 @@ const AgentKnowledgeBase = () => {
                 const data = JSON.parse(buildResult.result.content[0].text);
                 if (data.success) {
                     addLog('✅ Agentic analysis started', 'success');
-                    
+
                     // Monitor progress
                     monitorAgenticProgress();
                 }
+            } else if (buildResult.error) {
+                addLog(`❌ Agentic analysis failed: ${buildResult.error.message}`, 'error');
+                setAgenticStatus('error');
             }
         } catch (error) {
             addLog(`❌ Agentic analysis failed: ${error.message}`, 'error');
@@ -293,7 +304,7 @@ const AgentKnowledgeBase = () => {
                     const data = JSON.parse(stats.result.content[0].text);
                     if (data.success) {
                         setAgenticStats(data.stats);
-                        
+
                         if (data.stats.status === 'completed') {
                             setAgenticStatus('completed');
                             addLog('🎉 Agentic analysis completed!', 'success');
@@ -302,7 +313,7 @@ const AgentKnowledgeBase = () => {
                         }
                     }
                 }
-                
+
                 // Continue monitoring if still running
                 if (agenticStatus === 'analyzing') {
                     setTimeout(checkProgress, 5000);
@@ -318,7 +329,7 @@ const AgentKnowledgeBase = () => {
     const generateLearningPath = async (topic) => {
         try {
             addLog(`🎓 Generating learning path for: ${topic}`, 'info');
-            
+
             const result = await mcpService.callTool('agentic-get-learning-path', {
                 topic,
                 maxItems: 10
@@ -378,7 +389,7 @@ const AgentKnowledgeBase = () => {
                         <div className={styles.statLabel}>Knowledge Items</div>
                     </div>
                 </div>
-                
+
                 <div className={styles.statCard}>
                     <div className={styles.statIcon}>
                         <Activity />
@@ -388,7 +399,7 @@ const AgentKnowledgeBase = () => {
                         <div className={styles.statLabel}>Processed Items</div>
                     </div>
                 </div>
-                
+
                 <div className={styles.statCard}>
                     <div className={styles.statIcon}>
                         <Globe />
@@ -398,7 +409,7 @@ const AgentKnowledgeBase = () => {
                         <div className={styles.statLabel}>Crawled Pages</div>
                     </div>
                 </div>
-                
+
                 <div className={styles.statCard}>
                     <div className={styles.statIcon}>
                         <Brain />
@@ -452,8 +463,8 @@ const AgentKnowledgeBase = () => {
                             </option>
                         ))}
                     </select>
-                    <button 
-                        type="submit" 
+                    <button
+                        type="submit"
                         disabled={isSearching}
                         className={styles.searchButton}
                     >
@@ -476,7 +487,7 @@ const AgentKnowledgeBase = () => {
         <div className={styles.crawlerSection}>
             <div className={styles.crawlerControls}>
                 <h3>Web Crawler</h3>
-                
+
                 <div className={styles.urlInputs}>
                     {crawlerUrls.map((url, index) => (
                         <div key={index} className={styles.urlInputGroup}>
@@ -523,8 +534,8 @@ const AgentKnowledgeBase = () => {
 
                 {crawlerStatus === 'running' && (
                     <div className={styles.progressBar}>
-                        <div 
-                            className={styles.progress} 
+                        <div
+                            className={styles.progress}
                             style={{ width: `${crawlerProgress}%` }}
                         />
                     </div>
@@ -552,7 +563,7 @@ const AgentKnowledgeBase = () => {
         <div className={styles.agenticSection}>
             <div className={styles.agenticControls}>
                 <h3>Agentic Knowledge Builder</h3>
-                
+
                 <div className={styles.agenticStatus}>
                     <span className={styles.statusIcon} style={{ color: getStatusColor(agenticStatus) }}>
                         {getStatusIcon(agenticStatus)}
@@ -597,7 +608,7 @@ const AgentKnowledgeBase = () => {
                             </>
                         )}
                     </button>
-                    
+
                     <button
                         onClick={() => generateLearningPath('BambiSleep Basics')}
                         className={styles.generatePathButton}
@@ -629,7 +640,7 @@ const AgentKnowledgeBase = () => {
         <div className={styles.logsSection}>
             <div className={styles.logsHeader}>
                 <h3>System Logs</h3>
-                <button 
+                <button
                     onClick={() => setSystemLogs([])}
                     className={styles.clearLogsButton}
                 >

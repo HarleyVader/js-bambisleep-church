@@ -23,7 +23,6 @@ const App = () => {
                                 <Route path="/" element={<Home />} />
                                 <Route path="/knowledge" element={<KnowledgeBase />} />
                                 <Route path="/agents" element={<AgentKnowledgeBase />} />
-                                <Route path="/agent-kb" element={<AgentKnowledgeBase />} />
                                 <Route path="/mission" element={<Mission />} />
                                 <Route path="/roadmap" element={<Roadmap />} />
                             </Routes>
