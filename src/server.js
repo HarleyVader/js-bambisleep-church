@@ -66,32 +66,10 @@ app.use((req, res, next) => {
     next();
 });
 
-// Load knowledge data
-let knowledgeData = [];
-let originalKnowledgeData = {};
-try {
-    originalKnowledgeData = JSON.parse(fs.readFileSync(config.paths.knowledge, 'utf-8'));
+// MongoDB-based knowledge system - no static files needed
+import { mongoService } from './services/MongoDBService.js';
 
-    // Convert knowledge data to array format for services
-    if (Array.isArray(originalKnowledgeData)) {
-        knowledgeData = originalKnowledgeData;
-    } else if (originalKnowledgeData && originalKnowledgeData.categories) {
-        // Convert object structure to array
-        Object.keys(originalKnowledgeData.categories).forEach(categoryKey => {
-            const categoryData = originalKnowledgeData.categories[categoryKey];
-            if (categoryData.entries && Array.isArray(categoryData.entries)) {
-                categoryData.entries.forEach(entry => {
-                    knowledgeData.push({
-                        ...entry,
-                        category: categoryKey
-                    });
-                });
-            }
-        });
-    }
-} catch (error) {
-    log.error(`Knowledge loading failed: ${error.message}`);
-}
+log.info('📚 Using MongoDB-based knowledge system');
 
 // Serve React app for all frontend routes
 const serveReactApp = (req, res) => {
@@ -123,29 +101,75 @@ app.get('/mcp-tools', serveReactApp);
 
 
 
-// API endpoint for knowledge
-app.get('/api/knowledge', (req, res) => {
-    res.json(originalKnowledgeData);
+// API endpoint for knowledge (MongoDB-based)
+app.get('/api/knowledge', async (req, res) => {
+    try {
+        const knowledge = await mongoService.findMany('bambisleep_knowledge', {}, { limit: 100 });
+        // Convert to frontend format
+        const formatted = {};
+        knowledge.forEach((item, index) => {
+            formatted[`item_${index}`] = {
+                title: item.analysis?.title || 'Unknown',
+                description: item.analysis?.summary || 'No description',
+                url: item.url,
+                category: item.category?.main || 'unknown',
+                platform: 'wiki',
+                relevance: item.originalPriority || 5
+            };
+        });
+        res.json(formatted);
+    } catch (error) {
+        log.error(`❌ Knowledge API error: ${error.message}`);
+        res.status(500).json({ error: 'Failed to fetch knowledge base' });
+    }
 });
 
-// API endpoint for knowledge search
-app.get('/api/knowledge/search', (req, res) => {
-    const query = req.query.q?.toLowerCase() || '';
-    const filtered = knowledgeData.filter(item =>
-        item.title?.toLowerCase().includes(query) ||
-        item.description?.toLowerCase().includes(query) ||
-        item.category?.toLowerCase().includes(query)
-    );
-    res.json(filtered);
+// API endpoint for knowledge search (MongoDB-based)
+app.get('/api/knowledge/search', async (req, res) => {
+    try {
+        const query = req.query.q?.toLowerCase() || '';
+        if (!query) return res.json([]);
+
+        const results = await mongoService.findMany('bambisleep_knowledge', {
+            $or: [
+                { 'analysis.title': { $regex: query, $options: 'i' } },
+                { 'analysis.summary': { $regex: query, $options: 'i' } },
+                { 'category.main': { $regex: query, $options: 'i' } }
+            ]
+        }, { limit: 20 });
+
+        // Convert to expected format
+        const formatted = results.map(item => ({
+            title: item.analysis?.title || 'Unknown',
+            description: item.analysis?.summary || 'No description',
+            url: item.url,
+            category: item.category?.main || 'unknown'
+        }));
+
+        res.json(formatted);
+    } catch (error) {
+        log.error(`❌ Knowledge search error: ${error.message}`);
+        res.json([]);
+    }
 });
 
-// Health check
-app.get('/api/health', (req, res) => {
-    res.json({
-        status: 'ok',
-        timestamp: new Date().toISOString(),
-        knowledgeCount: knowledgeData.length
-    });
+// Health check (MongoDB-based)
+app.get('/api/health', async (req, res) => {
+    try {
+        const knowledgeCount = await mongoService.countDocuments('bambisleep_knowledge');
+        res.json({
+            status: 'ok',
+            timestamp: new Date().toISOString(),
+            knowledgeCount: knowledgeCount
+        });
+    } catch (error) {
+        res.json({
+            status: 'ok',
+            timestamp: new Date().toISOString(),
+            knowledgeCount: 0,
+            note: 'MongoDB connection not available'
+        });
+    }
 });
 
 // Geolocation API endpoint
@@ -157,32 +181,46 @@ app.get('/api/location', (req, res) => {
     });
 });
 
-// Visitor stats endpoint
-app.get('/api/stats', (req, res) => {
-    res.json({
-        visitors: {
-            current: {
-                ip: req.location.ip,
-                country: req.location.country,
-                city: req.location.city,
-                timezone: req.location.timezone
+// Visitor stats endpoint (MongoDB-based)
+app.get('/api/stats', async (req, res) => {
+    try {
+        const totalEntries = await mongoService.countDocuments('bambisleep_knowledge');
+        const stats = await mongoService.aggregate('bambisleep_knowledge', [
+            { $group: { _id: '$category.main', count: { $sum: 1 } } }
+        ]);
+
+        const categoryStats = {};
+        stats.forEach(stat => {
+            categoryStats[stat._id || 'unknown'] = stat.count;
+        });
+
+        res.json({
+            visitors: {
+                current: {
+                    ip: req.location.ip,
+                    country: req.location.country,
+                    city: req.location.city,
+                    timezone: req.location.timezone
+                }
+            },
+            knowledge: {
+                totalEntries: totalEntries,
+                categories: categoryStats
+            },
+            church: {
+                status: 'In Development',
+                phase: 'Foundation',
+                targetMembers: 300,
+                timeline: '2-3 years'
             }
-        },
-        knowledge: {
-            totalEntries: knowledgeData.length,
-            categories: {
-                official: knowledgeData.filter(k => k.category === 'official').length,
-                community: knowledgeData.filter(k => k.category === 'community').length,
-                scripts: knowledgeData.filter(k => k.category === 'scripts').length
-            }
-        },
-        church: {
-            status: 'In Development',
-            phase: 'Foundation',
-            targetMembers: 300,
-            timeline: '2-3 years'
-        }
-    });
+        });
+    } catch (error) {
+        res.json({
+            visitors: { current: req.location },
+            knowledge: { totalEntries: 0, categories: {} },
+            church: { status: 'In Development', phase: 'Foundation' }
+        });
+    }
 });
 
 // Audio playback endpoint - client-side HTML audio
@@ -304,7 +342,7 @@ async function initializeAgent() {
     // Initialize MCP server first if enabled
     if (config.mcp.enabled && mcpServer) {
         try {
-            const mcpSuccess = await mcpServer.initialize(knowledgeData);
+            const mcpSuccess = await mcpServer.initialize([]);
             if (mcpSuccess) {
                 log.success('✅ MCP Server initialized successfully');
                 log.info(`MCP endpoint available at http://${HOST}:${PORT}/mcp`);
@@ -316,8 +354,8 @@ async function initializeAgent() {
         }
     }
 
-    // Initialize web agent with knowledge and MCP server
-    const success = await webAgent.initialize(knowledgeData, mcpServer);
+    // Initialize web agent (no longer needs static knowledge data)
+    const success = await webAgent.initialize();
     if (success) {
         log.success('✅ SimpleWebAgent ready for web chat');
     } else {

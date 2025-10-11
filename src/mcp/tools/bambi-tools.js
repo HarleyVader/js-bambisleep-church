@@ -1,75 +1,64 @@
-// BambiSleep Church MCP Tools
-// Custom tools for the BambiSleep community with safety focus
-
+// BambiSleep Church MCP Tools - MongoDB-based
 import { z } from 'zod';
+import { mongoService } from '../../services/MongoDBService.js';
 
 /**
- * Search the BambiSleep knowledge base
+ * Search the BambiSleep knowledge base (MongoDB)
  */
 const searchKnowledge = {
     name: "search-knowledge",
     description: "Search the BambiSleep knowledge base for resources, guides, and information",
     inputSchema: z.object({
         query: z.string().describe("Search query"),
-        category: z.enum(["official", "community", "scripts", "safety"]).optional().describe("Filter by category"),
+        category: z.enum(["safety", "beginners", "sessions", "triggers", "community", "technical"]).optional().describe("Filter by category"),
         limit: z.number().min(1).max(20).default(10).describe("Maximum number of results")
     }),
     handler: async (args, context) => {
         const { query, category, limit } = args;
-        const { knowledgeData } = context;
 
-        // Handle both array format (legacy) and object format (new structure)
-        let searchArray = [];
-        if (Array.isArray(knowledgeData)) {
-            searchArray = knowledgeData;
-        } else if (knowledgeData && knowledgeData.categories) {
-            // Convert categories object to flat array
-            Object.keys(knowledgeData.categories).forEach(categoryKey => {
-                const categoryData = knowledgeData.categories[categoryKey];
-                if (categoryData.entries && Array.isArray(categoryData.entries)) {
-                    categoryData.entries.forEach(entry => {
-                        searchArray.push({
-                            ...entry,
-                            category: categoryKey
-                        });
-                    });
-                }
+        try {
+            // Build MongoDB query
+            let mongoQuery = {};
+
+            if (query) {
+                mongoQuery.$or = [
+                    { 'analysis.title': { $regex: query, $options: 'i' } },
+                    { 'analysis.summary': { $regex: query, $options: 'i' } },
+                    { 'analysis.tags': { $in: [new RegExp(query, 'i')] } }
+                ];
+            }
+
+            if (category) {
+                mongoQuery['category.main'] = category;
+            }
+
+            // Search MongoDB
+            const results = await mongoService.findMany('bambisleep_knowledge', mongoQuery, {
+                limit: limit,
+                sort: { originalPriority: -1 }
             });
+
+            if (!results || results.length === 0) {
+                return `No knowledge found${query ? ` for "${query}"` : ''}${category ? ` in category "${category}"` : ''}.`;
+            }
+
+            // Format results
+            let response = `Found ${results.length} result(s)${query ? ` for "${query}"` : ''}:\n\n`;
+            results.forEach((item, index) => {
+                response += `${index + 1}. **${item.analysis?.title || 'Unknown Title'}**\n`;
+                response += `   Category: ${item.category?.main || 'unknown'}\n`;
+                response += `   Description: ${item.analysis?.summary || 'No description'}\n`;
+                response += `   Safety Level: ${item.analysis?.safetyLevel || 'intermediate'}\n`;
+                response += `   Quality Score: ${item.analysis?.qualityScore || 'N/A'}/10\n`;
+                if (item.url) response += `   URL: ${item.url}\n`;
+                response += '\n';
+            });
+
+            return response;
+
+        } catch (error) {
+            return `Search failed: ${error.message}. The knowledge base may not be available.`;
         }
-
-        if (!searchArray || searchArray.length === 0) {
-            return "No knowledge base available. Please ensure the knowledge data is loaded.";
-        }
-
-        // Filter by category if specified
-        let searchData = searchArray;
-        if (category) {
-            searchData = searchArray.filter(item => item.category === category);
-        }
-
-        // Search by query
-        const results = searchData.filter(item =>
-            item.title?.toLowerCase().includes(query.toLowerCase()) ||
-            item.description?.toLowerCase().includes(query.toLowerCase()) ||
-            item.category?.toLowerCase().includes(query.toLowerCase())
-        ).slice(0, limit);
-
-        if (results.length === 0) {
-            return `No results found for "${query}"${category ? ` in category "${category}"` : ''}. Try different search terms or browse available categories: official, community, scripts, safety.`;
-        }
-
-        let response = `Found ${results.length} result(s) for "${query}":\n\n`;
-        results.forEach((item, index) => {
-            response += `${index + 1}. **${item.title}**\n`;
-            response += `   Category: ${item.category}\n`;
-            response += `   Description: ${item.description}\n`;
-            response += `   Platform: ${item.platform || 'Unknown'}\n`;
-            response += `   Relevance: ${item.relevance || 'N/A'}/10\n`;
-            if (item.url) response += `   URL: ${item.url}\n`;
-            response += '\n';
-        });
-
-        return response;
     }
 };
 
