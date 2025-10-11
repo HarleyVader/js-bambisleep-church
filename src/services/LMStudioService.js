@@ -335,6 +335,37 @@ class LMStudioService {
             }
         });
     }
+
+    // Find working URL by testing connection
+    async findWorkingUrl() {
+        try {
+            log.info(`🔍 Testing LMStudio connection: ${this.baseUrl}`);
+            const healthy = await this.isHealthy();
+            if (healthy) {
+                log.success(`✅ LMStudio connection successful: ${this.baseUrl}`);
+                return true;
+            } else {
+                log.warn(`⚠️ LMStudio connection failed: ${this.baseUrl}`);
+                return false;
+            }
+        } catch (error) {
+            log.error(`❌ LMStudio connection error: ${error.message}`);
+            return false;
+        }
+    }
+
+    // Get connection information
+    getConnectionInfo() {
+        return {
+            currentUrl: this.baseUrl,
+            primaryUrl: this.baseUrl,
+            secondaryUrl: null, // Single URL configuration
+            urlType: this.baseUrl.includes('localhost') ? 'local' : 'remote',
+            isConnected: true, // Assume connected if initialized
+            model: this.model,
+            timeout: this.timeout
+        };
+    }
 }
 
 // Export singleton instance
