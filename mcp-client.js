@@ -6,8 +6,9 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+import { config } from './src/utils/config.js';
 
-const MCP_SERVER_URL = 'http://localhost:7070/mcp';
+const MCP_SERVER_URL = config.getMcpUrl();
 
 class BambiMcpClient {
     constructor() {

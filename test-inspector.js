@@ -7,6 +7,7 @@
 
 import { spawn } from 'child_process';
 import fetch from 'node-fetch';
+import { config } from './src/utils/config.js';
 
 const COLORS = {
     reset: '\x1b[0m',
@@ -23,7 +24,7 @@ function log(message, color = 'reset') {
 
 async function checkServer() {
     try {
-        const response = await fetch('http://localhost:7070/health');
+        const response = await fetch(`${config.getBaseUrl()}/health`);
         const data = await response.json();
         log('✅ Server is running', 'green');
         log(`   Status: ${data.status}`, 'cyan');
@@ -39,7 +40,7 @@ async function checkServer() {
 
 async function testMcpEndpoint() {
     try {
-        const response = await fetch('http://localhost:7070/mcp', {
+        const response = await fetch(config.getMcpUrl(), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -77,7 +78,7 @@ async function runInspectorTest() {
         const inspector = spawn('npx', [
             '@modelcontextprotocol/inspector',
             '--cli',
-            'http://localhost:7070/mcp',
+            config.getMcpUrl(),
             '--method', 'tools/list'
         ], {
             stdio: 'pipe',
@@ -126,7 +127,7 @@ async function testSpecificTool() {
     log('\n🧪 Testing specific MCP tool...', 'bright');
 
     try {
-        const response = await fetch('http://localhost:7070/mcp', {
+        const response = await fetch(config.getMcpUrl(), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -198,7 +199,7 @@ async function main() {
     if (serverOk && mcpOk && toolOk) {
         log('\n🎉 All core MCP functionality is working!', 'green');
         log('\nNext steps:', 'bright');
-        log('• Visit http://localhost:7070/inspector for the web interface', 'cyan');
+        log(`• Visit ${config.getUrl('/inspector')} for the web interface`, 'cyan');
         log('• Run "npm run inspector" to launch MCP Inspector UI', 'cyan');
         log('• Use "npm run inspector:cli" for command-line testing', 'cyan');
         process.exit(0);

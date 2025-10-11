@@ -12,6 +12,7 @@ import { promisify } from 'util';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import os from 'os';
+import { config } from '../src/utils/config.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const execAsync = promisify(exec);
@@ -46,8 +47,8 @@ function showHelp() {
     log('  • Direct testing and validation', 'yellow');
     log('  • Authentication and security features', 'yellow');
     log('\nServer endpoints:', 'bright');
-    log('  • BambiSleep Church Server: http://localhost:7070', 'magenta');
-    log('  • MCP Endpoint: http://localhost:7070/mcp', 'magenta');
+    log(`  • BambiSleep Church Server: ${config.getBaseUrl()}`, 'magenta');
+    log(`  • MCP Endpoint: ${config.getMcpUrl()}`, 'magenta');
     log('  • Inspector UI: http://localhost:6274', 'magenta');
     log('  • Inspector Proxy: http://localhost:6277', 'magenta');
     log('\n💡 For testing and development:', 'yellow');
@@ -58,7 +59,7 @@ function showHelp() {
 
 async function checkServerRunning() {
     try {
-        const response = await fetch('http://localhost:7070/health');
+        const response = await fetch(`${config.getBaseUrl()}/health`);
         return response.ok;
     } catch (error) {
         return false;
@@ -155,7 +156,7 @@ async function runInspector(mode = 'http', options = {}) {
     if (!npxAvailable) {
         log('❌ npx not found in PATH', 'red');
         log('💡 Try these alternatives:', 'yellow');
-        log('  1. Use web interface: http://localhost:7070/inspector', 'cyan');
+        log(`  1. Use web interface: ${config.getUrl('/inspector')}`, 'cyan');
         log('  2. Test directly: node test-inspector.js', 'cyan');
         log('  3. Export config for VS Code or Claude Desktop', 'cyan');
 
@@ -206,7 +207,7 @@ async function runInspector(mode = 'http', options = {}) {
 
             if (isWindows) {
                 log('\n💡 Alternative solutions:', 'yellow');
-                log('  1. Use web interface: http://localhost:7070/inspector', 'cyan');
+                log(`  1. Use web interface: ${config.getUrl('/inspector')}`, 'cyan');
                 log('  2. Test directly: node test-inspector.js', 'cyan');
                 log('  3. Export config for MCP clients', 'cyan');
             }
@@ -226,7 +227,7 @@ async function runInspector(mode = 'http', options = {}) {
 
         if (isWindows && err.code === 'ENOENT') {
             log('\n💡 Alternative solutions:', 'yellow');
-            log('  1. Use web interface: http://localhost:7070/inspector', 'cyan');
+            log(`  1. Use web interface: ${config.getUrl('/inspector')}`, 'cyan');
             log('  2. Test directly: node test-inspector.js', 'cyan');
             log('  3. Export config for MCP clients', 'cyan');
         }

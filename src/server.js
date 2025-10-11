@@ -122,7 +122,8 @@ app.get('/agents', (req, res) => {
         title: 'Chat Agent',
         description: 'Chat with our simple web agent about BambiSleep Church',
         location: req.location,
-        knowledgeCount: knowledgeData.length
+        knowledgeCount: knowledgeData.length,
+        config: config
     });
 });
 
@@ -131,7 +132,8 @@ app.get('/mcp-tools', (req, res) => {
         title: 'MCP Tools',
         description: 'Model Context Protocol tool integration for BambiSleep Church',
         location: req.location,
-        mcpEnabled: config.mcp.enabled
+        mcpEnabled: config.mcp.enabled,
+        config: config
     });
 });
 
@@ -141,7 +143,8 @@ app.get('/inspector', (req, res) => {
         description: 'Development and testing tool for BambiSleep Church MCP server',
         location: req.location,
         mcpEnabled: config.mcp.enabled,
-        serverStatus: mcpServer ? mcpServer.getInfo() : null
+        serverStatus: mcpServer ? mcpServer.getInfo() : null,
+        config: config
     });
 });
 
@@ -232,7 +235,7 @@ app.post('/api/inspector/launch', (req, res) => {
         config: {
             http: 'http://localhost:6274',
             proxy: 'http://localhost:6277',
-            mcp: 'http://localhost:7070/mcp'
+            mcp: config.getMcpUrl()
         },
         timestamp: new Date().toISOString()
     });
@@ -245,7 +248,7 @@ app.post('/api/inspector/test', (req, res) => {
         message: 'Use: node test-inspector.js',
         testingMethods: [
             'Direct test script: node test-inspector.js',
-            'Web interface: http://localhost:7070/inspector',
+            `Web interface: ${config.getUrl('/inspector')}`,
             'HTTP Inspector: npm run inspector',
             'Test suite: npm run inspector:test'
         ],

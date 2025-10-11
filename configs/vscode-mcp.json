@@ -1,0 +1,5 @@
+{
+  "name": "bambisleep-church",
+  "type": "http",
+  "url": "http://localhost:8080/mcp"
+}

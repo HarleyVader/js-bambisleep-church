@@ -246,12 +246,12 @@ npm run inspector:dev       # Development with auto-restart</pre>
       <ul class="endpoints-list">
         <li>
           <strong>BambiSleep Church Server:</strong>
-          <code>http://localhost:7070</code>
+          <code><%= config ? config.getBaseUrl() : 'http://localhost:7070' %></code>
           <span id="main-server-status">⏳</span>
         </li>
         <li>
           <strong>MCP Endpoint:</strong>
-          <code>http://localhost:7070/mcp</code>
+          <code><%= config ? config.getMcpUrl() : 'http://localhost:7070/mcp' %></code>
           <span id="mcp-server-status">⏳</span>
         </li>
         <li>

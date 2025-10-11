@@ -277,14 +277,14 @@
 
       <div class="connection-info">
         <strong>HTTP Endpoint:</strong><br>
-        POST http://localhost:<%= typeof PORT !== 'undefined' ? PORT : '7070' %>/mcp<br><br>
+        POST <%= config ? config.getMcpUrl() : `http://localhost:${process.env.PORT || 7070}/mcp` %><br><br>
 
         <strong>VS Code Integration:</strong><br>
-        <code>code --add-mcp "{\"name\":\"bambisleep-church\",\"type\":\"http\",\"url\":\"http://localhost:<%= typeof PORT !== 'undefined' ? PORT : '7070' %>/mcp\"}"</code><br><br>
+        <code>code --add-mcp "{\"name\":\"bambisleep-church\",\"type\":\"http\",\"url\":\"<%= config ? config.getMcpUrl() : `http://localhost:${process.env.PORT || 7070}/mcp` %>\"}"</code><br><br>
 
         <strong>MCP Inspector:</strong><br>
         <code>npx @modelcontextprotocol/inspector</code><br>
-        Then connect to: http://localhost:<%= typeof PORT !== 'undefined' ? PORT : '7070' %>/mcp<br><br>
+        Then connect to: <%= config ? config.getMcpUrl() : `http://localhost:${process.env.PORT || 7070}/mcp` %><br><br>
 
         <strong>GitHub Repository:</strong><br>
         <a href="https://github.com/HarleyVader/js-bambisleep-church" target="_blank" style="color: var(--primary);">
@@ -417,7 +417,7 @@
                     <code style="background: rgba(0,0,0,0.3); padding: 0.3rem; border-radius: 3px;">npm start</code>
                 </li>
                 <li><strong>Access MCP tools at:</strong><br>
-                    <code style="background: rgba(0,0,0,0.3); padding: 0.3rem; border-radius: 3px;">http://localhost:7070/mcp-tools</code>
+                    <code style="background: rgba(0,0,0,0.3); padding: 0.3rem; border-radius: 3px;"><%= config ? config.getUrl('/mcp-tools') : `http://localhost:${process.env.PORT || 7070}/mcp-tools` %></code>
                 </li>
               </ol>
             </div>

@@ -39,6 +39,15 @@ node test-inspector.js
 
 ### 3. Access Web Interface
 
+URLs are configured via environment variables (see `.env` file):
+
+```bash
+# Generate current configuration URLs
+npm run config
+```
+
+Default URLs (when PORT=7070):
+
 - **Main App**: <http://localhost:7070>
 - **Inspector**: <http://localhost:7070/inspector>
 - **MCP Status**: <http://localhost:7070/api/mcp/status>
@@ -163,8 +172,8 @@ npm run inspector:stdio     # STDIO transport for advanced use
 ### Debug Commands
 
 ```bash
-# Check server status
-curl http://localhost:7070/api/mcp/status
+# Check server status (adjust port based on your .env config)
+curl http://localhost:${PORT}/api/mcp/status
 
 # Test specific tool
 node -e "
@@ -178,7 +187,7 @@ node test-inspector.js
 
 ## 📚 File Structure
 
-```
+```text
 src/mcp/
 ├── server.js              # Main MCP server
 ├── tools/

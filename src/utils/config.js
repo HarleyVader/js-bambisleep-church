@@ -12,7 +12,9 @@ dotenv.config();
 export const config = {
     server: {
         port: process.env.PORT || 7070,
-        host: process.env.SERVER || '0.0.0.0'
+        host: process.env.SERVER || '0.0.0.0',
+        baseUrl: process.env.BASE_URL || `http://localhost:${process.env.PORT || 7070}`,
+        mcpEndpoint: process.env.MCP_ENDPOINT || '/mcp'
     },
 
     lmstudio: {
@@ -70,5 +72,18 @@ export const config = {
         views: path.join(__dirname, '../../views'),
         public: path.join(__dirname, '../../public'),
         knowledge: path.join(__dirname, '../knowledge/knowledge.json')
+    },
+
+    // Helper functions to generate URLs
+    getBaseUrl() {
+        return this.server.baseUrl;
+    },
+
+    getMcpUrl() {
+        return `${this.server.baseUrl}${this.server.mcpEndpoint}`;
+    },
+
+    getUrl(path = '') {
+        return `${this.server.baseUrl}${path}`;
     }
 };
