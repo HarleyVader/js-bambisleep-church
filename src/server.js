@@ -135,6 +135,16 @@ app.get('/mcp-tools', (req, res) => {
     });
 });
 
+app.get('/inspector', (req, res) => {
+    res.render('pages/inspector', {
+        title: 'MCP Inspector',
+        description: 'Development and testing tool for BambiSleep Church MCP server',
+        location: req.location,
+        mcpEnabled: config.mcp.enabled,
+        serverStatus: mcpServer ? mcpServer.getInfo() : null
+    });
+});
+
 
 
 // API endpoint for knowledge
@@ -159,6 +169,16 @@ app.get('/api/health', (req, res) => {
         status: 'ok',
         timestamp: new Date().toISOString(),
         knowledgeCount: knowledgeData.length
+    });
+});
+
+app.get('/health', (req, res) => {
+    res.json({
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        knowledgeCount: knowledgeData.length,
+        mcpEnabled: config.mcp.enabled,
+        mcpStatus: mcpServer ? mcpServer.getInfo() : null
     });
 });
 
@@ -196,6 +216,40 @@ app.get('/api/stats', (req, res) => {
             targetMembers: 300,
             timeline: '2-3 years'
         }
+    });
+});
+
+// MCP Inspector API endpoints
+app.post('/api/inspector/launch', (req, res) => {
+    const { mode = 'http' } = req.body;
+
+    // In a real implementation, you might spawn the inspector process
+    // For now, we'll return configuration information
+    res.json({
+        success: true,
+        mode: mode,
+        message: `Use: npm run inspector:${mode === 'http' ? '' : mode}`,
+        config: {
+            http: 'http://localhost:6274',
+            proxy: 'http://localhost:6277',
+            mcp: 'http://localhost:7070/mcp'
+        },
+        timestamp: new Date().toISOString()
+    });
+});
+
+app.post('/api/inspector/test', (req, res) => {
+    // Return test information
+    res.json({
+        success: true,
+        message: 'Use: node test-inspector.js',
+        testingMethods: [
+            'Direct test script: node test-inspector.js',
+            'Web interface: http://localhost:7070/inspector',
+            'HTTP Inspector: npm run inspector',
+            'Test suite: npm run inspector:test'
+        ],
+        timestamp: new Date().toISOString()
     });
 });
 

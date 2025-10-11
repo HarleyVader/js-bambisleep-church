@@ -1,54 +1,101 @@
-// MCP Server for BambiSleep Church
-// Implements Model Context Protocol with automatic tool discovery
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+// BambiSleep Church MCP Server
+// Model Context Protocol server implementation with BambiSleep-specific tools
+
+import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
 import { log } from '../utils/logger.js';
-import { config } from '../utils/config.js';
-import { ToolboxLoader } from './toolbox.js';
-// Note: Individual tools are now loaded dynamically from tools directory
 
-export class BambiMcpServer {
+// Import BambiSleep tools
+import { bambiTools } from './tools/bambi-tools.js';
+
+class BambiMcpServer {
     constructor() {
-        this.server = new McpServer({
-            name: 'bambisleep-church-server',
-            version: '1.0.0'
-        });
+        this.server = new Server(
+            {
+                name: "bambisleep-church-server",
+                version: "1.0.0",
+                description: "BambiSleep Church MCP server with community tools and resources"
+            },
+            {
+                capabilities: {
+                    tools: {}
+                }
+            }
+        );
 
-        this.toolboxLoader = new ToolboxLoader();
         this.knowledgeData = [];
         this.isInitialized = false;
+        this.setupHandlers();
     }
 
     /**
-     * Initialize the MCP server with tools and resources
+     * Set up MCP request handlers
      */
-    async initialize(knowledgeData = []) {
-        if (this.isInitialized) {
-            return true;
-        }
+    setupHandlers() {
+        // List available tools
+        this.server.setRequestHandler(ListToolsRequestSchema, async () => {
+            const tools = Object.values(bambiTools).map(tool => ({
+                name: tool.name,
+                description: tool.description,
+                inputSchema: tool.inputSchema
+            }));
 
-        try {
-            this.knowledgeData = knowledgeData;
+            return { tools };
+        });
 
-            // Register core BambiSleep Church tools
-            await this.registerCoreTools();
+        // Handle tool execution
+        this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
+            const { name, arguments: args } = request.params;
 
-            // Auto-discover and load external tools if enabled
-            if (config.mcp.autoDiscovery) {
-                await this.discoverAndLoadTools();
+            // Find the tool
+            const tool = Object.values(bambiTools).find(t => t.name === name);
+            if (!tool) {
+                throw new Error(`Unknown tool: ${name}`);
             }
 
-            // Register resources
-            await this.registerResources();
+            try {
+                // Validate arguments using the tool's schema
+                const validatedArgs = tool.inputSchema.parse(args || {});
 
-            // Register prompts
-            await this.registerPrompts();
+                // Call the tool handler with validated arguments
+                const result = await tool.handler(validatedArgs, {
+                    knowledgeData: this.knowledgeData,
+                    server: this
+                });
 
+                return {
+                    content: [
+                        {
+                            type: "text",
+                            text: result
+                        }
+                    ]
+                };
+            } catch (error) {
+                log.error(`Tool execution error for ${name}: ${error.message}`);
+                return {
+                    content: [
+                        {
+                            type: "text",
+                            text: `Error executing ${name}: ${error.message}`
+                        }
+                    ]
+                };
+            }
+        });
+    }
+
+    /**
+     * Initialize the MCP server with knowledge data
+     */
+    async initialize(knowledgeData = []) {
+        try {
+            this.knowledgeData = knowledgeData;
             this.isInitialized = true;
-            log.success('MCP Server initialized successfully');
+            log.success('BambiMcpServer initialized successfully');
             return true;
-
         } catch (error) {
             log.error(`MCP Server initialization failed: ${error.message}`);
             return false;
@@ -56,233 +103,59 @@ export class BambiMcpServer {
     }
 
     /**
-     * Register core BambiSleep Church tools
-     */
-    async registerCoreTools() {
-        try {
-            // Load local tools from the tools directory
-            const localTools = await this.toolboxLoader.loadLocalTools();
-
-            for (const tool of localTools) {
-                try {
-                    // Create handler with context (knowledgeData)
-                    const contextualHandler = async (params) => {
-                        return await tool.handler(params, { knowledgeData: this.knowledgeData });
-                    };
-
-                    this.server.registerTool(
-                        tool.name,
-                        tool.config,
-                        contextualHandler
-                    );
-                    log.info(`Registered local tool: ${tool.name} from ${tool.metadata.source}`);
-                } catch (error) {
-                    log.error(`Failed to register tool ${tool.name}: ${error.message}`);
-                }
-            }
-
-            // Set up file watching for hot reloading in development
-            if (config.development?.hotReload) {
-                this.setupToolWatching();
-            }
-
-        } catch (error) {
-            log.error(`Core tool registration failed: ${error.message}`);
-        }
-    }
-
-    /**
-     * Set up file watching for tool hot reloading
-     */
-    setupToolWatching() {
-        const watcher = this.toolboxLoader.watchToolsDirectory(async (eventType, filename) => {
-            if (eventType === 'change') {
-                try {
-                    log.info(`Tool file changed: ${filename}, attempting hot reload...`);
-                    const reloadedTool = await this.toolboxLoader.reloadLocalTool(filename);
-
-                    if (reloadedTool) {
-                        // Re-register the tool with updated code
-                        const contextualHandler = async (params) => {
-                            return await reloadedTool.handler(params, { knowledgeData: this.knowledgeData });
-                        };
-
-                        this.server.registerTool(
-                            reloadedTool.name,
-                            reloadedTool.config,
-                            contextualHandler
-                        );
-
-                        log.success(`Hot reloaded tool: ${reloadedTool.name}`);
-                    }
-                } catch (error) {
-                    log.error(`Hot reload failed for ${filename}: ${error.message}`);
-                }
-            }
-        });
-
-        if (watcher) {
-            log.info('Tool file watching enabled for hot reloading');
-        }
-    }
-
-    /**
-     * Auto-discover and load tools from external toolboxes (excluding local tools)
-     */
-    async discoverAndLoadTools() {
-        try {
-            // Get external sources only (filter out local tools since they're already loaded)
-            const externalSources = config.mcp.toolboxSources.filter(source => source.type !== 'local');
-            const externalTools = await this.toolboxLoader.loadToolboxes(externalSources);
-
-            for (const tool of externalTools) {
-                try {
-                    this.server.registerTool(
-                        tool.name,
-                        tool.config,
-                        tool.handler
-                    );
-                    log.info(`Loaded external tool: ${tool.name}`);
-                } catch (error) {
-                    log.error(`Failed to register tool ${tool.name}: ${error.message}`);
-                }
-            }
-
-        } catch (error) {
-            log.error(`Tool discovery failed: ${error.message}`);
-        }
-    }
-
-    /**
-     * Register MCP resources
-     */
-    async registerResources() {
-        // Knowledge base resource
-        this.server.registerResource(
-            'knowledge',
-            'bambisleep://knowledge',
-            {
-                title: 'BambiSleep Knowledge Base',
-                description: 'Complete knowledge base of BambiSleep resources',
-                mimeType: 'application/json'
-            },
-            async (uri) => ({
-                contents: [{
-                    uri: uri.href,
-                    text: JSON.stringify(this.knowledgeData, null, 2)
-                }]
-            })
-        );
-
-        // Church information resource
-        this.server.registerResource(
-            'church-info',
-            'bambisleep://church/info',
-            {
-                title: 'Church Information',
-                description: 'Information about BambiSleep Church mission and status',
-                mimeType: 'application/json'
-            },
-            async (uri) => ({
-                contents: [{
-                    uri: uri.href,
-                    text: JSON.stringify({
-                        name: 'BambiSleep Church',
-                        status: 'In Development',
-                        phase: 'Foundation',
-                        mission: 'Establishing as legal Austrian religious community',
-                        targetMembers: 300,
-                        timeline: '2-3 years',
-                        knowledgeEntries: this.knowledgeData.length
-                    }, null, 2)
-                }]
-            })
-        );
-
-        log.info('Registered MCP resources');
-    }
-
-    /**
-     * Register MCP prompts
-     */
-    async registerPrompts() {
-        // BambiSleep guidance prompt
-        this.server.registerPrompt(
-            'bambi-guidance',
-            {
-                title: 'BambiSleep Guidance',
-                description: 'Get guidance about BambiSleep practices and safety',
-                argsSchema: {
-                    topic: z.string().describe('Topic you need guidance on'),
-                    level: z.enum(['beginner', 'intermediate', 'advanced']).describe('Your experience level')
-                }
-            },
-            ({ topic, level }) => ({
-                messages: [{
-                    role: 'user',
-                    content: {
-                        type: 'text',
-                        text: `I'm a ${level} practitioner seeking guidance about: ${topic}. Please provide safe, informed advice based on the BambiSleep knowledge base, emphasizing safety and consent.`
-                    }
-                }]
-            })
-        );
-
-        // Church community prompt
-        this.server.registerPrompt(
-            'church-community',
-            {
-                title: 'Church Community Info',
-                description: 'Learn about joining the BambiSleep Church community',
-                argsSchema: {
-                    interest: z.string().describe('What interests you about the church community')
-                }
-            },
-            ({ interest }) => ({
-                messages: [{
-                    role: 'assistant',
-                    content: {
-                        type: 'text',
-                        text: `Welcome to BambiSleep Church! You're interested in: ${interest}. Our church is developing as a legal Austrian religious community focused on safe, consensual hypnosis practices. We're building a supportive community that values safety, consent, and spiritual growth through BambiSleep practices.`
-                    }
-                }]
-            })
-        );
-
-        log.info('Registered MCP prompts');
-    }
-
-    /**
-     * Create HTTP transport handler for Express integration
+     * Create HTTP handler for Express integration
      */
     createHttpHandler() {
         return async (req, res) => {
             try {
-                // Create a new transport for each request to prevent ID collisions
-                const transport = new StreamableHTTPServerTransport({
-                    sessionIdGenerator: undefined,
-                    enableJsonResponse: true
-                });
+                const { method, params, id } = req.body;
 
-                res.on('close', () => {
-                    transport.close();
-                });
+                // Handle JSON-RPC 2.0 requests
+                let response;
+                if (method === 'tools/list') {
+                    const tools = Object.values(bambiTools).map(tool => ({
+                        name: tool.name,
+                        description: tool.description,
+                        inputSchema: tool.inputSchema
+                    }));
+                    response = { tools };
+                } else if (method === 'tools/call') {
+                    const { name, arguments: args } = params;
+                    const tool = Object.values(bambiTools).find(t => t.name === name);
 
-                await this.server.connect(transport);
-                await transport.handleRequest(req, res, req.body);
+                    if (!tool) {
+                        throw new Error(`Unknown tool: ${name}`);
+                    }
 
-            } catch (error) {
-                log.error(`MCP request error: ${error.message}`);
-                if (!res.headersSent) {
-                    res.status(500).json({
-                        jsonrpc: '2.0',
-                        error: {
-                            code: -32603,
-                            message: 'Internal server error'
-                        },
-                        id: null
+                    const validatedArgs = tool.inputSchema.parse(args || {});
+                    const result = await tool.handler(validatedArgs, {
+                        knowledgeData: this.knowledgeData,
+                        server: this
                     });
+
+                    response = {
+                        content: [{ type: "text", text: result }]
+                    };
+                } else {
+                    throw new Error(`Unknown method: ${method}`);
                 }
+
+                res.json({
+                    jsonrpc: "2.0",
+                    id: id,
+                    result: response
+                });
+            } catch (error) {
+                log.error(`HTTP handler error: ${error.message}`);
+                res.status(500).json({
+                    jsonrpc: "2.0",
+                    id: req.body?.id || null,
+                    error: {
+                        code: -32603,
+                        message: "Internal error",
+                        data: error.message
+                    }
+                });
             }
         };
     }
@@ -292,14 +165,29 @@ export class BambiMcpServer {
      */
     getInfo() {
         return {
-            name: 'BambiSleep Church MCP Server',
-            version: '1.0.0',
-            initialized: this.isInitialized,
-            toolCount: Object.keys(this.server._tools || {}).length,
-            resourceCount: Object.keys(this.server._resources || {}).length,
-            promptCount: Object.keys(this.server._prompts || {}).length,
-            knowledgeEntries: this.knowledgeData.length
+            name: "bambisleep-church-server",
+            version: "1.0.0",
+            description: "BambiSleep Church MCP server",
+            toolCount: Object.keys(bambiTools).length,
+            isInitialized: this.isInitialized,
+            knowledgeEntries: this.knowledgeData.length,
+            capabilities: ["tools"],
+            transport: ["stdio", "http"]
         };
+    }
+
+    /**
+     * Run the server with STDIO transport (for CLI clients)
+     */
+    async run() {
+        try {
+            const transport = new StdioServerTransport();
+            await this.server.connect(transport);
+            log.success('MCP Server running with STDIO transport');
+        } catch (error) {
+            log.error(`Failed to start MCP server: ${error.message}`);
+            throw error;
+        }
     }
 
     /**
@@ -307,12 +195,13 @@ export class BambiMcpServer {
      */
     async cleanup() {
         try {
-            if (this.toolboxLoader) {
-                await this.toolboxLoader.cleanup();
+            if (this.server) {
+                await this.server.close();
             }
+            this.isInitialized = false;
             log.info('MCP Server cleaned up');
         } catch (error) {
-            log.error(`MCP cleanup error: ${error.message}`);
+            log.error(`MCP Server cleanup error: ${error.message}`);
         }
     }
 }

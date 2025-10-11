@@ -1,0 +1,486 @@
+<%- include('../partials/header') %>
+
+<style>
+  .chat-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+    height: calc(100vh - 200px);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .chat-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .chat-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 2rem;
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+    text-shadow: 0 0 20px var(--primary);
+  }
+
+  .chat-subtitle {
+    color: var(--text-muted);
+    font-size: 1rem;
+  }
+
+  .chat-messages {
+    flex: 1;
+    background: rgba(26, 26, 26, 0.8);
+    border: 1px solid var(--primary);
+    border-radius: 15px;
+    padding: 1.5rem;
+    overflow-y: auto;
+    margin-bottom: 1rem;
+    min-height: 400px;
+  }
+
+  .message {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    border-radius: 10px;
+    position: relative;
+  }
+
+  .message.user {
+    background: rgba(255, 0, 255, 0.1);
+    border-left: 4px solid var(--primary);
+    margin-left: 2rem;
+  }
+
+  .message.agent {
+    background: rgba(0, 255, 255, 0.1);
+    border-left: 4px solid var(--secondary);
+    margin-right: 2rem;
+  }
+
+  .message.system {
+    background: rgba(255, 255, 0, 0.1);
+    border-left: 4px solid #fbbf24;
+    text-align: center;
+    font-style: italic;
+  }
+
+  .message-header {
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .message.user .message-header {
+    color: var(--primary);
+  }
+
+  .message.agent .message-header {
+    color: var(--secondary);
+  }
+
+  .message.system .message-header {
+    color: #fbbf24;
+  }
+
+  .message-content {
+    line-height: 1.6;
+    white-space: pre-wrap;
+  }
+
+  .message-meta {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 0.5rem;
+    text-align: right;
+  }
+
+  .typing-indicator {
+    display: none;
+    padding: 1rem;
+    background: rgba(0, 255, 255, 0.1);
+    border-left: 4px solid var(--secondary);
+    border-radius: 10px;
+    margin-right: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  .typing-indicator.show {
+    display: block;
+  }
+
+  .typing-dots {
+    display: inline-block;
+  }
+
+  .typing-dots span {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--secondary);
+    margin: 0 2px;
+    animation: typing 1.4s infinite ease-in-out;
+  }
+
+  .typing-dots span:nth-child(1) {
+    animation-delay: -0.32s;
+  }
+
+  .typing-dots span:nth-child(2) {
+    animation-delay: -0.16s;
+  }
+
+  @keyframes typing {
+
+    0%,
+    80%,
+    100% {
+      transform: scale(0);
+    }
+
+    40% {
+      transform: scale(1);
+    }
+  }
+
+  .chat-input-container {
+    background: rgba(26, 26, 26, 0.8);
+    border: 1px solid var(--primary);
+    border-radius: 15px;
+    padding: 1rem;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-end;
+  }
+
+  .chat-input {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    padding: 1rem;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 1rem;
+    resize: vertical;
+    min-height: 50px;
+    max-height: 150px;
+  }
+
+  .chat-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 10px rgba(255, 0, 255, 0.3);
+  }
+
+  .send-button {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    border: none;
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+  }
+
+  .send-button:hover:not(:disabled) {
+    transform: scale(1.05);
+    box-shadow: 0 8px 25px rgba(255, 0, 255, 0.4);
+  }
+
+  .send-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .chat-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .suggestion-chip {
+    background: rgba(255, 0, 255, 0.1);
+    border: 1px solid var(--primary);
+    color: var(--primary);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .suggestion-chip:hover {
+    background: rgba(255, 0, 255, 0.2);
+    transform: scale(1.05);
+  }
+
+  .welcome-message {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 2rem;
+    font-style: italic;
+  }
+
+  .stats-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+    margin-bottom: 1rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  .connection-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #10b981;
+    animation: pulse-dot 2s infinite;
+  }
+
+  .status-dot.disconnected {
+    background: #ef4444;
+    animation: none;
+  }
+
+  @keyframes pulse-dot {
+
+    0%,
+    100% {
+      opacity: 1;
+    }
+
+    50% {
+      opacity: 0.5;
+    }
+  }
+</style>
+
+<div class="chat-container">
+  <div class="chat-header">
+    <h1 class="chat-title">🤖 BambiSleep Church Agent</h1>
+    <p class="chat-subtitle">Your AI assistant for community support and information</p>
+  </div>
+
+  <div class="stats-bar">
+    <div class="connection-status">
+      <div id="statusDot" class="status-dot"></div>
+      <span id="connectionStatus">Connecting...</span>
+    </div>
+    <div class="knowledge-info">
+      Knowledge Base: <%= knowledgeCount || 0 %> entries
+    </div>
+  </div>
+
+  <div class="chat-suggestions">
+    <div class="suggestion-chip" onclick="sendSuggestion('Hello! Tell me about BambiSleep Church')">👋 Introduction</div>
+    <div class="suggestion-chip" onclick="sendSuggestion('Search for beginner guides')">📚 Beginner Help</div>
+    <div class="suggestion-chip" onclick="sendSuggestion('Tell me about safety')">🛡️ Safety Info</div>
+    <div class="suggestion-chip" onclick="sendSuggestion('What is the church status?')">🏛️ Church Status</div>
+    <div class="suggestion-chip" onclick="sendSuggestion('Help me find resources')">🔍 Find Resources</div>
+  </div>
+
+  <div id="chatMessages" class="chat-messages">
+    <div class="welcome-message">
+      👋 Welcome to BambiSleep Church Agent Chat!<br>
+      I'm here to help you with knowledge searches, safety information, and community guidance.<br>
+      Try asking me about resources, safety guidelines, or church development progress.
+    </div>
+  </div>
+
+  <div id="typingIndicator" class="typing-indicator">
+    <div class="message-header">Agent</div>
+    <div class="typing-dots">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <span style="margin-left: 10px;">is typing...</span>
+  </div>
+
+  <div class="chat-input-container">
+    <textarea id="chatInput" class="chat-input" placeholder="Ask me anything about BambiSleep, safety, or our community..." rows="2"></textarea>
+    <button id="sendButton" class="send-button" onclick="sendMessage()">
+      📤 Send
+    </button>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  // Socket.IO connection
+  const socket = io();
+  const chatMessages = document.getElementById('chatMessages');
+  const chatInput = document.getElementById('chatInput');
+  const sendButton = document.getElementById('sendButton');
+  const typingIndicator = document.getElementById('typingIndicator');
+  const statusDot = document.getElementById('statusDot');
+  const connectionStatus = document.getElementById('connectionStatus');
+
+  let isConnected = false;
+
+  // Connection event handlers
+  socket.on('connect', () => {
+    isConnected = true;
+    statusDot.classList.remove('disconnected');
+    connectionStatus.textContent = 'Connected';
+    addSystemMessage('Connected to BambiSleep Church Agent');
+  });
+
+  socket.on('disconnect', () => {
+    isConnected = false;
+    statusDot.classList.add('disconnected');
+    connectionStatus.textContent = 'Disconnected';
+    addSystemMessage('Disconnected from agent. Trying to reconnect...');
+  });
+
+  // Agent response handlers
+  socket.on('agent:response', (data) => {
+    typingIndicator.classList.remove('show');
+    addAgentMessage(data.message, data.tool);
+    sendButton.disabled = false;
+    sendButton.textContent = '📤 Send';
+  });
+
+  socket.on('agent:typing', (data) => {
+    if (data.isTyping) {
+      typingIndicator.classList.add('show');
+      scrollToBottom();
+    } else {
+      typingIndicator.classList.remove('show');
+    }
+  });
+
+  socket.on('agent:error', (data) => {
+    typingIndicator.classList.remove('show');
+    addSystemMessage(`Error: ${data.error}`, 'error');
+    sendButton.disabled = false;
+    sendButton.textContent = '📤 Send';
+  });
+
+  // Send message function
+  function sendMessage() {
+    const message = chatInput.value.trim();
+    if (!message || !isConnected) return;
+
+    addUserMessage(message);
+
+    // Send to agent
+    socket.emit('agent:message', {
+      message
+    });
+
+    // Clear input and disable send button
+    chatInput.value = '';
+    sendButton.disabled = true;
+    sendButton.textContent = '⏳ Sending...';
+
+    // Resize textarea
+    chatInput.style.height = 'auto';
+  }
+
+  // Send suggestion
+  function sendSuggestion(message) {
+    chatInput.value = message;
+    sendMessage();
+  }
+
+  // Add message functions
+  function addUserMessage(message) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'message user';
+    messageDiv.innerHTML = `
+      <div class="message-header">You</div>
+      <div class="message-content">${escapeHtml(message)}</div>
+      <div class="message-meta">${formatTime(new Date())}</div>
+    `;
+
+    // Remove welcome message if it exists
+    const welcomeMessage = chatMessages.querySelector('.welcome-message');
+    if (welcomeMessage) {
+      welcomeMessage.remove();
+    }
+
+    chatMessages.appendChild(messageDiv);
+    scrollToBottom();
+  }
+
+  function addAgentMessage(message, tool) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'message agent';
+    messageDiv.innerHTML = `
+      <div class="message-header">Agent ${tool ? `(${tool})` : ''}</div>
+      <div class="message-content">${escapeHtml(message)}</div>
+      <div class="message-meta">${formatTime(new Date())}</div>
+    `;
+    chatMessages.appendChild(messageDiv);
+    scrollToBottom();
+  }
+
+  function addSystemMessage(message, type = 'info') {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'message system';
+    messageDiv.innerHTML = `
+      <div class="message-header">System</div>
+      <div class="message-content">${escapeHtml(message)}</div>
+      <div class="message-meta">${formatTime(new Date())}</div>
+    `;
+    chatMessages.appendChild(messageDiv);
+    scrollToBottom();
+  }
+
+  // Utility functions
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  function formatTime(date) {
+    return date.toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  function scrollToBottom() {
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  // Input event handlers
+  chatInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  chatInput.addEventListener('input', () => {
+    // Auto-resize textarea
+    chatInput.style.height = 'auto';
+    chatInput.style.height = Math.min(chatInput.scrollHeight, 150) + 'px';
+  });
+
+  // Initialize connection status
+  connectionStatus.textContent = 'Connecting...';
+  statusDot.classList.add('disconnected');
+</script>
+
+<%- include('../partials/footer') %>

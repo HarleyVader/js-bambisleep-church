@@ -1,0 +1,36 @@
+{
+    "mcpServers": {
+        "bambisleep-church": {
+            "type": "streamable-http",
+            "url": "https://at.bambisleep.church:7070/mcp",
+            "name": "BambiSleep Church MCP Server",
+            "description": "Digital sanctuary and knowledge base for the BambiSleep community",
+            "note": "Main MCP server for BambiSleep Church with safety tools and community resources"
+        },
+        "bambisleep-church-dev": {
+            "type": "streamable-http",
+            "url": "http://localhost:7070/mcp",
+            "name": "BambiSleep Church Development",
+            "description": "Development instance with debug logging enabled",
+            "env": {
+                "DEBUG": "true",
+                "NODE_ENV": "development"
+            },
+            "note": "Development configuration with enhanced logging for debugging"
+        },
+        "bambisleep-church-stdio": {
+            "type": "stdio",
+            "command": "node",
+            "args": [
+                "src/mcp/server.js"
+            ],
+            "env": {
+                "MCP_SERVER_NAME": "BambiSleep Church",
+                "NODE_ENV": "development"
+            },
+            "name": "BambiSleep Church STDIO",
+            "description": "STDIO transport for direct MCP Inspector integration",
+            "note": "Alternative STDIO transport configuration for advanced testing"
+        }
+    }
+}

@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <%- include('../partials/header') %>
+  <title>MCP Inspector | BambiSleep Church</title>
+  <style>
+    .inspector-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .inspector-card {
+      background: rgba(0, 20, 40, 0.7);
+      border: 1px solid var(--accent);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      backdrop-filter: blur(10px);
+    }
+
+    .inspector-header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .inspector-header h1 {
+      background: linear-gradient(45deg, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      margin: 2rem 0;
+    }
+
+    .feature-card {
+      background: rgba(10, 30, 50, 0.8);
+      border: 1px solid var(--secondary);
+      border-radius: 8px;
+      padding: 1.5rem;
+      transition: transform 0.3s ease, border-color 0.3s ease;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--accent);
+    }
+
+    .feature-icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      display: block;
+    }
+
+    .launch-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+      margin: 2rem 0;
+    }
+
+    .launch-btn {
+      background: linear-gradient(45deg, var(--primary), var(--secondary));
+      border: none;
+      border-radius: 8px;
+      color: white;
+      padding: 1rem 2rem;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .launch-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);
+    }
+
+    .launch-btn.secondary {
+      background: linear-gradient(45deg, var(--secondary), var(--accent));
+    }
+
+    .command-examples {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 8px;
+      padding: 1.5rem;
+      font-family: 'Courier New', monospace;
+      margin: 1rem 0;
+    }
+
+    .command-examples pre {
+      margin: 0;
+      color: var(--accent);
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    .status-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .status-online {
+      background: rgba(46, 204, 113, 0.2);
+      color: #2ecc71;
+      border: 1px solid #2ecc71;
+    }
+
+    .status-offline {
+      background: rgba(231, 76, 60, 0.2);
+      color: #e74c3c;
+      border: 1px solid #e74c3c;
+    }
+
+    .endpoints-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .endpoints-list li {
+      background: rgba(0, 0, 0, 0.2);
+      margin: 0.5rem 0;
+      padding: 1rem;
+      border-radius: 6px;
+      border-left: 3px solid var(--accent);
+    }
+
+    .endpoints-list code {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      color: var(--primary);
+    }
+
+    @media (max-width: 768px) {
+      .inspector-container {
+        padding: 1rem;
+      }
+
+      .launch-buttons {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .launch-btn {
+        text-align: center;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="inspector-container">
+    <div class="inspector-header">
+      <h1>🔍 MCP Inspector</h1>
+      <p>Development and Testing Tool for BambiSleep Church MCP Server</p>
+      <div id="server-status" class="status-indicator status-offline">
+        <span>🔴</span> Checking server status...
+      </div>
+    </div>
+
+    <div class="inspector-card">
+      <h2>🚀 Quick Launch</h2>
+      <p>Start the MCP Inspector with different transport modes and configurations:</p>
+
+      <div class="launch-buttons">
+        <button class="launch-btn" onclick="launchInspector('http')">
+          <span>🌐</span> Launch HTTP Inspector
+        </button>
+        <button class="launch-btn secondary" onclick="launchInspector('stdio')">
+          <span>💻</span> Launch STDIO Inspector
+        </button>
+
+        <button class="launch-btn secondary" onclick="runTests()">
+          <span>🧪</span> Run Tests
+        </button>
+      </div>
+
+      <div class="command-examples">
+        <pre># Available npm scripts
+npm run inspector           # HTTP transport (recommended)
+npm run inspector:stdio     # STDIO transport (advanced)
+npm run inspector:test      # Run comprehensive tests
+npm run inspector:dev       # Development with auto-restart</pre>
+      </div>
+    </div>
+
+    <div class="inspector-card">
+      <h2>🎯 Features</h2>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <span class="feature-icon">🎛️</span>
+          <h3>Interactive UI</h3>
+          <p>Web-based interface for testing MCP tools with real-time responses and visual debugging.</p>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">🧪</span>
+          <h3>Direct Testing</h3>
+          <p>Built-in test suite for comprehensive MCP server validation and tool verification.</p>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">📋</span>
+          <h3>Configuration Export</h3>
+          <p>Generate mcp.json configurations for VS Code, Claude Desktop, and other MCP clients.</p>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">🔍</span>
+          <h3>Real-time Debugging</h3>
+          <p>Inspect requests, responses, errors, and server state with detailed logging and visualization.</p>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">🔒</span>
+          <h3>Secure Authentication</h3>
+          <p>Built-in security with session tokens and protection against DNS rebinding attacks.</p>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">🌐</span>
+          <h3>Multi-Transport</h3>
+          <p>Support for HTTP, STDIO, and SSE transports with automatic protocol detection.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="inspector-card">
+      <h2>🔗 Server Endpoints</h2>
+      <ul class="endpoints-list">
+        <li>
+          <strong>BambiSleep Church Server:</strong>
+          <code>http://localhost:7070</code>
+          <span id="main-server-status">⏳</span>
+        </li>
+        <li>
+          <strong>MCP Endpoint:</strong>
+          <code>http://localhost:7070/mcp</code>
+          <span id="mcp-server-status">⏳</span>
+        </li>
+        <li>
+          <strong>Inspector UI:</strong>
+          <code>http://localhost:6274</code>
+          <span id="inspector-ui-status">⏳</span>
+        </li>
+        <li>
+          <strong>Inspector Proxy:</strong>
+          <code>http://localhost:6277</code>
+          <span id="inspector-proxy-status">⏳</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="inspector-card">
+      <h2>🧪 Testing Options</h2>
+      <p>Test your MCP server functionality with these methods:</p>
+
+      <div class="command-examples">
+        <pre># Run comprehensive test suite
+node test-inspector.js
+
+# Start inspector with HTTP transport
+npm run inspector
+
+# Run all automated tests
+npm run inspector:test
+
+# Test directly via web interface
+# Visit: http://localhost:7070/inspector</pre>
+      </div>
+    </div>
+
+    <div class="inspector-card">
+      <h2>📚 MCP Client Integration</h2>
+      <p>Export configurations for popular MCP clients:</p>
+
+      <div class="launch-buttons">
+        <button class="launch-btn" onclick="exportConfig('vscode')">
+          <span>📝</span> VS Code Config
+        </button>
+        <button class="launch-btn secondary" onclick="exportConfig('claude')">
+          <span>🤖</span> Claude Desktop Config
+        </button>
+        <button class="launch-btn" onclick="exportConfig('cursor')">
+          <span>🎯</span> Cursor Config
+        </button>
+      </div>
+
+      <div id="config-output" class="command-examples" style="display: none;">
+        <pre id="config-text"></pre>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Server status checking
+    async function checkServerStatus() {
+      const statusIndicator = document.getElementById('server-status');
+      const mainServerStatus = document.getElementById('main-server-status');
+      const mcpServerStatus = document.getElementById('mcp-server-status');
+
+      try {
+        // Check main server
+        const mainResponse = await fetch('/health');
+        if (mainResponse.ok) {
+          statusIndicator.className = 'status-indicator status-online';
+          statusIndicator.innerHTML = '<span>🟢</span> Server Online';
+          mainServerStatus.textContent = '✅';
+        } else {
+          throw new Error('Server not responding');
+        }
+
+        // Check MCP endpoint
+        const mcpResponse = await fetch('/mcp', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'ping'
+          })
+        });
+
+        if (mcpResponse.ok) {
+          mcpServerStatus.textContent = '✅';
+        } else {
+          mcpServerStatus.textContent = '❌';
+        }
+
+      } catch (error) {
+        statusIndicator.className = 'status-indicator status-offline';
+        statusIndicator.innerHTML = '<span>🔴</span> Server Offline';
+        mainServerStatus.textContent = '❌';
+        mcpServerStatus.textContent = '❌';
+      }
+    }
+
+    // Launch inspector functions
+    async function launchInspector(mode) {
+      const button = event.target;
+      const originalText = button.innerHTML;
+      button.innerHTML = '<span>⏳</span> Launching...';
+      button.disabled = true;
+
+      try {
+        const response = await fetch('/api/inspector/launch', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            mode
+          })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          button.innerHTML = '<span>✅</span> Launched!';
+          setTimeout(() => {
+            if (mode === 'http') {
+              window.open('http://localhost:6274', '_blank');
+            }
+          }, 1000);
+        } else {
+          throw new Error(result.error || 'Launch failed');
+        }
+      } catch (error) {
+        button.innerHTML = '<span>❌</span> Error';
+        alert(`Failed to launch inspector: ${error.message}`);
+      } finally {
+        setTimeout(() => {
+          button.innerHTML = originalText;
+          button.disabled = false;
+        }, 3000);
+      }
+    }
+
+    async function runTests() {
+      const button = event.target;
+      const originalText = button.innerHTML;
+      button.innerHTML = '<span>🧪</span> Testing...';
+      button.disabled = true;
+
+      try {
+        const response = await fetch('/api/inspector/test', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          button.innerHTML = '<span>✅</span> Tests Complete';
+          alert('MCP tests completed successfully! Check console for details.');
+        } else {
+          throw new Error(result.error || 'Tests failed');
+        }
+      } catch (error) {
+        button.innerHTML = '<span>❌</span> Test Failed';
+        alert(`Tests failed: ${error.message}`);
+      } finally {
+        setTimeout(() => {
+          button.innerHTML = originalText;
+          button.disabled = false;
+        }, 3000);
+      }
+    }
+
+    function exportConfig(client) {
+      const configs = {
+        vscode: {
+          name: 'VS Code Configuration',
+          config: `{
+  "mcpServers": {
+    "bambisleep-church": {
+      "type": "streamable-http",
+      "url": "http://localhost:7070/mcp",
+      "name": "BambiSleep Church",
+      "description": "Digital sanctuary for BambiSleep community"
+    }
+  }
+}`
+        },
+        claude: {
+          name: 'Claude Desktop Configuration',
+          config: `{
+  "mcpServers": {
+    "bambisleep-church": {
+      "type": "streamable-http",
+      "url": "http://localhost:7070/mcp"
+    }
+  }
+}`
+        },
+        cursor: {
+          name: 'Cursor Configuration',
+          config: `{
+  "mcpServers": {
+    "bambisleep-church": {
+      "type": "streamable-http",
+      "url": "http://localhost:7070/mcp"
+    }
+  }
+}`
+        }
+      };
+
+      const config = configs[client];
+      const configOutput = document.getElementById('config-output');
+      const configText = document.getElementById('config-text');
+
+      configText.textContent = `# ${config.name}\n# Add this to your mcp.json file:\n\n${config.config}`;
+      configOutput.style.display = 'block';
+
+      // Copy to clipboard
+      navigator.clipboard.writeText(config.config).then(() => {
+        alert(`${config.name} copied to clipboard!`);
+      });
+    }
+
+    // Check server status on page load and periodically
+    checkServerStatus();
+    setInterval(checkServerStatus, 30000); // Check every 30 seconds
+  </script>
+</body>
+
+</html>
