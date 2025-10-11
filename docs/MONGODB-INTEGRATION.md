@@ -15,11 +15,13 @@ The BambiSleep Church MCP server now includes a comprehensive MongoDB toolset fo
 ## MongoDB Tools Available
 
 ### Database Management
+
 - `mongodb-list-databases` - List all available MongoDB databases
 - `mongodb-list-collections` - List collections in a database
 - `mongodb-health-check` - Check connection health and status
 
 ### Document Operations
+
 - `mongodb-insert-document` - Insert a single document
 - `mongodb-insert-documents` - Insert multiple documents
 - `mongodb-find-documents` - Find documents with query and options
@@ -31,6 +33,7 @@ The BambiSleep Church MCP server now includes a comprehensive MongoDB toolset fo
 - `mongodb-count-documents` - Count documents matching filter
 
 ### Advanced Operations
+
 - `mongodb-aggregate` - Perform aggregation pipeline operations
 - `mongodb-collection-stats` - Get collection statistics
 - `mongodb-create-index` - Create indexes on collections
@@ -46,6 +49,7 @@ MONGODB_URL=mongodb+srv://username:password@cluster0.fexeayz.mongodb.net/
 ## Tool Usage Examples
 
 ### Health Check
+
 ```json
 {
     "name": "mongodb-health-check",
@@ -54,6 +58,7 @@ MONGODB_URL=mongodb+srv://username:password@cluster0.fexeayz.mongodb.net/
 ```
 
 ### List Databases
+
 ```json
 {
     "name": "mongodb-list-databases",
@@ -62,6 +67,7 @@ MONGODB_URL=mongodb+srv://username:password@cluster0.fexeayz.mongodb.net/
 ```
 
 ### Insert Document
+
 ```json
 {
     "name": "mongodb-insert-document",
@@ -77,6 +83,7 @@ MONGODB_URL=mongodb+srv://username:password@cluster0.fexeayz.mongodb.net/
 ```
 
 ### Find Documents
+
 ```json
 {
     "name": "mongodb-find-documents",
@@ -92,6 +99,7 @@ MONGODB_URL=mongodb+srv://username:password@cluster0.fexeayz.mongodb.net/
 ```
 
 ### Update Document
+
 ```json
 {
     "name": "mongodb-update-document",
@@ -109,6 +117,7 @@ MONGODB_URL=mongodb+srv://username:password@cluster0.fexeayz.mongodb.net/
 ```
 
 ### Aggregation Pipeline
+
 ```json
 {
     "name": "mongodb-aggregate",
@@ -126,20 +135,24 @@ MONGODB_URL=mongodb+srv://username:password@cluster0.fexeayz.mongodb.net/
 ## Features
 
 ### Automatic Timestamps
+
 - All insert operations automatically add `createdAt` timestamp
 - All update operations automatically update `updatedAt` timestamp
 
 ### Error Handling
+
 - Comprehensive error handling for all operations
 - Graceful connection management
 - Detailed error messages in tool responses
 
 ### Connection Management
+
 - Automatic connection establishment on server startup
 - Connection health monitoring
 - Graceful cleanup on server shutdown
 
 ### Default Database
+
 - Uses `bambisleep-church` as default database
 - Can specify different databases per operation
 - Flexible database targeting
@@ -169,6 +182,7 @@ All MongoDB tools return responses in the MCP standard format:
 ```
 
 ### Success Response
+
 ```json
 {
     "success": true,
@@ -177,6 +191,7 @@ All MongoDB tools return responses in the MCP standard format:
 ```
 
 ### Error Response
+
 ```json
 {
     "success": false,

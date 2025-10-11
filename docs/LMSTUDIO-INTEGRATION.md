@@ -15,12 +15,14 @@ The BambiSleep Church MCP server now includes a comprehensive LMStudio toolset t
 ## LMStudio Tools Available
 
 ### Server Management
+
 - `lmstudio-health-check` - Check server health and availability
 - `lmstudio-list-models` - List all available models
 - `lmstudio-get-config` - Get current service configuration
 - `lmstudio-update-config` - Update service configuration parameters
 
 ### AI Generation
+
 - `lmstudio-chat-completion` - Standard chat completions
 - `lmstudio-chat-with-tools` - Chat with tool calling capabilities
 - `lmstudio-structured-output` - Generate structured JSON output using schemas
@@ -28,11 +30,13 @@ The BambiSleep Church MCP server now includes a comprehensive LMStudio toolset t
 - `lmstudio-embeddings` - Generate text embeddings
 
 ### BambiSleep Specialized
+
 - `lmstudio-bambi-agent` - Specialized BambiSleep community AI agent
 
 ## Configuration
 
 ### Environment Variables (.env)
+
 ```bash
 # LMStudio Configuration (all optional with defaults)
 LMSTUDIO_URL=http://localhost:1234/v1/chat/completions
@@ -52,6 +56,7 @@ LMSTUDIO_RETRY_DELAY=1000
 ```
 
 ### Default Configuration
+
 - **Server URL**: `http://localhost:1234/v1` (standard LMStudio port)
 - **API Key**: `lm-studio` (default for local servers)
 - **Model**: Environment configured or `model-identifier`
@@ -61,6 +66,7 @@ LMSTUDIO_RETRY_DELAY=1000
 ## Tool Usage Examples
 
 ### Health Check
+
 ```json
 {
     "name": "lmstudio-health-check",
@@ -69,6 +75,7 @@ LMSTUDIO_RETRY_DELAY=1000
 ```
 
 **Response:**
+
 ```json
 {
     "success": true,
@@ -81,6 +88,7 @@ LMSTUDIO_RETRY_DELAY=1000
 ```
 
 ### Chat Completion
+
 ```json
 {
     "name": "lmstudio-chat-completion",
@@ -96,6 +104,7 @@ LMSTUDIO_RETRY_DELAY=1000
 ```
 
 ### Structured Output
+
 ```json
 {
     "name": "lmstudio-structured-output",
@@ -120,6 +129,7 @@ LMSTUDIO_RETRY_DELAY=1000
 ```
 
 ### BambiSleep AI Agent
+
 ```json
 {
     "name": "lmstudio-bambi-agent",
@@ -132,12 +142,14 @@ LMSTUDIO_RETRY_DELAY=1000
 ```
 
 **Special Features:**
+
 - **Context-aware**: Understands BambiSleep community needs
 - **Safety-focused**: Prioritizes user safety and consent
 - **Experience levels**: Adapts responses for beginner/intermediate/advanced users
 - **Community guidelines**: Follows Austrian religious community context
 
 ### Tool Calling
+
 ```json
 {
     "name": "lmstudio-chat-with-tools",
@@ -168,6 +180,7 @@ LMSTUDIO_RETRY_DELAY=1000
 ## Features
 
 ### Comprehensive API Support
+
 - **Chat Completions**: Full OpenAI-compatible chat interface
 - **Tool Calling**: Native support for function calling
 - **Structured Output**: JSON schema enforcement
@@ -175,19 +188,24 @@ LMSTUDIO_RETRY_DELAY=1000
 - **Embeddings**: Text embedding generation
 
 ### Intelligent Error Handling
+
 - **Retry Logic**: Configurable retry attempts with exponential backoff
 - **Timeout Management**: Prevents hanging requests
 - **Connection Testing**: Health checks before tool execution
 - **Graceful Degradation**: Tools work even when LMStudio is offline
 
 ### Model Support
+
 According to LMStudio documentation, supported models include:
+
 - **Native Tool Use**: Qwen2.5, Llama-3.1/3.2, Mistral (with 🔨 hammer badge)
 - **Default Tool Use**: All other models (with custom prompting)
 - **Structured Output**: Models 7B+ parameters recommended
 
 ### Parameter Control
+
 Full control over LLM parameters:
+
 - **Temperature**: Creativity vs consistency (0.0-2.0)
 - **Top-P/Top-K**: Sampling strategies
 - **Penalties**: Frequency, presence, and repeat penalties
@@ -229,12 +247,14 @@ BambiSleep Church MCP Server (v1.0.0)
 ## Performance & Security
 
 ### Performance Features
+
 - **Connection Pooling**: Axios HTTP client with persistent connections
 - **Request Caching**: Planned for frequently accessed models/configurations
 - **Timeout Management**: 30-second default with configurable limits
 - **Retry Strategy**: Exponential backoff for failed requests
 
 ### Security Features
+
 - ✅ **Local by Default**: No external API calls (unless configured)
 - ✅ **Environment Configuration**: No hardcoded credentials
 - ✅ **Input Validation**: JSON schema validation for all parameters
@@ -244,6 +264,7 @@ BambiSleep Church MCP Server (v1.0.0)
 ## Use Cases
 
 ### 1. BambiSleep Community Support
+
 ```javascript
 // AI-powered community assistance
 {
@@ -256,6 +277,7 @@ BambiSleep Church MCP Server (v1.0.0)
 ```
 
 ### 2. Content Generation
+
 ```javascript
 // Generate structured community content
 {
@@ -268,6 +290,7 @@ BambiSleep Church MCP Server (v1.0.0)
 ```
 
 ### 3. Safety Analysis
+
 ```javascript
 // Analyze content for safety compliance
 {
@@ -282,6 +305,7 @@ BambiSleep Church MCP Server (v1.0.0)
 ```
 
 ### 4. Interactive Tools
+
 ```javascript
 // Enable AI to use database and web tools
 {
@@ -305,16 +329,19 @@ BambiSleep Church MCP Server (v1.0.0)
 ### Common Issues
 
 **Server Not Available**
+
 - Ensure LMStudio is running in server mode
 - Check port configuration (default: 1234)
 - Verify model is loaded and ready
 
 **Tool Calls Not Working**
+
 - Use models with native tool support (🔨 badge in LMStudio)
 - Check model supports the feature you're trying to use
 - Verify tool definitions follow OpenAI format
 
 **Structured Output Fails**
+
 - Use models 7B+ parameters
 - Ensure JSON schema is valid
 - Check model supports structured output
@@ -336,8 +363,8 @@ BambiSleep Church MCP Server (v1.0.0)
 
 ---
 
-**Total Implementation**: LMStudio MCP toolset with 10 specialized tools  
-**Dependencies**: axios (HTTP client)  
-**Lines of Code**: ~1,000 lines  
-**Test Coverage**: 100% of core functionality  
+**Total Implementation**: LMStudio MCP toolset with 10 specialized tools
+**Dependencies**: axios (HTTP client)
+**Lines of Code**: ~1,000 lines
+**Test Coverage**: 100% of core functionality
 **Documentation**: Complete with examples and troubleshooting

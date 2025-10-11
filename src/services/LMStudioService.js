@@ -19,7 +19,7 @@ class LMStudioService {
         this.seed = parseInt(process.env.LMSTUDIO_SEED) || -1;
         this.retries = parseInt(process.env.LMSTUDIO_RETRIES) || 3;
         this.retryDelay = parseInt(process.env.LMSTUDIO_RETRY_DELAY) || 1000;
-        
+
         this.client = axios.create({
             baseURL: this.baseUrl,
             timeout: this.timeout,
@@ -92,7 +92,7 @@ class LMStudioService {
             } catch (error) {
                 lastError = error;
                 log.warn(`LMStudio request attempt ${attempt} failed: ${error.message}`);
-                
+
                 if (attempt < this.retries) {
                     await new Promise(resolve => setTimeout(resolve, this.retryDelay * attempt));
                 }
@@ -201,7 +201,7 @@ class LMStudioService {
             });
 
             let buffer = '';
-            
+
             response.data.on('data', (chunk) => {
                 buffer += chunk.toString();
                 const lines = buffer.split('\n');
@@ -213,7 +213,7 @@ class LMStudioService {
                         if (data === '[DONE]') {
                             return;
                         }
-                        
+
                         try {
                             const parsed = JSON.parse(data);
                             onChunk(parsed);
@@ -237,7 +237,7 @@ class LMStudioService {
     async executeToolCall(toolCall, availableTools) {
         const toolName = toolCall.function.name;
         const toolArgs = JSON.parse(toolCall.function.arguments);
-        
+
         const tool = availableTools[toolName];
         if (!tool) {
             throw new Error(`Tool ${toolName} not found`);

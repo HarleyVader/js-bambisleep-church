@@ -225,7 +225,7 @@ class BambiMcpServer {
      */
     async getInfo() {
         const lmstudioHealthy = await lmStudioService.isHealthy().catch(() => false);
-        
+
         return {
             name: "bambisleep-church-server",
             version: "1.0.0",

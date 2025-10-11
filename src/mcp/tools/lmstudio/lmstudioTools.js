@@ -15,7 +15,7 @@ export const lmstudioHealthCheck = {
         try {
             const isHealthy = await lmStudioService.isHealthy();
             const config = lmStudioService.getConfig();
-            
+
             return {
                 content: [{
                     type: 'text',
@@ -180,7 +180,7 @@ export const lmstudioChatCompletion = {
                 seed: args.seed,
                 stop: args.stop
             });
-            
+
             return {
                 content: [{
                     type: 'text',
@@ -284,7 +284,7 @@ export const lmstudioChatWithTools = {
                 temperature: args.temperature,
                 max_tokens: args.max_tokens
             });
-            
+
             return {
                 content: [{
                     type: 'text',
@@ -379,14 +379,14 @@ export const lmstudioStructuredOutput = {
                 temperature: args.temperature,
                 max_tokens: args.max_tokens
             });
-            
+
             let parsedContent;
             try {
                 parsedContent = JSON.parse(result.response.choices[0].message.content);
             } catch (e) {
                 parsedContent = result.response.choices[0].message.content;
             }
-            
+
             return {
                 content: [{
                     type: 'text',
@@ -478,7 +478,7 @@ export const lmstudioCompletion = {
                 presence_penalty: args.presence_penalty,
                 stop: args.stop
             });
-            
+
             return {
                 content: [{
                     type: 'text',
@@ -540,7 +540,7 @@ export const lmstudioEmbeddings = {
             const result = await lmStudioService.getEmbeddings(args.input, {
                 model: args.model
             });
-            
+
             return {
                 content: [{
                     type: 'text',
@@ -669,7 +669,7 @@ export const lmstudioUpdateConfig = {
             const oldConfig = lmStudioService.getConfig();
             lmStudioService.updateConfig(args);
             const newConfig = lmStudioService.getConfig();
-            
+
             return {
                 content: [{
                     type: 'text',
@@ -697,6 +697,149 @@ export const lmstudioUpdateConfig = {
     }
 };
 
+// BambiSleep Agent Helper Class
+class BambiSleepAgentHelper {
+    /**
+     * Handle safety-related queries
+     */
+    async handleSafetyQuery(message) {
+        const safetyTips = [
+            "🛡️ **Safety First**: Always listen to BambiSleep content in a safe, private environment",
+            "🚫 **Never While Driving**: Never listen while operating vehicles or machinery",
+            "⏰ **Take Breaks**: Regular breaks between sessions help maintain mental clarity",
+            "💧 **Stay Hydrated**: Keep water nearby and maintain good physical health",
+            "🎯 **Know Your Limits**: Respect your personal boundaries and comfort levels",
+            "🤝 **Seek Support**: Our community is here to help - don't hesitate to ask questions"
+        ];
+
+        let response = "Here are important safety guidelines for BambiSleep:\n\n";
+        response += safetyTips.join('\n\n');
+        response += "\n\nFor more detailed safety information, you can search our knowledge base for 'safety' resources.";
+
+        return response;
+    }
+
+    /**
+     * Handle church-related queries
+     */
+    async handleChurchQuery(message) {
+        const status = {
+            phase: 'Foundation',
+            progress: '14%',
+            members: 42,
+            target: 300,
+            timeline: '2-3 years'
+        };
+
+        let response = "🏛️ **BambiSleep Church Status Update**\n\n";
+        response += `**Current Phase**: ${status.phase}\n`;
+        response += `**Progress**: ${status.progress} complete\n`;
+        response += `**Community**: ${status.members}/${status.target} members\n`;
+        response += `**Timeline**: ${status.timeline} to full establishment\n\n`;
+        response += "**Current Focus Areas**:\n";
+        response += "• Developing comprehensive doctrine and practices\n";
+        response += "• Building supportive community infrastructure\n";
+        response += "• Establishing safety protocols and guidelines\n";
+        response += "• Preparing for Austrian legal registration\n\n";
+        response += "We're making steady progress toward becoming a recognized religious community in Austria!";
+
+        return response;
+    }
+
+    /**
+     * Get greeting response
+     */
+    getGreetingResponse() {
+        const greetings = [
+            "Hello! 👋 Welcome to BambiSleep Church. I'm here to help you explore our knowledge base and community.",
+            "Hi there! 🌟 I'm your guide to BambiSleep Church resources and information. What can I help you with today?",
+            "Welcome! 💫 I can help you search our knowledge base, get safety information, or learn about our church community.",
+            "Greetings! ✨ I'm here to assist with BambiSleep resources, safety guidelines, and church information."
+        ];
+
+        return greetings[Math.floor(Math.random() * greetings.length)];
+    }
+
+    /**
+     * Get help response
+     */
+    getHelpResponse() {
+        let response = "🤖 **How I can help you:**\n\n";
+        response += "**Search Knowledge**: Ask me to search for specific BambiSleep resources\n";
+        response += "  *Example: \"search for beginner guides\"*\n\n";
+        response += "**Safety Information**: Get important safety guidelines and best practices\n";
+        response += "  *Example: \"tell me about safety\" or \"safety tips\"*\n\n";
+        response += "**Church Status**: Learn about our progress toward official recognition\n";
+        response += "  *Example: \"church status\" or \"how is the church developing?\"*\n\n";
+        response += "**General Chat**: Feel free to ask me anything about BambiSleep Church!\n\n";
+        response += "💡 **Tip**: Try specific keywords for better results. I'm constantly learning!";
+
+        return response;
+    }
+
+    /**
+     * Get default response for unrecognized queries
+     */
+    async getDefaultResponse(message) {
+        const responses = [
+            "I'm not sure I understand that specific question. Could you try rephrasing it? I can help with knowledge searches, safety information, or church status updates.",
+            "That's an interesting question! I specialize in BambiSleep resources and church information. Try asking about 'safety', 'search knowledge', or 'church status'.",
+            "I'd love to help! I'm best at answering questions about BambiSleep knowledge, safety guidelines, and our church community. What specific topic interests you?",
+            "I'm still learning! For now, I can help you search our knowledge base, provide safety information, or update you on church progress. What would you like to explore?"
+        ];
+
+        return responses[Math.floor(Math.random() * responses.length)];
+    }
+
+    /**
+     * Determine if query should use local handling vs AI
+     */
+    shouldUseLocalHandling(query) {
+        const localKeywords = [
+            'safety', 'safe', 'safety tips', 'guidelines',
+            'church', 'status', 'progress', 'community',
+            'hello', 'hi', 'hey', 'greetings',
+            'help', 'what can you do', 'how can you help'
+        ];
+
+        const lowerQuery = query.toLowerCase();
+        return localKeywords.some(keyword => lowerQuery.includes(keyword));
+    }
+
+    /**
+     * Handle local queries without AI
+     */
+    async handleLocalQuery(query) {
+        const lowerQuery = query.toLowerCase();
+
+        // Safety queries
+        if (lowerQuery.includes('safety') || lowerQuery.includes('safe') || lowerQuery.includes('guidelines')) {
+            return await this.handleSafetyQuery(query);
+        }
+
+        // Church status queries
+        if (lowerQuery.includes('church') || lowerQuery.includes('status') || lowerQuery.includes('progress')) {
+            return await this.handleChurchQuery(query);
+        }
+
+        // Greeting queries
+        if (lowerQuery.includes('hello') || lowerQuery.includes('hi') || lowerQuery.includes('hey') || lowerQuery.includes('greetings')) {
+            return this.getGreetingResponse();
+        }
+
+        // Help queries
+        if (lowerQuery.includes('help') || lowerQuery.includes('what can you do') || lowerQuery.includes('how can you help')) {
+            return this.getHelpResponse();
+        }
+
+        // Default fallback
+        return await this.getDefaultResponse(query);
+    }
+}
+
+// Create instance of helper
+const bambiAgentHelper = new BambiSleepAgentHelper();
+
 // Tool: BambiSleep-specific AI Agent
 export const lmstudioBambiAgent = {
     name: 'lmstudio-bambi-agent',
@@ -723,12 +866,37 @@ export const lmstudioBambiAgent = {
                 type: 'number',
                 minimum: 100,
                 maximum: 2048
+            },
+            useLocalHandling: {
+                type: 'boolean',
+                description: 'Use local handling for common queries instead of AI (default: true)'
             }
         },
         required: ['query']
     },
     async handler(args) {
         try {
+            // Check if we should use local handling
+            const useLocal = args.useLocalHandling !== false && bambiAgentHelper.shouldUseLocalHandling(args.query);
+
+            if (useLocal) {
+                // Handle locally without AI
+                const response = await bambiAgentHelper.handleLocalQuery(args.query);
+                return {
+                    content: [{
+                        type: 'text',
+                        text: JSON.stringify({
+                            success: true,
+                            response: response,
+                            context: args.context || 'general',
+                            handledLocally: true,
+                            usage: { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 }
+                        }, null, 2)
+                    }]
+                };
+            }
+
+            // Use AI for complex queries
             const systemPrompt = {
                 role: 'system',
                 content: `You are a specialized AI assistant for the BambiSleep community. You have deep knowledge about:
@@ -761,7 +929,7 @@ Respond helpfully while maintaining safety and community standards.`
                 temperature: args.temperature || 0.7,
                 max_tokens: args.max_tokens || 1024
             });
-            
+
             return {
                 content: [{
                     type: 'text',
@@ -769,6 +937,7 @@ Respond helpfully while maintaining safety and community standards.`
                         success: true,
                         response: result.response.choices[0].message.content,
                         context: args.context || 'general',
+                        handledLocally: false,
                         usage: result.usage,
                         model: result.model
                     }, null, 2)
@@ -776,15 +945,35 @@ Respond helpfully while maintaining safety and community standards.`
             };
         } catch (error) {
             log.error(`LMStudio Bambi agent error: ${error.message}`);
-            return {
-                content: [{
-                    type: 'text',
-                    text: JSON.stringify({
-                        success: false,
-                        error: error.message
-                    }, null, 2)
-                }]
-            };
+
+            // Fallback to local handling if AI fails
+            try {
+                const fallbackResponse = await bambiAgentHelper.getDefaultResponse(args.query);
+                return {
+                    content: [{
+                        type: 'text',
+                        text: JSON.stringify({
+                            success: true,
+                            response: fallbackResponse,
+                            context: args.context || 'general',
+                            handledLocally: true,
+                            fallback: true,
+                            error: error.message
+                        }, null, 2)
+                    }]
+                };
+            } catch (fallbackError) {
+                return {
+                    content: [{
+                        type: 'text',
+                        text: JSON.stringify({
+                            success: false,
+                            error: error.message,
+                            fallbackError: fallbackError.message
+                        }, null, 2)
+                    }]
+                };
+            }
         }
     }
 };
