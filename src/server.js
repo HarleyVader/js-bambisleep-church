@@ -9,6 +9,8 @@ import geoip from 'geoip-lite';
 import { spawn } from 'child_process';
 import { webAgent } from './services/SimpleWebAgent.js';
 import { McpAgent } from './mcp/McpAgent.js';
+import { log } from './utils/logger.js';
+import { config } from './utils/config.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -16,27 +18,37 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer);
-const PORT = process.env.PORT || 7070;
-const HOST = process.env.HOST || '0.0.0.0';
+const PORT = config.server.port;
+const HOST = config.server.host;
 
 // Audio playback state
 let audioProcess = null;
-const AUDIO_URL = 'https://cdn.bambicloud.com/8eca4b4a-ba32-480f-b90f-9bd8eb54ebb7.mp3';
+const AUDIO_URL = config.audio.url;
 
-// Initialize MCP Agent
+// Initialize MCP Agent with worker system
 const mcpAgent = new McpAgent({
-    lmstudioUrl: process.env.LMSTUDIO_URL || 'http://localhost:7777/v1/chat/completions',
-    model: 'llama-3.2-8x3b-moe-dark-champion-instruct-uncensored-abliterated-18.4b',
-    maxIterations: 10,
-    temperature: 0.7
+    lmstudioUrl: config.lmstudio.url,
+    model: config.lmstudio.model,
+    maxIterations: config.agent.maxIterations,
+    temperature: config.lmstudio.temperature
 });
+
+// Start worker system
+(async () => {
+    try {
+        await mcpAgent.lmstudioManager.initialize();
+        log.success('LMStudio worker system initialized');
+    } catch (error) {
+        log.error(`Worker initialization failed: ${error.message}`);
+    }
+})();
 
 // Set EJS as the view engine
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, '../views'));
+app.set('views', config.paths.views);
 
 // Serve static files from public/
-app.use(express.static(path.join(__dirname, '../public')));
+app.use(express.static(config.paths.public));
 
 // Parse JSON bodies
 app.use(express.json());
@@ -70,11 +82,9 @@ app.use((req, res, next) => {
 // Load knowledge data
 let knowledgeData = [];
 try {
-    const knowledgePath = path.join(__dirname, 'knowledge', 'knowledge.json');
-    knowledgeData = JSON.parse(fs.readFileSync(knowledgePath, 'utf-8'));
-    console.log(`✅ Loaded ${knowledgeData.length} knowledge entries`);
+    knowledgeData = JSON.parse(fs.readFileSync(config.paths.knowledge, 'utf-8'));
 } catch (error) {
-    console.error('❌ Error loading knowledge:', error.message);
+    log.error(`Knowledge loading failed: ${error.message}`);
 }
 
 // Routes
@@ -205,7 +215,7 @@ app.post('/api/audio/play', (req, res) => {
         ]);
 
         playProcess.on('error', (error) => {
-            console.error('❌ Audio playback error:', error.message);
+
         });
 
         res.json({
@@ -216,7 +226,7 @@ app.post('/api/audio/play', (req, res) => {
         });
 
     } catch (error) {
-        console.error('❌ Audio error:', error.message);
+
         res.status(500).json({
             success: false,
             error: error.message
@@ -258,7 +268,7 @@ app.post('/api/mcp/chat', async (req, res) => {
         });
 
     } catch (error) {
-        console.error('❌ MCP Chat error:', error.message);
+
         res.status(500).json({
             success: false,
             error: error.message
@@ -302,13 +312,13 @@ app.get('/api/mcp/tools', (req, res) => {
 
 // Socket.io for agent chat
 io.on('connection', (socket) => {
-    console.log('💬 Agent chat client connected:', socket.id);
+
 
     // Handle MCP Agent messages
     socket.on('mcp:message', async (data) => {
         try {
             const { message } = data;
-            console.log('📩 MCP User message:', message);
+
 
             socket.emit('mcp:typing', { isTyping: true });
 
@@ -324,7 +334,7 @@ io.on('connection', (socket) => {
             });
 
         } catch (error) {
-            console.error('❌ MCP Agent error:', error.message);
+
             socket.emit('mcp:error', {
                 error: error.message,
                 timestamp: new Date().toISOString()
@@ -336,7 +346,7 @@ io.on('connection', (socket) => {
     socket.on('agent:message', async (data) => {
         try {
             const { message } = data;
-            console.log('📩 User message:', message);
+
 
             // Send typing indicator
             socket.emit('agent:typing', { isTyping: true });
@@ -354,7 +364,7 @@ io.on('connection', (socket) => {
             });
 
         } catch (error) {
-            console.error('❌ Agent error:', error.message);
+
             socket.emit('agent:error', {
                 error: error.message,
                 timestamp: new Date().toISOString()
@@ -363,13 +373,13 @@ io.on('connection', (socket) => {
     });
 
     socket.on('disconnect', () => {
-        console.log('👋 Agent chat client disconnected:', socket.id);
+
     });
 });
 
 // Initialize web agent
 async function initializeAgent() {
-    console.log('🤖 Initializing SimpleWebAgent...');
+
     const success = await webAgent.initialize();
     if (success) {
         console.log('✅ SimpleWebAgent ready for web chat');
@@ -380,16 +390,13 @@ async function initializeAgent() {
 
 // Start server
 httpServer.listen(PORT, HOST, async () => {
-    console.log(`🌟 BambiSleep Church server running on http://${HOST}:${PORT}`);
-    console.log(`📚 Knowledge entries: ${knowledgeData.length}`);
-
-    // Initialize agent after server starts
+    log.success(`Server running on http://${HOST}:${PORT}`);
     await initializeAgent();
 });
 
 // Cleanup on exit
 process.on('SIGINT', async () => {
-    console.log('\n⚠️  Shutting down...');
+    log.warn('Shutting down...');
     if (audioProcess) {
         audioProcess.kill();
     }

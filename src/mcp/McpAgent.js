@@ -4,70 +4,45 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import * as cheerio from 'cheerio';
+import { log } from '../utils/logger.js';
+import { LMStudioManager } from '../utils/lmstudio-manager.js';
+import { config } from '../utils/config.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 class McpAgent {
-    constructor(config = {}) {
-        this.lmstudioUrl = config.lmstudioUrl || 'http://localhost:1234/v1/chat/completions';
-        this.model = config.model || 'llama-3.2-8x3b-moe-dark-champion-instruct-uncensored-abliterated-18.4b';
-        this.maxIterations = config.maxIterations || 10;
-        this.temperature = config.temperature || 0.7;
+    constructor(userConfig = {}) {
+        this.lmstudioUrl = userConfig.lmstudioUrl || config.lmstudio.url;
+        this.model = userConfig.model || config.lmstudio.model;
+        this.maxIterations = userConfig.maxIterations || config.agent.maxIterations;
+        this.temperature = userConfig.temperature || config.lmstudio.temperature;
         this.conversationHistory = [];
         this.knowledgeData = [];
-        this.modelCheckInterval = null;
+        this.lmstudioManager = new LMStudioManager();
 
         // Load knowledge base
         this.loadKnowledge();
-        
-        // Check model on initialization
-        this.checkModel();
+
+        // Initialize worker system
+        this.initializeWorker();
+    }
+
+    async initializeWorker() {
+        await this.lmstudioManager.initialize();
     }
 
     loadKnowledge() {
         try {
-            const knowledgePath = path.join(__dirname, '../knowledge/knowledge.json');
-            this.knowledgeData = JSON.parse(fs.readFileSync(knowledgePath, 'utf-8'));
-            console.log(`✅ Agent: Loaded ${this.knowledgeData.length} knowledge entries`);
+            this.knowledgeData = JSON.parse(fs.readFileSync(config.paths.knowledge, 'utf-8'));
         } catch (error) {
-            console.error('❌ Agent: Error loading knowledge:', error.message);
+            log.error(`Knowledge loading failed: ${error.message}`);
         }
     }
 
     // Check if LMStudio has a model loaded
     async checkModel() {
-        try {
-            const baseUrl = this.lmstudioUrl.replace('/v1/chat/completions', '');
-            const response = await axios.get(`${baseUrl}/v1/models`, { timeout: 5000 });
-            const models = response.data.data;
-
-            if (models.length === 0) {
-                console.log('\n⚠️  WARNING: LMStudio has NO MODELS LOADED!');
-                console.log('   Server:', baseUrl);
-                console.log('   📝 Action needed: Load model in LMStudio');
-                console.log(`   Model required: ${this.model}`);
-                console.log('   ℹ️  Agent will retry automatically...\n');
-                
-                // Set up auto-retry every 30 seconds
-                if (!this.modelCheckInterval) {
-                    this.modelCheckInterval = setInterval(() => this.checkModel(), 30000);
-                }
-            } else {
-                console.log('✅ Agent: LMStudio model check passed');
-                console.log(`   Loaded models: ${models.map(m => m.id).join(', ')}`);
-                
-                // Stop checking if model is found
-                if (this.modelCheckInterval) {
-                    clearInterval(this.modelCheckInterval);
-                    this.modelCheckInterval = null;
-                }
-            }
-        } catch (error) {
-            console.error('❌ Agent: Cannot reach LMStudio server');
-            console.error(`   Error: ${error.message}`);
-            console.error(`   URL: ${this.lmstudioUrl}`);
-        }
+        return await this.lmstudioManager.checkModel();
     }
 
     // Define available MCP tools
@@ -136,7 +111,7 @@ class McpAgent {
 
     // Execute MCP tool
     async executeTool(toolName, args) {
-        console.log(`🔧 Executing tool: ${toolName}`, args);
+
 
         try {
             switch (toolName) {
@@ -153,7 +128,7 @@ class McpAgent {
                     return { error: `Unknown tool: ${toolName}` };
             }
         } catch (error) {
-            console.error(`❌ Tool execution error:`, error.message);
+
             return { error: error.message };
         }
     }
@@ -273,52 +248,72 @@ class McpAgent {
         }
     }
 
-    // Call LMStudio API
+    // Call LMStudio via worker (simplified - no tools support for now)
     async callLMStudio(messages, tools = null) {
         try {
-            const payload = {
-                model: this.model,
-                messages: messages,
-                temperature: this.temperature,
-                max_tokens: 2000,
-                stream: false
+            // For tool-enabled conversations, we'll use a simple approach
+            // Convert messages to a single prompt for the worker
+            const prompt = this.messagesToPrompt(messages, tools);
+
+            // Use worker to get response
+            const response = await this.lmstudioManager.sendChat(prompt, 'agent', 'system');
+
+            // Convert back to OpenAI format
+            return {
+                role: 'assistant',
+                content: response.response,
+                // For now, no tool calls in simplified mode
+                tool_calls: null
             };
 
-            if (tools && tools.length > 0) {
-                payload.tools = tools;
-                payload.tool_choice = 'auto';
-            }
-
-            const response = await axios.post(this.lmstudioUrl, payload, {
-                headers: { 'Content-Type': 'application/json' },
-                timeout: 60000
-            });
-
-            return response.data.choices[0].message;
-
         } catch (error) {
-            console.error('❌ LMStudio API error:', error.message);
-            
-            // Better error messages
-            if (error.response?.data?.error) {
-                const lmsError = error.response.data.error;
-                if (lmsError.code === 'model_not_found') {
-                    throw new Error('No model loaded in LMStudio. Please load a model and try again.');
-                }
-                throw new Error(`LMStudio error: ${lmsError.message}`);
+            if (error.message.includes('timeout')) {
+                throw new Error('LMStudio request timeout. Please try again.');
             }
-            
-            if (error.code === 'ECONNREFUSED') {
-                throw new Error('Cannot connect to LMStudio server. Is it running?');
-            }
-            
             throw new Error(`LMStudio call failed: ${error.message}`);
         }
     }
 
+    // Convert OpenAI messages format to simple prompt for worker
+    messagesToPrompt(messages, tools = null) {
+        let prompt = '';
+
+        for (const message of messages) {
+            switch (message.role) {
+                case 'system':
+                    prompt += `System: ${message.content}\n\n`;
+                    break;
+                case 'user':
+                    prompt += `User: ${message.content}\n\n`;
+                    break;
+                case 'assistant':
+                    prompt += `Assistant: ${message.content}\n\n`;
+                    break;
+                case 'tool':
+                    prompt += `Tool Result (${message.name}): ${message.content}\n\n`;
+                    break;
+            }
+        }
+
+        // Add tool information if available
+        if (tools && tools.length > 0) {
+            prompt += 'Available Tools:\n';
+            tools.forEach(tool => {
+                prompt += `- ${tool.function.name}: ${tool.function.description}\n`;
+            });
+            prompt += '\nPlease respond conversationally. Tool calling is not supported in this mode.\n\n';
+        }
+
+        return prompt.trim();
+    }
+
     // Main agentic workflow loop
     async chat(userMessage) {
-        console.log(`\n💬 User: ${userMessage}`);
+        // Validate LMStudio connection and auto-load model if needed
+        const modelLoaded = await this.lmstudioManager.checkModel();
+        if (!modelLoaded) {
+            throw new Error('No model loaded in LMStudio. Please load a model and try again.');
+        }
 
         // Add user message to history
         this.conversationHistory.push({
@@ -331,7 +326,7 @@ class McpAgent {
 
         while (iteration < this.maxIterations) {
             iteration++;
-            console.log(`\n🔄 Iteration ${iteration}/${this.maxIterations}`);
+
 
             // Call LMStudio with tools
             const assistantMessage = await this.callLMStudio(
@@ -353,7 +348,7 @@ class McpAgent {
                     const toolName = toolCall.function.name;
                     const toolArgs = JSON.parse(toolCall.function.arguments);
 
-                    console.log(`🔧 Tool Call: ${toolName}`);
+
 
                     const toolResult = await this.executeTool(toolName, toolArgs);
 
@@ -365,7 +360,7 @@ class McpAgent {
                         content: JSON.stringify(toolResult, null, 2)
                     });
 
-                    console.log(`✅ Tool Result: ${JSON.stringify(toolResult).substring(0, 200)}...`);
+
                 }
 
                 // Continue loop to get assistant's response with tool results
@@ -379,7 +374,7 @@ class McpAgent {
                 });
 
                 finalResponse = assistantMessage.content;
-                console.log(`\n🤖 Assistant: ${finalResponse}`);
+
                 break;
             }
         }
@@ -399,7 +394,7 @@ class McpAgent {
     // Reset conversation
     reset() {
         this.conversationHistory = [];
-        console.log('🔄 Conversation reset');
+
     }
 
     // Get conversation summary

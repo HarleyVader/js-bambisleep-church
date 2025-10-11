@@ -10,6 +10,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
+import { config } from '../utils/config.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -17,7 +18,7 @@ const __dirname = path.dirname(__filename);
 // Load knowledge data
 let knowledgeData = [];
 try {
-    const knowledgePath = path.join(__dirname, '../knowledge/knowledge.json');
+    const knowledgePath = config.paths.knowledge;
     knowledgeData = JSON.parse(fs.readFileSync(knowledgePath, 'utf-8'));
     console.log(`✅ MCP: Loaded ${knowledgeData.length} knowledge entries`);
 } catch (error) {

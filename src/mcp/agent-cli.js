@@ -1,5 +1,6 @@
 // CLI Interface for MCP Agent
 import { McpAgent } from './McpAgent.js';
+import { config } from '../utils/config.js';
 import readline from 'readline';
 
 const rl = readline.createInterface({
@@ -8,7 +9,7 @@ const rl = readline.createInterface({
 });
 
 const agent = new McpAgent({
-    lmstudioUrl: process.env.LMSTUDIO_URL || 'http://localhost:1234/v1/chat/completions',
+    lmstudioUrl: config.lmstudio.url,
     model: 'llama-3.2-8x3b-moe-dark-champion-instruct-uncensored-abliterated-18.4b',
     maxIterations: 10,
     temperature: 0.7

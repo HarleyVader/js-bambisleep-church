@@ -13,7 +13,7 @@ export class SimpleWebAgent {
 
     // Initialize MCP connection
     async initialize() {
-        console.log('🔌 SimpleWebAgent: Connecting to MCP server...');
+
 
         try {
             // Create transport for MCP server
@@ -37,12 +37,11 @@ export class SimpleWebAgent {
             const toolsList = await this.mcpClient.listTools();
             this.tools = toolsList.tools;
 
-            console.log('✅ SimpleWebAgent: Connected to MCP server');
-            console.log(`📚 Available tools: ${this.tools.map(t => t.name).join(', ')}`);
+
 
             return true;
         } catch (error) {
-            console.error('❌ SimpleWebAgent: Failed to initialize:', error.message);
+            log.error(`Agent init failed: ${error.message}`);
             return false;
         }
     }
@@ -110,7 +109,7 @@ export class SimpleWebAgent {
     // Execute tool via MCP
     async executeTool(toolName, args) {
         try {
-            console.log(`🔧 Executing tool: ${toolName}`, args);
+
 
             const result = await this.mcpClient.callTool({
                 name: toolName,
@@ -127,7 +126,7 @@ export class SimpleWebAgent {
 
             return JSON.stringify(result, null, 2);
         } catch (error) {
-            console.error(`❌ Tool execution failed:`, error.message);
+
             throw error;
         }
     }
@@ -193,7 +192,7 @@ export class SimpleWebAgent {
             };
 
         } catch (error) {
-            console.error('❌ Chat error:', error.message);
+
             return {
                 response: `❌ Error: ${error.message}`,
                 tool: null,
@@ -299,9 +298,7 @@ Just type naturally and I'll understand!`;
             if (this.mcpClient) {
                 await this.mcpClient.close();
             }
-            console.log('✅ SimpleWebAgent: Cleaned up');
         } catch (error) {
-            console.error('❌ Cleanup error:', error.message);
         }
     }
 }

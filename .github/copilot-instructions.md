@@ -1,12 +1,17 @@
 # GitHub Copilot Instructions - AI Framework
 # **IMPORTANT: DO NOT CHANGE THIS FILE**
 
-## Core Rules: 
-- **Function over form.** 
+## Core Rules:
+- **Function over form.**
 - **Working code over perfect code.**
 - **Less is more.**
+- **NO HARDCODED VALUES.** Use config system always.
+- **DONT MAKE MORE FILES IF POSSIBLE.**
+- **ALWAYS READ FILES** before making changes.
+- **UNDERSTAND FILE RELATIONSHIPS** before coding.
+- **STORE IMPLEMENTATION PLAN** in .tasks/ before coding.
 
-## Core Methodology: KEEP IT SIMPLE => 3 STEPS AGENT LOOP | MK-XII 
+## Core Methodology: KEEP IT SIMPLE => 3 STEPS AGENT LOOP | MK-XII
 
 ### 1. IMAGINE (Planning & Solutions) - **DO 3 TIMES**
 **First IMAGINE Round:**
@@ -22,14 +27,14 @@
 - What files do I need to touch to keep coding to a minimum?
 - What configurations do I need to know to successfully implement this?
 - What is the least amount of work I can do to get this done correctly?
-- Create a **.tasks/<build_name.task>.md** file with the task description and requirements, add [0%]
+- Create a **.tasks/<build_name.task>.md** file with the task description and requirements, add [%COMPLEX%]
 
 **Third IMAGINE Round:**
 ### RULE: Think More, Code Less
-- Always try to do the LEAST possible amount of work, even if it means thinking longer.
-- Final sanity check: Is this the laziest yet correct possible solution?
 - Can I reuse something that already exists?
-- Update **.tasks/<build_name.task>.md** with [%COMPLETION%] percentages for each item.
+- Always do the LEAST possible amount of work, even if it means thinking longer.
+- Final sanity check: Is this the laziest yet correct possible solution?
+- Update **.tasks/<build_name.task>.md** with [%COMPLEX%] percentages for each item.
 
 **IMPORTANT: DO NOT FORGET TO THINK BEFORE DOING THIS**
 
@@ -38,7 +43,7 @@
 - Write the absolute minimum code required
 - One function, one purpose, done
 - Check percentage of completion every itertation
-- Update **.github/codebase-inventory.md** with full list of files with [%COMPLETION%] percentages for each item.
+- Update **.github/codebase-inventory.md** with full list of files with [%COMPLEX%] percentages for each item.
 - If not 100% complete, go back to **Third IMAGINE Round:**
 
 **IMPORTANT: DO NOT FORGET TO THINK BEFORE DOING THIS**
@@ -52,3 +57,17 @@
 - Remove completed task from **.tasks/<build_name.task>.md**
 
 **CRITICAL: When task is complete, STOP. Don't add features, don't improve, don't optimize.**
+
+## Environment Configuration Rules:
+- **ALL configuration must use `import { config } from './utils/config.js'`**
+- **NO hardcoded URLs, ports, paths, or API keys**
+- **Update .env file for all new configuration values**
+- **Use config.section.property pattern for organization**
+- **Provide sensible defaults in config.js**
+
+## File Relationship Awareness:
+- **server.js** → Main entry point, uses config, McpAgent, webAgent
+- **McpAgent.js** → Uses config, LMStudioManager, knowledge data
+- **LMStudioManager.js** → Uses config for all LMStudio settings
+- **config.js** → Central configuration, loads from .env
+- **All paths** → Use config.paths.* instead of hardcoded paths
