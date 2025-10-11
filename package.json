@@ -14,16 +14,11 @@
   "homepage": "https://github.com/HarleyVader/js-bambisleep-church#readme",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "nodemon src/server.js",
-    "frontend:dev": "cd frontend && npm run dev",
-    "frontend:build": "cd frontend && npm run build",
-    "frontend:preview": "cd frontend && npm run preview",
-    "build": "npm run frontend:build",
-    "dev:full": "concurrently \"npm run dev\" \"npm run frontend:dev\"",
+    "dev": "node --watch src/server.js",
+    "setup": "node scripts/install.js",
+    "build": "node scripts/build.js",
     "test": "node tests/test.cjs",
-    "test:full": "node tests/unified-test-suite.cjs",
-    "config": "node scripts/generate-config.js",
-    "config:readme": "node scripts/generate-readme.js"
+    "config": "node scripts/generate-config.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.20.0",
