@@ -40,6 +40,156 @@ try {
     console.log(`ℹ️ MCP: AI tools will fallback gracefully when LM Studio is unavailable`);
 }
 
+// Function Registry for Tool Calling
+class FunctionRegistry {
+    constructor() {
+        this.functions = new Map();
+        this.initializeBuiltInFunctions();
+    }
+
+    register(name, fn, schema) {
+        this.functions.set(name, { function: fn, schema });
+        console.log(`✅ Function Registry: Registered '${name}'`);
+    }
+
+    get(name) {
+        return this.functions.get(name);
+    }
+
+    list() {
+        return Array.from(this.functions.entries()).map(([name, { schema }]) => ({
+            type: 'function',
+            function: {
+                name,
+                ...schema
+            }
+        }));
+    }
+
+    async execute(name, args) {
+        const entry = this.functions.get(name);
+        if (!entry) {
+            throw new Error(`Function '${name}' not found`);
+        }
+
+        try {
+            return await entry.function(args);
+        } catch (error) {
+            throw new Error(`Function '${name}' execution failed: ${error.message}`);
+        }
+    }
+
+    initializeBuiltInFunctions() {
+        // Knowledge search function
+        this.register('search_knowledge_db', async (args) => {
+            return await searchKnowledge(args);
+        }, {
+            description: 'Search the BambiSleep knowledge database',
+            parameters: {
+                type: 'object',
+                properties: {
+                    query: { type: 'string', description: 'Search query' },
+                    limit: { type: 'number', description: 'Max results to return' }
+                },
+                required: ['query']
+            }
+        });
+
+        // Web scraping function
+        this.register('fetch_web_content', async (args) => {
+            return await fetchWebpage(args);
+        }, {
+            description: 'Fetch and analyze content from a webpage',
+            parameters: {
+                type: 'object',
+                properties: {
+                    url: { type: 'string', description: 'URL to fetch' }
+                },
+                required: ['url']
+            }
+        });
+
+        // Time function
+        this.register('get_current_time', async () => {
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: JSON.stringify({
+                            current_time: new Date().toISOString(),
+                            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                            timestamp: Date.now()
+                        }, null, 2)
+                    }
+                ]
+            };
+        }, {
+            description: 'Get the current date and time',
+            parameters: {
+                type: 'object',
+                properties: {}
+            }
+        });
+
+        // Knowledge statistics function
+        this.register('get_knowledge_stats', async () => {
+            return await getKnowledgeStats({});
+        }, {
+            description: 'Get statistics about the knowledge database',
+            parameters: {
+                type: 'object',
+                properties: {}
+            }
+        });
+
+        // Calculator function
+        this.register('calculate', async (args) => {
+            const { expression } = args;
+            try {
+                // Simple safe math evaluation
+                const result = Function('"use strict"; return (' + expression.replace(/[^0-9+\-*/.() ]/g, '') + ')')();
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: JSON.stringify({
+                                expression,
+                                result,
+                                timestamp: new Date().toISOString()
+                            }, null, 2)
+                        }
+                    ]
+                };
+            } catch (error) {
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: JSON.stringify({
+                                expression,
+                                error: 'Invalid mathematical expression',
+                                timestamp: new Date().toISOString()
+                            }, null, 2)
+                        }
+                    ]
+                };
+            }
+        }, {
+            description: 'Perform mathematical calculations',
+            parameters: {
+                type: 'object',
+                properties: {
+                    expression: { type: 'string', description: 'Mathematical expression to evaluate' }
+                },
+                required: ['expression']
+            }
+        });
+    }
+}
+
+// Initialize function registry
+const functionRegistry = new FunctionRegistry();
+
 // Helper functions for HTTP endpoints
 async function searchKnowledge(args) {
     const { query, limit = 10 } = args;
@@ -229,7 +379,9 @@ async function chatCompletion(args) {
         system_prompt,
         temperature = config.lmstudio.temperature,
         max_tokens = config.lmstudio.maxTokens,
-        stream = false
+        stream = false,
+        enable_tools = false,
+        max_turns = 5
     } = args;
 
     try {
@@ -240,27 +392,95 @@ async function chatCompletion(args) {
         }
         chatMessages.push(...messages);
 
-        const completion = await openaiClient.chat.completions.create({
-            model: config.lmstudio.model,
-            messages: chatMessages,
-            temperature: temperature,
-            max_tokens: max_tokens,
-            top_p: config.lmstudio.topP,
-            frequency_penalty: config.lmstudio.frequencyPenalty,
-            presence_penalty: config.lmstudio.presencePenalty,
-            stream: stream
-        });
+        let conversationMessages = [...chatMessages];
+        let turnCount = 0;
+        let finalResponse = null;
+
+        while (turnCount < max_turns) {
+            const requestPayload = {
+                model: config.lmstudio.model,
+                messages: conversationMessages,
+                temperature: temperature,
+                max_tokens: max_tokens,
+                top_p: config.lmstudio.topP,
+                frequency_penalty: config.lmstudio.frequencyPenalty,
+                presence_penalty: config.lmstudio.presencePenalty,
+                stream: stream
+            };
+
+            // Add tools if enabled
+            if (enable_tools && turnCount === 0) {
+                requestPayload.tools = functionRegistry.list();
+            }
+
+            const completion = await openaiClient.chat.completions.create(requestPayload);
+            const choice = completion.choices[0];
+
+            // Check if model requested tool calls
+            if (choice.message.tool_calls && choice.message.tool_calls.length > 0) {
+                // Add assistant's tool call message to conversation
+                conversationMessages.push({
+                    role: 'assistant',
+                    content: null,
+                    tool_calls: choice.message.tool_calls
+                });
+
+                // Execute each tool call
+                for (const toolCall of choice.message.tool_calls) {
+                    try {
+                        const functionName = toolCall.function.name;
+                        const functionArgs = JSON.parse(toolCall.function.arguments);
+
+                        console.log(`🔧 Executing function: ${functionName}`, functionArgs);
+
+                        const result = await functionRegistry.execute(functionName, functionArgs);
+
+                        // Add tool result to conversation
+                        conversationMessages.push({
+                            role: 'tool',
+                            content: JSON.stringify(result),
+                            tool_call_id: toolCall.id
+                        });
+
+                    } catch (error) {
+                        // Add error result to conversation
+                        conversationMessages.push({
+                            role: 'tool',
+                            content: JSON.stringify({
+                                error: error.message,
+                                function: toolCall.function.name
+                            }),
+                            tool_call_id: toolCall.id
+                        });
+                    }
+                }
+
+                turnCount++;
+                continue; // Continue conversation loop
+
+            } else {
+                // Normal response without tool calls
+                finalResponse = {
+                    response: choice.message.content,
+                    model: completion.model,
+                    usage: completion.usage,
+                    finish_reason: choice.finish_reason,
+                    tool_calls_made: turnCount,
+                    conversation_length: conversationMessages.length,
+                    timestamp: new Date().toISOString()
+                };
+                break;
+            }
+        }
 
         return {
             content: [
                 {
                     type: 'text',
-                    text: JSON.stringify({
-                        response: completion.choices[0].message.content,
-                        model: completion.model,
-                        usage: completion.usage,
-                        finish_reason: completion.choices[0].finish_reason,
-                        timestamp: new Date().toISOString()
+                    text: JSON.stringify(finalResponse || {
+                        error: 'Max conversation turns reached',
+                        turns: turnCount,
+                        conversation_length: conversationMessages.length
                     }, null, 2)
                 }
             ]
@@ -446,6 +666,219 @@ async function listModels(args) {
     }
 }
 
+// Advanced Agent Tool with Function Calling
+async function advancedAgent(args) {
+    if (!openaiClient) {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        status: 'unavailable',
+                        error: 'LM Studio not available',
+                        message: 'Agent requires LM Studio for function calling capabilities'
+                    }, null, 2)
+                }
+            ]
+        };
+    }
+
+    const {
+        user_input,
+        system_prompt = `You are an advanced AI agent with access to various tools and functions.
+        You can search knowledge databases, fetch web content, perform calculations, and get current time.
+        Use the available tools to provide comprehensive and helpful responses to user requests.
+        Always explain your thought process when using tools.`,
+        max_turns = 10,
+        temperature = 0.7
+    } = args;
+
+    try {
+        const conversation = [
+            { role: 'system', content: system_prompt },
+            { role: 'user', content: user_input }
+        ];
+
+        let turnCount = 0;
+        let toolCallsMade = [];
+
+        while (turnCount < max_turns) {
+            const completion = await openaiClient.chat.completions.create({
+                model: config.lmstudio.model,
+                messages: conversation,
+                tools: functionRegistry.list(),
+                temperature: temperature,
+                max_tokens: config.lmstudio.maxTokens
+            });
+
+            const choice = completion.choices[0];
+
+            if (choice.message.tool_calls && choice.message.tool_calls.length > 0) {
+                // Add assistant's tool call message
+                conversation.push({
+                    role: 'assistant',
+                    content: null,
+                    tool_calls: choice.message.tool_calls
+                });
+
+                // Execute tool calls
+                for (const toolCall of choice.message.tool_calls) {
+                    try {
+                        const functionName = toolCall.function.name;
+                        const functionArgs = JSON.parse(toolCall.function.arguments);
+
+                        console.log(`🤖 Agent executing: ${functionName}`, functionArgs);
+
+                        const result = await functionRegistry.execute(functionName, functionArgs);
+
+                        toolCallsMade.push({
+                            function: functionName,
+                            arguments: functionArgs,
+                            result: result,
+                            timestamp: new Date().toISOString()
+                        });
+
+                        conversation.push({
+                            role: 'tool',
+                            content: JSON.stringify(result),
+                            tool_call_id: toolCall.id
+                        });
+
+                    } catch (error) {
+                        conversation.push({
+                            role: 'tool',
+                            content: JSON.stringify({
+                                error: error.message,
+                                function: toolCall.function.name
+                            }),
+                            tool_call_id: toolCall.id
+                        });
+                    }
+                }
+
+                turnCount++;
+                continue;
+
+            } else {
+                // Final response
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: JSON.stringify({
+                                response: choice.message.content,
+                                tool_calls_made: toolCallsMade,
+                                conversation_turns: turnCount,
+                                model: completion.model,
+                                timestamp: new Date().toISOString()
+                            }, null, 2)
+                        }
+                    ]
+                };
+            }
+        }
+
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        error: 'Max conversation turns reached',
+                        tool_calls_made: toolCallsMade,
+                        turns: turnCount
+                    }, null, 2)
+                }
+            ]
+        };
+
+    } catch (error) {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        user_input: user_input,
+                        status: 'error',
+                        error: error.message
+                    }, null, 2)
+                }
+            ]
+        };
+    }
+}
+
+// Streaming Tool Calls Handler
+async function streamingToolChat(args) {
+    if (!openaiClient) {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        status: 'unavailable',
+                        error: 'LM Studio not available for streaming'
+                    }, null, 2)
+                }
+            ]
+        };
+    }
+
+    const { messages, enable_streaming = true } = args;
+
+    try {
+        const stream = await openaiClient.chat.completions.create({
+            model: config.lmstudio.model,
+            messages: messages,
+            tools: functionRegistry.list(),
+            stream: enable_streaming
+        });
+
+        const chunks = [];
+        const toolCalls = [];
+
+        if (enable_streaming) {
+            for await (const chunk of stream) {
+                chunks.push(chunk);
+
+                if (chunk.choices[0]?.delta?.tool_calls) {
+                    // Accumulate tool calls from streaming chunks
+                    const toolCall = chunk.choices[0].delta.tool_calls[0];
+                    if (toolCall) {
+                        toolCalls.push(toolCall);
+                    }
+                }
+            }
+        }
+
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        chunks_received: chunks.length,
+                        tool_calls_detected: toolCalls.length,
+                        streaming_enabled: enable_streaming,
+                        timestamp: new Date().toISOString()
+                    }, null, 2)
+                }
+            ]
+        };
+
+    } catch (error) {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        error: error.message,
+                        streaming_enabled: enable_streaming
+                    }, null, 2)
+                }
+            ]
+        };
+    }
+}
+
 // Create server instance
 const server = new Server(
     {
@@ -583,6 +1016,76 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             {
                 name: 'list_models',
                 description: 'List available models in LM Studio',
+                inputSchema: {
+                    type: 'object',
+                    properties: {}
+                }
+            },
+            {
+                name: 'advanced_agent',
+                description: 'Advanced AI agent with function calling capabilities and multi-turn conversations',
+                inputSchema: {
+                    type: 'object',
+                    properties: {
+                        user_input: { type: 'string', description: 'User request or query for the agent' },
+                        system_prompt: { type: 'string', description: 'Optional system prompt to guide agent behavior' },
+                        max_turns: { type: 'number', description: 'Maximum conversation turns (default: 10)' },
+                        temperature: { type: 'number', description: 'Response randomness (0.0-2.0)' }
+                    },
+                    required: ['user_input']
+                }
+            },
+            {
+                name: 'enhanced_chat_completion',
+                description: 'Enhanced chat completion with function calling support',
+                inputSchema: {
+                    type: 'object',
+                    properties: {
+                        messages: {
+                            type: 'array',
+                            description: 'Chat message history',
+                            items: {
+                                type: 'object',
+                                properties: {
+                                    role: { type: 'string', enum: ['user', 'assistant', 'system'] },
+                                    content: { type: 'string' }
+                                }
+                            }
+                        },
+                        system_prompt: { type: 'string', description: 'System prompt to guide AI behavior' },
+                        enable_tools: { type: 'boolean', description: 'Enable function calling capabilities' },
+                        max_turns: { type: 'number', description: 'Maximum conversation turns for tool calling' },
+                        temperature: { type: 'number', description: 'Response randomness (0.0-2.0)' },
+                        stream: { type: 'boolean', description: 'Enable streaming response' }
+                    },
+                    required: ['messages']
+                }
+            },
+            {
+                name: 'streaming_tool_chat',
+                description: 'Streaming chat with real-time function calling support',
+                inputSchema: {
+                    type: 'object',
+                    properties: {
+                        messages: {
+                            type: 'array',
+                            description: 'Chat message history',
+                            items: {
+                                type: 'object',
+                                properties: {
+                                    role: { type: 'string' },
+                                    content: { type: 'string' }
+                                }
+                            }
+                        },
+                        enable_streaming: { type: 'boolean', description: 'Enable streaming responses' }
+                    },
+                    required: ['messages']
+                }
+            },
+            {
+                name: 'list_available_functions',
+                description: 'List all available functions in the function registry',
                 inputSchema: {
                     type: 'object',
                     properties: {}
@@ -797,6 +1300,30 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         return await listModels(args);
     }
 
+    if (name === 'advanced_agent') {
+        return await advancedAgent(args);
+    }
+
+    if (name === 'enhanced_chat_completion') {
+        return await chatCompletion(args);
+    }
+
+    if (name === 'streaming_tool_chat') {
+        return await streamingToolChat(args);
+    }
+
+    if (name === 'list_available_functions') {
+        const functions = await functionRegistry.list();
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify(functions, null, 2),
+                },
+            ],
+        };
+    }
+
     throw new Error(`Unknown tool: ${name}`);
 });
 
@@ -973,6 +1500,18 @@ async function main() {
                         case 'list_models':
                             result = await listModels(args);
                             break;
+                        case 'advanced_agent':
+                            result = await advancedAgent(args);
+                            break;
+                        case 'enhanced_chat_completion':
+                            result = await chatCompletion(args);
+                            break;
+                        case 'streaming_tool_chat':
+                            result = await streamingToolChat(args);
+                            break;
+                        case 'list_available_functions':
+                            result = await functionRegistry.list();
+                            break;
                         default:
                             return res.status(400).json({ error: 'Unknown tool', name });
                     }
@@ -1002,7 +1541,11 @@ async function main() {
                     'chat_completion',
                     'generate_embeddings',
                     'semantic_search',
-                    'list_models'
+                    'list_models',
+                    'advanced_agent',
+                    'enhanced_chat_completion',
+                    'streaming_tool_chat',
+                    'list_available_functions'
                 ],
                 capabilities: [
                     'knowledge_search',
@@ -1012,7 +1555,11 @@ async function main() {
                     'chat_completions',
                     'embeddings',
                     'semantic_search',
-                    'model_management'
+                    'model_management',
+                    'function_calling',
+                    'tool_execution',
+                    'multi_turn_conversations',
+                    'streaming_responses'
                 ],
                 lmstudio_compatible: true
             });

@@ -7,11 +7,13 @@ The BambiSleep Church MCP Server has been **FULLY UPGRADED** with comprehensive 
 ## 🎯 Major Enhancements
 
 ### 1. **OpenAI API Integration**
+
 - **Full compatibility** with LM Studio's OpenAI endpoints
 - **Automatic client initialization** with graceful fallbacks
 - **Enterprise-grade error handling** for production use
 
 ### 2. **Advanced AI Tools Suite**
+
 - `generate_response` - AI responses with reasoning capabilities via `/v1/responses`
 - `chat_completion` - Conversational AI via `/v1/chat/completions`
 - `generate_embeddings` - Text embeddings via `/v1/embeddings`
@@ -19,11 +21,13 @@ The BambiSleep Church MCP Server has been **FULLY UPGRADED** with comprehensive 
 - `list_models` - Dynamic model discovery via `/v1/models`
 
 ### 3. **Enhanced Configuration System**
+
 - **Comprehensive OpenAI parameters** (temperature, top_p, top_k, etc.)
 - **Flexible endpoint configuration** for all LM Studio API routes
 - **Backward compatibility** maintained with existing setups
 
 ### 4. **Production-Ready Features**
+
 - **Graceful degradation** when LM Studio is unavailable
 - **Comprehensive test suite** with 10 validation scenarios
 - **Intelligent fallbacks** for offline operation
@@ -34,15 +38,18 @@ The BambiSleep Church MCP Server has been **FULLY UPGRADED** with comprehensive 
 ### AI Generation Tools
 
 #### `generate_response`
+
 **Purpose**: Advanced AI response generation with reasoning
 **Endpoint**: Uses LM Studio's `/v1/responses`
 **Features**:
+
 - Reasoning effort control (low/medium/high)
 - Stateful conversations via `previous_response_id`
 - Streaming support
 - Enhanced context understanding
 
 **Usage**:
+
 ```json
 {
   "name": "generate_response",
@@ -55,15 +62,18 @@ The BambiSleep Church MCP Server has been **FULLY UPGRADED** with comprehensive 
 ```
 
 #### `chat_completion`
+
 **Purpose**: Conversational AI with system prompts
 **Endpoint**: Uses LM Studio's `/v1/chat/completions`
 **Features**:
+
 - Multi-turn conversations
 - System prompt guidance
 - Temperature and token control
 - OpenAI-compatible message format
 
 **Usage**:
+
 ```json
 {
   "name": "chat_completion",
@@ -81,14 +91,17 @@ The BambiSleep Church MCP Server has been **FULLY UPGRADED** with comprehensive 
 ### Embedding & Search Tools
 
 #### `generate_embeddings`
+
 **Purpose**: Text-to-vector conversion for semantic analysis
 **Endpoint**: Uses LM Studio's `/v1/embeddings`
 **Features**:
+
 - Single text or batch processing
 - Model selection support
 - Usage statistics tracking
 
 **Usage**:
+
 ```json
 {
   "name": "generate_embeddings",
@@ -100,13 +113,16 @@ The BambiSleep Church MCP Server has been **FULLY UPGRADED** with comprehensive 
 ```
 
 #### `semantic_search`
+
 **Purpose**: Enhanced knowledge base search using embeddings
 **Features**:
+
 - Similarity threshold control
 - Intelligent fallback to text search
 - Vector-based relevance scoring
 
 **Usage**:
+
 ```json
 {
   "name": "semantic_search",
@@ -121,14 +137,17 @@ The BambiSleep Church MCP Server has been **FULLY UPGRADED** with comprehensive 
 ### Model Management
 
 #### `list_models`
+
 **Purpose**: Discover available models in LM Studio
 **Endpoint**: Uses LM Studio's `/v1/models`
 **Features**:
+
 - Real-time model discovery
 - Current model identification
 - Configuration status reporting
 
 **Usage**:
+
 ```json
 {
   "name": "list_models",
@@ -172,13 +191,13 @@ config.lmstudio = {
   baseUrl: 'http://localhost:1234/v1',
   apiKey: 'lm-studio',
   model: 'model-identifier',
-  
+
   // Generation parameters
   temperature: 0.7,
   topP: 1.0,
   topK: 50,
   maxTokens: 1000,
-  
+
   // Endpoints
   endpoints: {
     models: '/v1/models',
@@ -193,6 +212,7 @@ config.lmstudio = {
 ## 🧪 Testing & Validation
 
 ### Enhanced Test Suite
+
 The comprehensive test suite validates all functionality:
 
 ```bash
@@ -200,6 +220,7 @@ npm run test:mcp
 ```
 
 **Test Coverage**:
+
 - ✅ Health Check (server status)
 - ✅ MCP Info (metadata validation)
 - ✅ Tools List (8 tools discovery)
@@ -216,18 +237,21 @@ npm run test:mcp
 ## 🎯 Integration Benefits
 
 ### For Developers
+
 - **8 powerful AI tools** ready to use
 - **Production-grade error handling**
 - **Comprehensive documentation** and examples
 - **Backward compatibility** with existing code
 
 ### For Users
+
 - **Advanced AI capabilities** in familiar MCP interface
 - **Seamless LM Studio integration** with zero configuration
 - **Intelligent fallbacks** ensure reliability
 - **Rich conversational AI** for enhanced interactions
 
 ### For System Integrators
+
 - **OpenAI-compatible interface** for easy migration
 - **Flexible configuration** for different deployment scenarios
 - **Health monitoring** and status reporting
@@ -236,6 +260,7 @@ npm run test:mcp
 ## 🚀 Usage Examples
 
 ### Basic AI Chat
+
 ```javascript
 // Via MCP call
 {
@@ -253,10 +278,11 @@ npm run test:mcp
 ```
 
 ### Semantic Knowledge Search
+
 ```javascript
 // Enhanced search with embeddings
 {
-  "method": "tools/call", 
+  "method": "tools/call",
   "params": {
     "name": "semantic_search",
     "arguments": {
@@ -269,6 +295,7 @@ npm run test:mcp
 ```
 
 ### Advanced Reasoning
+
 ```javascript
 // Complex reasoning with follow-up
 {
@@ -294,6 +321,7 @@ npm run test:mcp
 4. **Deploy**: Use existing scripts with enhanced capabilities
 
 ### Backward Compatibility
+
 - All existing tools remain functional
 - No breaking changes to API surface
 - Graceful degradation when LM Studio unavailable
@@ -302,6 +330,7 @@ npm run test:mcp
 ## 🔮 Future Enhancements
 
 ### Planned Features
+
 - **Tool composition** - Chain multiple AI tools together
 - **Custom model integration** - Support for specialized models
 - **Advanced reasoning modes** - Complex multi-step problem solving
