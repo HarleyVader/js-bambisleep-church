@@ -13,10 +13,12 @@
   },
   "homepage": "https://github.com/HarleyVader/js-bambisleep-church#readme",
   "scripts": {
-    "start": "node src/server.js",
+    "start": "NODE_ENV=production node src/server.js",
     "dev": "node --watch src/server.js",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build && cp -r dist/* ../dist/",
+    "build:backend": "node scripts/build.js",
     "setup": "node scripts/install.js",
-    "build": "node scripts/build.js",
     "test": "node tests/test.cjs",
     "config": "node scripts/generate-config.js"
   },
@@ -25,6 +27,7 @@
     "axios": "^1.12.2",
     "cheerio": "^1.1.2",
     "dotenv": "^16.5.0",
+    "ejs": "^3.1.10",
     "express": "^5.1.0",
     "geoip-lite": "^1.4.10",
     "mongodb": "^6.20.0",

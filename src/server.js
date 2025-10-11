@@ -28,12 +28,14 @@ if (config.mcp.enabled) {
     mcpServer = new BambiMcpServer();
 }
 
-// Set EJS as the view engine
-app.set('view engine', 'ejs');
-app.set('views', config.paths.views);
-
-// Serve static files from public/
-app.use(express.static(config.paths.public));
+// Serve static files from React build (production) or public (development)
+if (process.env.NODE_ENV === 'production') {
+    // Serve the React build in production
+    app.use(express.static(config.paths.dist));
+} else {
+    // Serve public files in development
+    app.use(express.static(config.paths.public));
+}
 
 // Parse JSON bodies
 app.use(express.json());
@@ -69,7 +71,7 @@ let knowledgeData = [];
 let originalKnowledgeData = {};
 try {
     originalKnowledgeData = JSON.parse(fs.readFileSync(config.paths.knowledge, 'utf-8'));
-    
+
     // Convert knowledge data to array format for services
     if (Array.isArray(originalKnowledgeData)) {
         knowledgeData = originalKnowledgeData;
@@ -91,68 +93,33 @@ try {
     log.error(`Knowledge loading failed: ${error.message}`);
 }
 
-// Routes
-app.get('/', (req, res) => {
-    const mcpStatus = mcpServer ? mcpServer.getInfo() : null;
+// Serve React app for all frontend routes
+const serveReactApp = (req, res) => {
+    if (process.env.NODE_ENV === 'production') {
+        // In production, serve the built React app
+        res.sendFile(path.join(config.paths.dist, 'index.html'));
+    } else {
+        // In development, serve a simple message or redirect to the dev server
+        res.json({
+            message: 'BambiSleep Church Development Server',
+            note: 'Run `npm run dev:frontend` to start the React development server',
+            api: {
+                knowledge: '/api/knowledge',
+                chat: '/api/chat',
+                mcp: config.mcp.enabled ? '/mcp' : null
+            },
+            reactBuild: 'Available in production mode'
+        });
+    }
+};
 
-    res.render('pages/index', {
-        title: 'Bambi Sleep Church',
-        description: 'Digital Sanctuary for the BambiSleep Community - AI-Powered Spiritual Community',
-        location: req.location,
-        knowledgeCount: knowledgeData.length,
-        mcpEnabled: config.mcp.enabled,
-        mcpStatus: mcpStatus,
-        stats: {
-            members: 42,
-            tools: mcpStatus ? mcpStatus.toolCount : 7,
-            progress: 14,
-            phase: 'Foundation'
-        }
-    });
-});
-
-app.get('/knowledge', (req, res) => {
-    res.render('pages/knowledge', {
-        title: 'Knowledge Base',
-        description: 'Explore our comprehensive BambiSleep knowledge base',
-        knowledge: knowledgeData,
-        location: req.location
-    });
-});
-
-app.get('/mission', (req, res) => {
-    res.render('pages/mission', {
-        title: 'Our Mission',
-        description: 'Establishing BambiSleep Church as a legal Austrian religious community',
-        location: req.location
-    });
-});
-
-app.get('/roadmap', (req, res) => {
-    res.render('pages/roadmap', {
-        title: 'Mission Roadmap',
-        description: 'Strategic timeline for church establishment',
-        location: req.location
-    });
-});
-
-app.get('/agents', (req, res) => {
-    res.render('pages/agents', {
-        title: 'Chat Agent',
-        description: 'Chat with our simple web agent about BambiSleep Church',
-        location: req.location,
-        knowledgeCount: knowledgeData.length
-    });
-});
-
-app.get('/mcp-tools', (req, res) => {
-    res.render('pages/mcp-tools', {
-        title: 'MCP Tools',
-        description: 'Model Context Protocol tool integration for BambiSleep Church',
-        location: req.location,
-        mcpEnabled: config.mcp.enabled
-    });
-});
+// Routes - All serve the React app
+app.get('/', serveReactApp);
+app.get('/knowledge', serveReactApp);
+app.get('/mission', serveReactApp);
+app.get('/roadmap', serveReactApp);
+app.get('/agents', serveReactApp);
+app.get('/mcp-tools', serveReactApp);
 
 
 
