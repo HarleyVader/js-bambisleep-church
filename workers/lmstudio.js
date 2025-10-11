@@ -19,16 +19,24 @@ function initializeConfig() {
     SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
     MAX_COMPLETION_TOKENS = config.lmstudio.maxTokens;
 
-    // Initialize LMStudio SDK client with proper URL
-    const lmStudioBaseUrl = config.lmstudio.url.replace('/v1/chat/completions', '').replace('/v1', '');
+    // Initialize LMStudio SDK client with proper WebSocket URL
+    let lmStudioBaseUrl = config.lmstudio.url.replace('/v1/chat/completions', '').replace('/v1', '');
+    
+    // Convert HTTP URL to WebSocket URL for LMStudio SDK
+    if (lmStudioBaseUrl.startsWith('http://')) {
+        lmStudioBaseUrl = lmStudioBaseUrl.replace('http://', 'ws://');
+    } else if (lmStudioBaseUrl.startsWith('https://')) {
+        lmStudioBaseUrl = lmStudioBaseUrl.replace('https://', 'wss://');
+    }
+    
     lmStudioClient = new LMStudioClient({
         baseUrl: lmStudioBaseUrl
     });
 
-    console.log(`🔧 LM Studio SDK initialized`);
-    console.log(`� LM Studio URL: ${lmStudioBaseUrl}`);
-    console.log(`�🎯 Target model: ${TARGET_MODEL_NAME}`);
-    console.log(`⏱️  Timeout: ${LMS_TIMEOUT}ms`);
+    console.log('LM Studio SDK initialized');
+    console.log('LM Studio WebSocket URL:', lmStudioBaseUrl);
+    console.log('Target model:', TARGET_MODEL_NAME);
+    console.log('Timeout:', LMS_TIMEOUT, 'ms');
 }
 
 // Worker message handling
@@ -69,12 +77,12 @@ if (parentPort) {
 // Auto-load target model using native SDK
 async function autoLoadBestModel() {
     try {
-        console.log(`🔍 Loading target model: ${TARGET_MODEL_NAME}`);
+        console.log(`Loading target model: ${TARGET_MODEL_NAME}`);
 
         // Use LMStudio SDK to load the model
         currentModel = await lmStudioClient.llm.model(TARGET_MODEL_NAME);
 
-        console.log(`🚀 Successfully loaded model: ${TARGET_MODEL_NAME}`);
+        console.log(`Successfully loaded model: ${TARGET_MODEL_NAME}`);
 
         // Notify main thread
         if (parentPort) {
@@ -86,7 +94,7 @@ async function autoLoadBestModel() {
         return true;
 
     } catch (error) {
-        console.error('❌ Auto-load model error:', error.message);
+        console.error('Auto-load model error:', error.message);
 
         // Try common variants of the model name
         const variants = [
@@ -98,9 +106,9 @@ async function autoLoadBestModel() {
 
         for (const variant of variants) {
             try {
-                console.log(`🔄 Trying variant: ${variant}`);
+                console.log(`Trying variant: ${variant}`);
                 currentModel = await lmStudioClient.llm.model(variant);
-                console.log(`✅ Successfully loaded variant: ${variant}`);
+                console.log(`Successfully loaded variant: ${variant}`);
 
                 if (parentPort) {
                     parentPort.postMessage({
@@ -110,7 +118,7 @@ async function autoLoadBestModel() {
                 }
                 return true;
             } catch (variantError) {
-                console.log(`❌ Failed variant ${variant}: ${variantError.message}`);
+                console.log(`Failed variant ${variant}: ${variantError.message}`);
             }
         }
 
@@ -122,12 +130,12 @@ async function autoLoadBestModel() {
 async function getCurrentLoadedModel() {
     try {
         if (currentModel) {
-            console.log(`✅ Model already loaded in memory`);
+            console.log(`Model already loaded in memory`);
             return true;
         }
         return false;
     } catch (error) {
-        console.error('❌ Error checking loaded model:', error.message);
+        console.error('Error checking loaded model:', error.message);
         return false;
     }
 }
@@ -139,17 +147,17 @@ async function initializeModelSystem() {
         const isLoaded = await getCurrentLoadedModel();
 
         if (isLoaded) {
-            console.log(`✅ Target model already loaded in memory`);
+            console.log(`Target model already loaded in memory`);
             return;
         }
 
         // Auto-load the target model
         const loaded = await autoLoadBestModel();
         if (!loaded) {
-            console.error('❌ CRITICAL: Failed to auto-load any model during initialization');
+            console.error('CRITICAL: Failed to auto-load any model during initialization');
         }
     } catch (error) {
-        console.error('❌ Model initialization error:', error.message);
+        console.error('Model initialization error:', error.message);
     }
 }
 
@@ -165,12 +173,12 @@ async function handleMessage(userPrompt, socketId, username) {
 
         // Auto-load model if none is currently loaded
         if (!currentModel) {
-            console.log('🔄 No model loaded, attempting auto-load...');
+            console.log('No model loaded, attempting auto-load...');
 
             const loaded = await autoLoadBestModel();
 
             if (!loaded) {
-                console.error('❌ CRITICAL: Auto-load failed during chat request');
+                console.error('CRITICAL: Auto-load failed during chat request');
                 sendResponse("Sorry, I'm having trouble loading the AI model. Please ensure LM Studio is running.", socketId, username);
                 return;
             }
@@ -205,7 +213,7 @@ async function handleMessage(userPrompt, socketId, username) {
 
         conversation += `\nUser: ${userPrompt}\nAssistant:`;
 
-        console.log(`💬 Sending prompt to model via SDK`);
+        console.log(`Sending prompt to model via SDK`);
 
         // Use LMStudio SDK for response
         const result = await currentModel.respond(conversation, {
@@ -229,7 +237,7 @@ async function handleMessage(userPrompt, socketId, username) {
         sendResponse(finalContent, socketId, username);
 
     } catch (error) {
-        console.error(`❌ Error in handleMessage: ${error.message}`);
+        console.error(`Error in handleMessage: ${error.message}`);
 
         if (error.message.includes('not loaded') || error.message.includes('model')) {
             console.error('Model loading issue detected');
