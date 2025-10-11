@@ -37,38 +37,73 @@ api.interceptors.response.use(
 export const mcpService = {
     // Get MCP server status
     async getStatus() {
-        const response = await api.get('/api/mcp/status');
-        return response.data;
+        try {
+            const response = await api.get('/api/mcp/status');
+            return response.data;
+        } catch (error) {
+            console.warn('MCP status check failed:', error.message);
+            return {
+                status: 'unavailable',
+                message: 'MCP server is not responding'
+            };
+        }
     },
 
     // Get list of MCP tools
     async getTools() {
-        const response = await api.get('/api/mcp/tools');
-        return response.data;
+        try {
+            const response = await api.get('/api/mcp/tools');
+            return response.data;
+        } catch (error) {
+            console.warn('MCP tools fetch failed:', error.message);
+            return {
+                tools: [],
+                count: 0,
+                error: 'MCP tools unavailable'
+            };
+        }
     },
 
     // Call MCP tool via JSON-RPC
     async callTool(toolName, args = {}) {
-        const response = await api.post('/mcp', {
-            jsonrpc: '2.0',
-            id: Date.now(),
-            method: 'tools/call',
-            params: {
-                name: toolName,
-                arguments: args
-            }
-        });
-        return response.data;
+        try {
+            const response = await api.post('/mcp', {
+                jsonrpc: '2.0',
+                id: Date.now(),
+                method: 'tools/call',
+                params: {
+                    name: toolName,
+                    arguments: args
+                }
+            });
+            return response.data;
+        } catch (error) {
+            console.warn(`MCP tool call failed for ${toolName}:`, error.message);
+            return {
+                jsonrpc: '2.0',
+                id: Date.now(),
+                error: { code: -32603, message: `Tool ${toolName} unavailable` }
+            };
+        }
     },
 
     // List all available tools via JSON-RPC
     async listTools() {
-        const response = await api.post('/mcp', {
-            jsonrpc: '2.0',
-            id: Date.now(),
-            method: 'tools/list'
-        });
-        return response.data;
+        try {
+            const response = await api.post('/mcp', {
+                jsonrpc: '2.0',
+                id: Date.now(),
+                method: 'tools/list'
+            });
+            return response.data;
+        } catch (error) {
+            console.warn('MCP tools list failed:', error.message);
+            return {
+                jsonrpc: '2.0',
+                id: Date.now(),
+                result: { tools: [] }
+            };
+        }
     }
 };
 

@@ -21,13 +21,13 @@ try {
     // Build frontend if it exists
     if (existsSync(frontendDir)) {
         console.log('🎨 Building frontend...');
-        
+
         // Ensure frontend dependencies are installed
         execSync('npm install', { stdio: 'inherit', cwd: frontendDir });
-        
+
         // Build frontend
         execSync('npm run build', { stdio: 'inherit', cwd: frontendDir });
-        
+
         console.log('✅ Frontend built successfully!');
     } else {
         console.log('⚠️  No frontend directory found, skipping frontend build');

@@ -417,7 +417,29 @@ app.post('/api/agentic/learning-path', async (req, res) => {
 // MCP endpoint - only if MCP is enabled
 if (config.mcp.enabled && mcpServer) {
     app.use(express.json({ limit: '10mb' }));
-    app.post('/mcp', mcpServer.createHttpHandler());
+
+    // Handle MCP JSON-RPC calls
+    app.post('/mcp', async (req, res) => {
+        try {
+            if (!mcpServer) {
+                return res.status(503).json({
+                    jsonrpc: '2.0',
+                    id: req.body.id || null,
+                    error: { code: -32603, message: 'MCP server not available' }
+                });
+            }
+
+            const result = await mcpServer.handleRequest(req.body);
+            res.json(result);
+        } catch (error) {
+            log.error(`MCP request failed: ${error.message}`);
+            res.status(500).json({
+                jsonrpc: '2.0',
+                id: req.body.id || null,
+                error: { code: -32603, message: error.message }
+            });
+        }
+    });
 
     // MCP status endpoint
     app.get('/api/mcp/status', (req, res) => {
@@ -459,6 +481,30 @@ if (config.mcp.enabled && mcpServer) {
     });
 
     log.info('MCP endpoints configured at /mcp');
+} else {
+    // Fallback endpoints when MCP is disabled
+    app.post('/mcp', (req, res) => {
+        res.status(503).json({
+            jsonrpc: '2.0',
+            id: req.body.id || null,
+            error: { code: -32603, message: 'MCP server is disabled' }
+        });
+    });
+
+    app.get('/api/mcp/status', (req, res) => {
+        res.status(503).json({
+            status: 'disabled',
+            message: 'MCP server is not enabled in configuration'
+        });
+    });
+
+    app.get('/api/mcp/tools', (req, res) => {
+        res.status(503).json({
+            error: 'MCP server is not enabled',
+            tools: [],
+            count: 0
+        });
+    });
 }
 
 // Socket.io for agent chat

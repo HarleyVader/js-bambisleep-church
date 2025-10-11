@@ -104,25 +104,45 @@ const Agents = () => {
         setInputMessage('');
 
         try {
-            // Try to get a response from the agentic system
-            const response = await agenticService.queryKnowledge(messageToSend);
-
-            let agentResponse = {
-                type: 'agent',
-                content: 'I received your message and am processing it. However, the full AI response system is still being integrated.',
-                timestamp: new Date()
-            };
-
-            if (response.result?.content?.[0]?.text) {
-                agentResponse.content = response.result.content[0].text;
+            // Try to get MCP status first
+            const mcpStatus = await mcpService.getStatus();
+            
+            if (mcpStatus.status === 'operational') {
+                // Try to get a response from the agentic system
+                const response = await agenticService.queryKnowledge(messageToSend);
+                
+                let agentResponse = {
+                    type: 'agent',
+                    content: response.result?.content?.[0]?.text || 'I received your message and am processing it.',
+                    timestamp: new Date()
+                };
+                
+                setMessages(prev => [...prev, agentResponse]);
+            } else {
+                // MCP not available, provide fallback response
+                setMessages(prev => [...prev, {
+                    type: 'agent',
+                    content: `Thank you for your message: "${messageToSend}". The AI agent system is currently initializing. Please check back soon for full conversational capabilities.`,
+                    timestamp: new Date()
+                }]);
             }
-
-            setMessages(prev => [...prev, agentResponse]);
         } catch (error) {
             console.error('Failed to get agent response:', error);
+            
+            // Provide helpful fallback response based on message content
+            let fallbackContent = `I received your message about "${messageToSend}". `;
+            
+            if (messageToSend.toLowerCase().includes('knowledge') || messageToSend.toLowerCase().includes('learn')) {
+                fallbackContent += 'For knowledge resources, please visit the Knowledge Base section.';
+            } else if (messageToSend.toLowerCase().includes('help') || messageToSend.toLowerCase().includes('guide')) {
+                fallbackContent += 'For help and guidance, check our Mission page for community guidelines.';
+            } else {
+                fallbackContent += 'The AI system is currently being set up. Thank you for your patience!';
+            }
+            
             setMessages(prev => [...prev, {
                 type: 'system',
-                content: 'Sorry, I encountered an error processing your request. Please try again.',
+                content: fallbackContent,
                 timestamp: new Date()
             }]);
         } finally {
