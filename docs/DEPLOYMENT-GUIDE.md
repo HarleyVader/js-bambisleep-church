@@ -7,11 +7,13 @@ BambiSleep Church features **smart platform-aware configuration** that automatic
 ## 🖥️ Windows Development Setup
 
 ### Prerequisites
+
 - Node.js 18+
 - LMStudio running on port 7777
 - MongoDB Atlas account
 
 ### Installation
+
 ```bash
 git clone https://github.com/HarleyVader/js-bambisleep-church.git
 cd js-bambisleep-church
@@ -19,6 +21,7 @@ npm install
 ```
 
 ### Configuration (.env)
+
 ```bash
 # Server Configuration
 PORT=7070
@@ -35,6 +38,7 @@ MONGODB_URL=mongodb+srv://username:password@cluster.mongodb.net/
 ```
 
 ### Start Development Server
+
 ```bash
 npm start  # Automatically uses LMSTUDIO_URL_LOCAL (localhost:7777)
 ```
@@ -42,6 +46,7 @@ npm start  # Automatically uses LMSTUDIO_URL_LOCAL (localhost:7777)
 ## 🐧 Linux Production Deployment
 
 ### Server Setup
+
 ```bash
 # On Linux server (192.168.0.143)
 git clone https://github.com/HarleyVader/js-bambisleep-church.git
@@ -50,9 +55,11 @@ npm install
 ```
 
 ### Configuration
+
 Uses the same `.env` file - the system automatically detects Linux and uses `LMSTUDIO_URL_REMOTE` to connect to your Windows LMStudio instance.
 
 ### Start Production Server
+
 ```bash
 npm start  # Automatically uses LMSTUDIO_URL_REMOTE (192.168.0.118:7777)
 ```
@@ -78,6 +85,7 @@ if (isWindows && isLocalhost) {
 ## 🌐 Network Configuration
 
 ### LMStudio Accessibility Test
+
 ```bash
 # Test from Linux server to Windows LMStudio
 curl -X GET 'http://192.168.0.118:7777/v1/models' \
@@ -86,16 +94,19 @@ curl -X GET 'http://192.168.0.118:7777/v1/models' \
 ```
 
 ### Firewall Configuration
+
 Ensure Windows firewall allows connections to port 7777 from your Linux server IP.
 
 ## 📊 Verification
 
 ### Development (Windows)
+
 - Server: `http://localhost:7070`
 - LMStudio: `localhost:7777` (local)
 - Status: `✅ LMStudio server connected successfully`
 
 ### Production (Linux)
+
 - Server: `http://192.168.0.143:7070`
 - LMStudio: `192.168.0.118:7777` (remote)
 - Status: `✅ LMStudio server connected successfully`
@@ -113,18 +124,21 @@ Once deployed, access these endpoints:
 ## 🔍 Troubleshooting
 
 ### Connection Issues
+
 1. **Check LMStudio is running** on Windows machine (192.168.0.118:7777)
 2. **Verify network connectivity** from Linux server to Windows machine
 3. **Check firewall settings** on Windows machine
 4. **Verify environment variables** in `.env` file
 
 ### Service Status
+
 ```bash
 # Check system status
 curl http://localhost:7070/api/mcp/status
 ```
 
 ### Log Monitoring
+
 ```bash
 # View server logs
 npm start
@@ -134,6 +148,7 @@ npm start
 ## 🚀 Production Considerations
 
 ### Process Management
+
 ```bash
 # Use PM2 for production
 npm install -g pm2
@@ -143,12 +158,14 @@ pm2 startup
 ```
 
 ### SSL/HTTPS
+
 Configure reverse proxy (nginx) for HTTPS:
+
 ```nginx
 server {
     listen 443 ssl;
     server_name at.bambisleep.church;
-    
+
     location / {
         proxy_pass http://localhost:7070;
         proxy_http_version 1.1;
@@ -163,11 +180,13 @@ server {
 ## 📈 Monitoring
 
 ### Health Checks
+
 - MCP Status: `GET /api/mcp/status`
 - LMStudio Health: Automatic monitoring every 30 seconds
 - MongoDB: Connection status in server logs
 
 ### Performance Metrics
+
 - 43 MCP tools operational
 - Autonomous knowledge building system
 - Real-time chat capabilities

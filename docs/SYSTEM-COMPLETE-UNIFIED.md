@@ -7,11 +7,13 @@
 ## 🏗️ System Architecture
 
 ### 🔧 **Smart Configuration System**
+
 - **Platform-Aware LMStudio Integration** - Automatically uses local (Windows) or remote (Linux) endpoints
 - **Environment-Based Configuration** - All URLs and settings via .env variables
 - **Dynamic Config Generation** - Auto-generates MCP client configurations
 
 ### 🤖 **Autonomous Agentic System**
+
 - **AgenticKnowledgeBuilder** - AI orchestration engine for autonomous knowledge building
 - **Intelligent Content Discovery** - Automated crawling and analysis of BambiSleep resources
 - **Safety-First Processing** - Automated content safety assessment and categorization
@@ -30,11 +32,13 @@
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Node.js 18+
 - MongoDB Atlas connection
 - LMStudio running on port 7777 (Windows) or accessible remotely (Linux)
 
 ### Installation & Setup
+
 ```bash
 git clone https://github.com/HarleyVader/js-bambisleep-church.git
 cd js-bambisleep-church
@@ -44,6 +48,7 @@ npm start             # Starts both web server and MCP server
 ```
 
 ### Environment Configuration
+
 ```bash
 # Server Configuration
 PORT=7070
@@ -69,18 +74,21 @@ MCP_MAX_TOOLS=50
 ## 🔧 Smart Configuration Features
 
 ### Platform-Aware LMStudio Selection
+
 The system automatically detects the runtime environment and selects the appropriate LMStudio endpoint:
 
 - **Windows Development** → Uses `LMSTUDIO_URL_LOCAL` (localhost:7777)
 - **Linux Production** → Uses `LMSTUDIO_URL_REMOTE` (192.168.0.118:7777)
 
 ### Dynamic Configuration Generation
+
 ```bash
 npm run config          # Generate all MCP client configurations
 npm run config:readme   # Update README with current URLs
 ```
 
 Generated configurations:
+
 - `mcp-inspector.json` - MCP Inspector configuration
 - `configs/vscode-mcp.json` - VS Code integration
 - `configs/claude-mcp.json` - Claude Desktop integration
@@ -90,13 +98,16 @@ Generated configurations:
 ### Core Components
 
 #### 🧠 AgenticKnowledgeBuilder
+
 Autonomous AI orchestration engine that:
+
 - Discovers and prioritizes BambiSleep content
 - Coordinates all system services intelligently
 - Builds structured knowledge base automatically
 - Provides personalized learning recommendations
 
 #### 🛠️ Agentic MCP Tools (7 tools)
+
 - `agentic-initialize` - Initialize autonomous system
 - `agentic-start-building` - Start autonomous knowledge building
 - `agentic-get-status` - Check system status and progress
@@ -126,6 +137,7 @@ Safety-focused tools designed specifically for the BambiSleep community:
 ## 🗄️ MongoDB Integration (15 Tools)
 
 Complete database management suite:
+
 - **CRUD Operations** - Create, read, update, delete documents
 - **Aggregation Pipeline** - Complex data analysis and transformations
 - **Index Management** - Performance optimization
@@ -135,6 +147,7 @@ Complete database management suite:
 ## 🧠 LMStudio AI Integration (10 Tools)
 
 Advanced AI capabilities:
+
 - **Chat Completion** - Conversational AI responses
 - **Content Analysis** - Automated safety and quality assessment
 - **Embeddings** - Semantic content understanding
@@ -144,6 +157,7 @@ Advanced AI capabilities:
 ## 🕷️ Web Crawler System (6 Tools)
 
 Intelligent content discovery:
+
 - **Content Extraction** - Respectful bambisleep.info crawling
 - **Link Analysis** - Relationship mapping between resources
 - **Batch Processing** - Efficient bulk content processing
@@ -152,12 +166,14 @@ Intelligent content discovery:
 ## 🚀 Deployment
 
 ### Windows Development
+
 ```bash
 # LMStudio runs locally on port 7777
 npm start  # Uses LMSTUDIO_URL_LOCAL automatically
 ```
 
 ### Linux Production
+
 ```bash
 # Deploy to remote server, connects to Windows LMStudio
 git clone https://github.com/HarleyVader/js-bambisleep-church.git
@@ -170,12 +186,14 @@ npm start  # Uses LMSTUDIO_URL_REMOTE automatically
 ## 🔍 Testing & Monitoring
 
 ### MCP Testing
+
 ```bash
 node test-inspector.js     # Test MCP server functionality
 node test-agentic-system.js # Test autonomous system
 ```
 
 ### Web Interface Access
+
 - **Main Application** - `http://localhost:7070`
 - **Agentic Control Panel** - `http://localhost:7070/agents`
 - **Knowledge Base** - `http://localhost:7070/knowledge`
@@ -187,6 +205,7 @@ node test-agentic-system.js # Test autonomous system
 **Current Phase**: Foundation Building (Phase 1 of 4)
 
 ### Legal Framework
+
 - **Target**: Austrian religious community recognition (§ 7 BekGG)
 - **Requirements**: 300+ committed members, established doctrine, safety protocols
 - **Progress**: Digital sanctuary infrastructure complete
@@ -194,6 +213,7 @@ node test-agentic-system.js # Test autonomous system
 ## 🛡️ Safety & Ethics
 
 ### Safety-First Design
+
 - **Content Safety Assessment** - Automated safety level classification
 - **Age-Appropriate Filtering** - Built-in protection mechanisms
 - **Trigger Warning Generation** - Automatic content warnings
@@ -201,6 +221,7 @@ node test-agentic-system.js # Test autonomous system
 - **Consent Verification** - Safety-first approach to all content
 
 ### Community Guidelines
+
 - **Respectful Interaction** - Supportive community environment
 - **Safety Priority** - Personal wellbeing over experience intensity
 - **Educational Focus** - Learning and growth emphasis
@@ -209,6 +230,7 @@ node test-agentic-system.js # Test autonomous system
 ## 📈 Future Development
 
 ### Planned Enhancements
+
 - **Mobile Application** - Native iOS/Android apps
 - **Advanced AI Models** - Enhanced content analysis capabilities
 - **Multi-language Support** - International community expansion

@@ -19,6 +19,7 @@ BambiSleep Church implements a comprehensive MCP (Model Context Protocol) server
 ### Complete Tool Suite (43 Tools)
 
 #### 🎯 Agentic Orchestration (7 tools)
+
 1. `agentic-initialize` - Initialize autonomous AI system
 2. `agentic-start-building` - Start autonomous knowledge building
 3. `agentic-get-status` - Check system status and progress
@@ -28,6 +29,7 @@ BambiSleep Church implements a comprehensive MCP (Model Context Protocol) server
 7. `agentic-stop-building` - Stop autonomous operations
 
 #### 🌸 BambiSleep Community (5 tools)
+
 1. `search-knowledge` - Search the BambiSleep knowledge base
 2. `get-safety-info` - Access safety guidelines and best practices
 3. `church-status` - Check development progress and milestones
@@ -35,12 +37,15 @@ BambiSleep Church implements a comprehensive MCP (Model Context Protocol) server
 5. `resource-recommendations` - Personalized resource suggestions
 
 #### 🗄️ MongoDB Management (15 tools)
+
 Complete database operations, CRUD, aggregation, indexing, schema analysis
 
 #### 🧠 LMStudio AI (10 tools)
+
 AI-powered content analysis, completion, embeddings, safety assessment
 
 #### 🕷️ Web Crawler (6 tools)
+
 Intelligent content discovery, extraction, processing, and session management
 
 ## 🚀 Quick Start
