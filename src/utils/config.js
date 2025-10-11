@@ -18,7 +18,7 @@ export const config = {
     },
 
     lmstudio: {
-        url: process.env.LMSTUDIO_URL || 'http://localhost:1234/v1/chat/completions',
+        url: process.env.LMSTUDIO_URL_LOCAL || process.env.LMSTUDIO_URL_REMOTE || 'http://localhost:7777/v1/chat/completions',
         model: process.env.LMSTUDIO_MODEL || 'local-model',
         timeout: parseInt(process.env.LMSTUDIO_TIMEOUT) || 30000,
         maxTokens: parseInt(process.env.LMSTUDIO_MAX_TOKENS) || 1000,

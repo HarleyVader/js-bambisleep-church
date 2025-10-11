@@ -5,7 +5,7 @@ import { config } from '../utils/config.js';
 
 class LMStudioService {
     constructor() {
-        this.baseUrl = process.env.LMSTUDIO_URL || 'http://localhost:1234/v1';
+        this.baseUrl = process.env.LMSTUDIO_URL_LOCAL || process.env.LMSTUDIO_URL_REMOTE || 'http://localhost:7777/v1';
         this.apiKey = process.env.LMSTUDIO_API_KEY || 'lm-studio';
         this.model = process.env.LMSTUDIO_MODEL || 'model-identifier';
         this.timeout = parseInt(process.env.LMSTUDIO_TIMEOUT) || 30000;

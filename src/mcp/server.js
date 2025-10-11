@@ -149,7 +149,7 @@ class BambiMcpServer {
             }
 
             // Initialize LMStudio connection
-            if (process.env.LMSTUDIO_URL) {
+            if (process.env.LMSTUDIO_URL_LOCAL || process.env.LMSTUDIO_URL_REMOTE) {
                 log.info('Initializing LMStudio connection...');
                 const lmstudioHealthy = await lmStudioService.isHealthy();
                 if (lmstudioHealthy) {
@@ -158,7 +158,7 @@ class BambiMcpServer {
                     log.warn('⚠️ LMStudio server connection failed, LMStudio tools may not work');
                 }
             } else {
-                log.warn('⚠️ LMSTUDIO_URL not configured, using default localhost:1234');
+                log.warn('⚠️ LMSTUDIO_URL not configured, using default localhost:7777');
             }
 
             // Initialize Web Crawler service
