@@ -7,7 +7,7 @@ BambiSleep Church is a **digital sanctuary** for the BambiSleep community, combi
 ## 🔥 Core Features
 
 - **🧠 AI-Powered MCP Server** - Model Context Protocol integration with specialized BambiSleep tools
-- **📚 Knowledge Base** - Curated safety resources, guides, and community wisdom  
+- **📚 Knowledge Base** - Curated safety resources, guides, and community wisdom
 - **🤖 Interactive Chat Agent** - Get answers about BambiSleep safely and responsibly
 - **🛡️ Safety-First Approach** - Comprehensive safety tools and guidelines
 - **🌍 Community Platform** - Connect with like-minded individuals in a moderated environment
@@ -15,7 +15,7 @@ BambiSleep Church is a **digital sanctuary** for the BambiSleep community, combi
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 18+ 
+- Node.js 18+
 - npm or yarn
 
 ### Installation & Setup
@@ -30,8 +30,8 @@ npm start             # Starts both web server and MCP server
 ### Access Points
 Once running, access these endpoints:
    - Main site: `http://localhost:7070`
-   - MCP Tools: `http://localhost:7070/mcp-tools`
    - Chat Agent: `http://localhost:7070/agents`
+   - Knowledge Base: `http://localhost:7070/knowledge`
 
 ## 🔧 Model Context Protocol (MCP) Integration
 
@@ -39,7 +39,7 @@ BambiSleep Church implements a **full MCP server** with specialized tools for th
 
 ### Available Tools
 - **search-knowledge** - Search our curated knowledge base
-- **get-safety-info** - Access comprehensive safety information  
+- **get-safety-info** - Access comprehensive safety information
 - **church-status** - Get establishment progress updates
 - **community-guidelines** - Access community rules and conduct standards
 - **resource-recommendations** - Get personalized resource suggestions
@@ -82,7 +82,7 @@ claude mcp add --transport http bambisleep-church http://localhost:7070/mcp
 
 ### Available Scripts
 - `npm start` - Run complete application (web + MCP)
-- `npm run start:web` - Web server only  
+- `npm run start:web` - Web server only
 - `npm run start:mcp` - MCP server only
 - `npm run inspector` - Launch MCP Inspector for testing
 - `npm run test` - Run MCP integration tests
@@ -95,7 +95,7 @@ All URLs and endpoints are now managed through environment variables:
 # Generate fresh config files
 npm run config
 
-# Test current configuration  
+# Test current configuration
 node test-inspector.js
 ```
 
@@ -117,7 +117,7 @@ node test-inspector.js
 BambiSleep Church prioritizes **safety and consent** above all else:
 
 - **Always practice safely** with proper precautions
-- **Respect boundaries** - yours and others'  
+- **Respect boundaries** - yours and others'
 - **Get educated** - understand risks and techniques
 - **Community support** - never practice alone without guidance
 - **Professional resources** - access to mental health support

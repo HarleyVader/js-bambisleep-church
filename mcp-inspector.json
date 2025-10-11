@@ -2,14 +2,14 @@
     "mcpServers": {
         "bambisleep-church": {
             "type": "streamable-http",
-            "url": "https://at.bambisleep.church:8080/mcp",
+            "url": "https://at.bambisleep.church:7070/mcp",
             "name": "BambiSleep Church MCP Server",
             "description": "Digital sanctuary and knowledge base for the BambiSleep community",
             "note": "Main MCP server for BambiSleep Church with safety tools and community resources"
         },
         "bambisleep-church-dev": {
             "type": "streamable-http",
-            "url": "http://localhost:8080/mcp",
+            "url": "http://localhost:7070/mcp",
             "name": "BambiSleep Church Development",
             "description": "Development instance with debug logging enabled",
             "env": {
@@ -20,17 +20,17 @@
         },
         "bambisleep-church-claude": {
             "type": "http",
-            "url": "http://localhost:8080/mcp",
+            "url": "http://localhost:7070/mcp",
             "name": "BambiSleep Church for Claude",
             "description": "Configuration optimized for Claude Desktop integration",
             "note": "Use this configuration in Claude Desktop MCP settings"
         },
         "bambisleep-church-vscode": {
             "type": "http",
-            "url": "http://localhost:8080/mcp",
+            "url": "http://localhost:7070/mcp",
             "name": "BambiSleep Church for VS Code",
             "description": "Configuration for VS Code MCP extension",
-            "note": "Use: code --add-mcp \"{\\\"name\\\":\\\"bambisleep-church\\\",\\\"type\\\":\\\"http\\\",\\\"url\\\":\\\"http://localhost:8080/mcp\\\"}\""
+            "note": "Use: code --add-mcp \"{\\\"name\\\":\\\"bambisleep-church\\\",\\\"type\\\":\\\"http\\\",\\\"url\\\":\\\"http://localhost:7070/mcp\\\"}\""
         }
     },
     "inspectorConfig": {
@@ -45,14 +45,12 @@
     },
     "documentation": {
         "endpoints": {
-            "main": "http://localhost:8080",
-            "mcp": "http://localhost:8080/mcp",
-            "inspector": "http://localhost:8080/inspector",
-            "status": "http://localhost:8080/api/mcp/status",
-            "tools": "http://localhost:8080/mcp-tools"
+            "main": "http://localhost:7070",
+            "mcp": "http://localhost:7070/mcp",
+            "status": "http://localhost:7070/api/mcp/status"
         },
         "commands": {
-            "vscode": "code --add-mcp \"{\\\"name\\\":\\\"bambisleep-church\\\",\\\"type\\\":\\\"http\\\",\\\"url\\\":\\\"http://localhost:8080/mcp\\\"}\""
+            "vscode": "code --add-mcp \"{\\\"name\\\":\\\"bambisleep-church\\\",\\\"type\\\":\\\"http\\\",\\\"url\\\":\\\"http://localhost:7070/mcp\\\"}\""
         }
     }
 }

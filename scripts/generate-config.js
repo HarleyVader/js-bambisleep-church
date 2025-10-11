@@ -58,9 +58,7 @@ function generateMcpInspectorConfig() {
             endpoints: {
                 main: config.getBaseUrl(),
                 mcp: config.getMcpUrl(),
-                inspector: config.getUrl('/inspector'),
-                status: config.getUrl('/api/mcp/status'),
-                tools: config.getUrl('/mcp-tools')
+                status: config.getUrl('/api/mcp/status')
             },
             commands: {
                 vscode: `code --add-mcp "{\\"name\\":\\"bambisleep-church\\",\\"type\\":\\"http\\",\\"url\\":\\"${config.getMcpUrl()}\\"}"`
@@ -118,7 +116,6 @@ function main() {
         console.log('\n📋 Configuration URLs:');
         console.log(`   Main Server: ${config.getBaseUrl()}`);
         console.log(`   MCP Endpoint: ${config.getMcpUrl()}`);
-        console.log(`   Inspector UI: ${config.getUrl('/inspector')}`);
         console.log(`   MCP Status: ${config.getUrl('/api/mcp/status')}`);
 
         console.log('\n🔌 VS Code Command:');

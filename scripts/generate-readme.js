@@ -39,8 +39,8 @@ npm start             # Starts both web server and MCP server
 ### Access Points
 Once running, access these endpoints:
    - Main site: \`${config.getBaseUrl()}\`
-   - MCP Tools: \`${config.getUrl('/mcp-tools')}\`
    - Chat Agent: \`${config.getUrl('/agents')}\`
+   - Knowledge Base: \`${config.getUrl('/knowledge')}\`
 
 ## 🔧 Model Context Protocol (MCP) Integration
 
@@ -193,8 +193,8 @@ function main() {
         console.log('\n📋 Updated URLs in README:');
         console.log(`   Main Server: ${config.getBaseUrl()}`);
         console.log(`   MCP Endpoint: ${config.getMcpUrl()}`);
-        console.log(`   Tools: ${config.getUrl('/mcp-tools')}`);
-        console.log(`   Agents: ${config.getUrl('/agents')}`);
+        console.log(`   Chat Agent: ${config.getUrl('/agents')}`);
+        console.log(`   Knowledge: ${config.getUrl('/knowledge')}`);
 
     } catch (error) {
         console.error('❌ Error generating README:', error.message);

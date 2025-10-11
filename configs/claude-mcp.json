@@ -1,7 +1,7 @@
 {
   "bambisleep_church": {
     "type": "http",
-    "url": "http://localhost:8080/mcp",
+    "url": "http://localhost:7070/mcp",
     "name": "BambiSleep Church",
     "description": "Digital sanctuary and knowledge base for the BambiSleep community"
   }

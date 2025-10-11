@@ -127,27 +127,6 @@ app.get('/agents', (req, res) => {
     });
 });
 
-app.get('/mcp-tools', (req, res) => {
-    res.render('pages/mcp-tools', {
-        title: 'MCP Tools',
-        description: 'Model Context Protocol tool integration for BambiSleep Church',
-        location: req.location,
-        mcpEnabled: config.mcp.enabled,
-        config: config
-    });
-});
-
-app.get('/inspector', (req, res) => {
-    res.render('pages/inspector', {
-        title: 'MCP Inspector',
-        description: 'Development and testing tool for BambiSleep Church MCP server',
-        location: req.location,
-        mcpEnabled: config.mcp.enabled,
-        serverStatus: mcpServer ? mcpServer.getInfo() : null,
-        config: config
-    });
-});
-
 
 
 // API endpoint for knowledge
@@ -222,39 +201,6 @@ app.get('/api/stats', (req, res) => {
     });
 });
 
-// MCP Inspector API endpoints
-app.post('/api/inspector/launch', (req, res) => {
-    const { mode = 'http' } = req.body;
-
-    // In a real implementation, you might spawn the inspector process
-    // For now, we'll return configuration information
-    res.json({
-        success: true,
-        mode: mode,
-        message: `Use: npm run inspector:${mode === 'http' ? '' : mode}`,
-        config: {
-            http: 'http://localhost:6274',
-            proxy: 'http://localhost:6277',
-            mcp: config.getMcpUrl()
-        },
-        timestamp: new Date().toISOString()
-    });
-});
-
-app.post('/api/inspector/test', (req, res) => {
-    // Return test information
-    res.json({
-        success: true,
-        message: 'Use: node test-inspector.js',
-        testingMethods: [
-            'Direct test script: node test-inspector.js',
-            `Web interface: ${config.getUrl('/inspector')}`,
-            'HTTP Inspector: npm run inspector',
-            'Test suite: npm run inspector:test'
-        ],
-        timestamp: new Date().toISOString()
-    });
-});
 
 // Audio playback endpoint - client-side HTML audio
 app.post('/api/audio/play', (req, res) => {
