@@ -16,10 +16,10 @@ class SimpleWebAgent {
     async initialize() {
         try {
             log.info('🤖 Initializing SimpleWebAgent...');
-
-            // Initialize MCP Agent
-            await this.mcpAgent.initialize();
-
+            
+            // Initialize MCP Agent worker system
+            await this.mcpAgent.initializeWorker();
+            
             this.isInitialized = true;
             log.success('SimpleWebAgent initialized successfully');
             return true;
@@ -27,9 +27,7 @@ class SimpleWebAgent {
             log.error(`SimpleWebAgent initialization failed: ${error.message}`);
             return false;
         }
-    }
-
-    async chat(message) {
+    }    async chat(message) {
         if (!this.isInitialized) {
             throw new Error('SimpleWebAgent not initialized');
         }
@@ -37,25 +35,13 @@ class SimpleWebAgent {
         try {
             log.info(`Processing chat message: ${message.substring(0, 100)}...`);
 
-            // Use MCP Agent for chat completion
-            const response = await this.mcpAgent.chatCompletion({
-                messages: [
-                    {
-                        role: 'system',
-                        content: 'You are a helpful AI assistant for the BambiSleep Church community. You have access to the BambiSleep knowledge base and web resources. Be friendly, informative, and supportive.'
-                    },
-                    {
-                        role: 'user',
-                        content: message
-                    }
-                ],
-                use_tools: true,
-                max_tool_calls: 3
-            });
+            // Use MCP Agent for chat
+            const response = await this.mcpAgent.chat(message);
 
             const result = {
-                response: response.response?.content || response.content || 'I apologize, but I couldn\'t generate a response.',
-                tool_calls: response.tool_calls || [],
+                response: response.response || 'I apologize, but I couldn\'t generate a response.',
+                iterations: response.iterations || 0,
+                tools_used: response.toolsUsed || 0,
                 timestamp: new Date().toISOString()
             };
 
