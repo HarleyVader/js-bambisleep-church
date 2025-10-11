@@ -5,7 +5,16 @@ import { config } from '../utils/config.js';
 
 class LMStudioService {
     constructor() {
-        this.baseUrl = process.env.LMSTUDIO_URL_LOCAL || process.env.LMSTUDIO_URL_REMOTE || 'http://localhost:7777/v1';
+        // Smart URL selection: prefer REMOTE on Linux/production, LOCAL on Windows/development
+        const isWindows = process.platform === 'win32';
+        const isLocalhost = ['localhost', '127.0.0.1', '0.0.0.0'].includes(process.env.SERVER || '0.0.0.0');
+        
+        if (isWindows && isLocalhost) {
+            this.baseUrl = process.env.LMSTUDIO_URL_LOCAL || process.env.LMSTUDIO_URL_REMOTE || 'http://localhost:7777/v1';
+        } else {
+            this.baseUrl = process.env.LMSTUDIO_URL_REMOTE || process.env.LMSTUDIO_URL_LOCAL || 'http://192.168.0.118:7777/v1';
+        }
+        
         this.apiKey = process.env.LMSTUDIO_API_KEY || 'lm-studio';
         this.model = process.env.LMSTUDIO_MODEL || 'model-identifier';
         this.timeout = parseInt(process.env.LMSTUDIO_TIMEOUT) || 30000;
