@@ -142,7 +142,7 @@ export class LMStudioManager {
                 resolve(false);
                 return;
             }
-            
+
             // For now, assume model is loaded if worker is running
             // This could be enhanced to actually check model status
             resolve(this.isInitialized);
