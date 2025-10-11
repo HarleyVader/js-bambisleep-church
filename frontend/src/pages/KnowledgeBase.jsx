@@ -44,11 +44,13 @@ const KnowledgeBase = () => {
         return ['all', ...Array.from(cats).sort()];
     }, [knowledge]);
 
-    // Filter knowledge entries
-    const filteredEntries = useMemo(() => {
+    // Organize entries by category
+    const organizedCategories = useMemo(() => {
         const entries = Object.entries(knowledge);
+        const categoryGroups = {};
 
-        return entries.filter(([key, entry]) => {
+        // Filter entries first
+        const filteredEntries = entries.filter(([key, entry]) => {
             // Category filter
             if (selectedCategory !== 'all' && entry.category !== selectedCategory) {
                 return false;
@@ -66,13 +68,47 @@ const KnowledgeBase = () => {
             }
 
             return true;
-        }).sort((a, b) => {
-            // Sort by relevance score (descending), then by title
-            const scoreA = a[1].relevanceScore || 0;
-            const scoreB = b[1].relevanceScore || 0;
-            if (scoreA !== scoreB) return scoreB - scoreA;
-            return (a[1].title || '').localeCompare(b[1].title || '');
         });
+
+        // Group by category
+        filteredEntries.forEach(([key, entry]) => {
+            const category = entry.category || 'general';
+            if (!categoryGroups[category]) {
+                categoryGroups[category] = [];
+            }
+            categoryGroups[category].push([key, entry]);
+        });
+
+        // Sort entries within each category by relevance score and title
+        Object.keys(categoryGroups).forEach(category => {
+            categoryGroups[category].sort((a, b) => {
+                const scoreA = a[1].relevanceScore || 0;
+                const scoreB = b[1].relevanceScore || 0;
+                if (scoreA !== scoreB) return scoreB - scoreA;
+                return (a[1].title || '').localeCompare(b[1].title || '');
+            });
+        });
+
+        // Sort categories by priority
+        const categoryPriority = {
+            'official': 1,
+            'safety': 2,
+            'community': 3,
+            'scripts': 4,
+            'general': 5
+        };
+
+        const sortedCategories = Object.keys(categoryGroups).sort((a, b) => {
+            const priorityA = categoryPriority[a] || 99;
+            const priorityB = categoryPriority[b] || 99;
+            if (priorityA !== priorityB) return priorityA - priorityB;
+            return a.localeCompare(b);
+        });
+
+        return sortedCategories.map(category => ({
+            name: category,
+            entries: categoryGroups[category]
+        }));
     }, [knowledge, searchTerm, selectedCategory]);
 
     const handleCategoryChange = (category) => {
@@ -179,80 +215,91 @@ const KnowledgeBase = () => {
 
             {/* Results Count */}
             <div style={{ textAlign: 'center', marginBottom: '2rem', color: 'var(--text-muted)' }}>
-                Showing {filteredEntries.length} of {Object.keys(knowledge).length} entries
+                Showing {organizedCategories.reduce((total, cat) => total + cat.entries.length, 0)} of {Object.keys(knowledge).length} entries
                 {selectedCategory !== 'all' && ` in "${selectedCategory}"`}
                 {searchTerm && ` matching "${searchTerm}"`}
+                {organizedCategories.length > 1 && ` across ${organizedCategories.length} categories`}
             </div>
 
-            {/* Knowledge Grid */}
-            {filteredEntries.length > 0 ? (
-                <div className={styles.grid}>
-                    {filteredEntries.map(([key, entry]) => {
-                        const voteStats = getVoteStats(key);
-                        const netVotes = voteStats.up - voteStats.down;
+            {/* Organized Categories */}
+            {organizedCategories.length > 0 ? (
+                <div className={styles.categoriesContainer}>
+                    {organizedCategories.map((categoryGroup) => (
+                        <div key={categoryGroup.name} className={styles.categorySection}>
+                            <div className={styles.categoryHeader}>
+                                <h2 className={styles.categoryTitle}>
+                                    <span className={`${styles.categoryBadge} ${styles[getCategoryClassName(categoryGroup.name)]}`}>
+                                        {categoryGroup.name.charAt(0).toUpperCase() + categoryGroup.name.slice(1)}
+                                    </span>
+                                    <span className={styles.categoryCount}>
+                                        {categoryGroup.entries.length} {categoryGroup.entries.length === 1 ? 'link' : 'links'}
+                                    </span>
+                                </h2>
+                            </div>
 
-                        return (
-                            <article key={key} className={styles.linkCard}>
-                                <div className={styles.cardHeader}>
-                                    <div className={styles.cardMeta}>
-                                        <span className={`${styles.category} ${styles[getCategoryClassName(entry.category)]}`}>
-                                            {entry.category || 'General'}
-                                        </span>
-                                        {entry.platform && (
-                                            <span className={styles.platform}>
-                                                <Globe size={12} />
-                                                {entry.platform}
-                                            </span>
-                                        )}
-                                    </div>
+                            <div className={styles.linksList}>
+                                {categoryGroup.entries.map(([key, entry]) => {
+                                    const voteStats = getVoteStats(key);
+                                    const netVotes = voteStats.up - voteStats.down;
 
-                                    <div className={styles.voteControls}>
-                                        <button
-                                            className={`${styles.voteButton} ${styles.upvote} ${voteStats.userVote === 'up' ? styles.active : ''}`}
-                                            onClick={() => handleVote(key, 'up')}
-                                            title="Upvote this resource"
-                                        >
-                                            <ThumbsUp size={16} />
-                                            <span>{voteStats.up}</span>
-                                        </button>
+                                    return (
+                                        <article key={key} className={styles.linkItem}>
+                                            <div className={styles.linkContent}>
+                                                {entry.url ? (
+                                                    <a
+                                                        href={entry.url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className={styles.linkAnchor}
+                                                        title={entry.description}
+                                                    >
+                                                        <span className={styles.linkTitle}>{entry.title}</span>
+                                                        <ExternalLink size={16} className={styles.linkIcon} />
+                                                    </a>
+                                                ) : (
+                                                    <div className={styles.linkTitle}>
+                                                        {entry.title}
+                                                    </div>
+                                                )}
 
-                                        <button
-                                            className={`${styles.voteButton} ${styles.downvote} ${voteStats.userVote === 'down' ? styles.active : ''}`}
-                                            onClick={() => handleVote(key, 'down')}
-                                            title="Downvote this resource"
-                                        >
-                                            <ThumbsDown size={16} />
-                                            <span>{voteStats.down}</span>
-                                        </button>
+                                                {entry.platform && (
+                                                    <span className={styles.platformTag}>
+                                                        <Globe size={12} />
+                                                        {entry.platform}
+                                                    </span>
+                                                )}
+                                            </div>
 
-                                        <div className={`${styles.netScore} ${netVotes > 0 ? styles.positive : netVotes < 0 ? styles.negative : ''}`}>
-                                            <TrendingUp size={14} />
-                                            <span>{netVotes > 0 ? '+' : ''}{netVotes}</span>
-                                        </div>
-                                    </div>
-                                </div>
+                                            <div className={styles.voteControls}>
+                                                <button
+                                                    className={`${styles.voteButton} ${styles.upvote} ${voteStats.userVote === 'up' ? styles.active : ''}`}
+                                                    onClick={() => handleVote(key, 'up')}
+                                                    title="Upvote this resource"
+                                                >
+                                                    <ThumbsUp size={14} />
+                                                    <span>{voteStats.up}</span>
+                                                </button>
 
-                                <div className={styles.linkContainer}>
-                                    {entry.url ? (
-                                        <a
-                                            href={entry.url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className={styles.mainLink}
-                                            title={entry.description}
-                                        >
-                                            <span className={styles.linkTitle}>{entry.title}</span>
-                                            <ExternalLink size={18} className={styles.linkIcon} />
-                                        </a>
-                                    ) : (
-                                        <div className={styles.linkTitle}>
-                                            {entry.title}
-                                        </div>
-                                    )}
-                                </div>
-                            </article>
-                        );
-                    })}
+                                                <button
+                                                    className={`${styles.voteButton} ${styles.downvote} ${voteStats.userVote === 'down' ? styles.active : ''}`}
+                                                    onClick={() => handleVote(key, 'down')}
+                                                    title="Downvote this resource"
+                                                >
+                                                    <ThumbsDown size={14} />
+                                                    <span>{voteStats.down}</span>
+                                                </button>
+
+                                                <div className={`${styles.netScore} ${netVotes > 0 ? styles.positive : netVotes < 0 ? styles.negative : ''}`}>
+                                                    <TrendingUp size={12} />
+                                                    <span>{netVotes > 0 ? '+' : ''}{netVotes}</span>
+                                                </div>
+                                            </div>
+                                        </article>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    ))}
                 </div>
             ) : (
                 <div className={styles.noResults}>
