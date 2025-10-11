@@ -16,10 +16,10 @@ class SimpleWebAgent {
     async initialize() {
         try {
             log.info('🤖 Initializing SimpleWebAgent...');
-            
+
             // Initialize MCP Agent worker system
             await this.mcpAgent.initializeWorker();
-            
+
             this.isInitialized = true;
             log.success('SimpleWebAgent initialized successfully');
             return true;
@@ -27,7 +27,7 @@ class SimpleWebAgent {
             log.error(`SimpleWebAgent initialization failed: ${error.message}`);
             return false;
         }
-    }    async chat(message) {
+    } async chat(message) {
         if (!this.isInitialized) {
             throw new Error('SimpleWebAgent not initialized');
         }
