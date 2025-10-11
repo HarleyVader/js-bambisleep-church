@@ -1,6 +1,8 @@
 // Agentic Knowledge Builder MCP Tools for BambiSleep Church
 import { agenticKnowledgeBuilder } from '../../../services/AgenticKnowledgeBuilder.js';
 import { mongoService } from '../../../services/MongoDBService.js';
+import { webCrawlerService } from '../../../services/WebCrawlerService.js';
+import { lmStudioService } from '../../../services/LMStudioService.js';
 import { log } from '../../../utils/logger.js';
 
 // Tool: Initialize Agentic System
@@ -623,6 +625,902 @@ export const stopAutonomousBuilding = {
     }
 };
 
+// ============================================================================
+// INTELLIGENT CRAWLER BRAIN SYSTEM
+// ============================================================================
+
+/**
+ * Intelligent Crawler Brain - AI-powered web crawling orchestrator
+ * Uses LMStudio to make intelligent decisions about what to crawl and how
+ */
+class CrawlerBrain {
+    constructor() {
+        this.activeSpiders = new Map();
+        this.crawlQueue = [];
+        this.crawlHistory = new Map();
+        this.aiContext = {
+            crawlObjectives: [],
+            knowledgeGaps: [],
+            priorityDomains: [],
+            crawlStrategies: new Map()
+        };
+    }
+
+    /**
+     * Initialize the crawler brain system
+     */
+    async initialize() {
+        try {
+            log.info('🧠 Initializing Crawler Brain System...');
+
+            // Check LMStudio availability
+            const isHealthy = await lmStudioService.isHealthy();
+            if (!isHealthy) {
+                throw new Error('LMStudio is required for intelligent crawling decisions');
+            }
+
+            // Configure web crawler for intelligent operation
+            webCrawlerService.configure({
+                userAgent: 'BambiSleep-Church-CrawlerBrain/1.0 (+https://github.com/HarleyVader/js-bambisleep-church)',
+                timeout: 20000,
+                maxRetries: 5,
+                crawlDelay: 1500,
+                respectRobotsTxt: true
+            });
+
+            log.success('✅ Crawler Brain System initialized');
+            return true;
+        } catch (error) {
+            log.error(`❌ Crawler Brain initialization failed: ${error.message}`);
+            return false;
+        }
+    }
+
+    /**
+     * AI-powered crawl planning
+     */
+    async planCrawlStrategy(objectives, targetUrls) {
+        const planningPrompt = `You are an intelligent web crawling strategist for BambiSleep Church.
+
+OBJECTIVES: ${objectives.join(', ')}
+TARGET URLS: ${targetUrls.join(', ')}
+
+Create an optimal crawling strategy that includes:
+1. URL prioritization (1-10 priority score)
+2. Crawl depth recommendations
+3. Content extraction focus areas
+4. Risk assessment (safety, rate limiting, etc.)
+5. Expected information types
+6. Crawl sequencing strategy
+
+Consider:
+- BambiSleep community safety and consent
+- Respectful crawling practices
+- Information value and relevance
+- Technical constraints
+
+Respond in JSON format with detailed strategy.`;
+
+        try {
+            const response = await lmStudioService.chatCompletion([
+                { role: 'system', content: 'You are an expert web crawling strategist.' },
+                { role: 'user', content: planningPrompt }
+            ], { temperature: 0.3, max_tokens: 2048 });
+
+            const strategy = JSON.parse(response.response.choices[0].message.content);
+            log.info('🎯 AI crawl strategy generated');
+            return strategy;
+        } catch (error) {
+            log.error(`❌ Strategy planning failed: ${error.message}`);
+            return this.getDefaultStrategy(targetUrls);
+        }
+    }
+
+    /**
+     * Intelligent URL analysis and filtering
+     */
+    async analyzeAndFilterUrls(urls, context = '') {
+        const analysisPrompt = `Analyze these URLs for BambiSleep Church knowledge gathering:
+
+URLS: ${JSON.stringify(urls)}
+CONTEXT: ${context}
+
+For each URL, determine:
+1. Relevance score (1-10) for BambiSleep community
+2. Content type prediction
+3. Safety considerations
+4. Crawl priority (1-10)
+5. Expected value
+6. Potential risks or concerns
+
+Focus on educational, safety, and community-building content.
+Avoid or deprioritize commercial, inappropriate, or low-value content.
+
+You must respond with ONLY a valid JSON array. Each object should have these exact fields:
+- url (string)
+- relevance (number 1-10)
+- priority (number 1-10)
+- contentType (string)
+- reason (string)
+- safetyLevel (string: "safe", "caution", "warning")`;
+
+        try {
+            // Define JSON schema for structured output
+            const schema = {
+                name: "url_analysis",
+                strict: true,
+                schema: {
+                    type: "array",
+                    items: {
+                        type: "object",
+                        properties: {
+                            url: { type: "string" },
+                            relevance: { type: "number", minimum: 1, maximum: 10 },
+                            priority: { type: "number", minimum: 1, maximum: 10 },
+                            contentType: { type: "string" },
+                            reason: { type: "string" },
+                            safetyLevel: {
+                                type: "string",
+                                enum: ["safe", "caution", "warning"]
+                            }
+                        },
+                        required: ["url", "relevance", "priority", "contentType", "reason", "safetyLevel"],
+                        additionalProperties: false
+                    }
+                }
+            };
+
+            // Try structured output first
+            try {
+                const structuredResponse = await lmStudioService.structuredCompletion([
+                    { role: 'system', content: 'You are a content curator for BambiSleep Church. Respond only with valid JSON.' },
+                    { role: 'user', content: analysisPrompt }
+                ], schema, { temperature: 0.1, max_tokens: 3000 });
+
+                const analysis = JSON.parse(structuredResponse.response.choices[0].message.content);
+                log.info(`🔍 Analyzed ${urls.length} URLs with AI (structured)`);
+                return analysis;
+            } catch (structuredError) {
+                log.warn(`Structured output failed, trying regular completion: ${structuredError.message}`);
+
+                // Fallback to regular completion with very specific JSON instructions
+                const jsonPrompt = analysisPrompt + '\n\nIMPORTANT: Respond with ONLY a JSON array, no other text. Start with [ and end with ].';
+
+                const response = await lmStudioService.chatCompletion([
+                    { role: 'system', content: 'You are a content curator. You must respond with valid JSON only.' },
+                    { role: 'user', content: jsonPrompt }
+                ], { temperature: 0.1, max_tokens: 3000 });
+
+                let content = response.response.choices[0].message.content.trim();
+
+                // Extract JSON if wrapped in other text
+                const jsonMatch = content.match(/\[[\s\S]*\]/);
+                if (jsonMatch) {
+                    content = jsonMatch[0];
+                }
+
+                const analysis = JSON.parse(content);
+                log.info(`🔍 Analyzed ${urls.length} URLs with AI (fallback)`);
+                return analysis;
+            }
+        } catch (error) {
+            log.error(`❌ URL analysis failed: ${error.message}`);
+            return urls.map(url => ({
+                url,
+                relevance: 5,
+                priority: 5,
+                contentType: 'unknown',
+                reason: 'Analysis failed, using default values',
+                safetyLevel: 'caution'
+            }));
+        }
+    }
+
+    /**
+     * Deploy intelligent spider with AI guidance
+     */
+    async deploySpider(config) {
+        const spiderId = `spider_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+        try {
+            log.info(`🕷️ Deploying intelligent spider: ${spiderId}`);
+
+            // AI-guided pre-crawl analysis
+            const urlAnalysis = await this.analyzeAndFilterUrls(config.urls, config.context);
+
+            // Sort by priority and relevance
+            const prioritizedUrls = urlAnalysis
+                .filter(item => item.relevance >= (config.minRelevance || 6))
+                .sort((a, b) => (b.priority * b.relevance) - (a.priority * a.relevance))
+                .slice(0, config.maxUrls || 50);
+
+            if (prioritizedUrls.length === 0) {
+                throw new Error('No URLs meet the relevance criteria');
+            }
+
+            // Create spider configuration
+            const spiderConfig = {
+                id: spiderId,
+                urls: prioritizedUrls.map(item => item.url),
+                maxDepth: config.maxDepth || 2,
+                maxPages: config.maxPages || 25,
+                crawlDelay: config.crawlDelay || 2000,
+                respectRobotsTxt: true,
+                storeResults: config.storeResults !== false,
+                collection: config.collection || 'intelligent_crawl_results',
+                aiGuidance: true,
+                objectives: config.objectives || [],
+                startTime: new Date().toISOString()
+            };
+
+            // Store spider configuration
+            this.activeSpiders.set(spiderId, spiderConfig);
+
+            // Start crawling with intelligent monitoring
+            const crawlResults = await this.executeCrawlWithAI(spiderConfig);
+
+            return {
+                spiderId,
+                status: 'completed',
+                results: crawlResults,
+                urlsProcessed: prioritizedUrls.length,
+                aiGuidance: true
+            };
+
+        } catch (error) {
+            log.error(`❌ Spider deployment failed: ${error.message}`);
+            this.activeSpiders.delete(spiderId);
+            throw error;
+        }
+    }
+
+    /**
+     * Execute crawl with AI monitoring and adaptation
+     */
+    async executeCrawlWithAI(config) {
+        const results = {
+            successful: [],
+            failed: [],
+            insights: [],
+            contentSummary: {},
+            aiRecommendations: []
+        };
+
+        log.info(`🚀 Starting AI-guided crawl of ${config.urls.length} URLs`);
+
+        for (const url of config.urls) {
+            try {
+                log.info(`🔍 AI-guided crawling: ${url}`);
+
+                // Crawl the URL
+                const crawlResult = await webCrawlerService.crawlSingle(url, {
+                    storeResults: config.storeResults,
+                    collection: config.collection,
+                    maxDepth: 1 // Single page for intelligent analysis
+                });
+
+                if (crawlResult.success && crawlResult.data) {
+                    // AI content analysis
+                    const contentAnalysis = await this.analyzeContent(crawlResult.data, config.objectives);
+
+                    results.successful.push({
+                        url,
+                        data: crawlResult.data,
+                        analysis: contentAnalysis,
+                        timestamp: crawlResult.timestamp
+                    });
+
+                    // Update insights
+                    if (contentAnalysis.insights) {
+                        results.insights.push(...contentAnalysis.insights);
+                    }
+
+                    // Should we crawl deeper based on AI analysis?
+                    if (contentAnalysis.recommendDeepCrawl && config.maxDepth > 1) {
+                        log.info(`🤖 AI recommends deep crawl for: ${url}`);
+                        await this.deepCrawlWithAI(url, config, results);
+                    }
+
+                } else {
+                    results.failed.push({ url, error: crawlResult.error });
+                }
+
+                // Respectful delay between requests
+                await new Promise(resolve => setTimeout(resolve, config.crawlDelay));
+
+            } catch (error) {
+                log.error(`❌ Failed to crawl ${url}: ${error.message}`);
+                results.failed.push({ url, error: error.message });
+            }
+        }
+
+        // Generate final AI recommendations
+        results.aiRecommendations = await this.generateCrawlRecommendations(results);
+
+        log.success(`✅ AI-guided crawl completed: ${results.successful.length}/${config.urls.length} successful`);
+        return results;
+    }
+
+    /**
+     * AI-powered content analysis
+     */
+    async analyzeContent(data, objectives) {
+        const analysisPrompt = `Analyze this crawled content for BambiSleep Church knowledge base:
+
+TITLE: ${data.title || 'No title'}
+META DESCRIPTION: ${data.description || 'No description'}
+CONTENT PREVIEW: ${(data.content || '').substring(0, 1000)}...
+WORD COUNT: ${data.metrics?.wordCount || 0}
+LINKS FOUND: ${data.metrics?.linkCount || 0}
+
+CRAWL OBJECTIVES: ${objectives.join(', ')}
+
+You must respond with ONLY valid JSON. Include these exact fields:
+- relevance: number (1-10)
+- safetyLevel: string ("safe", "caution", "warning")
+- contentType: string
+- keyInformation: string
+- educationalValue: number (1-10)
+- recommendDeepCrawl: boolean
+- insights: array of strings
+- category: string`;
+
+        try {
+            // Define schema for structured output
+            const schema = {
+                name: "content_analysis",
+                strict: true,
+                schema: {
+                    type: "object",
+                    properties: {
+                        relevance: { type: "number", minimum: 1, maximum: 10 },
+                        safetyLevel: { type: "string", enum: ["safe", "caution", "warning"] },
+                        contentType: { type: "string" },
+                        keyInformation: { type: "string" },
+                        educationalValue: { type: "number", minimum: 1, maximum: 10 },
+                        recommendDeepCrawl: { type: "boolean" },
+                        insights: { type: "array", items: { type: "string" } },
+                        category: { type: "string" }
+                    },
+                    required: ["relevance", "safetyLevel", "contentType", "keyInformation", "educationalValue", "recommendDeepCrawl", "insights", "category"],
+                    additionalProperties: false
+                }
+            };
+
+            try {
+                const response = await lmStudioService.structuredCompletion([
+                    { role: 'system', content: 'You are a content analyst. Respond only with valid JSON.' },
+                    { role: 'user', content: analysisPrompt }
+                ], schema, { temperature: 0.1, max_tokens: 1500 });
+
+                const analysis = JSON.parse(response.response.choices[0].message.content);
+                return analysis;
+            } catch (structuredError) {
+                // Fallback to regular completion
+                const jsonPrompt = analysisPrompt + '\n\nIMPORTANT: Respond with ONLY a JSON object, no markdown, no other text.';
+
+                const response = await lmStudioService.chatCompletion([
+                    { role: 'system', content: 'You are a content analyst. You must respond with valid JSON only.' },
+                    { role: 'user', content: jsonPrompt }
+                ], { temperature: 0.1, max_tokens: 1500 });
+
+                let content = response.response.choices[0].message.content.trim();
+
+                // Remove markdown code blocks if present
+                content = content.replace(/```json\s*|\s*```/g, '');
+
+                // Extract JSON object if wrapped in other text
+                const jsonMatch = content.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    content = jsonMatch[0];
+                }
+
+                const analysis = JSON.parse(content);
+                return analysis;
+            }
+        } catch (error) {
+            log.error(`❌ Content analysis failed: ${error.message}`);
+            return {
+                relevance: 5,
+                safetyLevel: 'caution',
+                contentType: 'unknown',
+                keyInformation: 'Analysis failed',
+                educationalValue: 5,
+                recommendDeepCrawl: false,
+                insights: ['Content analysis was not successful'],
+                category: 'unknown'
+            };
+        }
+    }
+
+    /**
+     * Deep crawl with AI guidance
+     */
+    async deepCrawlWithAI(baseUrl, config, results) {
+        try {
+            log.info(`🕳️ Starting AI-guided deep crawl from: ${baseUrl}`);
+
+            const deepCrawlResult = await webCrawlerService.crawlSingle(baseUrl, {
+                maxDepth: config.maxDepth,
+                maxPages: Math.min(config.maxPages || 25, 10), // Limit deep crawl pages
+                storeResults: config.storeResults,
+                collection: config.collection
+            });
+
+            if (deepCrawlResult.success && deepCrawlResult.discoveredUrls) {
+                // AI analysis of discovered URLs
+                const urlAnalysis = await this.analyzeAndFilterUrls(
+                    deepCrawlResult.discoveredUrls,
+                    `Deep crawl from ${baseUrl}`
+                );
+
+                // Add high-value URLs to results
+                const valuableUrls = urlAnalysis.filter(item => item.relevance >= 7);
+                results.insights.push({
+                    type: 'deep_crawl_discovery',
+                    baseUrl,
+                    discoveredUrls: valuableUrls.length,
+                    valuableUrls: valuableUrls.slice(0, 5) // Top 5
+                });
+            }
+
+        } catch (error) {
+            log.error(`❌ Deep crawl failed for ${baseUrl}: ${error.message}`);
+        }
+    }
+
+    /**
+     * Generate AI recommendations based on crawl results
+     */
+    async generateCrawlRecommendations(results) {
+        const recommendationPrompt = `Based on these crawl results, provide strategic recommendations:
+
+SUCCESSFUL CRAWLS: ${results.successful.length}
+FAILED CRAWLS: ${results.failed.length}
+INSIGHTS GATHERED: ${results.insights.length}
+
+SAMPLE SUCCESSFUL RESULTS:
+${JSON.stringify(results.successful.slice(0, 3), null, 2)}
+
+INSIGHTS:
+${JSON.stringify(results.insights.slice(0, 5), null, 2)}
+
+Provide recommendations for:
+1. Next crawl targets (specific URLs or domains)
+2. Content gaps identified
+3. Crawling strategy improvements
+4. Knowledge base organization suggestions
+5. Priority actions for the BambiSleep Church community
+
+Focus on actionable, specific recommendations.`;
+
+        try {
+            const response = await lmStudioService.chatCompletion([
+                { role: 'system', content: 'You are a strategic advisor for BambiSleep Church knowledge building.' },
+                { role: 'user', content: recommendationPrompt }
+            ], { temperature: 0.4, max_tokens: 2000 });
+
+            const recommendations = JSON.parse(response.response.choices[0].message.content);
+            return recommendations;
+        } catch (error) {
+            log.error(`❌ Recommendation generation failed: ${error.message}`);
+            return {
+                nextTargets: [],
+                contentGaps: [],
+                strategicSuggestions: []
+            };
+        }
+    }
+
+    /**
+     * Get default strategy when AI is unavailable
+     */
+    getDefaultStrategy(urls) {
+        return {
+            prioritizedUrls: urls.map((url, index) => ({
+                url,
+                priority: Math.max(1, 10 - index),
+                crawlDepth: 2,
+                contentFocus: ['text', 'links', 'metadata']
+            })),
+            riskAssessment: 'medium',
+            crawlSequence: 'priority_descending'
+        };
+    }
+
+    /**
+     * Get spider status
+     */
+    getSpiderStatus(spiderId) {
+        return this.activeSpiders.get(spiderId) || null;
+    }
+
+    /**
+     * List all active spiders
+     */
+    listActiveSpiders() {
+        return Array.from(this.activeSpiders.entries()).map(([id, config]) => ({
+            id,
+            urls: config.urls.length,
+            maxDepth: config.maxDepth,
+            startTime: config.startTime,
+            objectives: config.objectives
+        }));
+    }
+}
+
+// Create global crawler brain instance
+const crawlerBrain = new CrawlerBrain();
+
+// Tool: Initialize Crawler Brain
+export const initializeCrawlerBrain = {
+    name: 'crawler-brain-initialize',
+    description: 'Initialize the AI-powered intelligent crawler brain system',
+    inputSchema: {
+        type: 'object',
+        properties: {},
+        required: []
+    },
+    async handler() {
+        try {
+            const initialized = await crawlerBrain.initialize();
+
+            if (initialized) {
+                return {
+                    content: [{
+                        type: 'text',
+                        text: JSON.stringify({
+                            success: true,
+                            message: 'Intelligent Crawler Brain initialized successfully',
+                            capabilities: [
+                                'AI-powered crawl strategy planning',
+                                'Intelligent URL analysis and filtering',
+                                'Autonomous spider deployment',
+                                'Real-time content analysis',
+                                'Adaptive crawling based on AI insights',
+                                'Strategic recommendation generation'
+                            ],
+                            aiModel: lmStudioService.getConfig().model,
+                            timestamp: new Date().toISOString()
+                        }, null, 2)
+                    }]
+                };
+            } else {
+                throw new Error('Failed to initialize crawler brain');
+            }
+        } catch (error) {
+            log.error(`❌ Crawler brain initialization failed: ${error.message}`);
+            return {
+                content: [{
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: false,
+                        error: error.message
+                    }, null, 2)
+                }]
+            };
+        }
+    }
+};
+
+// Tool: Deploy Intelligent Spider
+export const deployIntelligentSpider = {
+    name: 'crawler-brain-deploy-spider',
+    description: 'Deploy an AI-guided spider to crawl URLs with intelligent decision making',
+    inputSchema: {
+        type: 'object',
+        properties: {
+            urls: {
+                type: 'array',
+                description: 'Array of URLs to crawl',
+                items: { type: 'string', format: 'uri' },
+                minItems: 1,
+                maxItems: 100
+            },
+            objectives: {
+                type: 'array',
+                description: 'Crawling objectives (e.g., "find safety information", "discover beginner resources")',
+                items: { type: 'string' },
+                default: ['gather knowledge', 'build resources']
+            },
+            context: {
+                type: 'string',
+                description: 'Additional context for AI decision making'
+            },
+            maxDepth: {
+                type: 'number',
+                description: 'Maximum crawl depth',
+                minimum: 1,
+                maximum: 5,
+                default: 2
+            },
+            maxPages: {
+                type: 'number',
+                description: 'Maximum pages to crawl per URL',
+                minimum: 1,
+                maximum: 100,
+                default: 25
+            },
+            maxUrls: {
+                type: 'number',
+                description: 'Maximum URLs to process after AI filtering',
+                minimum: 1,
+                maximum: 50,
+                default: 20
+            },
+            minRelevance: {
+                type: 'number',
+                description: 'Minimum AI relevance score (1-10) to crawl a URL',
+                minimum: 1,
+                maximum: 10,
+                default: 6
+            },
+            crawlDelay: {
+                type: 'number',
+                description: 'Delay between requests in milliseconds',
+                minimum: 500,
+                maximum: 10000,
+                default: 2000
+            },
+            storeResults: {
+                type: 'boolean',
+                description: 'Store results in MongoDB',
+                default: true
+            },
+            collection: {
+                type: 'string',
+                description: 'MongoDB collection for results',
+                default: 'intelligent_crawl_results'
+            }
+        },
+        required: ['urls']
+    },
+    async handler(args) {
+        try {
+            log.info(`🧠 Deploying intelligent spider for ${args.urls.length} URLs`);
+
+            const spiderResult = await crawlerBrain.deploySpider({
+                urls: args.urls,
+                objectives: args.objectives || ['gather knowledge', 'build resources'],
+                context: args.context || '',
+                maxDepth: args.maxDepth || 2,
+                maxPages: args.maxPages || 25,
+                maxUrls: args.maxUrls || 20,
+                minRelevance: args.minRelevance || 6,
+                crawlDelay: args.crawlDelay || 2000,
+                storeResults: args.storeResults !== false,
+                collection: args.collection || 'intelligent_crawl_results'
+            });
+
+            return {
+                content: [{
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: true,
+                        spiderId: spiderResult.spiderId,
+                        status: spiderResult.status,
+                        urlsProcessed: spiderResult.urlsProcessed,
+                        successfulCrawls: spiderResult.results.successful.length,
+                        failedCrawls: spiderResult.results.failed.length,
+                        insightsGathered: spiderResult.results.insights.length,
+                        aiRecommendations: spiderResult.results.aiRecommendations,
+                        timestamp: new Date().toISOString()
+                    }, null, 2)
+                }]
+            };
+
+        } catch (error) {
+            log.error(`❌ Intelligent spider deployment failed: ${error.message}`);
+            return {
+                content: [{
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: false,
+                        error: error.message
+                    }, null, 2)
+                }]
+            };
+        }
+    }
+};
+
+// Tool: AI URL Analysis
+export const analyzeUrlsWithAI = {
+    name: 'crawler-brain-analyze-urls',
+    description: 'Use AI to analyze and prioritize URLs for crawling',
+    inputSchema: {
+        type: 'object',
+        properties: {
+            urls: {
+                type: 'array',
+                description: 'URLs to analyze',
+                items: { type: 'string', format: 'uri' },
+                minItems: 1,
+                maxItems: 50
+            },
+            context: {
+                type: 'string',
+                description: 'Context for analysis (e.g., "BambiSleep safety resources")'
+            },
+            objectives: {
+                type: 'array',
+                description: 'Analysis objectives',
+                items: { type: 'string' }
+            }
+        },
+        required: ['urls']
+    },
+    async handler(args) {
+        try {
+            log.info(`🔍 AI analyzing ${args.urls.length} URLs`);
+
+            const analysis = await crawlerBrain.analyzeAndFilterUrls(
+                args.urls,
+                args.context || ''
+            );
+
+            // Sort by relevance and priority
+            const sortedAnalysis = analysis.sort((a, b) =>
+                (b.relevance * b.priority) - (a.relevance * a.priority)
+            );
+
+            return {
+                content: [{
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: true,
+                        totalUrls: args.urls.length,
+                        analysis: sortedAnalysis,
+                        highPriority: sortedAnalysis.filter(item => item.priority >= 8).length,
+                        mediumPriority: sortedAnalysis.filter(item => item.priority >= 5 && item.priority < 8).length,
+                        lowPriority: sortedAnalysis.filter(item => item.priority < 5).length,
+                        averageRelevance: (sortedAnalysis.reduce((sum, item) => sum + item.relevance, 0) / sortedAnalysis.length).toFixed(2),
+                        timestamp: new Date().toISOString()
+                    }, null, 2)
+                }]
+            };
+
+        } catch (error) {
+            log.error(`❌ URL analysis failed: ${error.message}`);
+            return {
+                content: [{
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: false,
+                        error: error.message
+                    }, null, 2)
+                }]
+            };
+        }
+    }
+};
+
+// Tool: Get Crawler Brain Status
+export const getCrawlerBrainStatus = {
+    name: 'crawler-brain-status',
+    description: 'Get current status of the intelligent crawler brain system',
+    inputSchema: {
+        type: 'object',
+        properties: {},
+        required: []
+    },
+    async handler() {
+        try {
+            const activeSpiders = crawlerBrain.listActiveSpiders();
+            const lmstudioConfig = lmStudioService.getConfig();
+            const isHealthy = await lmStudioService.isHealthy();
+
+            return {
+                content: [{
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: true,
+                        system: {
+                            status: 'operational',
+                            aiAvailable: isHealthy,
+                            aiModel: lmstudioConfig.model,
+                            aiBaseUrl: lmstudioConfig.baseUrl
+                        },
+                        spiders: {
+                            active: activeSpiders.length,
+                            list: activeSpiders
+                        },
+                        capabilities: {
+                            intelligentAnalysis: isHealthy,
+                            urlFiltering: true,
+                            contentAnalysis: isHealthy,
+                            strategicPlanning: isHealthy,
+                            adaptiveCrawling: true
+                        },
+                        timestamp: new Date().toISOString()
+                    }, null, 2)
+                }]
+            };
+
+        } catch (error) {
+            log.error(`❌ Status check failed: ${error.message}`);
+            return {
+                content: [{
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: false,
+                        error: error.message
+                    }, null, 2)
+                }]
+            };
+        }
+    }
+};
+
+// Tool: Plan Crawl Strategy with AI
+export const planCrawlStrategy = {
+    name: 'crawler-brain-plan-strategy',
+    description: 'Use AI to create an optimal crawling strategy for given objectives and URLs',
+    inputSchema: {
+        type: 'object',
+        properties: {
+            objectives: {
+                type: 'array',
+                description: 'Crawling objectives',
+                items: { type: 'string' },
+                minItems: 1
+            },
+            targetUrls: {
+                type: 'array',
+                description: 'Target URLs or domains',
+                items: { type: 'string' },
+                minItems: 1
+            },
+            constraints: {
+                type: 'object',
+                description: 'Crawling constraints',
+                properties: {
+                    maxPages: { type: 'number' },
+                    maxDepth: { type: 'number' },
+                    timeLimit: { type: 'string' },
+                    respectfulDelay: { type: 'number' }
+                }
+            }
+        },
+        required: ['objectives', 'targetUrls']
+    },
+    async handler(args) {
+        try {
+            log.info(`🎯 Planning crawl strategy for ${args.objectives.length} objectives`);
+
+            const strategy = await crawlerBrain.planCrawlStrategy(
+                args.objectives,
+                args.targetUrls
+            );
+
+            return {
+                content: [{
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: true,
+                        objectives: args.objectives,
+                        targetUrls: args.targetUrls,
+                        strategy: strategy,
+                        generatedAt: new Date().toISOString()
+                    }, null, 2)
+                }]
+            };
+
+        } catch (error) {
+            log.error(`❌ Strategy planning failed: ${error.message}`);
+            return {
+                content: [{
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: false,
+                        error: error.message
+                    }, null, 2)
+                }]
+            };
+        }
+    }
+};
+
 // Export all agentic tools
 export const agenticTools = [
     initializeAgenticSystem,
@@ -631,7 +1529,13 @@ export const agenticTools = [
     queryKnowledgeBase,
     getKnowledgeStats,
     getRecommendedPath,
-    stopAutonomousBuilding
+    stopAutonomousBuilding,
+    // Crawler Brain Tools
+    initializeCrawlerBrain,
+    deployIntelligentSpider,
+    analyzeUrlsWithAI,
+    getCrawlerBrainStatus,
+    planCrawlStrategy
 ];
 
 export default agenticTools;
