@@ -28,7 +28,7 @@ try {
     });
     const mcpData = await mcpResponse.json();
     console.log('✅ MCP Tools Count:', mcpData.result?.tools?.length || 0);
-    
+
     if (mcpData.result?.tools) {
         const toolsByCategory = {
             agentic: mcpData.result.tools.filter(t => t.name.startsWith('agentic-')),
@@ -37,7 +37,7 @@ try {
             lmstudio: mcpData.result.tools.filter(t => t.name.startsWith('lmstudio-')),
             crawler: mcpData.result.tools.filter(t => t.name.startsWith('crawler-'))
         };
-        
+
         console.log('📊 Tool Breakdown:');
         console.log(`   🎯 Agentic: ${toolsByCategory.agentic.length}`);
         console.log(`   🌸 BambiSleep: ${toolsByCategory.bambi.length}`);
