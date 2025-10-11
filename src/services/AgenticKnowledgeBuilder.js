@@ -421,7 +421,8 @@ Respond with a structured organization plan in JSON format.`
             };
 
             // Try AI enhancement if available
-            if (await lmStudioService.isHealthy()) {
+            const aiHealthy = await lmStudioService.isHealthy();
+            if (aiHealthy) {
                 try {
                     const messages = [
                         { role: 'system', content: this.prompts.contentAnalysis },
@@ -465,6 +466,8 @@ Links: ${crawlData.metrics?.linkCount}`
                     log.warn(`⚠️ AI analysis failed, using basic analysis: ${error.message}`);
                     log.debug(`🔍 AI analysis error details:`, error);
                 }
+            } else {
+                log.info('🤖 AI service not available, using basic analysis');
             }
 
             return {

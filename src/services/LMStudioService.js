@@ -39,12 +39,29 @@ class LMStudioService {
         });
     }
 
-    // Health check - verify LMStudio server is running
+    // Health check - verify LMStudio server is running and model can respond
     async isHealthy() {
         try {
-            const response = await this.client.get('/models');
-            return response.status === 200;
+            // First check if server is running
+            const modelsResponse = await this.client.get('/models');
+            if (modelsResponse.status !== 200) {
+                return false;
+            }
+
+            // Then test if model can actually respond with a simple query
+            const testResponse = await this.client.post('/chat/completions', {
+                model: this.model,
+                messages: [{ role: 'user', content: 'Hi' }],
+                max_tokens: 10,
+                temperature: 0.1
+            });
+
+            // Check if we get a valid response with choices
+            return testResponse.data && 
+                   testResponse.data.choices && 
+                   testResponse.data.choices.length > 0;
         } catch (error) {
+            log.debug('LMStudio health check failed:', error.message);
             return false;
         }
     }
@@ -101,6 +118,7 @@ class LMStudioService {
                 if (!response.data.choices || response.data.choices.length === 0) {
                     log.warn('⚠️ LMStudio API returned empty choices array');
                     log.debug('🔍 Response data:', JSON.stringify(response.data, null, 2));
+                    throw new Error('LMStudio API returned empty choices array - model may not be loaded or responding');
                 }
                 
                 return {
