@@ -18,7 +18,7 @@ export const config = {
 
     // LMStudio Configuration
     lmstudio: {
-        url: process.env.LMSTUDIO_URL || 'http://localhost:1234/v1/chat/completions',
+        url: process.env.LMSTUDIO_URL || 'http://localhost:7777/v1/chat/completions',
         apiKey: process.env.LMSTUDIO_API_KEY || '',
         model: process.env.LMSTUDIO_MODEL || 'llama-3.2-8x3b-moe-dark-champion-instruct-uncensored-abliterated-18.4b',
         timeout: parseInt(process.env.LMSTUDIO_TIMEOUT || '30000'),
@@ -51,5 +51,43 @@ export const config = {
         knowledge: process.env.KNOWLEDGE_PATH || path.join(__dirname, '../knowledge/knowledge.json'),
         views: process.env.VIEWS_PATH || path.join(__dirname, '../../views'),
         public: process.env.PUBLIC_PATH || path.join(__dirname, '../../public')
+    },
+
+    // MCP Orchestration Configuration
+    mcp: {
+        orchestration: {
+            enabled: process.env.MCP_ORCHESTRATION_ENABLED !== 'false',
+            healthCheckInterval: parseInt(process.env.MCP_HEALTH_CHECK_INTERVAL) || 30000,
+            serverTimeout: parseInt(process.env.MCP_SERVER_TIMEOUT) || 5000,
+            maxRetries: parseInt(process.env.MCP_MAX_RETRIES) || 3,
+            loadBalancing: process.env.MCP_LOAD_BALANCING !== 'false'
+        },
+        servers: {
+            bambisleepChurch: {
+                enabled: process.env.MCP_BAMBISLEEP_ENABLED !== 'false',
+                priority: 1
+            },
+            bambisleepRemote: {
+                enabled: process.env.MCP_BAMBISLEEP_REMOTE_ENABLED !== 'false',
+                endpoint: process.env.MCP_BAMBISLEEP_REMOTE_URL || 'https://at.bambisleep.church:9999',
+                priority: 2
+            },
+            vscodeServer: {
+                enabled: process.env.MCP_VSCODE_ENABLED !== 'false',
+                priority: 3
+            },
+            agentSmith: {
+                enabled: process.env.MCP_AGENT_SMITH_ENABLED !== 'false',
+                priority: 4
+            },
+            azure: {
+                enabled: process.env.MCP_AZURE_ENABLED === 'true',
+                priority: 5
+            },
+            datamates: {
+                enabled: process.env.MCP_DATAMATES_ENABLED === 'true',
+                priority: 6
+            }
+        }
     }
 };

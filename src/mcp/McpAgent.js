@@ -7,6 +7,7 @@ import * as cheerio from 'cheerio';
 import { log } from '../utils/logger.js';
 import { LMStudioManager } from '../utils/lmstudio-manager.js';
 import { config } from '../utils/config.js';
+import { McpOrchestrator } from './McpOrchestrator.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,6 +21,7 @@ class McpAgent {
         this.conversationHistory = [];
         this.knowledgeData = [];
         this.lmstudioManager = new LMStudioManager();
+        this.mcpOrchestrator = new McpOrchestrator();
 
         // Load knowledge base
         this.loadKnowledge();
@@ -109,27 +111,41 @@ class McpAgent {
         ];
     }
 
-    // Execute MCP tool
+    // Execute MCP tool with orchestration support
     async executeTool(toolName, args) {
-
+        log.info(`Executing MCP tool: ${toolName} with args:`, args);
 
         try {
-            switch (toolName) {
-                case 'search_knowledge':
-                    return await this.searchKnowledge(args);
-
-                case 'get_knowledge_stats':
-                    return await this.getKnowledgeStats();
-
-                case 'fetch_webpage':
-                    return await this.fetchWebpage(args);
-
-                default:
-                    return { error: `Unknown tool: ${toolName}` };
+            // First check if this is a local BambiSleep Church tool
+            const localTools = ['search_knowledge', 'get_knowledge_stats', 'fetch_webpage'];
+            
+            if (localTools.includes(toolName)) {
+                return await this.executeLocalTool(toolName, args);
             }
-        } catch (error) {
 
+            // Route to MCP orchestrator for multi-server tools
+            return await this.mcpOrchestrator.routeToolRequest(toolName, args);
+
+        } catch (error) {
+            log.error(`Tool execution failed for ${toolName}:`, error);
             return { error: error.message };
+        }
+    }
+
+    // Execute local BambiSleep Church tools
+    async executeLocalTool(toolName, args) {
+        switch (toolName) {
+            case 'search_knowledge':
+                return await this.searchKnowledge(args);
+
+            case 'get_knowledge_stats':
+                return await this.getKnowledgeStats();
+
+            case 'fetch_webpage':
+                return await this.fetchWebpage(args);
+
+            default:
+                return { error: `Unknown local tool: ${toolName}` };
         }
     }
 
@@ -394,7 +410,40 @@ class McpAgent {
     // Reset conversation
     reset() {
         this.conversationHistory = [];
+    }
 
+    // Get MCP orchestration status
+    getMcpStatus() {
+        return {
+            orchestrator: this.mcpOrchestrator.getServerStatus(),
+            capabilities: this.mcpOrchestrator.getAvailableCapabilities(),
+            localTools: ['search_knowledge', 'get_knowledge_stats', 'fetch_webpage'],
+            knowledgeEntries: this.knowledgeData.length
+        };
+    }
+
+    // Get enhanced tools list including orchestrated servers
+    getAllTools() {
+        const localTools = this.getTools();
+        const serverStatus = this.mcpOrchestrator.getServerStatus();
+        
+        const allTools = [...localTools];
+        
+        // Add tools from available MCP servers
+        for (const [serverName, serverInfo] of Object.entries(serverStatus)) {
+            if (serverInfo.health === 'healthy' && serverInfo.tools) {
+                for (const toolName of serverInfo.tools) {
+                    allTools.push({
+                        name: toolName,
+                        server: serverName,
+                        capabilities: serverInfo.capabilities,
+                        description: `Tool from ${serverName} MCP server`
+                    });
+                }
+            }
+        }
+        
+        return allTools;
     }
 
     // Get conversation summary

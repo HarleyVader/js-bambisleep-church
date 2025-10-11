@@ -130,6 +130,27 @@
         </div>
       </div>
 
+      <!-- MCP Orchestration Status Card -->
+      <div style="background: var(--dark-card); border-radius: 10px; border: 2px solid var(--primary); padding: 1.5rem; box-shadow: 0 0 15px rgba(255, 0, 255, 0.2);">
+        <h3 style="color: var(--primary); margin-bottom: 1rem; font-family: var(--font-heading); display: flex; align-items: center; gap: 0.5rem;">
+          🔗 MCP Orchestration
+        </h3>
+        <div id="mcpServerStatus" style="display: flex; flex-direction: column; gap: 0.5rem;">
+          <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+            <span style="color: var(--text-muted); font-size: 0.9rem;">Loading servers...</span>
+          </div>
+        </div>
+        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: var(--text-muted); font-size: 0.9rem;">Total Tools:</span>
+            <span id="totalToolsCount" style="color: var(--secondary); font-weight: bold;">-</span>
+          </div>
+        </div>
+        <button onclick="refreshMcpStatus()" style="width: 100%; margin-top: 1rem; padding: 0.5rem; background: var(--primary); color: var(--dark); border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: all 0.3s;">
+          🔄 Refresh Status
+        </button>
+      </div>
+
       <!-- Tools Card -->
       <div style="background: var(--dark-card); border-radius: 10px; border: 2px solid var(--secondary); padding: 1.5rem; box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);">
         <h3 style="color: var(--secondary); margin-bottom: 1rem; font-family: var(--font-heading);">🔧 Available Tools</h3>
@@ -207,6 +228,26 @@
   socket.on('mcp:error', (data) => {
     hideTypingIndicator();
     addSystemMessage('❌ Error: ' + data.error);
+  });
+
+  // Handle MCP status response
+  socket.on('mcp:status:response', (data) => {
+    updateMcpStatus(data);
+  });
+
+  // Handle MCP tools response
+  socket.on('mcp:tools:response', (data) => {
+    updateToolsCount(data.count);
+  });
+
+  // Handle MCP status/tools errors
+  socket.on('mcp:status:error', (data) => {
+    console.error('MCP Status Error:', data.error);
+    updateMcpStatusError(data.error);
+  });
+
+  socket.on('mcp:tools:error', (data) => {
+    console.error('MCP Tools Error:', data.error);
   });
 
   function sendMessage() {
@@ -406,9 +447,70 @@
     });
   }
 
-  // Focus input on load
+  // MCP Orchestration Status Functions
+  function refreshMcpStatus() {
+    console.log('🔄 Refreshing MCP status...');
+    socket.emit('mcp:status', {});
+    socket.emit('mcp:tools', {});
+  }
+
+  function updateMcpStatus(data) {
+    const statusDiv = document.getElementById('mcpServerStatus');
+    let html = '';
+
+    if (data.orchestrator) {
+      for (const [serverName, serverInfo] of Object.entries(data.orchestrator)) {
+        const healthColor = serverInfo.health === 'healthy' ? 'var(--accent-success)' :
+          serverInfo.health === 'unhealthy' ? 'var(--accent-warning)' : 'var(--text-muted)';
+
+        const healthIcon = serverInfo.health === 'healthy' ? '✅' :
+          serverInfo.health === 'unhealthy' ? '❌' : '❓';
+
+        html += `
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+            <div style="display: flex; flex-direction: column; flex: 1;">
+              <span style="color: var(--text); font-size: 0.9rem; font-weight: bold;">${serverName}</span>
+              <span style="color: var(--text-muted); font-size: 0.75rem;">${serverInfo.tools?.length || 0} tools</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="color: ${healthColor}; font-size: 0.8rem;">${serverInfo.health || 'unknown'}</span>
+              <span style="font-size: 1rem;">${healthIcon}</span>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    if (html === '') {
+      html = '<div style="color: var(--text-muted); font-size: 0.9rem; padding: 0.5rem 0;">No servers configured</div>';
+    }
+
+    statusDiv.innerHTML = html;
+    console.log('✅ MCP status updated');
+  }
+
+  function updateMcpStatusError(error) {
+    const statusDiv = document.getElementById('mcpServerStatus');
+    statusDiv.innerHTML = `<div style="color: var(--accent-warning); font-size: 0.9rem; padding: 0.5rem 0;">❌ Error: ${error}</div>`;
+  }
+
+  function updateToolsCount(count) {
+    document.getElementById('totalToolsCount').textContent = count;
+  }
+
+  // Auto-refresh MCP status on load and periodically
   document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('chatInput').focus();
+
+    // Initial MCP status load
+    setTimeout(() => {
+      refreshMcpStatus();
+    }, 1000);
+
+    // Refresh MCP status every 30 seconds
+    setInterval(() => {
+      refreshMcpStatus();
+    }, 30000);
   });
 
   // Add hover effect to input

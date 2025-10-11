@@ -127,6 +127,40 @@ app.get('/agents', (req, res) => {
     });
 });
 
+// API endpoint for MCP orchestration status
+app.get('/api/mcp/status', async (req, res) => {
+    try {
+        const mcpStatus = mcpAgent.getMcpStatus();
+        res.json({
+            success: true,
+            ...mcpStatus,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// API endpoint for all available tools (local + orchestrated)
+app.get('/api/mcp/tools', async (req, res) => {
+    try {
+        const allTools = mcpAgent.getAllTools();
+        res.json({
+            success: true,
+            tools: allTools,
+            count: allTools.length
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
 // API endpoint for knowledge
 app.get('/api/knowledge', (req, res) => {
     res.json(knowledgeData);
@@ -287,11 +321,11 @@ io.on('connection', (socket) => {
     socket.on('mcp:message', async (data) => {
         try {
             const { message } = data;
-
+            log.info('MCP message received:', message);
 
             socket.emit('mcp:typing', { isTyping: true });
 
-            // Process with MCP Agent
+            // Process with MCP Agent (now with orchestration)
             const result = await mcpAgent.chat(message);
 
             socket.emit('mcp:typing', { isTyping: false });
@@ -303,8 +337,45 @@ io.on('connection', (socket) => {
             });
 
         } catch (error) {
-
+            log.error('MCP message processing failed:', error);
             socket.emit('mcp:error', {
+                error: error.message,
+                timestamp: new Date().toISOString()
+            });
+        }
+    });
+
+    // Handle MCP orchestration status requests
+    socket.on('mcp:status', async (data) => {
+        try {
+            const mcpStatus = mcpAgent.getMcpStatus();
+            socket.emit('mcp:status:response', {
+                success: true,
+                ...mcpStatus,
+                timestamp: new Date().toISOString()
+            });
+        } catch (error) {
+            log.error('MCP status request failed:', error);
+            socket.emit('mcp:status:error', {
+                error: error.message,
+                timestamp: new Date().toISOString()
+            });
+        }
+    });
+
+    // Handle MCP tools list requests
+    socket.on('mcp:tools', async (data) => {
+        try {
+            const allTools = mcpAgent.getAllTools();
+            socket.emit('mcp:tools:response', {
+                success: true,
+                tools: allTools,
+                count: allTools.length,
+                timestamp: new Date().toISOString()
+            });
+        } catch (error) {
+            log.error('MCP tools request failed:', error);
+            socket.emit('mcp:tools:error', {
                 error: error.message,
                 timestamp: new Date().toISOString()
             });

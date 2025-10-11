@@ -26,7 +26,7 @@
       {
         "name": "bambisleep-church-remote",
         "description": "BambiSleep Church Remote MCP Server with agent orchestration",
-        "endpoint": "https://bambisleep-church-remote.com:9999",
+        "endpoint": "https://at.bambisleep.church:9999",
         "tools": [
           "get_links",
           "add_link",
@@ -42,6 +42,80 @@
           "communityVoting": true,
           "contentGeneration": true,
           "remoteExecution": true
+        }
+      },
+      {
+        "name": "vscode-mcp-server",
+        "description": "VS Code MCP Server for workspace integration",
+        "endpoint": "stdio",
+        "command": "node",
+        "args": ["-e", "require('@vscode/mcp-server').start()"],
+        "tools": [
+          "read_file",
+          "write_file",
+          "list_directory",
+          "run_command",
+          "search_files"
+        ],
+        "capabilities": {
+          "fileSystem": true,
+          "commandExecution": true,
+          "workspaceIntegration": true,
+          "codeAnalysis": true
+        }
+      },
+      {
+        "name": "azure-mcp-server", 
+        "description": "Azure services integration via MCP",
+        "endpoint": "stdio",
+        "command": "az-mcp-server",
+        "tools": [
+          "list_resources",
+          "deploy_resource",
+          "monitor_service",
+          "query_logs"
+        ],
+        "capabilities": {
+          "azureIntegration": true,
+          "cloudDeployment": true,
+          "resourceManagement": true,
+          "monitoring": true
+        }
+      },
+      {
+        "name": "agent-smith-mcp",
+        "description": "Agent Smith MCP for workflow automation",
+        "endpoint": "stdio", 
+        "command": "agent-smith-server",
+        "tools": [
+          "create_workflow",
+          "execute_workflow", 
+          "manage_agents",
+          "schedule_tasks"
+        ],
+        "capabilities": {
+          "workflowAutomation": true,
+          "agentManagement": true,
+          "taskScheduling": true,
+          "vibeCoding": true
+        }
+      },
+      {
+        "name": "datamates-mcp",
+        "description": "Datamates MCP for data engineering workflows",
+        "endpoint": "stdio",
+        "command": "datamates-server",
+        "tools": [
+          "query_database",
+          "transform_data",
+          "validate_schema",
+          "generate_pipeline"
+        ],
+        "capabilities": {
+          "dataEngineering": true,
+          "databaseIntegration": true,
+          "pipelineGeneration": true,
+          "schemaValidation": true
         }
       }
     ],
@@ -71,6 +145,32 @@
       "autoSuggestTools": true,
       "contextualRelevance": 0.8,
       "bambiSleepFocus": true
+    },
+    "orchestration": {
+      "enabled": true,
+      "serverPriority": [
+        "bambisleep-church",
+        "bambisleep-church-remote", 
+        "vscode-mcp-server",
+        "agent-smith-mcp",
+        "azure-mcp-server",
+        "datamates-mcp"
+      ],
+      "taskDistribution": "capability_based",
+      "serverLoadBalancing": true,
+      "responseConsolidation": true,
+      "conflictResolution": "priority_weighted",
+      "healthChecking": {
+        "enabled": true,
+        "intervalMs": 30000,
+        "timeoutMs": 5000,
+        "retryAttempts": 3
+      },
+      "fallbackBehavior": {
+        "onServerUnavailable": "try_next_priority",
+        "gracefulDegradation": true,
+        "dynamicFailover": true
+      }
     }
   }
 }
