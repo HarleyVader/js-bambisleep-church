@@ -19,11 +19,15 @@ function initializeConfig() {
     SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
     MAX_COMPLETION_TOKENS = config.lmstudio.maxTokens;
 
-    // Initialize LMStudio SDK client
-    lmStudioClient = new LMStudioClient();
+    // Initialize LMStudio SDK client with proper URL
+    const lmStudioBaseUrl = config.lmstudio.url.replace('/v1/chat/completions', '').replace('/v1', '');
+    lmStudioClient = new LMStudioClient({
+        baseUrl: lmStudioBaseUrl
+    });
 
     console.log(`🔧 LM Studio SDK initialized`);
-    console.log(`🎯 Target model: ${TARGET_MODEL_NAME}`);
+    console.log(`� LM Studio URL: ${lmStudioBaseUrl}`);
+    console.log(`�🎯 Target model: ${TARGET_MODEL_NAME}`);
     console.log(`⏱️  Timeout: ${LMS_TIMEOUT}ms`);
 }
 
