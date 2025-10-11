@@ -1,16 +1,18 @@
 [Unit]
-Description=Bimbot AI Agent NodeJS Discord Bot
+Description=BambiSleep Church - MCP Agent Web Server
 After=network.target
 Wants=network.target
 
 [Service]
 Type=simple
 User=brandynette
-WorkingDirectory=/home/brandynette/web/at.bambisleep.church/js-bambisleep-church/src
-ExecStart=/home/brandynette/.nvm/versions/node/v24.8.0/bin/node server.js
+WorkingDirectory=/home/brandynette/web/at.bambisleep.church/js-bambisleep-church
+ExecStart=/home/brandynette/.nvm/versions/node/v24.8.0/bin/npx concurrently "node src/mcp/McpServer.js --http" "node src/server.js"
 Restart=always
 RestartSec=10
 Environment=NODE_ENV=production
+Environment=PATH=/home/brandynette/.nvm/versions/node/v24.8.0/bin:/usr/bin:/bin
+EnvironmentFile=-/home/brandynette/web/at.bambisleep.church/js-bambisleep-church/.env
 
 [Install]
 WantedBy=multi-user.target

@@ -6,7 +6,6 @@ import { fileURLToPath } from 'url';
 import path from 'path';
 import fs from 'fs';
 import geoip from 'geoip-lite';
-import { spawn } from 'child_process';
 import { webAgent } from './services/SimpleWebAgent.js';
 import { McpAgent } from './mcp/McpAgent.js';
 import { log } from './utils/logger.js';
@@ -21,8 +20,6 @@ const io = new Server(httpServer);
 const PORT = config.server.port;
 const HOST = config.server.host;
 
-// Audio playback state
-let audioProcess = null;
 const AUDIO_URL = config.audio.url;
 
 // Initialize MCP Agent with worker system
@@ -192,41 +189,16 @@ app.get('/api/stats', (req, res) => {
     });
 });
 
-// Audio playback endpoint
+// Audio playback endpoint - client-side HTML audio
 app.post('/api/audio/play', (req, res) => {
     try {
-        // Stop existing playback if any
-        if (audioProcess) {
-            audioProcess.kill();
-            audioProcess = null;
-        }
-
-        // Spawn FFMPEG to play audio directly to device
-        audioProcess = spawn('ffmpeg', [
-            '-i', AUDIO_URL,
-            '-f', 'wav',
-            '-'
-        ]);
-
-        // Pipe to Windows audio (use 'aplay' for Linux, 'afplay' for macOS)
-        const playProcess = spawn('powershell', [
-            '-Command',
-            `Add-Type -AssemblyName presentationCore; $player = New-Object system.windows.media.mediaplayer; $player.open('${AUDIO_URL}'); $player.Play(); Start-Sleep -Seconds 999`
-        ]);
-
-        playProcess.on('error', (error) => {
-
-        });
-
         res.json({
             success: true,
-            message: 'Audio playback started',
+            message: 'Audio URL provided for client-side playback',
             url: AUDIO_URL,
             timestamp: new Date().toISOString()
         });
-
     } catch (error) {
-
         res.status(500).json({
             success: false,
             error: error.message
@@ -236,13 +208,10 @@ app.post('/api/audio/play', (req, res) => {
 
 app.post('/api/audio/stop', (req, res) => {
     try {
-        if (audioProcess) {
-            audioProcess.kill();
-            audioProcess = null;
-            res.json({ success: true, message: 'Audio stopped' });
-        } else {
-            res.json({ success: false, message: 'No audio playing' });
-        }
+        res.json({
+            success: true,
+            message: 'Audio stop signal sent to client'
+        });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
@@ -397,9 +366,6 @@ httpServer.listen(PORT, HOST, async () => {
 // Cleanup on exit
 process.on('SIGINT', async () => {
     log.warn('Shutting down...');
-    if (audioProcess) {
-        audioProcess.kill();
-    }
     await webAgent.cleanup();
     process.exit(0);
 });
