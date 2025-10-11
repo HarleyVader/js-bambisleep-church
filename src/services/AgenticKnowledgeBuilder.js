@@ -15,16 +15,18 @@ class AgenticKnowledgeBuilder {
         // AI prompts for different tasks
         this.prompts = {
             contentAnalysis: `You are an expert content analyst for BambiSleep knowledge base.
-Analyze the provided content and extract:
-1. Content type (FAQ, guide, session, trigger list, etc.)
-2. Safety level (beginner, intermediate, advanced, caution)
-3. Key topics and themes
-4. Target audience
-5. Content quality score (1-10)
-6. Summary (2-3 sentences)
-7. Tags/categories
+Analyze the provided content and return ONLY a JSON object with exactly these fields:
+{
+  "contentType": "FAQ|guide|session|trigger_list|safety_info|community|other",
+  "safetyLevel": "beginner|intermediate|advanced|caution",
+  "keyTopics": ["topic1", "topic2", "topic3"],
+  "targetAudience": "description of who this content is for",
+  "qualityScore": 1-10,
+  "summary": "2-3 sentence summary",
+  "tags": ["tag1", "tag2", "tag3"]
+}
 
-Respond in JSON format with these fields.`,
+Respond with ONLY the JSON object, no markdown, no other text.`,
 
             linkPrioritization: `You are a BambiSleep knowledge curator. Given a list of links from bambisleep.info,
 prioritize them for crawling based on:
@@ -34,7 +36,13 @@ prioritize them for crawling based on:
 - Content completeness
 
 Rank each link 1-10 and provide reasoning. Focus on safety and beginner-friendly content first.
-Respond in JSON format with: [{"url": "...", "priority": 9, "reason": "..."}]`,
+
+You must respond with ONLY a valid JSON array. Each object should have these exact fields:
+- url (string)
+- priority (number 1-10)
+- reason (string)
+
+Example: [{"url": "https://bambisleep.info/safety", "priority": 10, "reason": "Critical safety information"}]`,
 
             organizationStrategy: `You are organizing a BambiSleep knowledge base. Given content metadata,
 suggest the optimal organization structure including:
@@ -337,29 +345,65 @@ Respond with a structured organization plan in JSON format.`
             for (let i = 0; i < links.length; i += batchSize) {
                 const batch = links.slice(i, i + batchSize);
 
-                const messages = [
-                    { role: 'system', content: this.prompts.linkPrioritization },
-                    { role: 'user', content: `Prioritize these BambiSleep links:\n${batch.join('\n')}` }
-                ];
+                const userPrompt = `Prioritize these BambiSleep links:\n${batch.join('\n')}`;
 
                 try {
-                    const result = await lmStudioService.chatCompletion(messages, {
-                        temperature: 0.3, // Low temperature for consistent analysis
-                        max_tokens: 2000
-                    });
+                    // Define JSON schema for structured output
+                    const schema = {
+                        name: "link_prioritization",
+                        strict: true,
+                        schema: {
+                            type: "array",
+                            items: {
+                                type: "object",
+                                properties: {
+                                    url: { type: "string" },
+                                    priority: { type: "number", minimum: 1, maximum: 10 },
+                                    reason: { type: "string" }
+                                },
+                                required: ["url", "priority", "reason"],
+                                additionalProperties: false
+                            }
+                        }
+                    };
 
-                    // Validate AI response structure
-                    if (!result || !result.response || !result.response.choices || result.response.choices.length === 0) {
-                        throw new Error('Invalid AI prioritization response - no choices returned');
+                    let priorities;
+
+                    // Try structured output first
+                    try {
+                        const structuredResult = await lmStudioService.structuredCompletion([
+                            { role: 'system', content: 'You are a BambiSleep knowledge curator. Respond only with valid JSON.' },
+                            { role: 'user', content: this.prompts.linkPrioritization + '\n\n' + userPrompt }
+                        ], schema, { temperature: 0.1, max_tokens: 2000 });
+
+                        priorities = JSON.parse(structuredResult.response.choices[0].message.content);
+                        log.debug(`🔍 AI prioritization successful (structured) for batch of ${batch.length}`);
+                    } catch (structuredError) {
+                        log.debug(`Structured output failed, trying regular completion: ${structuredError.message}`);
+
+                        // Fallback to regular completion with very specific JSON instructions
+                        const jsonPrompt = this.prompts.linkPrioritization + '\n\n' + userPrompt + '\n\nIMPORTANT: Respond with ONLY a JSON array, no other text. Start with [ and end with ].';
+
+                        const result = await lmStudioService.chatCompletion([
+                            { role: 'system', content: 'You are a BambiSleep knowledge curator. You must respond with valid JSON only.' },
+                            { role: 'user', content: jsonPrompt }
+                        ], { temperature: 0.1, max_tokens: 2000 });
+
+                        let content = result.response.choices[0].message.content.trim();
+
+                        // Remove markdown code blocks if present
+                        content = content.replace(/```json\s*|\s*```/g, '');
+
+                        // Extract JSON array if wrapped in other text
+                        const jsonMatch = content.match(/\[[\s\S]*\]/);
+                        if (jsonMatch) {
+                            content = jsonMatch[0];
+                        }
+
+                        priorities = JSON.parse(content);
+                        log.debug(`🔍 AI prioritization successful (fallback) for batch of ${batch.length}`);
                     }
 
-                    const choice = result.response.choices[0];
-                    if (!choice || !choice.message || !choice.message.content) {
-                        throw new Error('Invalid AI prioritization response - no message content');
-                    }
-
-                    const aiResponse = choice.message.content;
-                    const priorities = JSON.parse(aiResponse);
                     prioritizedLinks.push(...priorities);
 
                 } catch (error) {
@@ -505,35 +549,69 @@ Respond with a structured organization plan in JSON format.`
             const aiHealthy = await lmStudioService.isHealthy();
             if (aiHealthy) {
                 try {
-                    const messages = [
-                        { role: 'system', content: this.prompts.contentAnalysis },
-                        {
-                            role: 'user',
-                            content: `Analyze this BambiSleep content:
+                    const userContent = `Analyze this BambiSleep content:
 Title: ${crawlData.title}
 URL: ${linkInfo.url}
 Content: ${crawlData.textContent?.substring(0, 2000)}...
 Word Count: ${crawlData.metrics?.wordCount}
-Links: ${crawlData.metrics?.linkCount}`
+Links: ${crawlData.metrics?.linkCount}`;
+
+                    // Define JSON schema for structured output
+                    const schema = {
+                        name: "content_analysis",
+                        strict: true,
+                        schema: {
+                            type: "object",
+                            properties: {
+                                contentType: { type: "string" },
+                                safetyLevel: { type: "string", enum: ["beginner", "intermediate", "advanced", "caution"] },
+                                keyTopics: { type: "array", items: { type: "string" } },
+                                targetAudience: { type: "string" },
+                                qualityScore: { type: "number", minimum: 1, maximum: 10 },
+                                summary: { type: "string" },
+                                tags: { type: "array", items: { type: "string" } }
+                            },
+                            required: ["contentType", "safetyLevel", "keyTopics", "targetAudience", "qualityScore", "summary", "tags"],
+                            additionalProperties: false
                         }
-                    ];
+                    };
 
-                    const result = await lmStudioService.chatCompletion(messages, {
-                        temperature: 0.2,
-                        max_tokens: 1000
-                    });
+                    let aiAnalysis;
 
-                    // Validate AI response structure
-                    if (!result || !result.response || !result.response.choices || result.response.choices.length === 0) {
-                        throw new Error('Invalid AI response structure - no choices returned');
+                    // Try structured output first
+                    try {
+                        const structuredResult = await lmStudioService.structuredCompletion([
+                            { role: 'system', content: 'You are a BambiSleep content analyst. Respond only with valid JSON.' },
+                            { role: 'user', content: this.prompts.contentAnalysis + '\n\n' + userContent }
+                        ], schema, { temperature: 0.1, max_tokens: 1000 });
+
+                        aiAnalysis = JSON.parse(structuredResult.response.choices[0].message.content);
+                        log.debug(`🔍 AI content analysis successful (structured)`);
+                    } catch (structuredError) {
+                        log.debug(`Structured content analysis failed, trying regular completion: ${structuredError.message}`);
+
+                        // Fallback to regular completion with specific JSON instructions
+                        const jsonPrompt = this.prompts.contentAnalysis + '\n\n' + userContent + '\n\nIMPORTANT: Respond with ONLY a JSON object, no markdown, no other text.';
+
+                        const result = await lmStudioService.chatCompletion([
+                            { role: 'system', content: 'You are a BambiSleep content analyst. You must respond with valid JSON only.' },
+                            { role: 'user', content: jsonPrompt }
+                        ], { temperature: 0.1, max_tokens: 1000 });
+
+                        let content = result.response.choices[0].message.content.trim();
+
+                        // Remove markdown code blocks if present
+                        content = content.replace(/```json\s*|\s*```/g, '');
+
+                        // Extract JSON object if wrapped in other text
+                        const jsonMatch = content.match(/\{[\s\S]*\}/);
+                        if (jsonMatch) {
+                            content = jsonMatch[0];
+                        }
+
+                        aiAnalysis = JSON.parse(content);
+                        log.debug(`🔍 AI content analysis successful (fallback)`);
                     }
-
-                    const choice = result.response.choices[0];
-                    if (!choice || !choice.message || !choice.message.content) {
-                        throw new Error('Invalid AI response structure - no message content');
-                    }
-
-                    const aiAnalysis = JSON.parse(choice.message.content);
 
                     // Merge AI analysis with basic analysis
                     return {
@@ -549,7 +627,7 @@ Links: ${crawlData.metrics?.linkCount}`
                 }
             } else {
                 const connInfo = lmStudioService.getConnectionInfo();
-                log.info('🤖 AI service not available, using basic analysis');  
+                log.info('🤖 AI service not available, using basic analysis');
                 log.info(`🔍 Connection: ${connInfo.url} (${connInfo.platform})`);
             }
 
