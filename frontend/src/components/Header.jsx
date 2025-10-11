@@ -55,6 +55,13 @@ const Header = () => {
                         Agents
                     </Link>
                     <Link
+                        to="/agent-kb"
+                        className={`${styles.navLink} ${isActive('/agent-kb') ? styles.active : ''}`}
+                        onClick={closeMobileMenu}
+                    >
+                        Agent KB
+                    </Link>
+                    <Link
                         to="/mission"
                         className={`${styles.navLink} ${isActive('/mission') ? styles.active : ''}`}
                         onClick={closeMobileMenu}

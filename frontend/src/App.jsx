@@ -4,7 +4,7 @@ import Header from '@components/Header';
 import Footer from '@components/Footer';
 import Home from '@pages/Home';
 import KnowledgeBase from '@pages/KnowledgeBase';
-import Agents from '@pages/Agents';
+import AgentKnowledgeBase from '@pages/AgentKnowledgeBase';
 import Mission from '@pages/Mission';
 import Roadmap from '@pages/Roadmap';
 import { ErrorBoundary } from '@components';
@@ -22,7 +22,8 @@ const App = () => {
                             <Routes>
                                 <Route path="/" element={<Home />} />
                                 <Route path="/knowledge" element={<KnowledgeBase />} />
-                                <Route path="/agents" element={<Agents />} />
+                                <Route path="/agents" element={<AgentKnowledgeBase />} />
+                                <Route path="/agent-kb" element={<AgentKnowledgeBase />} />
                                 <Route path="/mission" element={<Mission />} />
                                 <Route path="/roadmap" element={<Roadmap />} />
                             </Routes>

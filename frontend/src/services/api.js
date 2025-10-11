@@ -197,6 +197,178 @@ export const healthService = {
     }
 };
 
+// Knowledge Base Service - Comprehensive MCP tool integration
+export const knowledgeBaseService = {
+    // Crawler operations
+    async crawlSingleUrl(url, options = {}) {
+        return await mcpService.callTool('crawler-single-url', {
+            url,
+            storeResults: options.storeResults !== false,
+            collection: options.collection || 'crawl_results',
+            timeout: options.timeout || 15000
+        });
+    },
+    
+    async crawlMultipleUrls(urls, options = {}) {
+        return await mcpService.callTool('crawler-multiple-urls', {
+            urls,
+            maxDepth: options.maxDepth || 2,
+            maxPages: options.maxPages || 50,
+            storeResults: options.storeResults !== false,
+            collection: options.collection || 'crawl_results'
+        });
+    },
+    
+    async batchCrawl(urls, options = {}) {
+        return await mcpService.callTool('crawler-batch-crawl', {
+            urls,
+            batchSize: options.batchSize || 5,
+            delayMs: options.delayMs || 1000,
+            storeResults: options.storeResults !== false
+        });
+    },
+    
+    async getCrawlStats() {
+        return await mcpService.callTool('crawler-get-stats');
+    },
+    
+    // Agentic system operations
+    async initializeAgentic() {
+        return await mcpService.callTool('agentic-initialize');
+    },
+    
+    async startAgenticBuilding(options = {}) {
+        return await mcpService.callTool('agentic-start-building', {
+            sources: options.sources || ['crawl_results'],
+            autoOrganize: options.autoOrganize !== false,
+            maxItems: options.maxItems || 100
+        });
+    },
+    
+    async stopAgenticBuilding() {
+        return await mcpService.callTool('agentic-stop-building');
+    },
+    
+    async getAgenticStats() {
+        return await mcpService.callTool('agentic-get-stats');
+    },
+    
+    async generateLearningPath(topic, options = {}) {
+        return await mcpService.callTool('agentic-get-learning-path', {
+            topic,
+            maxItems: options.maxItems || 10,
+            difficulty: options.difficulty || 'beginner'
+        });
+    },
+    
+    // MongoDB operations
+    async listDatabases() {
+        return await mcpService.callTool('mongodb-list-databases');
+    },
+    
+    async listCollections(database = 'bambisleep-church') {
+        return await mcpService.callTool('mongodb-list-collections', { database });
+    },
+    
+    async findDocuments(collection, query = {}, options = {}) {
+        return await mcpService.callTool('mongodb-find-documents', {
+            collection,
+            query,
+            limit: options.limit || 20,
+            sort: options.sort || {}
+        });
+    },
+    
+    async getCollectionStats(collection) {
+        return await mcpService.callTool('mongodb-collection-stats', { collection });
+    },
+    
+    async aggregateData(collection, pipeline) {
+        return await mcpService.callTool('mongodb-aggregate-data', {
+            collection,
+            pipeline
+        });
+    },
+    
+    // LMStudio operations
+    async getLMStudioStatus() {
+        return await mcpService.callTool('lmstudio-get-status');
+    },
+    
+    async generateText(prompt, options = {}) {
+        return await mcpService.callTool('lmstudio-generate-text', {
+            prompt,
+            maxTokens: options.maxTokens || 500,
+            temperature: options.temperature || 0.7
+        });
+    },
+    
+    async analyzeContent(content, analysisType = 'general') {
+        return await mcpService.callTool('lmstudio-analyze-content', {
+            content,
+            analysisType
+        });
+    },
+    
+    async categorizeContent(content) {
+        return await mcpService.callTool('lmstudio-categorize-content', {
+            content,
+            categories: ['official', 'community', 'scripts', 'safety', 'guides', 'resources']
+        });
+    },
+    
+    // Bambi-specific knowledge operations
+    async searchKnowledge(query, options = {}) {
+        return await mcpService.callTool('search-knowledge', {
+            query,
+            category: options.category,
+            limit: options.limit || 10
+        });
+    },
+    
+    async getSafetyInfo() {
+        return await mcpService.callTool('get-safety-info');
+    },
+    
+    async getChurchStatus() {
+        return await mcpService.callTool('get-church-status');
+    },
+    
+    async getCommunityGuidelines() {
+        return await mcpService.callTool('get-community-guidelines');
+    },
+    
+    async getResourceRecommendations(topic) {
+        return await mcpService.callTool('get-resource-recommendations', { topic });
+    },
+    
+    // Comprehensive system operations
+    async getSystemOverview() {
+        try {
+            const [mcpStatus, crawlerStats, agenticStats, dbStats] = await Promise.allSettled([
+                this.getMcpStatus(),
+                this.getCrawlStats(),
+                this.getAgenticStats(),
+                this.listDatabases()
+            ]);
+            
+            return {
+                mcp: mcpStatus.status === 'fulfilled' ? mcpStatus.value : null,
+                crawler: crawlerStats.status === 'fulfilled' ? crawlerStats.value : null,
+                agentic: agenticStats.status === 'fulfilled' ? agenticStats.value : null,
+                database: dbStats.status === 'fulfilled' ? dbStats.value : null
+            };
+        } catch (error) {
+            console.error('System overview failed:', error);
+            return null;
+        }
+    },
+    
+    async getMcpStatus() {
+        return await mcpService.getStatus();
+    }
+};
+
 // WebSocket/Socket.IO Service (for real-time features)
 export const socketService = {
     socket: null,
