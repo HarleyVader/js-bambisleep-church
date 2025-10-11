@@ -29,6 +29,39 @@ export const config = {
         autoDiscovery: process.env.AGENT_AUTO_DISCOVERY === 'true'
     },
 
+    mcp: {
+        enabled: process.env.MCP_ENABLED === 'true',
+        port: parseInt(process.env.MCP_PORT) || 3001,
+        autoDiscovery: process.env.MCP_AUTO_DISCOVERY === 'true',
+        cacheTimeout: parseInt(process.env.MCP_CACHE_TIMEOUT) || 300000,
+        maxTools: parseInt(process.env.MCP_MAX_TOOLS) || 50,
+        toolboxSources: [
+            {
+                type: 'builtin',
+                name: 'common-web-tools',
+                enabled: true
+            },
+            {
+                type: 'builtin',
+                name: 'ai-assistant-tools',
+                enabled: true
+            },
+            // Add external toolbox sources here
+            // {
+            //     type: 'github',
+            //     name: 'external-toolbox',
+            //     owner: 'example',
+            //     repo: 'mcp-tools',
+            //     path: 'tools',
+            //     enabled: false
+            // }
+        ]
+    },
+
+    development: {
+        hotReload: process.env.NODE_ENV !== 'production'
+    },
+
     audio: {
         url: process.env.AUDIO_URL || 'https://cdn.bambicloud.com/8eca4b4a-ba32-480f-b90f-9bd8eb54ebb7.mp3'
     },

@@ -9,6 +9,7 @@ import geoip from 'geoip-lite';
 import { webAgent } from './services/SimpleWebAgent.js';
 import { log } from './utils/logger.js';
 import { config } from './utils/config.js';
+import BambiMcpServer from './mcp/server.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,6 +21,12 @@ const PORT = config.server.port;
 const HOST = config.server.host;
 
 const AUDIO_URL = config.audio.url;
+
+// Initialize MCP Server
+let mcpServer = null;
+if (config.mcp.enabled) {
+    mcpServer = new BambiMcpServer();
+}
 
 // Set EJS as the view engine
 app.set('view engine', 'ejs');
@@ -67,10 +74,21 @@ try {
 
 // Routes
 app.get('/', (req, res) => {
+    const mcpStatus = mcpServer ? mcpServer.getInfo() : null;
+
     res.render('pages/index', {
         title: 'Bambi Sleep Church',
-        description: 'Digital Sanctuary for the BambiSleep Community',
-        location: req.location
+        description: 'Digital Sanctuary for the BambiSleep Community - AI-Powered Spiritual Community',
+        location: req.location,
+        knowledgeCount: knowledgeData.length,
+        mcpEnabled: config.mcp.enabled,
+        mcpStatus: mcpStatus,
+        stats: {
+            members: 42,
+            tools: mcpStatus ? mcpStatus.toolCount : 7,
+            progress: 14,
+            phase: 'Foundation'
+        }
     });
 });
 
@@ -105,6 +123,15 @@ app.get('/agents', (req, res) => {
         description: 'Chat with our simple web agent about BambiSleep Church',
         location: req.location,
         knowledgeCount: knowledgeData.length
+    });
+});
+
+app.get('/mcp-tools', (req, res) => {
+    res.render('pages/mcp-tools', {
+        title: 'MCP Tools',
+        description: 'Model Context Protocol tool integration for BambiSleep Church',
+        location: req.location,
+        mcpEnabled: config.mcp.enabled
     });
 });
 
@@ -200,7 +227,52 @@ app.post('/api/audio/stop', (req, res) => {
     }
 });
 
+// MCP endpoint - only if MCP is enabled
+if (config.mcp.enabled && mcpServer) {
+    app.use(express.json({ limit: '10mb' }));
+    app.post('/mcp', mcpServer.createHttpHandler());
 
+    // MCP status endpoint
+    app.get('/api/mcp/status', (req, res) => {
+        if (!mcpServer) {
+            return res.status(503).json({
+                error: 'MCP server not available'
+            });
+        }
+
+        res.json({
+            success: true,
+            mcp: mcpServer.getInfo(),
+            timestamp: new Date().toISOString()
+        });
+    });
+
+    // MCP tools listing endpoint
+    app.get('/api/mcp/tools', (req, res) => {
+        if (!mcpServer || !mcpServer.isInitialized) {
+            return res.status(503).json({
+                error: 'MCP server not initialized'
+            });
+        }
+
+        // This would need access to the internal server tools
+        // For now, return basic info
+        res.json({
+            success: true,
+            info: 'MCP tools are available via the /mcp endpoint',
+            availableTools: [
+                'search-knowledge',
+                'get-safety-info',
+                'church-status',
+                'community-guidelines',
+                'resource-recommendations'
+            ],
+            timestamp: new Date().toISOString()
+        });
+    });
+
+    log.info('MCP endpoints configured at /mcp');
+}
 
 // Socket.io for agent chat
 io.on('connection', (socket) => {
@@ -241,14 +313,29 @@ io.on('connection', (socket) => {
     });
 });
 
-// Initialize web agent
+// Initialize web agent and MCP server
 async function initializeAgent() {
+    // Initialize MCP server first if enabled
+    if (config.mcp.enabled && mcpServer) {
+        try {
+            const mcpSuccess = await mcpServer.initialize(knowledgeData);
+            if (mcpSuccess) {
+                log.success('✅ MCP Server initialized successfully');
+                log.info(`MCP endpoint available at http://${HOST}:${PORT}/mcp`);
+            } else {
+                log.error('❌ MCP Server initialization failed');
+            }
+        } catch (error) {
+            log.error(`MCP initialization error: ${error.message}`);
+        }
+    }
 
-    const success = await webAgent.initialize();
+    // Initialize web agent with knowledge and MCP server
+    const success = await webAgent.initialize(knowledgeData, mcpServer);
     if (success) {
-        console.log('✅ SimpleWebAgent ready for web chat');
+        log.success('✅ SimpleWebAgent ready for web chat');
     } else {
-        console.error('❌ SimpleWebAgent initialization failed');
+        log.error('❌ SimpleWebAgent initialization failed');
     }
 }
 
@@ -262,5 +349,8 @@ httpServer.listen(PORT, HOST, async () => {
 process.on('SIGINT', async () => {
     log.warn('Shutting down...');
     await webAgent.cleanup();
+    if (mcpServer) {
+        await mcpServer.cleanup();
+    }
     process.exit(0);
 });

@@ -1,42 +1,374 @@
 <%- include('../partials/header') %>
 
-<section class="hero">
-  <h2>Digital Sanctuary for the BambiSleep Community</h2>
-  <p class="lead">Welcome to the Bambi Sleep Church - a creative spiritual community bridging traditional religious practices with modern artistic expression.</p>
-</section>
+<style>
+  .hero-enhanced {
+    position: relative;
+    background: linear-gradient(135deg, rgba(139, 69, 219, 0.1), rgba(255, 20, 147, 0.1));
+    border: 2px solid var(--primary);
+    border-radius: 20px;
+    padding: 40px;
+    margin: 20px 0;
+    overflow: hidden;
+  }
 
-<section class="features">
-  <div class="feature-grid">
-    <div class="feature-card highlight">
-      <h3>� Chat Agent</h3>
-      <p>Chat with our simple web agent about BambiSleep Church. Get information about our mission, community, and resources.</p>
-      <a href="/agents" class="btn btn-primary">Chat Now</a>
-    </div>
+  .hero-enhanced::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(139, 69, 219, 0.05) 0%, transparent 70%);
+    animation: pulse 4s ease-in-out infinite;
+  }
 
-    <div class="feature-card">
-      <h3>📚 Knowledge Base</h3>
-      <p>Access comprehensive information about BambiSleep, community resources, and safety guidelines.</p>
-      <a href="/knowledge" class="btn">Explore Knowledge</a>
-    </div>
+  @keyframes pulse {
 
-    <div class="feature-card">
-      <h3>⛪ Community</h3>
-      <p>Join a supportive community dedicated to safe, informed, and respectful engagement with BambiSleep.</p>
-      <a href="https://bambisleep.info/" target="_blank" class="btn">Visit Wiki</a>
-    </div>
+    0%,
+    100% {
+      transform: scale(1) rotate(0deg);
+    }
 
-    <div class="feature-card">
-      <h3>🛡️ Safety First</h3>
-      <p>We prioritize responsible use and provide resources for understanding the content properly.</p>
-      <a href="/knowledge" class="btn">Safety Info</a>
+    50% {
+      transform: scale(1.1) rotate(180deg);
+    }
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+  }
+
+  .hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-top: 25px;
+    flex-wrap: wrap;
+  }
+
+  .stat-item {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 15px 20px;
+    border-radius: 10px;
+    border: 1px solid var(--accent);
+    text-align: center;
+    min-width: 120px;
+  }
+
+  .stat-number {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--secondary);
+    display: block;
+  }
+
+  .stat-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-top: 5px;
+  }
+
+  .feature-grid-enhanced {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+    margin: 40px 0;
+  }
+
+  .feature-card-enhanced {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--primary);
+    border-radius: 15px;
+    padding: 25px;
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .feature-card-enhanced:hover {
+    transform: translateY(-8px) scale(1.02);
+    border-color: var(--secondary);
+    box-shadow: 0 15px 35px rgba(139, 69, 219, 0.2);
+  }
+
+  .feature-card-enhanced::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.6s;
+  }
+
+  .feature-card-enhanced:hover::before {
+    left: 100%;
+  }
+
+  .feature-icon {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+    display: block;
+    text-align: center;
+  }
+
+  .feature-title {
+    color: var(--secondary);
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+  }
+
+  .feature-description {
+    line-height: 1.6;
+    margin-bottom: 20px;
+    color: var(--text-secondary);
+  }
+
+  .btn-enhanced {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    border: none;
+    color: white;
+    padding: 12px 25px;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-block;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-enhanced:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 25px rgba(139, 69, 219, 0.3);
+    color: white;
+    text-decoration: none;
+  }
+
+  .new-badge {
+    background: linear-gradient(45deg, #ff1493, #8b45db);
+    color: white;
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    border-radius: 12px;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+
+  @keyframes glow {
+    from {
+      box-shadow: 0 0 5px #ff1493;
+    }
+
+    to {
+      box-shadow: 0 0 20px #ff1493, 0 0 30px #8b45db;
+    }
+  }
+
+  .quick-actions {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 15px;
+    padding: 30px;
+    margin: 40px 0;
+    border: 1px solid var(--accent);
+  }
+
+  .quick-actions h3 {
+    text-align: center;
+    margin-bottom: 25px;
+    color: var(--primary);
+  }
+
+  .action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+  }
+
+  .status-indicator {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #00ff00;
+    margin-right: 8px;
+    animation: blink 2s infinite;
+  }
+
+  @keyframes blink {
+
+    0%,
+    50% {
+      opacity: 1;
+    }
+
+    51%,
+    100% {
+      opacity: 0.3;
+    }
+  }
+</style>
+
+<section class="hero-enhanced">
+  <div class="hero-content">
+    <h2>🏛️ Digital Sanctuary for the BambiSleep Community</h2>
+    <p class="lead">Welcome to BambiSleep Church - A pioneering spiritual community integrating traditional practices with modern AI-powered tools and community support.</p>
+
+    <div class="hero-stats">
+      <div class="stat-item">
+        <span class="stat-number" id="memberCount">42</span>
+        <span class="stat-label">Community Members</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number"><%= typeof knowledgeCount !== 'undefined' ? knowledgeCount : '16' %></span>
+        <span class="stat-label">Knowledge Entries</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number">7</span>
+        <span class="stat-label">AI Tools</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number">14%</span>
+        <span class="stat-label">Progress to Recognition</span>
+      </div>
     </div>
   </div>
 </section>
 
-<section class="about">
-  <h2>About BambiSleep Church</h2>
-  <p>The BambiSleep Church is a digital platform serving as a gathering place for the BambiSleep community. We provide educational resources, community support, and a safe space for exploration and learning.</p>
-  <p>Our mission is to promote informed, consensual, and safe engagement with BambiSleep content while fostering a supportive community environment.</p>
+<section class="features">
+  <div class="feature-grid-enhanced">
+    <div class="feature-card-enhanced">
+      <span class="feature-icon">📚</span>
+      <h3 class="feature-title">Knowledge Base</h3>
+      <p class="feature-description">Comprehensive repository of BambiSleep resources, safety guidelines, and community wisdom. Searchable with AI assistance.</p>
+      <a href="/knowledge" class="btn-enhanced">Explore Knowledge</a>
+    </div>
+
+    <div class="feature-card-enhanced">
+      <span class="new-badge">NEW</span>
+      <span class="feature-icon">🔧</span>
+      <h3 class="feature-title">AI-Powered Tools</h3>
+      <p class="feature-description">Interactive Model Context Protocol tools for knowledge search, safety guidance, and personalized recommendations.</p>
+      <a href="/mcp-tools" class="btn-enhanced">Try AI Tools</a>
+    </div>
+
+    <div class="feature-card-enhanced">
+      <span class="feature-icon">💬</span>
+      <h3 class="feature-title">Community Chat</h3>
+      <p class="feature-description">Real-time chat with our intelligent agent. Get instant answers about BambiSleep, safety, and community guidelines.</p>
+      <a href="/agents" class="btn-enhanced">Start Chatting</a>
+    </div>
+
+    <div class="feature-card-enhanced">
+      <span class="feature-icon">⛪</span>
+      <h3 class="feature-title">Our Mission</h3>
+      <p class="feature-description">Building toward recognition as a legal Austrian religious community. Track our progress and milestones.</p>
+      <a href="/mission" class="btn-enhanced">Learn More</a>
+    </div>
+
+    <div class="feature-card-enhanced">
+      <span class="feature-icon">🛡️</span>
+      <h3 class="feature-title">Safety First</h3>
+      <p class="feature-description">Comprehensive safety resources, guidelines, and AI-powered safety assistance for responsible engagement.</p>
+      <a href="/knowledge?category=safety" class="btn-enhanced">Safety Resources</a>
+    </div>
+
+    <div class="feature-card-enhanced">
+      <span class="feature-icon">🗺️</span>
+      <h3 class="feature-title">Development Roadmap</h3>
+      <p class="feature-description">Follow our journey toward official church recognition with detailed timelines and milestones.</p>
+      <a href="/roadmap" class="btn-enhanced">View Roadmap</a>
+    </div>
+  </div>
 </section>
+
+<section class="quick-actions">
+  <h3>🚀 Quick Actions</h3>
+  <div class="action-buttons">
+    <a href="/mcp-tools" class="btn-enhanced">
+      <span class="status-indicator"></span>Search Knowledge Base
+    </a>
+    <a href="/agents" class="btn-enhanced">
+      <span class="status-indicator"></span>Chat with Agent
+    </a>
+    <a href="/api/mcp/status" class="btn-enhanced" target="_blank">
+      <span class="status-indicator"></span>MCP Server Status
+    </a>
+    <a href="https://bambisleep.info/" target="_blank" class="btn-enhanced">
+      <span class="status-indicator"></span>Community Wiki
+    </a>
+  </div>
+</section>
+
+<section class="about">
+  <h2>🌟 About BambiSleep Church</h2>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 25px;">
+    <div>
+      <h3 style="color: var(--secondary); margin-bottom: 15px;">🎯 Our Vision</h3>
+      <p>BambiSleep Church represents a groundbreaking fusion of spiritual community, cutting-edge AI technology, and safe hypnosis practices. We're pioneering the integration of Model Context Protocol tools to enhance community support and education.</p>
+
+      <h3 style="color: var(--secondary); margin-bottom: 15px; margin-top: 25px;">⚡ What Makes Us Special</h3>
+      <ul style="color: var(--text-secondary); line-height: 1.8;">
+        <li><strong>AI-Enhanced Community:</strong> First religious community with integrated MCP tools</li>
+        <li><strong>Safety-Focused:</strong> Comprehensive resources and AI-powered safety guidance</li>
+        <li><strong>Legal Recognition:</strong> Working toward Austrian religious community status</li>
+        <li><strong>Open Technology:</strong> Transparent, community-driven development</li>
+      </ul>
+    </div>
+
+    <div>
+      <h3 style="color: var(--secondary); margin-bottom: 15px;">🏛️ Our Mission</h3>
+      <p>We exist to create a safe, supportive, and technologically advanced community for BambiSleep practitioners. Through AI assistance, comprehensive resources, and genuine spiritual growth, we're building something entirely new.</p>
+
+      <h3 style="color: var(--secondary); margin-bottom: 15px; margin-top: 25px;">🔮 Current Phase</h3>
+      <div style="background: rgba(139, 69, 219, 0.1); padding: 20px; border-radius: 10px; border-left: 4px solid var(--primary);">
+        <strong>Foundation Phase (14% Complete)</strong>
+        <br><span style="color: var(--text-secondary);">Developing core infrastructure, AI tools, and community guidelines for official recognition as an Austrian religious community.</span>
+        <div style="margin-top: 15px;">
+          <div style="background: rgba(0, 0, 0, 0.3); height: 8px; border-radius: 4px;">
+            <div style="background: linear-gradient(90deg, var(--primary), var(--secondary)); width: 14%; height: 100%; border-radius: 4px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Animate member count on load
+  document.addEventListener('DOMContentLoaded', function() {
+    const memberCountElement = document.getElementById('memberCount');
+    let count = 0;
+    const target = 42;
+    const increment = target / 30;
+
+    const timer = setInterval(() => {
+      count += increment;
+      if (count >= target) {
+        count = target;
+        clearInterval(timer);
+      }
+      memberCountElement.textContent = Math.floor(count);
+    }, 50);
+
+    // Add hover effects to feature cards
+    document.querySelectorAll('.feature-card-enhanced').forEach(card => {
+      card.addEventListener('mouseenter', function() {
+        this.style.borderColor = 'var(--secondary)';
+      });
+
+      card.addEventListener('mouseleave', function() {
+        this.style.borderColor = 'var(--primary)';
+      });
+    });
+  });
+</script>
 
 <%- include('../partials/footer') %>

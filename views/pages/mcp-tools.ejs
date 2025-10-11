@@ -1,0 +1,281 @@
+<!-- MCP Integration Demo Page -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MCP Tools - <%= title %></title>
+  <%- include('../partials/header') %>
+  <style>
+    .mcp-tool-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--primary);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 15px 0;
+      transition: all 0.3s ease;
+    }
+
+    .mcp-tool-card:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--secondary);
+      transform: translateY(-2px);
+    }
+
+    .tool-form {
+      margin-top: 15px;
+    }
+
+    .tool-form input,
+    .tool-form select,
+    .tool-form textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--primary);
+      border-radius: 6px;
+      color: var(--text-primary);
+      font-family: 'Rajdhani', sans-serif;
+    }
+
+    .tool-form button {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .tool-form button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 20px rgba(139, 69, 219, 0.3);
+    }
+
+    .tool-result {
+      margin-top: 15px;
+      padding: 15px;
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 8px;
+      border-left: 4px solid var(--accent);
+      white-space: pre-wrap;
+    }
+
+    .mcp-status {
+      background: rgba(0, 255, 0, 0.1);
+      border: 1px solid #00ff00;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .loading {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <header class="hero">
+      <h1>🔧 MCP Tool Integration</h1>
+      <p>Explore Model Context Protocol tools for BambiSleep Church</p>
+    </header>
+
+    <!-- MCP Status -->
+    <div id="mcpStatus" class="mcp-status">
+      <h3>🔄 Checking MCP Status...</h3>
+    </div>
+
+    <!-- Knowledge Search Tool -->
+    <div class="mcp-tool-card">
+      <h3>🔍 Knowledge Search</h3>
+      <p>Search the BambiSleep knowledge base for resources and information</p>
+      <form class="tool-form" onsubmit="callMcpTool('search-knowledge', this); return false;">
+        <input type="text" name="query" placeholder="Search query (e.g., 'beginner guides')" required>
+        <select name="category">
+          <option value="all">All Categories</option>
+          <option value="official">Official</option>
+          <option value="community">Community</option>
+          <option value="scripts">Scripts</option>
+          <option value="safety">Safety</option>
+        </select>
+        <input type="number" name="limit" placeholder="Max results (default: 10)" min="1" max="20">
+        <button type="submit">Search Knowledge Base</button>
+      </form>
+      <div class="tool-result" id="search-knowledge-result" style="display: none;"></div>
+    </div>
+
+    <!-- Safety Information Tool -->
+    <div class="mcp-tool-card">
+      <h3>🛡️ Safety Information</h3>
+      <p>Get important safety guidelines and best practices</p>
+      <form class="tool-form" onsubmit="callMcpTool('get-safety-info', this); return false;">
+        <select name="topic">
+          <option value="general">General Safety</option>
+          <option value="beginners">Beginner Safety</option>
+          <option value="triggers">Trigger Safety</option>
+          <option value="consent">Consent Guidelines</option>
+          <option value="aftercare">Aftercare</option>
+          <option value="limits">Setting Limits</option>
+        </select>
+        <button type="submit">Get Safety Information</button>
+      </form>
+      <div class="tool-result" id="get-safety-info-result" style="display: none;"></div>
+    </div>
+
+    <!-- Church Status Tool -->
+    <div class="mcp-tool-card">
+      <h3>🏛️ Church Status</h3>
+      <p>Check the current development status of BambiSleep Church</p>
+      <form class="tool-form" onsubmit="callMcpTool('church-status', this); return false;">
+        <label>
+          <input type="checkbox" name="detailed"> Include detailed progress information
+        </label>
+        <button type="submit">Check Church Status</button>
+      </form>
+      <div class="tool-result" id="church-status-result" style="display: none;"></div>
+    </div>
+
+    <!-- Resource Recommendations Tool -->
+    <div class="mcp-tool-card">
+      <h3>📚 Resource Recommendations</h3>
+      <p>Get personalized resource recommendations based on your experience</p>
+      <form class="tool-form" onsubmit="callMcpTool('resource-recommendations', this); return false;">
+        <select name="experience" required>
+          <option value="">Select your experience level</option>
+          <option value="beginner">Beginner</option>
+          <option value="intermediate">Intermediate</option>
+          <option value="advanced">Advanced</option>
+        </select>
+        <textarea name="interests" placeholder="Specific interests (comma-separated, optional)"></textarea>
+        <label>
+          <input type="checkbox" name="safetyFocus"> Prioritize safety-focused resources
+        </label>
+        <button type="submit">Get Recommendations</button>
+      </form>
+      <div class="tool-result" id="resource-recommendations-result" style="display: none;"></div>
+    </div>
+
+    <!-- Community Guidelines Tool -->
+    <div class="mcp-tool-card">
+      <h3>📋 Community Guidelines</h3>
+      <p>View community guidelines and code of conduct</p>
+      <form class="tool-form" onsubmit="callMcpTool('community-guidelines', this); return false;">
+        <select name="section">
+          <option value="all">All Guidelines</option>
+          <option value="conduct">Code of Conduct</option>
+          <option value="participation">Participation</option>
+          <option value="safety">Safety Guidelines</option>
+          <option value="moderation">Moderation Policy</option>
+        </select>
+        <button type="submit">View Guidelines</button>
+      </form>
+      <div class="tool-result" id="community-guidelines-result" style="display: none;"></div>
+    </div>
+  </div>
+
+  <script>
+    // Check MCP status on page load
+    async function checkMcpStatus() {
+      try {
+        const response = await fetch('/api/mcp/status');
+        const data = await response.json();
+
+        const statusDiv = document.getElementById('mcpStatus');
+        if (data.success) {
+          statusDiv.innerHTML = `
+                        <h3>✅ MCP Server Active</h3>
+                        <p><strong>Version:</strong> ${data.mcp.version}</p>
+                        <p><strong>Tools:</strong> ${data.mcp.toolCount} available</p>
+                        <p><strong>Resources:</strong> ${data.mcp.resourceCount}</p>
+                        <p><strong>Knowledge Entries:</strong> ${data.mcp.knowledgeEntries}</p>
+                    `;
+          statusDiv.style.background = 'rgba(0, 255, 0, 0.1)';
+          statusDiv.style.borderColor = '#00ff00';
+        } else {
+          statusDiv.innerHTML = '<h3>❌ MCP Server Unavailable</h3>';
+          statusDiv.style.background = 'rgba(255, 0, 0, 0.1)';
+          statusDiv.style.borderColor = '#ff0000';
+        }
+      } catch (error) {
+        document.getElementById('mcpStatus').innerHTML = '<h3>❌ MCP Server Connection Failed</h3>';
+      }
+    }
+
+    // Call MCP tool
+    async function callMcpTool(toolName, form) {
+      const resultDiv = document.getElementById(toolName + '-result');
+      const card = form.closest('.mcp-tool-card');
+
+      // Show loading state
+      card.classList.add('loading');
+      resultDiv.style.display = 'block';
+      resultDiv.innerHTML = '🔄 Processing...';
+
+      try {
+        // Collect form data
+        const formData = new FormData(form);
+        const params = {};
+
+        for (let [key, value] of formData.entries()) {
+          if (value.trim() === '') continue;
+
+          // Handle special input types
+          if (form.querySelector(`[name="${key}"]`).type === 'checkbox') {
+            params[key] = true;
+          } else if (form.querySelector(`[name="${key}"]`).type === 'number') {
+            params[key] = parseInt(value);
+          } else if (key === 'interests' && value.includes(',')) {
+            params[key] = value.split(',').map(s => s.trim()).filter(s => s);
+          } else {
+            params[key] = value;
+          }
+        }
+
+        // Make MCP tool call
+        const response = await fetch('/mcp', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: Date.now(),
+            method: 'tools/call',
+            params: {
+              name: toolName,
+              arguments: params
+            }
+          })
+        });
+
+        const result = await response.json();
+
+        if (result.error) {
+          throw new Error(result.error.message || 'Tool call failed');
+        }
+
+        // Display result
+        const content = result.result?.content?.[0]?.text || 'No content returned';
+        resultDiv.innerHTML = content;
+
+      } catch (error) {
+        resultDiv.innerHTML = `❌ Error: ${error.message}`;
+      } finally {
+        card.classList.remove('loading');
+      }
+    }
+
+    // Initialize page
+    checkMcpStatus();
+  </script>
+</body>
+
+</html>
