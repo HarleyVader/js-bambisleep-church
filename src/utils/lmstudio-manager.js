@@ -18,7 +18,7 @@ export class LMStudioManager {
     // Initialize worker thread
     async initialize() {
         try {
-            const workerPath = path.join(__dirname, '../../workers/lmstudio.js');
+            const workerPath = path.join(__dirname, '../workers/lmstudio.js');
             this.worker = new Worker(workerPath);
 
             this.worker.on('message', (message) => {
