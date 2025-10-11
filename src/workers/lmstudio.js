@@ -1,7 +1,7 @@
 // workers/lmstudio.js - LM Studio Worker for BambiSleep Church
 import { parentPort } from 'worker_threads';
 import { LMStudioClient } from '@lmstudio/sdk';
-import { config } from '../src/utils/config.js';
+import { config } from '../utils/config.js';
 
 // LM Studio configuration
 let TARGET_MODEL_NAME, currentModel = null;
