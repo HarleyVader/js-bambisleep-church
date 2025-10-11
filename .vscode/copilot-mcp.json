@@ -3,12 +3,31 @@
     "enabled": true,
     "servers": [
       {
-        "name": "fickdichselber-mcp-server",
-        "description": "Bambi Sleep Church MCP Server with smolagents integration",
+        "name": "bambisleep-church",
+        "description": "BambiSleep Church Knowledge Base MCP Server - Local knowledge search and content analysis",
+        "endpoint": "stdio",
+        "command": "node",
+        "args": ["src/mcp/McpServer.js"],
+        "cwd": "f:\\js-bambisleep-church",
+        "tools": [
+          "search_knowledge",
+          "get_knowledge_stats", 
+          "fetch_webpage"
+        ],
+        "capabilities": {
+          "knowledgeSearch": true,
+          "webContentAnalysis": true,
+          "bambiSleepExpertise": true,
+          "contentCategorization": true
+        }
+      },
+      {
+        "name": "bambisleep-church-remote",
+        "description": "BambiSleep Church Remote MCP Server with agent orchestration",
         "endpoint": "https://fickdichselber.com:9999",
         "tools": [
           "get_links",
-          "add_link", 
+          "add_link",
           "vote_link",
           "create_agent",
           "prompt_agent",
@@ -19,7 +38,8 @@
           "linkManagement": true,
           "agentOrchestration": true,
           "communityVoting": true,
-          "contentGeneration": true
+          "contentGeneration": true,
+          "remoteExecution": true
         }
       }
     ],
@@ -27,12 +47,26 @@
       "enableAutoContext": true,
       "includeWorkspaceFiles": true,
       "includeGitHistory": false,
-      "maxContextSize": 50000
+      "maxContextSize": 100000,
+      "priorityFiles": [
+        "src/knowledge/knowledge.json",
+        "src/mcp/**/*.js",
+        ".env",
+        "README.md"
+      ]
     },
     "toolExecution": {
-      "allowAutomaticExecution": false,
-      "requireConfirmation": true,
-      "timeoutMs": 30000
+      "allowAutomaticExecution": true,
+      "requireConfirmation": false,
+      "timeoutMs": 45000,
+      "retryAttempts": 2,
+      "trustedServers": ["bambisleep-church"]
+    },
+    "knowledgeIntegration": {
+      "enableSemanticSearch": true,
+      "autoSuggestTools": true,
+      "contextualRelevance": 0.8,
+      "bambiSleepFocus": true
     }
   }
 }
