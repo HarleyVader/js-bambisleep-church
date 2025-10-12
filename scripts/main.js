@@ -237,29 +237,21 @@ class ServerManager {
 
         // Setup phase
         Logger.info('Installing dependencies...');
-        execSync('npm install', { stdio: 'inherit' });
-
-        // Change to frontend directory and install
-        process.chdir('frontend');
-        execSync('npm install', { stdio: 'inherit' });
-        process.chdir('..');
-
-        Logger.info('Running setup scripts...');
         await InstallManager.installAll();
         await ConfigManager.generateAll();
 
         if (isProduction) {
             // Production build
             Logger.info('Building frontend for production...');
-            process.chdir('frontend');
-            execSync('npm run build', { stdio: 'inherit' });
-            process.chdir('..');
+            const frontendDir = path.join(__dirname, '../frontend');
+            execSync('npm run build', { stdio: 'inherit', cwd: frontendDir });
 
             Logger.success('React app built to dist/ directory');
 
             Logger.info('Starting production server...');
             process.env.NODE_ENV = 'production';
-            execSync('node src/server.js', { stdio: 'inherit' });
+            const prodServerPath = path.join(__dirname, '../src/server.js');
+            execSync(`node ${prodServerPath}`, { stdio: 'inherit' });
         } else {
             // Development mode - build frontend and serve everything on port 7070
             Logger.info('Starting development server on port 7070...');
@@ -267,20 +259,22 @@ class ServerManager {
             Logger.info(`Frontend: Building React app for development...`);
 
             // Verify both directories exist
-            if (!existsSync('src/server.js')) {
-                Logger.error('Backend server not found at src/server.js');
+            const serverPath = path.join(__dirname, '../src/server.js');
+            const frontendPackagePath = path.join(__dirname, '../frontend/package.json');
+            
+            if (!existsSync(serverPath)) {
+                Logger.error(`Backend server not found at ${serverPath}`);
                 process.exit(1);
             }
-            if (!existsSync('frontend/package.json')) {
-                Logger.error('Frontend not found at frontend/package.json');
+            if (!existsSync(frontendPackagePath)) {
+                Logger.error(`Frontend not found at ${frontendPackagePath}`);
                 process.exit(1);
             }
 
             // Build frontend for development
             Logger.info('Building React frontend...');
-            process.chdir('frontend');
-            execSync('npm run build', { stdio: 'inherit' });
-            process.chdir('..');
+            const frontendDir = path.join(__dirname, '../frontend');
+            execSync('npm run build', { stdio: 'inherit', cwd: frontendDir });
 
             Logger.success('React app built to dist/ directory');
 
@@ -305,7 +299,8 @@ class ServerManager {
             const backendCmd = 'node --watch src/server.js';
             Logger.info(`Command: ${backendCmd} (with built React app)`);
 
-            const server = spawn('node', ['--watch', 'src/server.js'], {
+            const devServerPath = path.join(__dirname, '../src/server.js');
+            const server = spawn('node', ['--watch', devServerPath], {
                 stdio: 'inherit',
                 shell: false,
                 env: { ...process.env, NODE_ENV: 'production' }
