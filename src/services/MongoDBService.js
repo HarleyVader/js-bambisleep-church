@@ -8,8 +8,34 @@ class MongoDBService {
         this.client = null;
         this.db = null;
         this.isConnected = false;
-        this.connectionString = process.env.MONGODB_URL;
-        this.defaultDatabase = 'bambisleep-church';
+        this.connectionString = process.env.MONGODB_URL || process.env.MONGODB_URI;
+        this.defaultDatabase = process.env.MONGODB_DATABASE || 'bambisleep-church';
+        
+        // Log configuration status
+        if (!this.connectionString) {
+            log.warn('⚠️ No MongoDB connection string found in environment variables');
+            log.info('💡 Please set MONGODB_URL or MONGODB_URI in your .env file');
+        }
+    }
+
+    // Validate MongoDB connection string format
+    validateConnectionString(connectionString) {
+        if (!connectionString) {
+            return { valid: false, error: 'Connection string is empty' };
+        }
+
+        // Basic MongoDB URL format validation
+        const mongoUrlPattern = /^mongodb(\+srv)?:\/\/.+/;
+        if (!mongoUrlPattern.test(connectionString)) {
+            return { valid: false, error: 'Invalid MongoDB URL format' };
+        }
+
+        // Check if database name is included
+        if (!connectionString.includes('/') || connectionString.endsWith('/')) {
+            return { valid: false, error: 'Database name missing from connection string' };
+        }
+
+        return { valid: true };
     }
 
     async connect() {
@@ -19,7 +45,18 @@ class MongoDBService {
 
         try {
             if (!this.connectionString) {
-                throw new Error('MONGODB_URL environment variable not set');
+                log.error('❌ MongoDB connection failed: MONGODB_URL environment variable not set');
+                log.info('💡 Please check your .env file and ensure MONGODB_URL is configured');
+                log.info('📖 Example: MONGODB_URL=mongodb+srv://user:pass@cluster.mongodb.net/database');
+                return false;
+            }
+
+            // Validate connection string format
+            const validation = this.validateConnectionString(this.connectionString);
+            if (!validation.valid) {
+                log.error(`❌ MongoDB connection failed: ${validation.error}`);
+                log.info('💡 Please check your MONGODB_URL format in .env file');
+                return false;
             }
 
             // Create a MongoClient with stable API version
@@ -41,9 +78,21 @@ class MongoDBService {
             this.isConnected = true;
 
             log.success('✅ Connected to MongoDB Atlas');
+            log.info(`📊 Database: ${this.defaultDatabase}`);
             return true;
         } catch (error) {
             log.error(`❌ MongoDB connection failed: ${error.message}`);
+            
+            // Provide helpful error messages
+            if (error.message.includes('authentication')) {
+                log.error('🔐 Authentication failed - check your username and password');
+            } else if (error.message.includes('network')) {
+                log.error('🌐 Network issue - check your internet connection');
+            } else if (error.message.includes('timeout')) {
+                log.error('⏱️ Connection timeout - MongoDB server may be unavailable');
+            }
+            
+            log.warn('⚠️ MongoDB connection failed - knowledge base will be limited');
             this.isConnected = false;
             return false;
         }

@@ -29,6 +29,61 @@ class Logger {
 }
 
 // =============================================================================
+// ENVIRONMENT MANAGEMENT
+// =============================================================================
+
+class EnvironmentManager {
+    static checkRequiredEnvVars() {
+        const envPath = path.join(__dirname, '../.env');
+        
+        if (!existsSync(envPath)) {
+            Logger.warn('No .env file found');
+            Logger.info('Creating .env from .env.example...');
+            
+            const examplePath = path.join(__dirname, '../.env.example');
+            if (existsSync(examplePath)) {
+                const exampleContent = readFileSync(examplePath, 'utf8');
+                writeFileSync(envPath, exampleContent);
+                Logger.success('Created .env file from example');
+                Logger.warn('⚠️ Please edit .env file with your actual configuration values');
+            } else {
+                Logger.error('No .env.example file found to copy from');
+                return false;
+            }
+        }
+
+        // Check critical environment variables
+        const critical = ['MONGODB_URL'];
+        let missing = [];
+
+        // Load .env manually to check
+        const envContent = readFileSync(envPath, 'utf8');
+        const envLines = envContent.split('\n');
+        
+        critical.forEach(varName => {
+            const found = envLines.some(line => 
+                line.startsWith(`${varName}=`) && 
+                line.split('=')[1] && 
+                line.split('=')[1].trim().length > 0
+            );
+            
+            if (!found) {
+                missing.push(varName);
+            }
+        });
+
+        if (missing.length > 0) {
+            Logger.warn(`Missing or empty environment variables: ${missing.join(', ')}`);
+            Logger.info('Please edit your .env file and set the required values');
+            return false;
+        }
+
+        Logger.success('Environment configuration looks good');
+        return true;
+    }
+}
+
+// =============================================================================
 // CONFIGURATION MANAGEMENT
 // =============================================================================
 
@@ -235,6 +290,14 @@ class ServerManager {
         // Check for git updates first
         GitManager.detectPull();
 
+        // Check environment configuration
+        Logger.info('Checking environment configuration...');
+        if (!EnvironmentManager.checkRequiredEnvVars()) {
+            Logger.error('Environment configuration incomplete');
+            Logger.info('Please fix the .env file and try again');
+            process.exit(1);
+        }
+
         // Setup phase
         Logger.info('Installing dependencies...');
         await InstallManager.installAll();
@@ -261,7 +324,7 @@ class ServerManager {
             // Verify both directories exist
             const serverPath = path.join(__dirname, '../src/server.js');
             const frontendPackagePath = path.join(__dirname, '../frontend/package.json');
-            
+
             if (!existsSync(serverPath)) {
                 Logger.error(`Backend server not found at ${serverPath}`);
                 process.exit(1);

@@ -70,6 +70,17 @@ export const config = {
         ]
     },
 
+    mongodb: {
+        url: process.env.MONGODB_URL || process.env.MONGODB_URI,
+        database: process.env.MONGODB_DATABASE || 'bambisleep-church',
+        options: {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+            serverSelectionTimeoutMS: 5000,
+            connectTimeoutMS: 10000,
+        }
+    },
+
     development: {
         hotReload: process.env.NODE_ENV !== 'production'
     },
