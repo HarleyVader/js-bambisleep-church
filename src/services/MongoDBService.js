@@ -10,7 +10,7 @@ class MongoDBService {
         this.isConnected = false;
         this.connectionString = process.env.MONGODB_URL || process.env.MONGODB_URI;
         this.defaultDatabase = process.env.MONGODB_DATABASE || 'bambisleep-church';
-        
+
         // Log configuration status
         if (!this.connectionString) {
             log.warn('⚠️ No MongoDB connection string found in environment variables');
@@ -82,7 +82,7 @@ class MongoDBService {
             return true;
         } catch (error) {
             log.error(`❌ MongoDB connection failed: ${error.message}`);
-            
+
             // Provide helpful error messages
             if (error.message.includes('authentication')) {
                 log.error('🔐 Authentication failed - check your username and password');
@@ -91,7 +91,7 @@ class MongoDBService {
             } else if (error.message.includes('timeout')) {
                 log.error('⏱️ Connection timeout - MongoDB server may be unavailable');
             }
-            
+
             log.warn('⚠️ MongoDB connection failed - knowledge base will be limited');
             this.isConnected = false;
             return false;

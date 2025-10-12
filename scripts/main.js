@@ -35,11 +35,11 @@ class Logger {
 class EnvironmentManager {
     static checkRequiredEnvVars() {
         const envPath = path.join(__dirname, '../.env');
-        
+
         if (!existsSync(envPath)) {
             Logger.warn('No .env file found');
             Logger.info('Creating .env from .env.example...');
-            
+
             const examplePath = path.join(__dirname, '../.env.example');
             if (existsSync(examplePath)) {
                 const exampleContent = readFileSync(examplePath, 'utf8');
@@ -59,14 +59,14 @@ class EnvironmentManager {
         // Load .env manually to check
         const envContent = readFileSync(envPath, 'utf8');
         const envLines = envContent.split('\n');
-        
+
         critical.forEach(varName => {
-            const found = envLines.some(line => 
-                line.startsWith(`${varName}=`) && 
-                line.split('=')[1] && 
+            const found = envLines.some(line =>
+                line.startsWith(`${varName}=`) &&
+                line.split('=')[1] &&
                 line.split('=')[1].trim().length > 0
             );
-            
+
             if (!found) {
                 missing.push(varName);
             }
