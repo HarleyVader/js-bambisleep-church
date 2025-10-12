@@ -13,9 +13,7 @@
   },
   "homepage": "https://github.com/HarleyVader/js-bambisleep-church#readme",
   "scripts": {
-    "start": "npm install && cd frontend && npm install && cd .. && node scripts/install.js && node scripts/generate-config.js && cd frontend && npm run build && cd .. && cp -r frontend/dist/* dist/ && NODE_ENV=production node src/server.js",
-    "dev": "npm install && cd frontend && npm install && cd .. && node scripts/install.js && node scripts/generate-config.js && concurrently \"node --watch src/server.js\" \"cd frontend && npm run dev\"",
-    "dev:backend": "npm install && cd frontend && npm install && cd .. && node scripts/install.js && node scripts/generate-config.js && node --watch src/server.js",
+    "start": "node scripts/unified-start.js",
     "test": "npm install && cd frontend && npm install && cd .. && node scripts/install.js && node tests/test.cjs"
   },
   "dependencies": {

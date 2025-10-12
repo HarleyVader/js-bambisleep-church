@@ -14,35 +14,35 @@ function detectGitPull() {
         // Get current commit hash
         const currentCommit = execSync('git rev-parse HEAD', { encoding: 'utf8' }).trim();
         const headRefPath = '.git/refs/heads/' + execSync('git branch --show-current', { encoding: 'utf8' }).trim();
-        
+
         console.log('🔍 Checking for repository updates...');
-        
+
         // Fetch latest changes
         execSync('git fetch', { stdio: 'pipe' });
-        
+
         // Get remote commit hash
         const remoteCommit = execSync('git rev-parse @{u}', { encoding: 'utf8' }).trim();
-        
+
         if (currentCommit !== remoteCommit) {
             console.log('🔄 Repository updates detected! Pulling changes...');
-            
+
             // Pull changes
             execSync('git pull', { stdio: 'inherit' });
-            
+
             console.log('📦 Running npm install after pull...');
             execSync('npm install', { stdio: 'inherit' });
-            
+
             // Change to frontend and install
             process.chdir('frontend');
             execSync('npm install', { stdio: 'inherit' });
             process.chdir('..');
-            
+
             console.log('✅ Repository updated successfully! Process will restart...');
             process.exit(0); // Exit successfully to allow process manager to restart
         } else {
             console.log('✅ Repository is up to date');
         }
-        
+
     } catch (error) {
         console.log('⚠️  Git pull detection failed:', error.message);
         console.log('📝 Continuing with normal startup...');
@@ -84,18 +84,18 @@ if (isProduction) {
 } else {
     // Development mode with concurrently
     console.log('🔄 Starting development servers...');
-    
+
     // Start git monitoring in development mode
     const gitMonitor = setInterval(() => {
         detectGitPull();
     }, 30000); // Check every 30 seconds
-    
+
     // Cleanup function
     const cleanup = () => {
         clearInterval(gitMonitor);
         process.exit(0);
     };
-    
+
     process.on('SIGINT', cleanup);
     process.on('SIGTERM', cleanup);
 
