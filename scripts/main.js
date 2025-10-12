@@ -42,7 +42,7 @@ class ConfigManager {
 
             // Generate MCP Inspector config
             const productionUrl = process.env.PRODUCTION_MCP_URL || `https://at.bambisleep.church:${config.server.port}${config.server.mcpEndpoint}`;
-            
+
             const inspectorConfig = {
                 mcpServers: {
                     "bambisleep-church": {
