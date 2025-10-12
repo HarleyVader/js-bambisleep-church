@@ -41,29 +41,29 @@ const SimpleMarkdown = ({ content }) => {
                 if (line.startsWith('#### ')) {
                     return <h4 key={index} className={styles.h4}>{line.slice(5)}</h4>;
                 }
-                
+
                 // Code blocks
                 if (line.startsWith('```')) {
                     return <div key={index} className={styles.codeBlock}>Code Block</div>;
                 }
-                
+
                 // Bold text
                 line = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                
+
                 // Links
                 line = line.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="' + styles.link + '">$1</a>');
-                
+
                 // Inline code
                 line = line.replace(/`([^`]+)`/g, '<code class="' + styles.inlineCode + '">$1</code>');
-                
+
                 // Empty lines
                 if (!line.trim()) {
                     return <br key={index} />;
                 }
-                
+
                 return (
-                    <p 
-                        key={index} 
+                    <p
+                        key={index}
                         style={{ margin: '0.5em 0', lineHeight: '1.6' }}
                         dangerouslySetInnerHTML={{ __html: line }}
                     />
@@ -356,7 +356,7 @@ This documentation system serves markdown files from the \`docs/\` directory via
                 ))}
 
                 <div className={styles.settings}>
-                    <button 
+                    <button
                         onClick={toggleAdvancedMarkdown}
                         className={styles.toggleButton}
                         title="Toggle advanced markdown rendering with syntax highlighting"
@@ -448,7 +448,7 @@ This documentation system serves markdown files from the \`docs/\` directory via
 
                 <div className={styles.footer}>
                     <p>
-                        💡 <strong>Tip:</strong> Click "{useAdvancedMarkdown ? 'Simple' : 'Advanced'} Rendering" 
+                        💡 <strong>Tip:</strong> Click "{useAdvancedMarkdown ? 'Simple' : 'Advanced'} Rendering"
                         to {useAdvancedMarkdown ? 'use lightweight' : 'enable syntax highlighting and'} markdown processing.
                     </p>
                 </div>
