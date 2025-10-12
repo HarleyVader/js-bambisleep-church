@@ -81,14 +81,26 @@ app.use((req, res, next) => {
 });
 
 // Static file serving
-if (process.env.NODE_ENV === 'production') {
+const isProduction = process.env.NODE_ENV === 'production' || process.env.PRODUCTION === 'true';
+const reactBuildPath = path.join(__dirname, '..', 'dist');
+
+if (isProduction) {
     // Serve React build in production
-    const reactBuildPath = path.join(__dirname, '..', 'frontend', 'dist');
     if (fs.existsSync(reactBuildPath)) {
         app.use(express.static(reactBuildPath));
-        log.info(`📦 Serving React build from: ${reactBuildPath}`);
+        log.info(`📦 Production: Serving React build from: ${reactBuildPath}`);
     } else {
-        log.warn('⚠️ React build directory not found - build frontend first');
+        log.error(`❌ React build not found at: ${reactBuildPath}`);
+        log.warn('⚠️ Build with: npm run build:frontend');
+        // Create a fallback route for debugging
+        app.get('/', (req, res) => {
+            res.status(500).send(`
+                <h1>React Build Not Found</h1>
+                <p>Expected at: ${reactBuildPath}</p>
+                <p>Run: <code>npm run build:frontend</code></p>
+                <p>Environment: ${process.env.NODE_ENV || 'undefined'}</p>
+            `);
+        });
     }
 } else {
     // Development mode - serve public assets
@@ -497,13 +509,15 @@ io.on('connection', (socket) => {
 const serveReactApp = (req, res) => {
     if (process.env.NODE_ENV === 'production') {
         // Serve React build index.html for all routes
-        const reactIndexPath = path.join(__dirname, '..', 'frontend', 'dist', 'index.html');
+        const reactIndexPath = path.join(__dirname, '..', 'dist', 'index.html');
         if (fs.existsSync(reactIndexPath)) {
             res.sendFile(reactIndexPath);
         } else {
             res.status(404).json({
                 error: 'React build not found',
-                note: 'Run `npm run build:frontend` to build the React app'
+                note: 'Run `npm run build:frontend` to build the React app',
+                buildPath: 'Expected at: dist/index.html (project root)',
+                suggestion: 'Try: npm run build:full'
             });
         }
     } else {
