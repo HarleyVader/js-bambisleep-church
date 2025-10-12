@@ -8,3 +8,8 @@ export { default as DashboardPage } from './DashboardPage';
 export { default as Mission } from './Mission';
 export { default as Roadmap } from './Roadmap';
 export { default as Documentation } from './Documentation';
+
+// MOTHER BRAIN System Pages
+export { default as MotherBrainPage } from './MotherBrainPage';
+export { default as MotherBrainControl } from './MotherBrainControl';
+export { default as MotherBrainAnalytics } from './MotherBrainAnalytics';

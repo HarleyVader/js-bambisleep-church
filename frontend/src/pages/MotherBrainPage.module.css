@@ -1,0 +1,458 @@
+/* MOTHER BRAIN Page Styles - BambiSleep Church */
+
+.motherBrainPage {
+    min-height: 100vh;
+    background: var(--gradient-primary);
+    padding: 2rem;
+    font-family: var(--font-primary);
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 3rem;
+    padding: 2rem;
+    background: var(--dark-card-transparent);
+    border: 1px solid var(--accent-danger);
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+}
+
+.titleSection {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.titleSection svg {
+    color: var(--accent-danger);
+    filter: drop-shadow(0 0 10px var(--accent-danger));
+}
+
+.titleSection h1 {
+    font-family: var(--font-heading);
+    font-size: 2.5rem;
+    color: var(--text);
+    margin: 0 0 0.5rem 0;
+    text-shadow: 0 0 20px var(--accent-danger);
+}
+
+.subtitle {
+    color: var(--secondary-purple);
+    font-size: 1.2rem;
+    margin: 0.5rem 0;
+    font-weight: 600;
+}
+
+.motto {
+    color: var(--text-muted);
+    font-style: italic;
+    margin: 0.5rem 0 0 0;
+    font-size: 0.9rem;
+}
+
+.statusIndicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: var(--dark-card);
+    border-radius: 8px;
+    border: 1px solid var(--text-muted);
+}
+
+.statusDot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+.statusDot.offline {
+    background: var(--text-muted);
+}
+
+.statusDot.online {
+    background: var(--accent-success);
+}
+
+.statusDot.error {
+    background: var(--accent-danger);
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* Stats Grid */
+.statsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.statCard {
+    background: var(--dark-card-transparent);
+    border: 1px solid var(--secondary-purple);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.statCard:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(118, 75, 162, 0.3);
+}
+
+.statCard h3 {
+    font-family: var(--font-heading);
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin: 0 0 1rem 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.statValue {
+    font-family: var(--font-heading);
+    font-size: 2rem;
+    color: var(--accent-danger);
+    font-weight: bold;
+    text-shadow: 0 0 10px var(--accent-danger);
+}
+
+/* Features Section */
+.featuresSection {
+    margin-bottom: 3rem;
+}
+
+.featuresSection h2 {
+    font-family: var(--font-heading);
+    font-size: 1.8rem;
+    color: var(--text);
+    margin-bottom: 2rem;
+    text-align: center;
+    text-shadow: 0 0 10px var(--secondary-purple);
+}
+
+.featuresGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+}
+
+.featureCard {
+    background: var(--dark-card-transparent);
+    border: 1px solid var(--secondary-purple);
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.featureCard:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(118, 75, 162, 0.3);
+    border-color: var(--accent-danger);
+}
+
+.featureIcon {
+    color: var(--accent-danger);
+    margin-bottom: 1rem;
+    filter: drop-shadow(0 0 5px var(--accent-danger));
+}
+
+.featureCard h3 {
+    font-family: var(--font-heading);
+    font-size: 1.2rem;
+    color: var(--text);
+    margin: 0 0 1rem 0;
+}
+
+.featureCard p {
+    color: var(--text-light);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
+.featureStatus {
+    font-size: 0.8rem;
+    font-weight: bold;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.featureStatus.active {
+    background: rgba(46, 204, 113, 0.2);
+    color: var(--accent-success);
+    border: 1px solid var(--accent-success);
+}
+
+/* Operations Section */
+.operationsSection {
+    margin-bottom: 3rem;
+}
+
+.operationsSection h2 {
+    font-family: var(--font-heading);
+    font-size: 1.8rem;
+    color: var(--text);
+    margin-bottom: 2rem;
+    text-align: center;
+    text-shadow: 0 0 10px var(--secondary-purple);
+}
+
+.operationsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+}
+
+.operationCard {
+    background: var(--dark-card-transparent);
+    border: 1px solid var(--secondary-purple);
+    border-left: 4px solid var(--secondary-purple);
+    border-radius: 12px;
+    padding: 1.5rem;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.operationCard:hover {
+    transform: translateX(5px);
+    box-shadow: 0 5px 20px rgba(118, 75, 162, 0.3);
+}
+
+.operationHeader {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.operationHeader svg {
+    color: var(--accent-danger);
+}
+
+.operationHeader h3 {
+    font-family: var(--font-heading);
+    font-size: 1.1rem;
+    color: var(--text);
+    margin: 0;
+}
+
+.operationCard p {
+    color: var(--text-light);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
+.operationFooter {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.operationFooter code {
+    background: var(--dark-card);
+    color: var(--secondary-purple);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.operationCategory {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Ethics Section */
+.ethicsSection {
+    margin-bottom: 3rem;
+}
+
+.ethicsSection h2 {
+    font-family: var(--font-heading);
+    font-size: 1.8rem;
+    color: var(--text);
+    margin-bottom: 2rem;
+    text-align: center;
+    text-shadow: 0 0 10px var(--secondary-purple);
+}
+
+.ethicsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
+}
+
+.ethicsCard {
+    background: var(--dark-card-transparent);
+    border: 1px solid var(--accent-success);
+    border-radius: 12px;
+    padding: 2rem;
+    backdrop-filter: blur(10px);
+}
+
+.ethicsCard h3 {
+    font-family: var(--font-heading);
+    font-size: 1.2rem;
+    color: var(--accent-success);
+    margin: 0 0 1.5rem 0;
+    text-align: center;
+}
+
+.ethicsList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.ethicsList li {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: var(--text-light);
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--dark-card);
+}
+
+.ethicsList li:last-child {
+    border-bottom: none;
+}
+
+.ethicsList li svg {
+    color: var(--accent-success);
+    flex-shrink: 0;
+}
+
+/* Architecture Section */
+.architectureSection {
+    margin-bottom: 3rem;
+}
+
+.architectureSection h2 {
+    font-family: var(--font-heading);
+    font-size: 1.8rem;
+    color: var(--text);
+    margin-bottom: 2rem;
+    text-align: center;
+    text-shadow: 0 0 10px var(--secondary-purple);
+}
+
+.architectureGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+}
+
+.architectureCard {
+    background: var(--dark-card-transparent);
+    border: 1px solid var(--secondary-purple);
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.architectureCard:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(118, 75, 162, 0.3);
+}
+
+.architectureCard h3 {
+    font-family: var(--font-heading);
+    font-size: 1.1rem;
+    color: var(--accent-danger);
+    margin: 0 0 1rem 0;
+}
+
+.architectureCard p {
+    color: var(--text-light);
+    line-height: 1.6;
+}
+
+/* Footer */
+.footer {
+    text-align: center;
+    padding: 2rem;
+    margin-top: 3rem;
+    border-top: 1px solid var(--secondary-purple);
+}
+
+.footer p {
+    color: var(--text-muted);
+    font-style: italic;
+    margin: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .motherBrainPage {
+        padding: 1rem;
+    }
+
+    .header {
+        flex-direction: column;
+        gap: 1.5rem;
+        padding: 1.5rem;
+    }
+
+    .titleSection {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
+
+    .titleSection h1 {
+        font-size: 2rem;
+    }
+
+    .statsGrid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+    }
+
+    .featuresGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .operationsGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .ethicsGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .architectureGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .operationFooter {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .operationFooter code {
+        align-self: stretch;
+    }
+}

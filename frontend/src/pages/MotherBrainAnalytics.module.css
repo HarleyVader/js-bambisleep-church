@@ -1,0 +1,595 @@
+/* MOTHER BRAIN Analytics Styles - BambiSleep Church */
+
+.analyticsPage {
+    min-height: 100vh;
+    background: var(--gradient-primary);
+    padding: 2rem;
+    font-family: var(--font-primary);
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 3rem;
+    padding: 2rem;
+    background: var(--dark-card-transparent);
+    border: 1px solid var(--secondary-purple);
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+}
+
+.titleSection {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.titleSection svg {
+    color: var(--secondary-purple);
+    filter: drop-shadow(0 0 10px var(--secondary-purple));
+}
+
+.titleSection h1 {
+    font-family: var(--font-heading);
+    font-size: 2rem;
+    color: var(--text);
+    margin: 0 0 0.5rem 0;
+    text-shadow: 0 0 20px var(--secondary-purple);
+}
+
+.titleSection p {
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.controls {
+    display: flex;
+    gap: 1rem;
+}
+
+.timeSelect {
+    padding: 0.75rem 1rem;
+    background: var(--dark-card);
+    border: 1px solid var(--secondary-purple);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: var(--font-primary);
+    cursor: pointer;
+}
+
+.timeSelect:focus {
+    outline: none;
+    border-color: var(--accent-danger);
+    box-shadow: 0 0 5px rgba(231, 76, 60, 0.3);
+}
+
+/* Metrics Grid */
+.metricsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.metricCard {
+    background: var(--dark-card-transparent);
+    border: 1px solid var(--secondary-purple);
+    border-radius: 12px;
+    padding: 1.5rem;
+    backdrop-filter: blur(10px);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.metricCard:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(118, 75, 162, 0.3);
+}
+
+.metricHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.metricIcon {
+    filter: drop-shadow(0 0 5px currentColor);
+}
+
+.metricTrend {
+    font-size: 0.8rem;
+    color: var(--accent-success);
+    font-weight: 600;
+}
+
+.metricValue {
+    font-family: var(--font-heading);
+    font-size: 2.2rem;
+    color: var(--text);
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 0 10px currentColor;
+}
+
+.metricTitle {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Tab Navigation */
+.tabNav {
+    display: flex;
+    background: var(--dark-card-transparent);
+    border: 1px solid var(--secondary-purple);
+    border-radius: 12px;
+    padding: 0.5rem;
+    margin-bottom: 2rem;
+    backdrop-filter: blur(10px);
+}
+
+.tab {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: var(--text-muted);
+    font-family: var(--font-primary);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.tab:hover {
+    color: var(--text);
+    background: var(--dark-card);
+}
+
+.tab.active {
+    color: var(--text);
+    background: var(--secondary-purple);
+    box-shadow: 0 0 10px rgba(118, 75, 162, 0.5);
+}
+
+/* Tab Content */
+.tabContent {
+    background: var(--dark-card-transparent);
+    border: 1px solid var(--secondary-purple);
+    border-radius: 12px;
+    padding: 2rem;
+    backdrop-filter: blur(10px);
+}
+
+/* Overview Grid */
+.overviewGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+.activityPanel,
+.hostStatsPanel {
+    background: var(--dark-card);
+    border: 1px solid var(--secondary-purple);
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.activityPanel h3,
+.hostStatsPanel h3 {
+    font-family: var(--font-heading);
+    color: var(--text);
+    margin: 0 0 1.5rem 0;
+    text-align: center;
+}
+
+.activityList {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.activityItem {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem;
+    background: var(--dark-primary);
+    border-radius: 6px;
+    border-left: 3px solid var(--secondary-purple);
+}
+
+.activityIcon {
+    flex-shrink: 0;
+}
+
+.activityDetails {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.activityTime {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-family: 'Courier New', monospace;
+}
+
+.activityEvent {
+    color: var(--text-light);
+    font-size: 0.9rem;
+}
+
+.activityPages {
+    font-size: 0.8rem;
+    color: var(--secondary-purple);
+    font-weight: 600;
+}
+
+/* Host Stats Table */
+.hostTable {
+    display: flex;
+    flex-direction: column;
+}
+
+.hostHeader,
+.hostRow {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 1rem;
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--dark-card-transparent);
+}
+
+.hostHeader {
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.hostRow {
+    color: var(--text-light);
+}
+
+.hostName {
+    color: var(--secondary-purple);
+    font-weight: 600;
+}
+
+.successRate {
+    color: var(--accent-success);
+    font-weight: 600;
+}
+
+/* Ethical Grid */
+.ethicalGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+.ethicalPanel,
+.compliancePanel {
+    background: var(--dark-card);
+    border: 1px solid var(--accent-success);
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.ethicalPanel h3,
+.compliancePanel h3 {
+    font-family: var(--font-heading);
+    color: var(--accent-success);
+    margin: 0 0 1.5rem 0;
+    text-align: center;
+}
+
+.ethicalMetrics {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.ethicalMetric {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.ethicalLabel {
+    display: flex;
+    justify-content: space-between;
+    color: var(--text-light);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.ethicalBar {
+    height: 20px;
+    background: var(--dark-primary);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.ethicalFill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.3s ease;
+    position: relative;
+}
+
+.ethicalFill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    animation: shimmer 2s infinite;
+}
+
+.complianceList {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.complianceItem {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem;
+    background: var(--dark-primary);
+    border-radius: 6px;
+    color: var(--text-light);
+}
+
+.complianceItem svg {
+    color: var(--accent-success);
+}
+
+/* Content Grid */
+.contentGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+.contentPanel,
+.discoveryPanel {
+    background: var(--dark-card);
+    border: 1px solid var(--secondary-purple);
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.contentPanel h3,
+.discoveryPanel h3 {
+    font-family: var(--font-heading);
+    color: var(--text);
+    margin: 0 0 1.5rem 0;
+    text-align: center;
+}
+
+.contentChart {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.contentBar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.contentLabel {
+    display: flex;
+    justify-content: space-between;
+    color: var(--text-light);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.contentBarFill {
+    height: 16px;
+    background: var(--dark-primary);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.contentFill {
+    height: 100%;
+    border-radius: 8px;
+    transition: width 0.3s ease;
+}
+
+.discoveryStats {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.discoveryStat {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--dark-primary);
+    border-radius: 8px;
+}
+
+.discoveryStat svg {
+    color: var(--secondary-purple);
+}
+
+.discoveryValue {
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    color: var(--text);
+    font-weight: bold;
+}
+
+.discoveryLabel {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+/* Performance Grid */
+.performanceGrid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+}
+
+.performancePanel {
+    background: var(--dark-card);
+    border: 1px solid var(--accent-danger);
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.performancePanel h3 {
+    font-family: var(--font-heading);
+    color: var(--accent-danger);
+    margin: 0 0 1.5rem 0;
+    text-align: center;
+}
+
+.performanceMetrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.performanceItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem;
+    background: var(--dark-primary);
+    border-radius: 8px;
+}
+
+.performanceLabel {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    text-align: center;
+}
+
+.performanceValue {
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    color: var(--accent-danger);
+    font-weight: bold;
+}
+
+/* Scrollbar Styling */
+.activityList::-webkit-scrollbar {
+    width: 6px;
+}
+
+.activityList::-webkit-scrollbar-track {
+    background: var(--dark-card);
+}
+
+.activityList::-webkit-scrollbar-thumb {
+    background: var(--secondary-purple);
+    border-radius: 3px;
+}
+
+.activityList::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-danger);
+}
+
+/* Animations */
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .overviewGrid,
+    .ethicalGrid,
+    .contentGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .hostHeader,
+    .hostRow {
+        grid-template-columns: 2fr 1fr 1fr;
+        font-size: 0.8rem;
+    }
+
+    .performanceMetrics {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .analyticsPage {
+        padding: 1rem;
+    }
+
+    .header {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1.5rem;
+    }
+
+    .titleSection {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
+
+    .titleSection h1 {
+        font-size: 1.5rem;
+    }
+
+    .tabNav {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .tab {
+        justify-content: flex-start;
+    }
+
+    .metricsGrid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .activityItem {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .hostHeader,
+    .hostRow {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+
+    .hostHeader span,
+    .hostRow span {
+        padding: 0.25rem 0;
+    }
+}
