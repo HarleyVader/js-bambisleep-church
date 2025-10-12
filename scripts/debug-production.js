@@ -64,7 +64,7 @@ try {
     const packagePath = path.join(projectRoot, 'package.json');
     const packageData = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
     const scripts = packageData.scripts || {};
-    
+
     Object.keys(scripts).forEach(script => {
         if (script.includes('build') || script.includes('start')) {
             console.log(`  ${script}: ${scripts[script]}`);
@@ -80,11 +80,11 @@ console.log('🖥️ Server Configuration:');
 try {
     const serverPath = path.join(projectRoot, 'src', 'server.js');
     const serverContent = fs.readFileSync(serverPath, 'utf8');
-    
+
     // Extract key configuration
     const isProductionMatch = serverContent.match(/isProduction\s*=\s*([^;]+);/);
     const reactBuildPathMatch = serverContent.match(/reactBuildPath\s*=\s*path\.join\([^)]+\)/);
-    
+
     if (isProductionMatch) {
         console.log(`  Production detection: ${isProductionMatch[1]}`);
     }

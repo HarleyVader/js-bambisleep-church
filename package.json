@@ -13,17 +13,14 @@
   },
   "homepage": "https://github.com/HarleyVader/js-bambisleep-church#readme",
   "scripts": {
+    "test": "node tests/test.cjs",
     "start": "node scripts/main.js start",
-    "dev": "node scripts/main.js start && cd frontend && npm run dev",
+    "dev": "node scripts/dev.js",
     "build": "node scripts/main.js install && node scripts/main.js config && node scripts/main.js build",
     "build:frontend": "cd frontend && npm install && npm run build",
     "build:full": "npm run build:frontend && npm run build",
-    "setup": "node scripts/main.js install",
-    "config": "node scripts/main.js config",
-    "test": "node scripts/dev.js test",
-    "readme": "node scripts/dev.js readme",
-    "commit": "node scripts/dev.js commit",
-    "status": "node scripts/dev.js status"
+    "debug": "node scripts/debug-production.js",
+    "deploy": "node scripts/quick-deploy.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.20.0",

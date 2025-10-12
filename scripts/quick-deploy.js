@@ -38,7 +38,7 @@ try {
     // Step 4: Verify build
     const distPath = path.join(__dirname, '..', 'dist');
     const indexPath = path.join(distPath, 'index.html');
-    
+
     if (fs.existsSync(indexPath)) {
         console.log('✅ React build verified - index.html exists');
     } else {
@@ -55,7 +55,7 @@ try {
     console.log('🎉 Deployment complete!');
     console.log('Start server with: node src/server.js');
     console.log('Or use PM2: pm2 start src/server.js --name bambisleep-church');
-    
+
 } catch (error) {
     console.error('❌ Deployment failed:', error.message);
     process.exit(1);
