@@ -22,7 +22,7 @@ const ThemeSwitcher = ({ className = "", showLabels = false }) => {
 
     return (
         <div className={`${styles.switcher} ${className}`} role="radiogroup" aria-label="Theme selection">
-            {Object.entries(themes).map(([themeName, themeConfig]) => {
+            {themes.map((themeName) => {
                 const Icon = themeIcons[themeName];
                 const isActive = theme === themeName;
 
@@ -33,11 +33,11 @@ const ThemeSwitcher = ({ className = "", showLabels = false }) => {
                         className={`${styles.themeButton} ${isActive ? styles.active : ''}`}
                         aria-checked={isActive}
                         role="radio"
-                        title={`Switch to ${themeConfig.name} theme`}
+                        title={`Switch to ${themeName} theme`}
                     >
                         <Icon size={18} />
                         {showLabels && (
-                            <span className={styles.label}>{themeConfig.name}</span>
+                            <span className={styles.label}>{themeName}</span>
                         )}
                     </button>
                 );
