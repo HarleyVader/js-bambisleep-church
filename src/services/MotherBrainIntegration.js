@@ -37,7 +37,23 @@ class MotherBrainIntegration {
                 allowedDomains: config.allowedDomains || [
                     'bambisleep.info',
                     'bambi-sleep.com',
-                    'reddit.com'
+                    'reddit.com',
+                    'www.reddit.com',
+                    'old.reddit.com',
+                    'github.com',
+                    'bambisleep.fandom.com',
+                    'wiki.bambi-sleep.com'
+                ],
+                // Enhanced link discovery patterns
+                priorityPatterns: [
+                    /bambi/i,
+                    /hypnosis/i,
+                    /trance/i,
+                    /trigger/i,
+                    /session/i,
+                    /safety/i,
+                    /consent/i,
+                    /beginner/i
                 ]
             }
         };
@@ -103,9 +119,10 @@ class MotherBrainIntegration {
 
             const crawlOptions = {
                 maxPages: options.maxPages || 50,
-                maxDepth: options.maxDepth || 2,
+                maxDepth: options.maxDepth || 3, // Increased depth for better discovery
                 timeout: options.timeout || 600000, // 10 minutes
-                followExternalLinks: false, // Keep it focused
+                followExternalLinks: true, // Enable external link following for discovery
+                followSubdomains: true, // Follow subdomains within allowed domains
                 ...options
             };
 
@@ -156,8 +173,17 @@ class MotherBrainIntegration {
             stored: 0,
             updated: 0,
             skipped: 0,
-            errors: 0
+            errors: 0,
+            linksDiscovered: 0
         };
+
+        // Enhanced link discovery for better content mapping
+        const discoveredLinks = this.enhanceLinkDiscovery(crawlResults);
+        results.linksDiscovered = discoveredLinks.length;
+
+        if (discoveredLinks.length > 0) {
+            log.info(`🔗 MOTHER BRAIN: Discovered ${discoveredLinks.length} priority links for future crawling`);
+        }
 
         for (const result of crawlResults) {
             try {
@@ -182,8 +208,8 @@ class MotherBrainIntegration {
                     description: result.content.description,
                     content: {
                         headings: result.content.headings,
-                        paragraphs: result.content.paragraphs.slice(0, 10), // Limit paragraphs
-                        links: result.content.links.slice(0, 20), // Limit links
+                        paragraphs: result.content.paragraphs.slice(0, 15), // Increased paragraph limit
+                        links: result.content.links.filter(link => this.isUrlAllowed(link.url)).slice(0, 50), // More links, filtered
                         images: result.content.images.slice(0, 10), // Limit images
                         metadata: {
                             language: result.content.language,
@@ -292,16 +318,35 @@ Respond in JSON format only.`;
     }
 
     /**
-     * 🔍 Check if URL is allowed by domain filters
+     * 🔍 Check if URL is allowed by domain filters and content relevance
      */
     isUrlAllowed(url) {
         try {
             const urlObj = new URL(url);
             const domain = urlObj.hostname.toLowerCase();
+            const path = urlObj.pathname.toLowerCase();
 
-            return this.config.contentFilters.allowedDomains.some(allowedDomain =>
+            // Check if domain is explicitly allowed
+            const isDomainAllowed = this.config.contentFilters.allowedDomains.some(allowedDomain =>
                 domain === allowedDomain || domain.endsWith(`.${allowedDomain}`)
             );
+
+            if (isDomainAllowed) {
+                return true;
+            }
+
+            // Check for BambiSleep-related content in any domain (for discovery)
+            const urlText = `${domain} ${path}`.toLowerCase();
+            const isBambiRelated = this.config.contentFilters.priorityPatterns.some(pattern =>
+                pattern.test(urlText)
+            );
+
+            // Allow BambiSleep-related content from any domain but mark for careful processing
+            if (isBambiRelated) {
+                return true;
+            }
+
+            return false;
         } catch {
             return false;
         }
@@ -438,7 +483,45 @@ Respond in JSON format only.`;
     }
 
     /**
-     * 🔄 Resume crawl from saved state
+     * � Enhanced link discovery and prioritization
+     */
+    enhanceLinkDiscovery(crawlResults) {
+        const discoveredLinks = new Set();
+        const priorityLinks = [];
+
+        for (const result of crawlResults) {
+            if (result.content && result.content.links) {
+                result.content.links.forEach(link => {
+                    if (this.isUrlAllowed(link.url) && !discoveredLinks.has(link.url)) {
+                        discoveredLinks.add(link.url);
+
+                        // Calculate priority based on link text and URL
+                        let priority = 5; // Default priority
+                        const linkText = `${link.text} ${link.url}`.toLowerCase();
+
+                        // High priority for safety and beginner content
+                        if (linkText.includes('safety') || linkText.includes('consent')) priority = 10;
+                        else if (linkText.includes('beginner') || linkText.includes('start')) priority = 9;
+                        else if (linkText.includes('session') || linkText.includes('file')) priority = 8;
+                        else if (linkText.includes('trigger') || linkText.includes('command')) priority = 7;
+                        else if (linkText.includes('bambi') || linkText.includes('hypnosis')) priority = 6;
+
+                        priorityLinks.push({
+                            url: link.url,
+                            text: link.text,
+                            priority: priority,
+                            source: result.url
+                        });
+                    }
+                });
+            }
+        }
+
+        return priorityLinks.sort((a, b) => b.priority - a.priority);
+    }
+
+    /**
+     * �🔄 Resume crawl from saved state
      */
     async resumeCrawl(frontierState, options = {}) {
         if (!this.isInitialized) {

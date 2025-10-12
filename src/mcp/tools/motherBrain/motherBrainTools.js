@@ -134,6 +134,7 @@ export const executeMotherBrainCrawl = {
 - **Entries Stored**: ${result.processedResults.stored}
 - **Entries Updated**: ${result.processedResults.updated}
 - **Entries Skipped**: ${result.processedResults.skipped}
+- **Links Discovered**: ${result.processedResults.linksDiscovered || 0}
 - **Errors**: ${result.processedResults.errors}
 - **Robots Blocks**: ${result.crawlStats.robotsBlocks}
 
@@ -295,9 +296,10 @@ export const quickBambiCrawl = {
 
             const result = await motherBrainIntegration.executeIntelligentCrawl(seedUrls, {
                 maxPages: args.maxPages,
-                maxDepth: 2,
-                followExternalLinks: false,
-                timeout: 300000 // 5 minutes
+                maxDepth: 3, // Increased depth for better discovery
+                followExternalLinks: true, // Enable external link following
+                followSubdomains: true, // Follow BambiSleep subdomains
+                timeout: 600000 // 10 minutes for more thorough crawling
             });
 
             if (result.success) {
@@ -312,6 +314,7 @@ export const quickBambiCrawl = {
 - **Knowledge Entries Added**: ${result.processedResults.stored}
 - **Existing Entries Updated**: ${result.processedResults.updated}
 - **Pages Processed**: ${result.crawlStats.pagesProcessed}
+- **Links Discovered**: ${result.processedResults.linksDiscovered || 0}
 - **Respectfully Blocked**: ${result.crawlStats.robotsBlocks}
 - **Total Time**: ${Math.round(result.crawlStats.duration / 1000)} seconds
 
