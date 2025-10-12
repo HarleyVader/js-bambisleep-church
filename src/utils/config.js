@@ -12,7 +12,7 @@ dotenv.config();
 export const config = {
     server: {
         port: process.env.PORT || 7070,
-        host: process.env.SERVER || '0.0.0.0',
+        host: process.env.HOST || '0.0.0.0',
         baseUrl: process.env.BASE_URL || `http://localhost:${process.env.PORT || 7070}`,
         mcpEndpoint: process.env.MCP_ENDPOINT || '/mcp'
     },

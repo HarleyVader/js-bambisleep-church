@@ -82,18 +82,14 @@ if (isProduction) {
     process.env.NODE_ENV = 'production';
     execSync('node src/server.js', { stdio: 'inherit' });
 } else {
-    // Development mode with concurrently
-    console.log('🔄 Starting development servers...');
+    // Development mode - everything on port 7070
+    console.log('🔄 Starting development server on port 7070...');
     console.log(`📁 Backend (src/): node --watch src/server.js`);
-    console.log(`📁 Frontend (frontend/): npm run dev in frontend directory`);
+    console.log(`🌐 Frontend: Served by backend on port 7070`);
 
-    // Verify both directories exist
+    // Verify backend exists
     if (!existsSync('src/server.js')) {
         console.error('❌ Backend server not found at src/server.js');
-        process.exit(1);
-    }
-    if (!existsSync('frontend/package.json')) {
-        console.error('❌ Frontend not found at frontend/package.json');
         process.exit(1);
     }
 
@@ -111,34 +107,23 @@ if (isProduction) {
     process.on('SIGINT', cleanup);
     process.on('SIGTERM', cleanup);
 
-    console.log('🚀 Launching both servers with concurrently...');
+    console.log('🚀 Launching unified server on port 7070...');
     
     const backendCmd = 'node --watch src/server.js';
-    const frontendCmd = isWindows ? 'cd /d frontend && npm run dev' : 'cd frontend && npm run dev';
-    
-    console.log(`🔧 Backend command: ${backendCmd}`);
-    console.log(`🔧 Frontend command: ${frontendCmd}`);
+    console.log(`🔧 Command: ${backendCmd}`);
 
-    const concurrently = spawn('npx', [
-        'concurrently',
-        '--names', 'BACKEND,FRONTEND',
-        '--prefix-colors', 'cyan,magenta',
-        '--kill-others-on-fail',
-        '--restart-tries', '3',
-        isWindows ? `"${backendCmd}"` : backendCmd,
-        isWindows ? `"${frontendCmd}"` : frontendCmd
-    ], {
+    const server = spawn('node', ['--watch', 'src/server.js'], {
         stdio: 'inherit',
-        shell: true
+        shell: false
     });
 
-    concurrently.on('error', (error) => {
-        console.error('❌ Failed to start servers:', error.message);
+    server.on('error', (error) => {
+        console.error('❌ Failed to start server:', error.message);
         cleanup();
     });
 
-    concurrently.on('exit', (code) => {
-        console.log(`🔄 Servers exited with code: ${code}`);
+    server.on('exit', (code) => {
+        console.log(`🔄 Server exited with code: ${code}`);
         cleanup();
     });
 }
