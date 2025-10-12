@@ -1,4 +1,5 @@
-// Minimal Express web server for BambiSleep Church
+// BambiSleep Church Complete Server Implementation
+// Unified Express server with React serving, HTTP MCP, Socket.IO chat, and MongoDB API
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
@@ -6,39 +7,54 @@ import { fileURLToPath } from 'url';
 import path from 'path';
 import fs from 'fs';
 import geoip from 'geoip-lite';
+import cors from 'cors';
+
+// Services
+import BambiMcpServer from './mcp/server.js';
+import { mongoService } from './services/MongoDBService.js';
 import { motherBrainChatAgent } from './services/MinimalChatAgent.js';
+
+// Utilities
 import { log } from './utils/logger.js';
 import { config } from './utils/config.js';
-import BambiMcpServer from './mcp/server.js';
 
+// Setup paths
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Server configuration
 const app = express();
 const httpServer = createServer(app);
-const io = new Server(httpServer);
-const PORT = config.server.port;
-const HOST = config.server.host;
+const io = new Server(httpServer, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
+});
 
-const AUDIO_URL = config.audio.url;
+const PORT = config.server.port || 7070;
+const HOST = config.server.host || 'localhost';
 
 // Initialize MCP Server
 let mcpServer = null;
 if (config.mcp.enabled) {
     mcpServer = new BambiMcpServer();
+    log.info('🔥 MCP Server enabled - BambiSleep tools ready');
 }
 
-// Serve static files from React build (production) or public (development)
-if (process.env.NODE_ENV === 'production') {
-    // Serve the React build in production
-    app.use(express.static(config.paths.dist));
-} else {
-    // Serve public files in development
-    app.use(express.static(config.paths.public));
-}
+// =============================================================================
+// MIDDLEWARE SETUP
+// =============================================================================
+
+// CORS middleware for API calls
+app.use(cors({
+    origin: ['http://localhost:7070', 'http://127.0.0.1:7070'],
+    credentials: true
+}));
 
 // Parse JSON bodies
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Geolocation middleware
 app.use((req, res, next) => {
@@ -49,8 +65,6 @@ app.use((req, res, next) => {
 
     // Clean IPv6 localhost format
     const cleanIp = ip.replace('::ffff:', '');
-
-    // Get geolocation data
     const geo = geoip.lookup(cleanIp);
 
     req.location = {
@@ -66,59 +80,54 @@ app.use((req, res, next) => {
     next();
 });
 
-// MongoDB-based knowledge system - no static files needed
-import { mongoService } from './services/MongoDBService.js';
-
-log.info('📚 Using MongoDB-based knowledge system');
-
-// Serve React app for all frontend routes
-const serveReactApp = (req, res) => {
-    if (process.env.NODE_ENV === 'production') {
-        // In production, serve the built React app
-        res.sendFile(path.join(config.paths.dist, 'index.html'));
+// Static file serving
+if (process.env.NODE_ENV === 'production') {
+    // Serve React build in production
+    const reactBuildPath = path.join(__dirname, '..', 'frontend', 'dist');
+    if (fs.existsSync(reactBuildPath)) {
+        app.use(express.static(reactBuildPath));
+        log.info(`📦 Serving React build from: ${reactBuildPath}`);
     } else {
-        // In development, serve a simple message or redirect to the dev server
-        res.json({
-            message: 'BambiSleep Church Development Server',
-            note: 'Use `npm run dev` for full-stack development or `npm run dev:backend` for backend only',
-            api: {
-                knowledge: '/api/knowledge',
-                chat: '/api/chat',
-                mcp: config.mcp.enabled ? '/mcp' : null
-            },
-            reactBuild: 'Available in production mode'
-        });
+        log.warn('⚠️ React build directory not found - build frontend first');
     }
-};
+} else {
+    // Development mode - serve public assets
+    const publicPath = path.join(__dirname, '..', 'public');
+    if (fs.existsSync(publicPath)) {
+        app.use(express.static(publicPath));
+        log.info(`📁 Development mode - serving public files from: ${publicPath}`);
+    }
+}
 
-// Routes - All serve the React app
-app.get('/', serveReactApp);
-app.get('/knowledge', serveReactApp);
-app.get('/mission', serveReactApp);
-app.get('/roadmap', serveReactApp);
-app.get('/agents', serveReactApp);
-app.get('/mcp-tools', serveReactApp);
-app.get('/docs', serveReactApp);
-app.get('/docs/:docName', serveReactApp);
+// =============================================================================
+// API ENDPOINTS - MONGODB INTEGRATION
+// =============================================================================
 
-
-
-// API endpoint for knowledge (MongoDB-based)
+// Knowledge base endpoint
 app.get('/api/knowledge', async (req, res) => {
     try {
-        const knowledge = await mongoService.findMany('bambisleep_knowledge', {}, { limit: 100 });
+        if (!mongoService.isConnected) {
+            return res.json({ message: 'Knowledge base connecting...', items: {} });
+        }
+
+        const knowledge = await mongoService.findMany('bambisleep_knowledge', {}, {
+            limit: 100,
+            sort: { 'originalPriority': -1 }
+        });
+
         // Convert to frontend format
         const formatted = {};
         knowledge.forEach((item, index) => {
             formatted[`item_${index}`] = {
-                title: item.analysis?.title || 'Unknown',
-                description: item.analysis?.summary || 'No description',
+                title: item.analysis?.title || item.title || 'Unknown',
+                description: item.analysis?.summary || item.description || 'No description',
                 url: item.url,
-                category: item.category?.main || 'unknown',
-                platform: 'wiki',
-                relevance: item.originalPriority || 5
+                category: item.category?.main || item.category || 'unknown',
+                platform: item.platform || 'wiki',
+                relevance: item.originalPriority || item.relevance || 5
             };
         });
+
         res.json(formatted);
     } catch (error) {
         log.error(`❌ Knowledge API error: ${error.message}`);
@@ -126,26 +135,31 @@ app.get('/api/knowledge', async (req, res) => {
     }
 });
 
-// API endpoint for knowledge search (MongoDB-based)
+// Knowledge search endpoint
 app.get('/api/knowledge/search', async (req, res) => {
     try {
         const query = req.query.q?.toLowerCase() || '';
         if (!query) return res.json([]);
 
+        if (!mongoService.isConnected) {
+            return res.json([]);
+        }
+
         const results = await mongoService.findMany('bambisleep_knowledge', {
             $or: [
                 { 'analysis.title': { $regex: query, $options: 'i' } },
                 { 'analysis.summary': { $regex: query, $options: 'i' } },
-                { 'category.main': { $regex: query, $options: 'i' } }
+                { 'category.main': { $regex: query, $options: 'i' } },
+                { 'title': { $regex: query, $options: 'i' } },
+                { 'description': { $regex: query, $options: 'i' } }
             ]
         }, { limit: 20 });
 
-        // Convert to expected format
         const formatted = results.map(item => ({
-            title: item.analysis?.title || 'Unknown',
-            description: item.analysis?.summary || 'No description',
+            title: item.analysis?.title || item.title || 'Unknown',
+            description: item.analysis?.summary || item.description || 'No description',
             url: item.url,
-            category: item.category?.main || 'unknown'
+            category: item.category?.main || item.category || 'unknown'
         }));
 
         res.json(formatted);
@@ -155,26 +169,47 @@ app.get('/api/knowledge/search', async (req, res) => {
     }
 });
 
-// Health check (MongoDB-based)
+// Health check endpoint
 app.get('/api/health', async (req, res) => {
     try {
-        const knowledgeCount = await mongoService.countDocuments('bambisleep_knowledge');
+        let knowledgeCount = 0;
+        let mongoConnected = false;
+
+        if (mongoService.isConnected) {
+            knowledgeCount = await mongoService.countDocuments('bambisleep_knowledge');
+            mongoConnected = true;
+        }
+
+        const mcpInfo = mcpServer ? await mcpServer.getInfo().catch(() => null) : null;
+
         res.json({
             status: 'ok',
             timestamp: new Date().toISOString(),
-            knowledgeCount: knowledgeCount
+            server: {
+                node_env: process.env.NODE_ENV || 'development',
+                port: PORT,
+                host: HOST
+            },
+            services: {
+                mongodb: mongoConnected,
+                mcp: !!mcpServer && !!mcpInfo,
+                chat: true // Always available
+            },
+            data: {
+                knowledgeCount: knowledgeCount
+            },
+            mcp: mcpInfo
         });
     } catch (error) {
-        res.json({
-            status: 'ok',
+        res.status(500).json({
+            status: 'error',
             timestamp: new Date().toISOString(),
-            knowledgeCount: 0,
-            note: 'MongoDB connection not available'
+            error: error.message
         });
     }
 });
 
-// Geolocation API endpoint
+// Geolocation endpoint
 app.get('/api/location', (req, res) => {
     res.json({
         success: true,
@@ -183,20 +218,10 @@ app.get('/api/location', (req, res) => {
     });
 });
 
-// Visitor stats endpoint (MongoDB-based)
+// Stats endpoint
 app.get('/api/stats', async (req, res) => {
     try {
-        const totalEntries = await mongoService.countDocuments('bambisleep_knowledge');
-        const stats = await mongoService.aggregate('bambisleep_knowledge', [
-            { $group: { _id: '$category.main', count: { $sum: 1 } } }
-        ]);
-
-        const categoryStats = {};
-        stats.forEach(stat => {
-            categoryStats[stat._id || 'unknown'] = stat.count;
-        });
-
-        res.json({
+        let stats = {
             visitors: {
                 current: {
                     ip: req.location.ip,
@@ -206,22 +231,34 @@ app.get('/api/stats', async (req, res) => {
                 }
             },
             knowledge: {
-                totalEntries: totalEntries,
-                categories: categoryStats
+                total: 0,
+                categories: {}
             },
             church: {
                 status: 'In Development',
                 phase: 'Foundation',
                 targetMembers: 300,
                 timeline: '2-3 years'
-            }
-        });
+            },
+            timestamp: new Date().toISOString()
+        };
+
+        if (mongoService.isConnected) {
+            const totalEntries = await mongoService.countDocuments('bambisleep_knowledge');
+            const categoryStats = await mongoService.aggregate('bambisleep_knowledge', [
+                { $group: { _id: '$category.main', count: { $sum: 1 } } }
+            ]);
+
+            stats.knowledge.total = totalEntries;
+            categoryStats.forEach(stat => {
+                stats.knowledge.categories[stat._id || 'unknown'] = stat.count;
+            });
+        }
+
+        res.json(stats);
     } catch (error) {
-        res.json({
-            visitors: { current: req.location },
-            knowledge: { totalEntries: 0, categories: {} },
-            church: { status: 'In Development', phase: 'Foundation' }
-        });
+        log.error(`❌ Stats API error: ${error.message}`);
+        res.status(500).json({ error: 'Failed to fetch stats' });
     }
 });
 
@@ -288,7 +325,7 @@ app.post('/api/audio/play', (req, res) => {
         res.json({
             success: true,
             message: 'Audio URL provided for client-side playback',
-            url: AUDIO_URL,
+            url: config.audio?.url || 'https://example.com/audio.mp3',
             timestamp: new Date().toISOString()
         });
     } catch (error) {
@@ -310,67 +347,122 @@ app.post('/api/audio/stop', (req, res) => {
     }
 });
 
-// MCP endpoint - only if MCP is enabled
+// =============================================================================
+// MCP ENDPOINTS
+// =============================================================================
+
 if (config.mcp.enabled && mcpServer) {
-    app.use(express.json({ limit: '10mb' }));
+    // HTTP MCP endpoint for JSON-RPC 2.0 requests
     app.post('/mcp', mcpServer.createHttpHandler());
 
-    // MCP status endpoint
-    app.get('/api/mcp/status', (req, res) => {
+    // MCP tools listing endpoint
+    app.get('/mcp/tools', async (req, res) => {
+        try {
+            const tools = Object.values(mcpServer.allTools).map(tool => ({
+                name: tool.name,
+                description: tool.description,
+                inputSchema: tool.inputSchema
+            }));
+            res.json({ tools });
+        } catch (error) {
+            log.error(`MCP tools endpoint error: ${error.message}`);
+            res.status(500).json({ error: 'Failed to get MCP tools' });
+        }
+    });
+
+    // MCP server info endpoint
+    app.get('/mcp/info', async (req, res) => {
+        try {
+            const info = await mcpServer.getInfo();
+            res.json(info);
+        } catch (error) {
+            log.error(`MCP info endpoint error: ${error.message}`);
+            res.status(500).json({ error: 'Failed to get MCP info' });
+        }
+    });
+
+    // MCP status endpoint (legacy compatibility)
+    app.get('/api/mcp/status', async (req, res) => {
         if (!mcpServer) {
             return res.status(503).json({
                 error: 'MCP server not available'
             });
         }
 
-        res.json({
-            success: true,
-            mcp: mcpServer.getInfo(),
-            timestamp: new Date().toISOString()
-        });
+        try {
+            const info = await mcpServer.getInfo();
+            res.json({
+                success: true,
+                mcp: info,
+                timestamp: new Date().toISOString()
+            });
+        } catch (error) {
+            res.status(500).json({
+                error: 'Failed to get MCP status'
+            });
+        }
     });
 
-    // MCP tools listing endpoint
-    app.get('/api/mcp/tools', (req, res) => {
+    // MCP tools listing endpoint (legacy compatibility)
+    app.get('/api/mcp/tools', async (req, res) => {
         if (!mcpServer || !mcpServer.isInitialized) {
             return res.status(503).json({
                 error: 'MCP server not initialized'
             });
         }
 
-        // This would need access to the internal server tools
-        // For now, return basic info
-        res.json({
-            success: true,
-            info: 'MCP tools are available via the /mcp endpoint',
-            availableTools: [
-                'search-knowledge',
-                'get-safety-info',
-                'church-status',
-                'community-guidelines',
-                'resource-recommendations'
-            ],
-            timestamp: new Date().toISOString()
-        });
+        try {
+            const tools = Object.values(mcpServer.allTools).map(tool => ({
+                name: tool.name,
+                description: tool.description
+            }));
+
+            res.json({
+                success: true,
+                tools: tools,
+                availableTools: [
+                    'search-knowledge',
+                    'get-safety-info',
+                    'church-status',
+                    'community-guidelines',
+                    'resource-recommendations'
+                ],
+                timestamp: new Date().toISOString()
+            });
+        } catch (error) {
+            res.status(500).json({
+                error: 'Failed to get MCP tools'
+            });
+        }
     });
 
-    log.info('MCP endpoints configured at /mcp');
+    log.info('🔥 MCP endpoints configured: POST /mcp, GET /mcp/tools, GET /mcp/info');
 }
 
-// Socket.io for agent chat
-io.on('connection', (socket) => {
-    log.info('Client connected to chat');
 
-    // Handle MOTHER BRAIN Chat Agent messages
+// =============================================================================
+// SOCKET.IO CHAT INTEGRATION
+// =============================================================================
+
+io.on('connection', (socket) => {
+    log.info('🔌 Client connected to chat');
+
+    // Handle MOTHER BRAIN chat messages
     socket.on('agent:message', async (data) => {
         try {
             const { message } = data;
-
+            if (!message || typeof message !== 'string') {
+                socket.emit('agent:error', {
+                    error: 'Invalid message format',
+                    timestamp: new Date().toISOString()
+                });
+                return;
+            }
 
             // Send typing indicator
             socket.emit('agent:typing', { isTyping: true });
 
-            // Process message with agent
+            // Process message with MOTHER BRAIN chat agent
             const result = await motherBrainChatAgent.chat(message);
 
             // Send response
@@ -383,7 +475,8 @@ io.on('connection', (socket) => {
             });
 
         } catch (error) {
-
+            log.error(`💬 Chat error: ${error.message}`);
+            socket.emit('agent:typing', { isTyping: false });
             socket.emit('agent:error', {
                 error: error.message,
                 timestamp: new Date().toISOString()
@@ -391,49 +484,185 @@ io.on('connection', (socket) => {
         }
     });
 
+    // Handle client disconnect
     socket.on('disconnect', () => {
-        log.info('Client disconnected from chat');
+        log.info('🔌 Client disconnected from chat');
     });
 });
 
-// Initialize web agent and MCP server
-async function initializeAgent() {
-    // Initialize MCP server first if enabled
+// =============================================================================
+// REACT APP ROUTING (CATCH-ALL)
+// =============================================================================
+
+const serveReactApp = (req, res) => {
+    if (process.env.NODE_ENV === 'production') {
+        // Serve React build index.html for all routes
+        const reactIndexPath = path.join(__dirname, '..', 'frontend', 'dist', 'index.html');
+        if (fs.existsSync(reactIndexPath)) {
+            res.sendFile(reactIndexPath);
+        } else {
+            res.status(404).json({
+                error: 'React build not found',
+                note: 'Run `npm run build:frontend` to build the React app'
+            });
+        }
+    } else {
+        // Development mode response
+        res.json({
+            message: 'BambiSleep Church Development Server',
+            note: 'Use `npm run start` for full-stack development with React build serving',
+            mode: 'development',
+            api: {
+                knowledge: '/api/knowledge',
+                search: '/api/knowledge/search',
+                health: '/api/health',
+                location: '/api/location',
+                stats: '/api/stats',
+                docs: '/api/docs',
+                mcp: config.mcp.enabled ? '/mcp' : null
+            },
+            chat: {
+                socketio: 'Available on same port',
+                events: ['agent:message', 'agent:response', 'agent:typing', 'agent:error']
+            },
+            frontend: {
+                build: 'Available in production mode',
+                devServer: 'Use `npm run dev:frontend` for Vite dev server'
+            }
+        });
+    }
+};
+
+// React app routes - all serve the React SPA
+app.get('/', serveReactApp);
+app.get('/knowledge', serveReactApp);
+app.get('/mission', serveReactApp);
+app.get('/roadmap', serveReactApp);
+app.get('/agents', serveReactApp);
+app.get('/mcp-tools', serveReactApp);
+app.get('/docs', serveReactApp);
+app.get('/docs/:docName', serveReactApp);
+
+// Catch-all for any other routes that don't start with /api or /mcp
+app.use((req, res, next) => {
+    // Skip API routes and assets
+    if (req.path.startsWith('/api/') || req.path.startsWith('/mcp') || req.path.includes('.')) {
+        next();
+        return;
+    }
+    serveReactApp(req, res);
+});
+
+// =============================================================================
+// SERVER INITIALIZATION
+// =============================================================================
+
+async function initializeServices() {
+    log.info('🚀 Initializing BambiSleep Church services...');
+
+    // Initialize MongoDB connection
+    try {
+        const mongoConnected = await mongoService.connect();
+        if (mongoConnected) {
+            log.success('✅ MongoDB connected successfully');
+        } else {
+            log.warn('⚠️ MongoDB connection failed - knowledge base will be limited');
+        }
+    } catch (error) {
+        log.warn(`⚠️ MongoDB initialization error: ${error.message}`);
+    }
+
+    // Initialize MCP server
     if (config.mcp.enabled && mcpServer) {
         try {
             const mcpSuccess = await mcpServer.initialize([]);
             if (mcpSuccess) {
-                log.success('✅ MCP Server initialized successfully');
-                log.info(`MCP endpoint available at http://${HOST}:${PORT}/mcp`);
+                log.success('✅ MCP Server initialized - BambiSleep tools ready');
+                log.info(`🔥 MCP endpoint: http://${HOST}:${PORT}/mcp`);
             } else {
                 log.error('❌ MCP Server initialization failed');
             }
         } catch (error) {
-            log.error(`MCP initialization error: ${error.message}`);
+            log.error(`❌ MCP initialization error: ${error.message}`);
         }
     }
 
-    // Initialize minimal chat agent
-    const success = await motherBrainChatAgent.initialize();
-    if (success) {
-        log.success('✅ MOTHER BRAIN Chat Agent ready for web chat');
-    } else {
-        log.error('❌ MOTHER BRAIN Chat Agent initialization failed');
+    // Initialize MOTHER BRAIN chat agent
+    try {
+        const chatSuccess = await motherBrainChatAgent.initialize();
+        if (chatSuccess) {
+            log.success('✅ MOTHER BRAIN Chat Agent ready');
+        } else {
+            log.error('❌ MOTHER BRAIN Chat Agent initialization failed');
+        }
+    } catch (error) {
+        log.error(`❌ Chat agent initialization error: ${error.message}`);
     }
+
+    log.success('🎉 BambiSleep Church services initialization complete');
 }
 
-// Start server
+// Start the server
 httpServer.listen(PORT, HOST, async () => {
-    log.success(`Server running on http://${HOST}:${PORT}`);
-    await initializeAgent();
+    log.success(`🌐 BambiSleep Church server running on http://${HOST}:${PORT}`);
+    log.info(`📊 Mode: ${process.env.NODE_ENV || 'development'}`);
+
+    if (process.env.NODE_ENV === 'production') {
+        log.info('📦 Serving React build - frontend available');
+    } else {
+        log.info('⚡ Development mode - API and chat available');
+    }
+
+    await initializeServices();
 });
 
-// Cleanup on exit
-process.on('SIGINT', async () => {
-    log.warn('Shutting down...');
-    await motherBrainChatAgent.cleanup();
-    if (mcpServer) {
-        await mcpServer.cleanup();
+// Graceful shutdown
+const shutdown = async (signal) => {
+    log.warn(`📴 Received ${signal}, shutting down gracefully...`);
+
+    try {
+        // Cleanup chat agent
+        if (motherBrainChatAgent) {
+            await motherBrainChatAgent.cleanup();
+            log.info('✅ Chat agent cleaned up');
+        }
+
+        // Cleanup MCP server
+        if (mcpServer) {
+            await mcpServer.cleanup();
+            log.info('✅ MCP server cleaned up');
+        }
+
+        // Close MongoDB connection
+        if (mongoService.isConnected) {
+            await mongoService.disconnect();
+            log.info('✅ MongoDB disconnected');
+        }
+
+        // Close HTTP server
+        httpServer.close(() => {
+            log.success('👋 BambiSleep Church server shut down');
+            process.exit(0);
+        });
+    } catch (error) {
+        log.error(`❌ Shutdown error: ${error.message}`);
+        process.exit(1);
     }
-    process.exit(0);
+};
+
+process.on('SIGINT', () => shutdown('SIGINT'));
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+
+// Handle uncaught errors
+process.on('uncaughtException', (err) => {
+    log.error(`💥 Uncaught Exception: ${err.message}`);
+    log.error(err.stack);
+    shutdown('uncaughtException');
 });
+
+process.on('unhandledRejection', (reason, promise) => {
+    log.error(`💥 Unhandled Rejection at: ${promise}, reason: ${reason}`);
+    shutdown('unhandledRejection');
+});
+
+export default app;
