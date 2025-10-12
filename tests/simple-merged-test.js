@@ -73,7 +73,7 @@ function testFileStructure() {
 
     console.log(`  ${formatResult(distExists, 'dist/ directory exists')}`);
     console.log(`  ${formatResult(indexExists, 'dist/index.html exists (React build)')}`);
-    
+
     updateResults(distExists);
     updateResults(indexExists);
 }
@@ -142,7 +142,7 @@ function testScripts() {
         try {
             const packageData = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
             const scripts = packageData.scripts || {};
-            
+
             const requiredScripts = ['start', 'test', 'build', 'build:frontend'];
             requiredScripts.forEach(script => {
                 const hasScript = !!scripts[script];
