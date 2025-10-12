@@ -30,6 +30,11 @@
     text-decoration: none;
     transition: all 0.3s;
     padding: 0.5rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: inherit;
 }
 
 .link:hover {

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
-import { healthService, mcpService, knowledgeService } from '@services/api';
+import { healthService, mcpService, knowledgeService } from '../services/api';
 
 // Action Types
 const ACTION_TYPES = {

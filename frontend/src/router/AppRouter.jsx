@@ -1,6 +1,13 @@
-import React, { lazy, Suspense } from 'react';
+import React, { lazy, Suspense, createContext, useContext } from 'react';
 import ErrorBoundary from '../components/ErrorBoundary/ErrorBoundary';
 import LoadingSpinner from '../components/LoadingSpinner/LoadingSpinner';
+
+// 🔮 Router Context
+const RouterContext = createContext({
+    currentPath: '/',
+    navigate: () => { },
+    basename: ''
+});
 
 // 🔮 Lazy load all pages for better performance
 const Home = lazy(() => import('../pages/Home'));
@@ -163,10 +170,19 @@ export const AppRouter = () => {
     const currentRoute = routes.find(route => route.path === currentPath) || routes[0];
     const CurrentComponent = currentRoute.component;
 
+    // Router context value
+    const routerValue = {
+        currentPath,
+        navigate,
+        basename: ''
+    };
+
     return (
-        <PageWrapper route={currentRoute}>
-            <CurrentComponent />
-        </PageWrapper>
+        <RouterContext.Provider value={routerValue}>
+            <PageWrapper route={currentRoute}>
+                <CurrentComponent />
+            </PageWrapper>
+        </RouterContext.Provider>
     );
 };
 
@@ -176,6 +192,11 @@ export const navigate = (path) => {
         window.history.pushState({}, '', path);
         window.dispatchEvent(new PopStateEvent('popstate'));
     }
+};
+
+// 🎯 Router hook
+export const useRouter = () => {
+    return useContext(RouterContext);
 };
 
 // 📋 Get routes by category

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { navigate } from '../router/AppRouter';
 import styles from './Footer.module.css';
 
 const Footer = () => {
@@ -13,10 +13,10 @@ const Footer = () => {
                 </div>
 
                 <div className={styles.links}>
-                    <Link to="/mission" className={styles.link}>Mission</Link>
-                    <Link to="/knowledge" className={styles.link}>Knowledge</Link>
-                    <Link to="/agents" className={styles.link}>Agents</Link>
-                    <Link to="/roadmap" className={styles.link}>Roadmap</Link>
+                    <button onClick={() => navigate('/mission')} className={styles.link}>Mission</button>
+                    <button onClick={() => navigate('/knowledge')} className={styles.link}>Knowledge</button>
+                    <button onClick={() => navigate('/agents')} className={styles.link}>Agents</button>
+                    <button onClick={() => navigate('/roadmap')} className={styles.link}>Roadmap</button>
                     <a
                         href="https://github.com/HarleyVader/js-bambisleep-church"
                         target="_blank"
