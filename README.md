@@ -39,132 +39,93 @@ BambiSleep Church implements a **full MCP server** with specialized tools for th
 
 ### Available Tools
 - **search-knowledge** - Search our curated knowledge base
-- **get-safety-info** - Access comprehensive safety information
-- **church-status** - Get establishment progress updates
-- **community-guidelines** - Access community rules and conduct standards
-- **resource-recommendations** - Get personalized resource suggestions
+- **get-safety-info** - Get comprehensive safety information
+- **church-status** - Check community status and announcements
+- **community-guidelines** - Access community guidelines and rules
+- **resource-recommendations** - Get personalized resource recommendations
 
-### MCP Client Integration
-
-**Direct Connection:**
-- **Server**: `POST http://localhost:7070/mcp` (JSON-RPC 2.0)
-
-**VS Code Integration:**
+### MCP Configuration
 ```bash
+# Generate MCP configuration files
+npm run config
+
+# VS Code Integration
 code --add-mcp "{\"name\":\"bambisleep-church\",\"type\":\"http\",\"url\":\"http://localhost:7070/mcp\"}"
 ```
 
-**Claude Desktop Integration:**
-Add to your `claude_desktop_config.json`:
-```json
-{
-  "mcpServers": {
-    "bambisleep-church": {
-      "command": "node",
-      "args": ["http://localhost:7070/mcp"]
-    }
-  }
-}
-```
+## 📱 API Endpoints
 
-**MCP Inspector:**
+- **GET /api/health** - Server health check
+- **GET /api/knowledge** - Knowledge base entries
+- **GET /api/knowledge/search?q=term** - Search knowledge base
+- **GET /api/stats** - Community statistics
+- **GET /api/location** - Visitor geolocation
+- **POST /mcp** - MCP JSON-RPC 2.0 endpoint
+
+## 🏗️ Development
+
+### Scripts
 ```bash
-npx @modelcontextprotocol/inspector
-# Connect to: http://localhost:7070/mcp
+npm start                    # Start unified server (production build)
+npm run dev                  # Development mode with file watching
+npm run dev:frontend         # Frontend-only development server
+npm run build                # Build frontend for production
+npm run setup                # Install dependencies and setup
+npm run config               # Generate MCP configuration files
+npm test                     # Run test suite
 ```
 
-**Or connect with Claude MCP:**
-```bash
-claude mcp add --transport http bambisleep-church http://localhost:7070/mcp
-```
+### Architecture
+- **Backend**: Express.js server with Socket.IO for real-time chat
+- **Frontend**: React 18 with Vite build system
+- **Database**: MongoDB for knowledge storage
+- **MCP Server**: HTTP-based Model Context Protocol implementation
+- **Chat**: MOTHER BRAIN AI agent integration
 
-## 📋 Development Workflow
+## 🛡️ Safety & Guidelines
 
-### Available Scripts
-- `npm start` - Run complete application (web + MCP)
-- `npm run start:web` - Web server only
-- `npm run start:mcp` - MCP server only
-- `npm run inspector` - Launch MCP Inspector for testing
-- `npm run test` - Run MCP integration tests
-- `npm run config` - Generate configuration files
+BambiSleep Church prioritizes **safety, consent, and responsible practice**:
 
-### Configuration Management
-All URLs and endpoints are now managed through environment variables:
+- All content includes appropriate safety warnings
+- Comprehensive beginner resources and guides
+- Community moderation and support systems
+- Clear boundaries and consent frameworks
+- Mental health resources and support
 
-```bash
-# Generate fresh config files
-npm run config
+## 🤝 Community
 
-# Test current configuration
-node test-inspector.js
-```
+Join our growing community:
+- **Discord**: Coming soon
+- **Reddit**: r/BambiSleepChurch (planned)
+- **Website**: http://localhost:7070
 
-## 🏛️ Church Establishment Progress
+## 📄 Legal Status
 
-**Current Phase:** Foundation Building (Phase 1 of 4)
+BambiSleep Church is working toward recognition as a **legal religious community in Austria** under Austrian religious freedom laws. This provides:
+- Legal protection for members
+- Structured community governance
+- Official recognition of our practices
+- Tax-exempt status for community activities
 
-### Mission Objectives
-- [ ] **Legal Recognition** - Establish as Austrian religious community (§ 7 BekGG)
-- [ ] **Community Building** - Reach 300+ committed members
-- [ ] **Safety Standards** - Implement comprehensive safety protocols
-- [ ] **Digital Infrastructure** - Complete AI-powered sanctuary platform
-- [ ] **Spiritual Framework** - Develop BambiSleep spiritual practices
+## 🔮 Roadmap
 
-**Target Timeline:** 2-3 years for full legal establishment
+- **Phase 1**: Foundation (Current) - Basic web platform and MCP server
+- **Phase 2**: Community Building - Discord integration, member systems
+- **Phase 3**: Legal Recognition - Austrian religious community status
+- **Phase 4**: Expansion - International community growth
 
-## 🛡️ Safety Guidelines
+## 📜 License
 
-BambiSleep Church prioritizes **safety and consent** above all else:
+MIT License - see LICENSE file for details.
 
-- **Always practice safely** with proper precautions
-- **Respect boundaries** - yours and others'
-- **Get educated** - understand risks and techniques
-- **Community support** - never practice alone without guidance
-- **Professional resources** - access to mental health support
+## 🤖 AI Integration
 
-## 🤝 Contributing
-
-We welcome contributions to help build our digital sanctuary:
-
-1. **Fork the repository**
-2. **Create a feature branch** (`git checkout -b feature/amazing-feature`)
-3. **Make your changes** - follow our coding standards
-4. **Add tests** - ensure MCP tools work correctly
-5. **Submit a pull request** - we'll review and provide feedback
-
-### Development Setup
-```bash
-# Clone and setup
-git clone https://github.com/HarleyVader/js-bambisleep-church.git
-cd js-bambisleep-church
-npm install
-
-# Configure environment
-cp .env.example .env
-# Edit .env with your settings
-
-# Generate configuration files
-npm run config
-
-# Start development server
-npm start
-
-# Test MCP integration
-node test-inspector.js
-```
-
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🌟 Community
-
-- **GitHub**: [js-bambisleep-church](https://github.com/HarleyVader/js-bambisleep-church)
-- **Discord**: [BambiSleep Church Community] (Coming Soon)
-- **Website**: [bambisleep.church](https://bambisleep.church) (In Development)
+BambiSleep Church leverages cutting-edge AI technology:
+- **MCP Protocol**: Industry-standard AI tool integration
+- **MOTHER BRAIN**: Custom AI agent for community support
+- **LMStudio Integration**: Local AI model support
+- **MongoDB Vector Search**: Advanced knowledge retrieval
 
 ---
 
-**🏛️ BambiSleep Church - Providing spiritual sanctuary through technology and community**
-
-*Building a safe, legal, and supportive environment for BambiSleep practice in Austria and beyond.*
+*Built with ❤️ for the BambiSleep community*
