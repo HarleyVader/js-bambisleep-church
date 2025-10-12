@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Simple Test Runner - BambiSleep Church
-// Executes the unified comprehensive test suite
+// Executes the comprehensive merged test suite
 
 console.log('🧪 BambiSleep Church Test Runner');
 console.log('=================================\n');
@@ -8,9 +8,9 @@ console.log('=================================\n');
 const { spawn } = require('child_process');
 const path = require('path');
 
-const testSuitePath = path.join(__dirname, 'unified-test-suite.cjs');
+const testSuitePath = path.join(__dirname, 'simple-merged-test.js');
 
-console.log('🚀 Launching Unified Test Suite...\n');
+console.log('🚀 Launching Simple Merged Test Suite...\n');
 
 const testProcess = spawn('node', [testSuitePath], {
     stdio: 'inherit',
