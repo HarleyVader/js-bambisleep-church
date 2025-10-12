@@ -13,16 +13,9 @@
   },
   "homepage": "https://github.com/HarleyVader/js-bambisleep-church#readme",
   "scripts": {
-    "start": "npm run setup && npm run build && NODE_ENV=production node src/server.js",
-    "dev": "npm run setup && node --watch src/server.js",
-    "dev:frontend": "cd frontend && npm run dev",
-    "build": "npm run setup && cd frontend && npm run build && cp -r dist/* ../dist/",
-    "build:backend": "node scripts/build.js",
-    "setup": "node scripts/install.js",
-    "test": "node tests/test.cjs",
-    "config": "node scripts/generate-config.js",
-    "install-and-start": "npm install && cd frontend && npm install && cd .. && npm start",
-    "quick-start": "npm run install-and-start"
+    "start": "npm install && cd frontend && npm install && cd .. && node scripts/install.js && node scripts/generate-config.js && cd frontend && npm run build && cd .. && cp -r frontend/dist/* dist/ && NODE_ENV=production node src/server.js",
+    "dev": "npm install && cd frontend && npm install && cd .. && node scripts/install.js && node scripts/generate-config.js && node --watch src/server.js",
+    "test": "npm install && cd frontend && npm install && cd .. && node scripts/install.js && node tests/test.cjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.20.0",
