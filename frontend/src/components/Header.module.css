@@ -1,18 +1,25 @@
-/* Header Component CSS Module */
+/* 🔮 Enhanced Header - BambiSleep Church */
 .header {
-    background: var(--dark-card);
-    padding: 1.5rem 0;
-    border-bottom: 2px solid var(--primary);
-    box-shadow: 0 0 20px rgba(255, 0, 255, 0.3);
+    background: linear-gradient(135deg, rgba(13, 14, 33, 0.95) 0%, rgba(22, 26, 48, 0.95) 100%);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(118, 75, 162, 0.3);
+    box-shadow: 0 4px 30px rgba(118, 75, 162, 0.2);
     position: sticky;
     top: 0;
-    z-index: 100;
+    z-index: 900;
+    padding: 1rem 0;
+    transition: all 0.3s ease;
+}
+
+.header:hover {
+    border-bottom-color: rgba(118, 75, 162, 0.5);
+    box-shadow: 0 4px 40px rgba(118, 75, 162, 0.3);
 }
 
 .container {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
-    padding: 0 20px;
+    padding: 0 2rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -20,36 +27,111 @@
 }
 
 .logo {
-    color: var(--primary);
-    font-size: 2rem;
-    margin: 0;
-    font-family: var(--font-heading);
-    font-weight: 900;
-    text-decoration: none;
-    transition: all 0.3s;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.2rem;
 }
 
 .logo:hover {
-    text-shadow: 0 0 15px var(--primary);
-    transform: scale(1.05);
+    background: rgba(118, 75, 162, 0.1);
+    transform: translateX(4px);
 }
 
-.nav {
+.logoText {
+    font-family: 'Orbitron', monospace;
+    font-weight: 900;
+    font-size: 1.5rem;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1;
+}
+
+.logoSubtext {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 300;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.6);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    line-height: 1;
+}
+
+/* 📊 Status Bar */
+.statusBar {
     display: flex;
-    gap: 2rem;
-    list-style: none;
-    margin: 0;
-    padding: 0;
+    align-items: center;
+    gap: 1.5rem;
+    flex: 1;
+    justify-content: center;
 }
 
-.navLink {
-    color: var(--secondary);
-    text-decoration: none;
-    transition: all 0.3s;
-    font-weight: 500;
+.timeDisplay {
+    font-family: 'Orbitron', monospace;
+    font-weight: 400;
     font-size: 1.1rem;
-    position: relative;
-    padding: 0.5rem 0;
+    color: var(--accent);
+    background: rgba(118, 75, 162, 0.1);
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid rgba(118, 75, 162, 0.3);
+}
+
+.systemMetrics {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.metric {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.metric.online {
+    background: rgba(67, 233, 123, 0.1);
+    color: #43E97B;
+    border-color: rgba(67, 233, 123, 0.3);
+}
+
+.metric.offline {
+    background: rgba(255, 99, 132, 0.1);
+    color: #FF6384;
+    border-color: rgba(255, 99, 132, 0.3);
+}
+
+.metric.healthy {
+    background: rgba(67, 233, 123, 0.1);
+    color: #43E97B;
+    border-color: rgba(67, 233, 123, 0.3);
+}
+
+.metric.warning {
+    background: rgba(255, 193, 7, 0.1);
+    color: #FFC107;
+    border-color: rgba(255, 193, 7, 0.3);
+}
+
+/* 🎛️ Controls */
+.controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 }
 
 .navLink:hover {
@@ -68,160 +150,71 @@
     transition: width 0.3s;
 }
 
-.navLink:hover::after {
-    width: 100%;
-}
-
-.navLink.active {
-    color: var(--primary);
-}
-
-.navLink.active::after {
-    width: 100%;
-}
-
-/* Mobile menu */
-.mobileToggle {
-    display: none;
-    background: none;
-    border: none;
-    color: var(--secondary);
-    font-size: 1.5rem;
-    cursor: pointer;
-    transition: color 0.3s;
-}
-
-.mobileToggle:hover {
-    color: var(--primary);
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .container {
-        padding: 0 15px;
-    }
-
-    .logo {
-        font-size: 1.5rem;
-    }
-
-    .mobileToggle {
-        display: block;
-    }
-
-    .nav {
-        display: none;
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        background: var(--dark-card);
-        flex-direction: column;
-        padding: 1rem;
-        border-top: 1px solid var(--primary);
-    }
-
-    .nav.open {
-        display: flex;
-    }
-
-    .navLink {
-        padding: 0.75rem 0;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .navLink:last-child {
-        border-bottom: none;
-    }
-}
-
-/* Desktop Controls */
-.controls {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
 .notificationIndicator {
     position: relative;
+    background: rgba(255, 99, 132, 0.1);
+    border: 1px solid rgba(255, 99, 132, 0.3);
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 8px;
-    color: var(--secondary);
-    cursor: pointer;
-    border-radius: 8px;
-    transition: all 0.2s ease;
+    color: #FF6384;
 }
 
 .notificationIndicator:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: var(--primary);
+    background: rgba(255, 99, 132, 0.2);
+    transform: scale(1.05);
 }
 
 .notificationCount {
     position: absolute;
-    top: 2px;
-    right: 2px;
-    background: var(--accent, #ff006e);
+    top: -0.5rem;
+    right: -0.5rem;
+    background: #FF6384;
     color: white;
-    font-size: 0.7rem;
-    font-weight: 600;
-    padding: 2px 6px;
-    border-radius: 10px;
-    min-width: 16px;
-    text-align: center;
-}
-
-.systemStatus {
+    border-radius: 50%;
+    width: 1.2rem;
+    height: 1.2rem;
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
-    background: rgba(26, 26, 26, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    font-size: 0.85rem;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: bold;
 }
 
-.statusDot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    animation: pulse 2s infinite;
-}
-
-.statusDot.online {
-    background: var(--accent-success, #10b981);
-}
-
-.statusDot.warning {
-    background: var(--accent-warning, #f59e0b);
-}
-
-.statusDot.offline {
-    background: var(--danger, #ef4444);
-}
-
-.statusText {
-    color: var(--text-muted);
-    font-weight: 500;
-}
-
-@keyframes pulse {
-
-    0%,
-    100% {
-        opacity: 1;
-    }
-
-    50% {
-        opacity: 0.5;
-    }
-}
-
+/* 📱 Mobile Responsiveness */
 @media (max-width: 768px) {
+    .container {
+        padding: 0 1rem;
+        gap: 1rem;
+    }
+
+    .statusBar {
+        display: none;
+    }
+
+    .logoText {
+        font-size: 1.2rem;
+    }
+
+    .logoSubtext {
+        font-size: 0.7rem;
+    }
+
     .controls {
+        gap: 0.5rem;
+    }
+
+    .timeDisplay {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .systemMetrics {
         display: none;
     }
 }

@@ -1,59 +1,40 @@
-import React, { Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AppProvider } from '@/contexts/AppContext';
-import { ErrorBoundary } from '@components';
-import Header from '@components/Header';
-import Footer from '@components/Footer';
-import NotificationSystem from '@components/NotificationSystem/NotificationSystem';
-import { LoadingSpinner } from '@components';
-
-// Lazy load pages for better performance
-const Home = lazy(() => import('@pages/Home'));
-const KnowledgeBase = lazy(() => import('@pages/KnowledgeBase'));
-const AgentKnowledgeBase = lazy(() => import('@pages/AgentKnowledgeBase'));
-const Mission = lazy(() => import('@pages/Mission'));
-const Roadmap = lazy(() => import('@pages/Roadmap'));
-const Documentation = lazy(() => import('@pages/Documentation'));
+import React from 'react';
+import { AppProvider } from './contexts/AppContext';
+import { ErrorBoundary } from './components';
+import Header from './components/Header';
+import Footer from './components/Footer';
+import Navigation from './components/Navigation/Navigation';
+import NotificationSystem from './components/NotificationSystem/NotificationSystem';
+import AppRouter from './router/AppRouter';
 
 const App = () => {
     return (
         <AppProvider>
-            <Router>
-                <div className="app">
-                    <div className="grid-lines"></div>
-                    <ErrorBoundary>
-                        <Header />
+            <div className="app">
+                {/* 🌌 Background Grid Effect */}
+                <div className="grid-lines"></div>
 
-                        <main>
-                            <div className="container">
-                                <Suspense fallback={
-                                    <div style={{
-                                        display: 'flex',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        minHeight: '400px'
-                                    }}>
-                                        <LoadingSpinner size="large" />
-                                    </div>
-                                }>
-                                    <Routes>
-                                        <Route path="/" element={<Home />} />
-                                        <Route path="/knowledge" element={<KnowledgeBase />} />
-                                        <Route path="/agents" element={<AgentKnowledgeBase />} />
-                                        <Route path="/mission" element={<Mission />} />
-                                        <Route path="/roadmap" element={<Roadmap />} />
-                                        <Route path="/docs" element={<Documentation />} />
-                                        <Route path="/docs/:docName" element={<Documentation />} />
-                                    </Routes>
-                                </Suspense>
-                            </div>
-                        </main>
+                {/* 🔮 Navigation System */}
+                <Navigation />
 
-                        <Footer />
-                        <NotificationSystem />
-                    </ErrorBoundary>
-                </div>
-            </Router>
+                <ErrorBoundary>
+                    {/* 🎯 Header */}
+                    <Header />
+
+                    {/* 🚀 Main Content with Router */}
+                    <main>
+                        <div className="container">
+                            <AppRouter />
+                        </div>
+                    </main>
+
+                    {/* 👾 Footer */}
+                    <Footer />
+
+                    {/* 📢 Notifications */}
+                    <NotificationSystem />
+                </ErrorBoundary>
+            </div>
         </AppProvider>
     );
 };

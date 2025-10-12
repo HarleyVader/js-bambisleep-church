@@ -1,119 +1,75 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Bell, Settings } from 'lucide-react';
+import { Bell, Activity, Wifi, WifiOff } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
-import { useWindowSize } from '@hooks';
+import { navigate } from '../router/AppRouter';
 import ThemeSwitcher from './ThemeSwitcher/ThemeSwitcher';
 import styles from './Header.module.css';
 
 const Header = () => {
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const location = useLocation();
     const { state, actions } = useApp();
-    const { isMobile } = useWindowSize();
+    const [currentTime, setCurrentTime] = useState(new Date());
 
-    // Sync mobile menu state with global state
+    // Update time every minute
     useEffect(() => {
-        setIsMobileMenuOpen(state.ui.isMobileMenuOpen);
-    }, [state.ui.isMobileMenuOpen]);
+        const interval = setInterval(() => {
+            setCurrentTime(new Date());
+        }, 60000);
 
-    const toggleMobileMenu = () => {
-        actions.toggleMobileMenu();
-    };
+        return () => clearInterval(interval);
+    }, []);
 
-    const closeMobileMenu = () => {
-        if (state.ui.isMobileMenuOpen) {
-            actions.toggleMobileMenu();
-        }
-    };
-
-    const isActive = (path) => location.pathname === path;
-
-    const unreadNotifications = state.notifications.length;
+    const unreadNotifications = state.notifications?.length || 0;
+    const systemHealth = state.systemStats?.systemHealth || 'Unknown';
+    const isOnline = navigator.onLine;
 
     return (
         <header className={styles.header}>
             <div className={styles.container}>
-                <Link to="/" className={styles.logo} onClick={closeMobileMenu}>
-                    BambiSleep Church
-                </Link>
-
+                {/* 🔮 Logo / Brand */}
                 <button
-                    className={styles.mobileToggle}
-                    onClick={toggleMobileMenu}
-                    aria-label="Toggle mobile menu"
+                    className={styles.logo}
+                    onClick={() => navigate('/')}
+                    aria-label="Go to home page"
                 >
-                    {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                    <span className={styles.logoText}>BambiSleep</span>
+                    <span className={styles.logoSubtext}>Church</span>
                 </button>
 
-                <nav className={`${styles.nav} ${isMobileMenuOpen ? styles.open : ''}`}>
-                    <Link
-                        to="/"
-                        className={`${styles.navLink} ${isActive('/') ? styles.active : ''}`}
-                        onClick={closeMobileMenu}
-                    >
-                        Home
-                    </Link>
-                    <Link
-                        to="/knowledge"
-                        className={`${styles.navLink} ${isActive('/knowledge') ? styles.active : ''}`}
-                        onClick={closeMobileMenu}
-                    >
-                        Knowledge
-                    </Link>
-                    <Link
-                        to="/agents"
-                        className={`${styles.navLink} ${isActive('/agents') ? styles.active : ''}`}
-                        onClick={closeMobileMenu}
-                    >
-                        Agents
-                    </Link>
-                    <Link
-                        to="/mission"
-                        className={`${styles.navLink} ${isActive('/mission') ? styles.active : ''}`}
-                        onClick={closeMobileMenu}
-                    >
-                        Mission
-                    </Link>
-                    <Link
-                        to="/roadmap"
-                        className={`${styles.navLink} ${isActive('/roadmap') ? styles.active : ''}`}
-                        onClick={closeMobileMenu}
-                    >
-                        Roadmap
-                    </Link>
-                    <Link
-                        to="/docs"
-                        className={`${styles.navLink} ${location.pathname.startsWith('/docs') ? styles.active : ''}`}
-                        onClick={closeMobileMenu}
-                    >
-                        Docs
-                    </Link>
-                </nav>
+                {/* 📊 System Status Bar */}
+                <div className={styles.statusBar}>
+                    <div className={styles.timeDisplay}>
+                        {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </div>
 
-                {/* Desktop Controls */}
+                    <div className={styles.systemMetrics}>
+                        {/* Connection Status */}
+                        <div className={`${styles.metric} ${isOnline ? styles.online : styles.offline}`}>
+                            {isOnline ? <Wifi size={16} /> : <WifiOff size={16} />}
+                            <span>{isOnline ? 'Online' : 'Offline'}</span>
+                        </div>
+
+                        {/* System Health */}
+                        <div className={`${styles.metric} ${systemHealth === 'Operational' ? styles.healthy : styles.warning}`}>
+                            <Activity size={16} />
+                            <span>{systemHealth}</span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* 🎛️ Controls */}
                 <div className={styles.controls}>
                     <ThemeSwitcher showLabels={false} />
 
                     {unreadNotifications > 0 && (
-                        <div className={styles.notificationIndicator} title={`${unreadNotifications} notifications`}>
+                        <div
+                            className={styles.notificationIndicator}
+                            title={`${unreadNotifications} notifications`}
+                            onClick={() => actions?.showNotifications?.()}
+                        >
                             <Bell size={18} />
                             <span className={styles.notificationCount}>{unreadNotifications}</span>
                         </div>
                     )}
-
-                    <div className={styles.systemStatus}>
-                        <div
-                            className={`${styles.statusDot} ${state.systemStats.systemHealth === 'Operational' ? styles.online :
-                                state.systemStats.systemHealth === 'Degraded' ? styles.warning :
-                                    styles.offline
-                                }`}
-                            title={`System Status: ${state.systemStats.systemHealth}`}
-                        />
-                        <span className={styles.statusText}>
-                            {state.systemStats.systemHealth}
-                        </span>
-                    </div>
                 </div>
             </div>
         </header>

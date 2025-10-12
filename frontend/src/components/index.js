@@ -1,6 +1,7 @@
-// Export all components from their respective directories
+// 🔮 Enhanced Components Index - BambiSleep Church Component System
 export { default as Header } from './Header';
 export { default as Footer } from './Footer';
+export { default as Navigation } from './Navigation/Navigation';
 export { default as LoadingSpinner } from './LoadingSpinner/LoadingSpinner';
 export { default as ErrorBoundary, ErrorMessage, SuccessMessage, InfoMessage } from './ErrorBoundary/ErrorBoundary';
 export { default as NotificationSystem } from './NotificationSystem/NotificationSystem';
