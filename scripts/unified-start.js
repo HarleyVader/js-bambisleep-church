@@ -84,6 +84,18 @@ if (isProduction) {
 } else {
     // Development mode with concurrently
     console.log('🔄 Starting development servers...');
+    console.log(`📁 Backend (src/): node --watch src/server.js`);
+    console.log(`📁 Frontend (frontend/): npm run dev in frontend directory`);
+
+    // Verify both directories exist
+    if (!existsSync('src/server.js')) {
+        console.error('❌ Backend server not found at src/server.js');
+        process.exit(1);
+    }
+    if (!existsSync('frontend/package.json')) {
+        console.error('❌ Frontend not found at frontend/package.json');
+        process.exit(1);
+    }
 
     // Start git monitoring in development mode
     const gitMonitor = setInterval(() => {
@@ -99,35 +111,34 @@ if (isProduction) {
     process.on('SIGINT', cleanup);
     process.on('SIGTERM', cleanup);
 
-    if (isWindows) {
-        const concurrently = spawn('npx', [
-            'concurrently',
-            '--names', 'BACKEND,FRONTEND',
-            '--prefix-colors', 'cyan,magenta',
-            '"node --watch src/server.js"',
-            '"cd /d frontend && npm run dev"'
-        ], {
-            stdio: 'inherit',
-            shell: true
-        });
+    console.log('🚀 Launching both servers with concurrently...');
+    
+    const backendCmd = 'node --watch src/server.js';
+    const frontendCmd = isWindows ? 'cd /d frontend && npm run dev' : 'cd frontend && npm run dev';
+    
+    console.log(`🔧 Backend command: ${backendCmd}`);
+    console.log(`🔧 Frontend command: ${frontendCmd}`);
 
-        concurrently.on('exit', (code) => {
-            process.exit(code || 0);
-        });
-    } else {
-        const concurrently = spawn('npx', [
-            'concurrently',
-            '--names', 'BACKEND,FRONTEND',
-            '--prefix-colors', 'cyan,magenta',
-            'node --watch src/server.js',
-            'cd frontend && npm run dev'
-        ], {
-            stdio: 'inherit',
-            shell: true
-        });
+    const concurrently = spawn('npx', [
+        'concurrently',
+        '--names', 'BACKEND,FRONTEND',
+        '--prefix-colors', 'cyan,magenta',
+        '--kill-others-on-fail',
+        '--restart-tries', '3',
+        isWindows ? `"${backendCmd}"` : backendCmd,
+        isWindows ? `"${frontendCmd}"` : frontendCmd
+    ], {
+        stdio: 'inherit',
+        shell: true
+    });
 
-        concurrently.on('exit', (code) => {
-            process.exit(code || 0);
-        });
-    }
+    concurrently.on('error', (error) => {
+        console.error('❌ Failed to start servers:', error.message);
+        cleanup();
+    });
+
+    concurrently.on('exit', (code) => {
+        console.log(`🔄 Servers exited with code: ${code}`);
+        cleanup();
+    });
 }
