@@ -1,41 +1,60 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AppProvider } from '@/contexts/AppContext';
+import { ErrorBoundary } from '@components';
 import Header from '@components/Header';
 import Footer from '@components/Footer';
-import Home from '@pages/Home';
-import KnowledgeBase from '@pages/KnowledgeBase';
-import AgentKnowledgeBase from '@pages/AgentKnowledgeBase';
-import Mission from '@pages/Mission';
-import Roadmap from '@pages/Roadmap';
-import Documentation from '@pages/Documentation';
-import { ErrorBoundary } from '@components';
+import NotificationSystem from '@components/NotificationSystem/NotificationSystem';
+import { LoadingSpinner } from '@components';
+
+// Lazy load pages for better performance
+const Home = lazy(() => import('@pages/Home'));
+const KnowledgeBase = lazy(() => import('@pages/KnowledgeBase'));
+const AgentKnowledgeBase = lazy(() => import('@pages/AgentKnowledgeBase'));
+const Mission = lazy(() => import('@pages/Mission'));
+const Roadmap = lazy(() => import('@pages/Roadmap'));
+const Documentation = lazy(() => import('@pages/Documentation'));
 
 const App = () => {
     return (
-        <Router>
-            <div className="app">
-                <div className="grid-lines"></div>
-                <ErrorBoundary>
-                    <Header />
+        <AppProvider>
+            <Router>
+                <div className="app">
+                    <div className="grid-lines"></div>
+                    <ErrorBoundary>
+                        <Header />
 
-                    <main>
-                        <div className="container">
-                            <Routes>
-                                <Route path="/" element={<Home />} />
-                                <Route path="/knowledge" element={<KnowledgeBase />} />
-                                <Route path="/agents" element={<AgentKnowledgeBase />} />
-                                <Route path="/mission" element={<Mission />} />
-                                <Route path="/roadmap" element={<Roadmap />} />
-                                <Route path="/docs" element={<Documentation />} />
-                                <Route path="/docs/:docName" element={<Documentation />} />
-                            </Routes>
-                        </div>
-                    </main>
+                        <main>
+                            <div className="container">
+                                <Suspense fallback={
+                                    <div style={{
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        minHeight: '400px'
+                                    }}>
+                                        <LoadingSpinner size="large" />
+                                    </div>
+                                }>
+                                    <Routes>
+                                        <Route path="/" element={<Home />} />
+                                        <Route path="/knowledge" element={<KnowledgeBase />} />
+                                        <Route path="/agents" element={<AgentKnowledgeBase />} />
+                                        <Route path="/mission" element={<Mission />} />
+                                        <Route path="/roadmap" element={<Roadmap />} />
+                                        <Route path="/docs" element={<Documentation />} />
+                                        <Route path="/docs/:docName" element={<Documentation />} />
+                                    </Routes>
+                                </Suspense>
+                            </div>
+                        </main>
 
-                    <Footer />
-                </ErrorBoundary>
-            </div>
-        </Router>
+                        <Footer />
+                        <NotificationSystem />
+                    </ErrorBoundary>
+                </div>
+            </Router>
+        </AppProvider>
     );
 };
 

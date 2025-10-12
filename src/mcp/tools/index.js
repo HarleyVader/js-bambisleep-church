@@ -4,16 +4,24 @@
 import { bambiTools } from './bambi-tools.js';
 import { mongodbTools } from './mongodb/mongodbTools.js';
 import { lmstudioTools } from './lmstudio/lmstudioTools.js';
-import { crawlerTools } from './crawler/crawlerTools.js';
 import { agenticTools } from './agentic/agenticTools.js';
 import { motherBrainTools } from './motherBrain/motherBrainTools.js';
+
+// Import crawler tools if available (graceful fallback)
+let crawlerTools = [];
+try {
+    const { crawlerTools: importedCrawlerTools } = await import('./crawler/crawlerTools.js');
+    crawlerTools = importedCrawlerTools;
+} catch (error) {
+    console.warn('⚠️ Crawler tools not available:', error.message);
+}
 
 // Combine all tool collections
 export const allTools = [
     ...Object.values(bambiTools),      // 5 BambiSleep community tools
     ...mongodbTools,                   // 15 MongoDB management tools
     ...lmstudioTools,                  // 10 LMStudio AI tools
-    ...crawlerTools,                   // 6 Web crawler tools
+    ...crawlerTools,                   // Web crawler tools (if available)
     ...agenticTools,                   // 7 Agentic orchestration tools
     ...Object.values(motherBrainTools) // 5 MOTHER BRAIN spider tools
 ];

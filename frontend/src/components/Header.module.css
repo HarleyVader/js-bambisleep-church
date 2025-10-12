@@ -16,6 +16,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 2rem;
 }
 
 .logo {
@@ -131,5 +132,96 @@
 
     .navLink:last-child {
         border-bottom: none;
+    }
+}
+
+/* Desktop Controls */
+.controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.notificationIndicator {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    color: var(--secondary);
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.notificationIndicator:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--primary);
+}
+
+.notificationCount {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    background: var(--accent, #ff006e);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 10px;
+    min-width: 16px;
+    text-align: center;
+}
+
+.systemStatus {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: rgba(26, 26, 26, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    font-size: 0.85rem;
+}
+
+.statusDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+.statusDot.online {
+    background: var(--accent-success, #10b981);
+}
+
+.statusDot.warning {
+    background: var(--accent-warning, #f59e0b);
+}
+
+.statusDot.offline {
+    background: var(--danger, #ef4444);
+}
+
+.statusText {
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+@media (max-width: 768px) {
+    .controls {
+        display: none;
     }
 }

@@ -506,11 +506,86 @@ const getResourceRecommendations = {
     }
 };
 
+/**
+ * Crawl a single URL using MOTHER BRAIN system
+ */
+const crawlerSingleUrl = {
+    name: "crawler-single-url",
+    description: "Crawl and analyze a single URL using the MOTHER BRAIN ethical spider system",
+    inputSchema: z.object({
+        url: z.string().url().describe("URL to crawl and analyze"),
+        options: z.object({
+            maxDepth: z.number().min(1).max(3).default(1).describe("Maximum crawl depth"),
+            followExternalLinks: z.boolean().default(false).describe("Whether to follow external links"),
+            timeout: z.number().min(30000).max(300000).default(60000).describe("Timeout in milliseconds")
+        }).optional().describe("Crawling options")
+    }),
+    handler: async (args, context) => {
+        const { url, options = {} } = args;
+
+        try {
+            // Import MOTHER BRAIN integration
+            const { MotherBrainIntegration } = await import('../../services/MotherBrainIntegration.js');
+
+            // Initialize MOTHER BRAIN if not already done
+            const motherBrain = new MotherBrainIntegration({
+                maxConcurrentRequests: 1,
+                maxConcurrentPerHost: 1,
+                defaultCrawlDelay: 2000,
+                useAIAnalysis: true
+            });
+
+            const initialized = await motherBrain.initialize();
+            if (!initialized) {
+                return `❌ Failed to initialize MOTHER BRAIN crawler system.`;
+            }
+
+            // Execute crawl on single URL
+            const result = await motherBrain.executeIntelligentCrawl([url], {
+                maxPages: 1,
+                maxDepth: options.maxDepth || 1,
+                followExternalLinks: options.followExternalLinks || false,
+                timeout: options.timeout || 60000
+            });
+
+            // Shutdown MOTHER BRAIN
+            await motherBrain.shutdown();
+
+            if (result.success) {
+                const stats = result.crawlStats;
+                const processed = result.processedResults;
+
+                let response = `🕷️ **MOTHER BRAIN Crawl Complete**\n\n`;
+                response += `**URL**: ${url}\n`;
+                response += `**Status**: ✅ Successfully crawled\n`;
+                response += `**Pages Processed**: ${stats.pagesProcessed}\n`;
+                response += `**Knowledge Entries**: ${processed.stored} stored, ${processed.updated} updated\n`;
+                response += `**Processing Time**: ${Math.round(stats.duration / 1000)} seconds\n\n`;
+
+                if (stats.robotsBlocks > 0) {
+                    response += `🛡️ **Ethical Compliance**: Respectfully blocked ${stats.robotsBlocks} URLs per robots.txt\n\n`;
+                }
+
+                response += `🧠 **Analysis**: Content has been analyzed and stored in the knowledge base for future reference.\n`;
+                response += `⚡ **MOTHER BRAIN**: Operated with maximum ethics and respect for the target website.`;
+
+                return response;
+            } else {
+                return `❌ **Crawl Failed**: ${result.error}`;
+            }
+
+        } catch (error) {
+            return `💥 **Crawler Error**: ${error.message}`;
+        }
+    }
+};
+
 // Export all tools
 export const bambiTools = {
     searchKnowledge,
     getSafetyInfo,
     getChurchStatus,
     getCommunityGuidelines,
-    getResourceRecommendations
+    getResourceRecommendations,
+    crawlerSingleUrl
 };

@@ -1,43 +1,88 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useApp } from '../contexts/AppContext';
 
-// Custom hook for API calls with loading and error states
-export const useApi = (apiCall, dependencies = []) => {
+// Enhanced API hook with retry logic and better error handling
+export const useApi = (apiCall, dependencies = [], options = {}) => {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const { actions } = useApp();
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                setLoading(true);
-                setError(null);
-                const result = await apiCall();
-                setData(result);
-            } catch (err) {
-                setError(err.message || 'An error occurred');
-                console.error('API call failed:', err);
-            } finally {
-                setLoading(false);
-            }
-        };
+    const {
+        retryAttempts = 3,
+        retryDelay = 1000,
+        showNotifications = false,
+        cacheKey = null
+    } = options;
 
-        fetchData();
-    }, dependencies);
+    const cache = useRef(new Map());
+    const retryCount = useRef(0);
 
-    const refetch = async () => {
+    const fetchData = useCallback(async () => {
         try {
             setLoading(true);
             setError(null);
+
+            // Check cache first
+            if (cacheKey && cache.current.has(cacheKey)) {
+                const cachedData = cache.current.get(cacheKey);
+                setData(cachedData);
+                setLoading(false);
+                return cachedData;
+            }
+
             const result = await apiCall();
             setData(result);
+
+            // Cache the result
+            if (cacheKey) {
+                cache.current.set(cacheKey, result);
+            }
+
+            retryCount.current = 0;
+
+            if (showNotifications) {
+                actions.addNotification({
+                    message: 'Data loaded successfully',
+                    type: 'success'
+                });
+            }
+
             return result;
         } catch (err) {
-            setError(err.message || 'An error occurred');
-            throw err;
+            const errorMessage = err.message || 'An error occurred';
+            setError(errorMessage);
+            console.error('API call failed:', err);
+
+            // Retry logic
+            if (retryCount.current < retryAttempts) {
+                retryCount.current++;
+                setTimeout(() => fetchData(), retryDelay * retryCount.current);
+                return;
+            }
+
+            if (showNotifications) {
+                actions.addNotification({
+                    message: errorMessage,
+                    type: 'error'
+                });
+            }
         } finally {
             setLoading(false);
         }
-    };
+    }, [apiCall, retryAttempts, retryDelay, showNotifications, cacheKey, actions]);
+
+    useEffect(() => {
+        fetchData();
+    }, dependencies);
+
+    const refetch = useCallback(async () => {
+        // Clear cache on manual refetch
+        if (cacheKey) {
+            cache.current.delete(cacheKey);
+        }
+        return await fetchData();
+    }, [fetchData, cacheKey]);
 
     return { data, loading, error, refetch };
 };

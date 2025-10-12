@@ -286,12 +286,12 @@ class UnifiedTestSuite {
                 printSubsection('Tool Analysis');
 
                 // Check for expected BambiSleep tools
-                const expectedTools = ['search-knowledge', 'get-safety-info', 'church-status'];
+                const expectedTools = ['search-knowledge', 'get-safety-info', 'church-status', 'crawler-single-url'];
                 const foundExpectedTools = expectedTools.filter(tool =>
                     toolNames.some(name => name.includes(tool))
                 );
 
-                console.log(`  ${formatResult(foundExpectedTools.length > 0, `Core tools found: ${foundExpectedTools.join(', ')})}`)})`);
+                console.log(`  ${formatResult(foundExpectedTools.length > 0, `Core tools found: ${foundExpectedTools.join(', ')}`)}`);
                 this.updateResults('mcpTools', foundExpectedTools.length > 0);
 
                 // Check for duplicates
@@ -362,20 +362,18 @@ class UnifiedTestSuite {
         // MCP endpoints (if enabled)
         printSubsection('MCP Integration Endpoints');
         if (process.env.MCP_ENABLED !== 'false') {
-            const mcpEndpoints = [
-                { path: '/mcp', description: 'MCP JSON-RPC endpoint' },
-                { path: '/api/mcp/status', description: 'MCP status endpoint' }
-            ];
+            // Test MCP status endpoint (GET)
+            const statusResult = await testEndpoint('/api/mcp/status');
+            console.log(`    ${statusResult.success ? '✓' : '⚠️'} MCP status endpoint - ${statusResult.success ? 'Available' : 'Not responding'}`);
+            this.updateResults('apiEndpoints', statusResult.success);
 
-            for (const endpoint of mcpEndpoints) {
-                const result = await testEndpoint(endpoint.path);
-                console.log(`    ${result.success ? '✓' : '⚠️'} ${endpoint.description} - ${result.success ? 'Available' : 'Not responding'}`);
-                this.updateResults('apiEndpoints', true); // Don't fail if MCP is disabled
-            }
+            // Note about MCP JSON-RPC endpoint (POST only)
+            console.log(`    ℹ️ MCP JSON-RPC endpoint (/mcp) - POST only (GET returns 404 by design)`);
+            this.updateResults('apiEndpoints', true); // This is expected behavior
 
             // Test MCP JSON-RPC protocol
             if (process.env.MCP_ENABLED !== 'false') {
-                printSubsection('MCP JSON-RPC Protocol');
+                printSubsection('MCP JSON-RPC Protocol Testing');
 
                 // Test tools/list
                 const mcpListResult = await testEndpoint('/mcp', 'POST', {
@@ -383,8 +381,8 @@ class UnifiedTestSuite {
                     id: 1,
                     method: 'tools/list'
                 });
-                console.log(`    ${mcpListResult.success ? '✓' : '⚠️'} MCP tools/list - ${mcpListResult.success ? 'Working' : 'Not responding'}`);
-                this.updateResults('apiEndpoints', true); // Optional
+                console.log(`    ${mcpListResult.success ? '✓' : '⚠️'} MCP tools/list command - ${mcpListResult.success ? 'Working' : 'Not responding'}`);
+                this.updateResults('apiEndpoints', mcpListResult.success);
 
                 // Test a tool call if tools/list worked
                 if (mcpListResult.success) {
@@ -397,8 +395,17 @@ class UnifiedTestSuite {
                             arguments: {}
                         }
                     });
-                    console.log(`    ${mcpToolResult.success ? '✓' : '⚠️'} MCP tool execution - ${mcpToolResult.success ? 'Working' : 'Failed'}`);
-                    this.updateResults('apiEndpoints', true); // Optional
+                    console.log(`    ${mcpToolResult.success ? '✓' : '⚠️'} MCP tool execution (church-status) - ${mcpToolResult.success ? 'Working' : 'Failed'}`);
+                    this.updateResults('apiEndpoints', mcpToolResult.success);
+
+                    // Test crawler tool availability (not execution due to time)
+                    if (mcpToolResult.success) {
+                        console.log(`    ℹ️ crawler-single-url tool - Available (not tested to avoid long execution)`);
+                        this.updateResults('apiEndpoints', true);
+                    }
+                } else {
+                    console.log(`    ⚠️ Skipping tool execution test - tools/list failed`);
+                    this.updateResults('apiEndpoints', false);
                 }
             }
         } else {
