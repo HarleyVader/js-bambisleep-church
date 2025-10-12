@@ -1,0 +1,163 @@
+/* Tools Page Styles - BambiSleep Church */
+
+.toolsPage {
+    min-height: 100vh;
+    background: var(--gradient-primary);
+    padding: 2rem;
+    font-family: var(--font-primary);
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.header h1 {
+    font-family: var(--font-heading);
+    font-size: 2.5rem;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+    text-shadow: 0 0 20px var(--primary);
+}
+
+.header p {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+}
+
+.categories {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.categoryCard {
+    background: var(--dark-card-transparent);
+    border: 1px solid var(--category-color, var(--primary));
+    border-radius: 12px;
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+}
+
+.categoryCard::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--category-color, var(--primary));
+    opacity: 0.8;
+}
+
+.categoryCard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(255, 0, 255, 0.2);
+    border-color: var(--category-color);
+}
+
+.categoryCard.active {
+    border-color: var(--category-color);
+    box-shadow: 0 0 20px var(--category-color);
+}
+
+.cardHeader {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.cardHeader svg {
+    color: var(--category-color, var(--primary));
+}
+
+.cardHeader h3 {
+    font-family: var(--font-heading);
+    font-size: 1.3rem;
+    color: var(--text);
+    margin: 0;
+    flex: 1;
+}
+
+.count {
+    background: var(--category-color, var(--primary));
+    color: var(--dark);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.categoryCard p {
+    color: var(--text-light);
+    margin: 0;
+    font-size: 0.95rem;
+}
+
+.categoryContent {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--category-color);
+    animation: slideDown 0.3s ease;
+}
+
+.placeholder {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    justify-content: center;
+    padding: 2rem;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.footer {
+    text-align: center;
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--dark-card);
+}
+
+.footer p {
+    color: var(--text-muted);
+    font-family: var(--font-heading);
+    letter-spacing: 2px;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+    .toolsPage {
+        padding: 1rem;
+    }
+
+    .header h1 {
+        font-size: 2rem;
+    }
+
+    .categories {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .categoryCard {
+        padding: 1rem;
+    }
+}

@@ -1,0 +1,215 @@
+/* Knowledge Page Styles - BambiSleep Church */
+
+.knowledgePage {
+    min-height: 100vh;
+    background: var(--gradient-primary);
+    padding: 2rem;
+    font-family: var(--font-primary);
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.header h1 {
+    font-family: var(--font-heading);
+    font-size: 2.5rem;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+    text-shadow: 0 0 20px var(--primary-cyan);
+}
+
+.header p {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+}
+
+.searchSection {
+    max-width: 800px;
+    margin: 0 auto 2rem;
+}
+
+.searchBox {
+    margin-bottom: 1.5rem;
+}
+
+.categories {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.categoryButton {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--dark-card-transparent);
+    border: 1px solid var(--primary-cyan);
+    border-radius: 20px;
+    color: var(--text-light);
+    font-family: var(--font-primary);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.categoryButton:hover {
+    background: var(--primary-cyan);
+    color: var(--dark);
+    transform: translateY(-1px);
+}
+
+.categoryButton.active {
+    background: var(--primary-cyan);
+    color: var(--dark);
+    box-shadow: 0 0 10px var(--primary-cyan);
+}
+
+.results {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 3rem;
+    color: var(--text-muted);
+}
+
+.resultsList h3 {
+    color: var(--text);
+    font-family: var(--font-heading);
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.resultCard {
+    background: var(--dark-card-transparent);
+    border: 1px solid var(--primary-cyan);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.resultCard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(21, 170, 181, 0.2);
+    border-color: var(--secondary);
+}
+
+.resultHeader {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.categoryIcon {
+    color: var(--primary-cyan);
+}
+
+.resultHeader h4 {
+    color: var(--text);
+    font-family: var(--font-heading);
+    font-size: 1.2rem;
+    margin: 0;
+    flex: 1;
+}
+
+.categoryBadge {
+    background: var(--primary-cyan);
+    color: var(--dark);
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.resultCard p {
+    color: var(--text-light);
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+.readMore {
+    color: var(--primary-cyan);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.readMore:hover {
+    color: var(--secondary);
+}
+
+.noResults,
+.welcome {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 3rem;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.noResults svg,
+.welcome svg {
+    color: var(--primary-cyan);
+    opacity: 0.5;
+}
+
+.noResults h3,
+.welcome h3 {
+    color: var(--text);
+    font-family: var(--font-heading);
+    margin: 0;
+}
+
+.noResults p,
+.welcome p {
+    margin: 0;
+}
+
+@media (max-width: 768px) {
+    .knowledgePage {
+        padding: 1rem;
+    }
+
+    .header h1 {
+        font-size: 2rem;
+    }
+
+    .categories {
+        justify-content: flex-start;
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+    }
+
+    .categoryButton {
+        white-space: nowrap;
+    }
+
+    .resultCard {
+        padding: 1rem;
+    }
+
+    .resultHeader {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .resultHeader h4 {
+        font-size: 1.1rem;
+    }
+}
