@@ -357,7 +357,7 @@ class LMStudioService {
     // Generate completion (alias for completion method for backwards compatibility)
     async generateCompletion(prompt, options = {}) {
         const result = await this.completion(prompt, options);
-        
+
         // Return in expected format with success flag and completion text
         if (result.success && result.completion) {
             return {

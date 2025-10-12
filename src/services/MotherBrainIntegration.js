@@ -404,7 +404,7 @@ Respond in JSON format only.`;
         if (text.includes('beginner') || text.includes('introduction') || text.includes('start')) {
             classifications.push('beginner-friendly');
         }
-        
+
         if (text.includes('advanced') || text.includes('complex') || text.includes('experienced')) {
             classifications.push('advanced');
         }
@@ -424,7 +424,7 @@ Respond in JSON format only.`;
             classifications.push('community');
         }
 
-        // Technical classification  
+        // Technical classification
         if (text.includes('technical') || text.includes('guide') || text.includes('how-to') || text.includes('tutorial')) {
             classifications.push('technical');
         }
