@@ -74,24 +74,34 @@ if (isProduction) {
     execSync('npm run build', { stdio: 'inherit' });
     process.chdir('..');
 
-    console.log('📂 Copying build files...');
-    const copyCmd = isWindows ? 'xcopy /E /I /Y frontend\\dist\\* dist\\' : 'cp -r frontend/dist/* dist/';
-    execSync(copyCmd, { stdio: 'inherit', shell: true });
+    console.log('✅ React app built to dist/ directory');
 
     console.log('🌐 Starting production server...');
     process.env.NODE_ENV = 'production';
     execSync('node src/server.js', { stdio: 'inherit' });
 } else {
-    // Development mode - everything on port 7070
+    // Development mode - build frontend and serve everything on port 7070
     console.log('🔄 Starting development server on port 7070...');
     console.log(`📁 Backend (src/): node --watch src/server.js`);
-    console.log(`🌐 Frontend: Served by backend on port 7070`);
+    console.log(`� Frontend: Building React app for development...`);
 
-    // Verify backend exists
+    // Verify both directories exist
     if (!existsSync('src/server.js')) {
         console.error('❌ Backend server not found at src/server.js');
         process.exit(1);
     }
+    if (!existsSync('frontend/package.json')) {
+        console.error('❌ Frontend not found at frontend/package.json');
+        process.exit(1);
+    }
+
+    // Build frontend for development
+    console.log('🏗️ Building React frontend...');
+    process.chdir('frontend');
+    execSync('npm run build', { stdio: 'inherit' });
+    process.chdir('..');
+
+    console.log('✅ React app built to dist/ directory');
 
     // Start git monitoring in development mode
     const gitMonitor = setInterval(() => {
@@ -107,14 +117,17 @@ if (isProduction) {
     process.on('SIGINT', cleanup);
     process.on('SIGTERM', cleanup);
 
-    console.log('🚀 Launching unified server on port 7070...');
-    
+    console.log('🚀 Launching unified server with built React app on port 7070...');
+
+    // Set NODE_ENV to production so server serves the built React app
+    process.env.NODE_ENV = 'production';
     const backendCmd = 'node --watch src/server.js';
-    console.log(`🔧 Command: ${backendCmd}`);
+    console.log(`🔧 Command: ${backendCmd} (with built React app)`);
 
     const server = spawn('node', ['--watch', 'src/server.js'], {
         stdio: 'inherit',
-        shell: false
+        shell: false,
+        env: { ...process.env, NODE_ENV: 'production' }
     });
 
     server.on('error', (error) => {
