@@ -16,7 +16,7 @@
     "start": "NODE_ENV=production node src/server.js",
     "dev": "node --watch src/server.js",
     "dev:frontend": "cd frontend && npm run dev",
-    "build": "cd frontend && npm run build && cp -r dist/* ../dist/",
+    "build": "npm run setup && cd frontend && npm run build && cp -r dist/* ../dist/",
     "build:backend": "node scripts/build.js",
     "setup": "node scripts/install.js",
     "test": "node tests/test.cjs",
