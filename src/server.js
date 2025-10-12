@@ -80,7 +80,7 @@ const serveReactApp = (req, res) => {
         // In development, serve a simple message or redirect to the dev server
         res.json({
             message: 'BambiSleep Church Development Server',
-            note: 'Run `npm run dev:frontend` to start the React development server',
+            note: 'Use `npm run dev` for full-stack development or `npm run dev:backend` for backend only',
             api: {
                 knowledge: '/api/knowledge',
                 chat: '/api/chat',
