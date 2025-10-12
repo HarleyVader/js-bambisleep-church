@@ -19,6 +19,13 @@ export default defineConfig({
     server: {
         port: 7070,
         host: '0.0.0.0',
+        allowedHosts: [
+            'localhost',
+            '127.0.0.1',
+            '0.0.0.0',
+            'at.bambisleep.church',
+            '.bambisleep.church'
+        ],
         proxy: {
             '/api': {
                 target: 'http://localhost:7070',

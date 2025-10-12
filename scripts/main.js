@@ -41,11 +41,13 @@ class ConfigManager {
             const { config } = await import('../src/utils/config.js');
 
             // Generate MCP Inspector config
+            const productionUrl = process.env.PRODUCTION_MCP_URL || `https://at.bambisleep.church:${config.server.port}${config.server.mcpEndpoint}`;
+            
             const inspectorConfig = {
                 mcpServers: {
                     "bambisleep-church": {
                         type: "streamable-http",
-                        url: `https://at.bambisleep.church:${config.server.port}${config.server.mcpEndpoint}`,
+                        url: productionUrl,
                         name: "BambiSleep Church MCP Server",
                         description: "Digital sanctuary and knowledge base for the BambiSleep community"
                     },
