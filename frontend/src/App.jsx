@@ -13,14 +13,7 @@ const KnowledgeBase = lazy(() => import('@pages/KnowledgeBase'));
 const AgentKnowledgeBase = lazy(() => import('@pages/AgentKnowledgeBase'));
 const Mission = lazy(() => import('@pages/Mission'));
 const Roadmap = lazy(() => import('@pages/Roadmap'));
-
-// Simple fallback Documentation component
-const Documentation = () => (
-    <div style={{ padding: '2rem', textAlign: 'center' }}>
-        <h1>📚 Documentation</h1>
-        <p>Documentation system is being updated. Please check back soon!</p>
-    </div>
-);
+const Documentation = lazy(() => import('@pages/DocumentationFixed'));
 
 const App = () => {
     return (
