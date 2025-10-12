@@ -131,7 +131,7 @@ const MotherBrainPage = () => {
                             <p className={styles.motto}>"Looks scary but follows ALL the rules"</p>
                         </div>
                     </div>
-                    
+
                     <div className={styles.statusIndicator}>
                         <div className={`${styles.statusDot} ${styles[systemStatus]}`}></div>
                         <span>System {systemStatus.toUpperCase()}</span>
@@ -147,8 +147,8 @@ const MotherBrainPage = () => {
                     <div className={styles.statCard}>
                         <h3>Success Rate</h3>
                         <div className={styles.statValue}>
-                            {crawlStats.totalRequests > 0 
-                                ? Math.floor((crawlStats.successfulRequests / crawlStats.totalRequests) * 100) 
+                            {crawlStats.totalRequests > 0
+                                ? Math.floor((crawlStats.successfulRequests / crawlStats.totalRequests) * 100)
                                 : 0}%
                         </div>
                     </div>
@@ -188,8 +188,8 @@ const MotherBrainPage = () => {
                     <h2>🕷️ Crawl Operations</h2>
                     <div className={styles.operationsGrid}>
                         {crawlOperations.map((operation, index) => (
-                            <div 
-                                key={index} 
+                            <div
+                                key={index}
                                 className={styles.operationCard}
                                 style={{ borderLeftColor: getOperationColor(operation.category) }}
                             >

@@ -172,8 +172,8 @@ const MotherBrainAnalytics = () => {
                     </div>
 
                     <div className={styles.controls}>
-                        <select 
-                            value={timeRange} 
+                        <select
+                            value={timeRange}
                             onChange={(e) => setTimeRange(e.target.value)}
                             className={styles.timeSelect}
                         >
@@ -224,7 +224,7 @@ const MotherBrainAnalytics = () => {
                                 <div className={styles.activityList}>
                                     {recentActivity.map((activity, index) => (
                                         <div key={index} className={styles.activityItem}>
-                                            <div 
+                                            <div
                                                 className={styles.activityIcon}
                                                 style={{ color: getActivityColor(activity.status) }}
                                             >
@@ -278,9 +278,9 @@ const MotherBrainAnalytics = () => {
                                                 <span>{metric.value}%</span>
                                             </div>
                                             <div className={styles.ethicalBar}>
-                                                <div 
+                                                <div
                                                     className={styles.ethicalFill}
-                                                    style={{ 
+                                                    style={{
                                                         width: `${(metric.value / metric.max) * 100}%`,
                                                         backgroundColor: metric.color
                                                     }}
@@ -327,9 +327,9 @@ const MotherBrainAnalytics = () => {
                                                 <span>{category.value}%</span>
                                             </div>
                                             <div className={styles.contentBarFill}>
-                                                <div 
+                                                <div
                                                     className={styles.contentFill}
-                                                    style={{ 
+                                                    style={{
                                                         width: `${category.value}%`,
                                                         backgroundColor: category.color
                                                     }}

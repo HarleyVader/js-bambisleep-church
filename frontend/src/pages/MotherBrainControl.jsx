@@ -95,7 +95,7 @@ const MotherBrainControl = () => {
         try {
             // Simulate API call to MCP server
             await new Promise(resolve => setTimeout(resolve, 2000));
-            
+
             if (operation.id === 'initialize') {
                 setSystemStatus('online');
                 addLog('✅ MOTHER BRAIN initialized successfully', 'success');
@@ -158,7 +158,7 @@ const MotherBrainControl = () => {
                             <p>Direct system control and monitoring interface</p>
                         </div>
                     </div>
-                    
+
                     <div className={`${styles.statusBadge} ${styles[systemStatus]}`}>
                         <div className={styles.statusDot}></div>
                         {systemStatus.toUpperCase()}
@@ -208,7 +208,7 @@ const MotherBrainControl = () => {
                     {/* Configuration Panel */}
                     <section className={styles.configPanel}>
                         <h2>⚙️ System Configuration</h2>
-                        
+
                         <div className={styles.configSection}>
                             <h3>Crawler Settings</h3>
                             <div className={styles.configGrid}>
@@ -219,7 +219,7 @@ const MotherBrainControl = () => {
                                         min="1"
                                         max="10"
                                         value={config.maxConcurrentRequests}
-                                        onChange={(e) => setConfig({...config, maxConcurrentRequests: parseInt(e.target.value)})}
+                                        onChange={(e) => setConfig({ ...config, maxConcurrentRequests: parseInt(e.target.value) })}
                                     />
                                 </label>
                                 <label>
@@ -229,7 +229,7 @@ const MotherBrainControl = () => {
                                         min="1"
                                         max="3"
                                         value={config.maxConcurrentPerHost}
-                                        onChange={(e) => setConfig({...config, maxConcurrentPerHost: parseInt(e.target.value)})}
+                                        onChange={(e) => setConfig({ ...config, maxConcurrentPerHost: parseInt(e.target.value) })}
                                     />
                                 </label>
                                 <label>
@@ -240,7 +240,7 @@ const MotherBrainControl = () => {
                                         max="10000"
                                         step="500"
                                         value={config.defaultCrawlDelay}
-                                        onChange={(e) => setConfig({...config, defaultCrawlDelay: parseInt(e.target.value)})}
+                                        onChange={(e) => setConfig({ ...config, defaultCrawlDelay: parseInt(e.target.value) })}
                                     />
                                 </label>
                                 <label>
@@ -250,17 +250,17 @@ const MotherBrainControl = () => {
                                         min="1"
                                         max="200"
                                         value={config.maxPages}
-                                        onChange={(e) => setConfig({...config, maxPages: parseInt(e.target.value)})}
+                                        onChange={(e) => setConfig({ ...config, maxPages: parseInt(e.target.value) })}
                                     />
                                 </label>
                             </div>
-                            
+
                             <div className={styles.configToggles}>
                                 <label className={styles.toggle}>
                                     <input
                                         type="checkbox"
                                         checked={config.useAIAnalysis}
-                                        onChange={(e) => setConfig({...config, useAIAnalysis: e.target.checked})}
+                                        onChange={(e) => setConfig({ ...config, useAIAnalysis: e.target.checked })}
                                     />
                                     <span>AI Analysis</span>
                                 </label>
@@ -268,7 +268,7 @@ const MotherBrainControl = () => {
                                     <input
                                         type="checkbox"
                                         checked={config.includeCommunity}
-                                        onChange={(e) => setConfig({...config, includeCommunity: e.target.checked})}
+                                        onChange={(e) => setConfig({ ...config, includeCommunity: e.target.checked })}
                                     />
                                     <span>Include Community Sources</span>
                                 </label>
@@ -309,7 +309,7 @@ const MotherBrainControl = () => {
                     <section className={styles.progressPanel}>
                         <h3>🔄 Crawl Progress</h3>
                         <div className={styles.progressBar}>
-                            <div 
+                            <div
                                 className={styles.progressFill}
                                 style={{ width: `${crawlProgress.current}%` }}
                             ></div>
