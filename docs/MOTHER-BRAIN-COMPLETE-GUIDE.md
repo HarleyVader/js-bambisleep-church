@@ -71,7 +71,7 @@ This document provides a comprehensive overview of the MOTHER BRAIN system integ
 
 ### Server Integration Status
 
-```
+```text
 ✅ MOTHER BRAIN SPIDER SYSTEM ARMED AND READY
 ✅ 💬✅ MAINFRAME GLOBAL CHAT STREAM ONLINE
 ✅ 🔥✅ MOTHER BRAIN: All systems online and operational
@@ -145,7 +145,7 @@ npm run test         # Run test suite
 
 ### Chat Interface
 
-```
+```text
 User: "mainframe info"
 Response: Shows active users, recent messages, and available commands
 

@@ -69,7 +69,7 @@ This directory contains the core service modules for the BambiSleep Church syste
 
 ## 🔄 Service Dependencies
 
-```
+```text
 MotherBrain.js (Core)
 ├── MongoDBService.js (Database)
 └── LMStudioService.js (AI)

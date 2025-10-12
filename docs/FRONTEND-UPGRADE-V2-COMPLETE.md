@@ -226,7 +226,7 @@
 
 ### **New Files Created:**
 
-```
+```text
 frontend/src/
 ├── contexts/
 │   └── AppContext.jsx                    # Global state management
@@ -244,7 +244,7 @@ frontend/src/
 
 ### **Enhanced Files:**
 
-```
+```text
 frontend/src/
 ├── App.jsx                              # Lazy loading & context
 ├── hooks/index.js                       # 9+ advanced hooks

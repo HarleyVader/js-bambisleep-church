@@ -380,14 +380,14 @@ await startAutonomousBuilding.handler({
 
 ### Common Issues
 
-**AI Not Available**
+## AI Not Available
 
 ```bash
 # Check LMStudio status
 curl http://localhost:1234/v1/models
 ```
 
-**MOTHER BRAIN Not Available**
+## MOTHER BRAIN Not Available
 
 The system will fallback to legacy crawling if MOTHER BRAIN is not initialized. To enable MOTHER BRAIN:
 
@@ -400,13 +400,13 @@ const status = await agenticKnowledgeBuilder.getMotherBrainStatus();
 console.log('MOTHER BRAIN Status:', status);
 ```
 
-**Crawling Failures**
+## Crawling Failures
 
 - Check internet connectivity
 - Verify target sites are accessible
 - Review robots.txt compliance
 
-**Performance Issues**
+## Performance Issues
 
 - Reduce `maxPages` and `maxDepth` parameters
 - Increase `crawlDelay` for slower sites
@@ -440,6 +440,6 @@ console.log('Debug Status:', status);
 
 ---
 
-**Built with ❤️ for the BambiSleep Church community**
+## Built with ❤️ for the BambiSleep Church community
 
 *The Intelligent Crawler Brain represents the fusion of AI reasoning and web crawling technology, designed to build knowledge while respecting community values and web etiquette.*
