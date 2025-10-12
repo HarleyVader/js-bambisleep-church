@@ -3,7 +3,7 @@ import { ExternalLink, ThumbsUp, ThumbsDown, TrendingUp, Globe, Filter, Grid, Li
 import styles from './KnowledgeBase.module.css';
 import { knowledgeService } from '@services/api';
 import { LoadingSpinner, ErrorMessage, SearchBox } from '@components';
-import { useApi, usePagination, useLocalStorage } from '@hooks';
+import { useApi, useLocalStorage } from '@hooks';
 import { useApp } from '@/contexts/AppContext';
 
 const KnowledgeBase = () => {
@@ -78,275 +78,287 @@ const KnowledgeBase = () => {
     }, [knowledgeEntries, searchQuery, selectedCategory, sortBy, votes]);
 
     // Pagination
-    const pagination = usePagination(filteredEntries.length, 12);
-    const paginatedEntries = filteredEntries.slice(pagination.startIndex, pagination.endIndex);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 12;
+    const totalPages = Math.ceil(filteredEntries.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedEntries = filteredEntries.slice(startIndex, endIndex);
 
-    // Filter entries first
-    const filteredEntries = entries.filter(([key, entry]) => {
-        // Category filter
-        if (selectedCategory !== 'all' && entry.category !== selectedCategory) {
-            return false;
-        }
-
-        // Search filter
-        if (searchTerm) {
-            const searchLower = searchTerm.toLowerCase();
-            return (
-                entry.title?.toLowerCase().includes(searchLower) ||
-                entry.description?.toLowerCase().includes(searchLower) ||
-                entry.category?.toLowerCase().includes(searchLower) ||
-                entry.platform?.toLowerCase().includes(searchLower)
-            );
-        }
-
-        return true;
-    });
-
-    // Group by category
-    filteredEntries.forEach(([key, entry]) => {
-        const category = entry.category || 'general';
-        if (!categoryGroups[category]) {
-            categoryGroups[category] = [];
-        }
-        categoryGroups[category].push([key, entry]);
-    });
-
-    // Sort entries within each category by relevance score and title
-    Object.keys(categoryGroups).forEach(category => {
-        categoryGroups[category].sort((a, b) => {
-            const scoreA = a[1].relevanceScore || 0;
-            const scoreB = b[1].relevanceScore || 0;
-            if (scoreA !== scoreB) return scoreB - scoreA;
-            return (a[1].title || '').localeCompare(b[1].title || '');
-        });
-    });
-
-    // Sort categories by priority
-    const categoryPriority = {
-        'official': 1,
-        'safety': 2,
-        'community': 3,
-        'scripts': 4,
-        'general': 5
+    const pagination = {
+        currentPage,
+        totalPages,
+        startIndex,
+        endIndex,
+        hasPrev: currentPage > 1,
+        hasNext: currentPage < totalPages,
+        prevPage: () => setCurrentPage(prev => Math.max(1, prev - 1)),
+        nextPage: () => setCurrentPage(prev => Math.min(totalPages, prev + 1)),
+        reset: () => setCurrentPage(1)
     };
 
-    const sortedCategories = Object.keys(categoryGroups).sort((a, b) => {
-        const priorityA = categoryPriority[a] || 99;
-        const priorityB = categoryPriority[b] || 99;
-        if (priorityA !== priorityB) return priorityA - priorityB;
-        return a.localeCompare(b);
-    });
+    const handleSearch = ({ query, categories: searchCategories, sortBy: searchSortBy }) => {
+        setSearchQuery(query);
+        if (searchCategories && searchCategories.length > 0) {
+            setSelectedCategory(searchCategories[0]);
+        }
+        if (searchSortBy) {
+            setSortBy(searchSortBy);
+        }
+        setCurrentPage(1);
+    };
 
-    return sortedCategories.map(category => ({
-        name: category,
-        entries: categoryGroups[category]
-    }));
-}, [knowledge, searchTerm, selectedCategory]);
+    const handleCategoryChange = (category) => {
+        setSelectedCategory(category);
+        setCurrentPage(1);
+    };
 
-const handleCategoryChange = (category) => {
-    setSelectedCategory(category);
-};
+    // Reset pagination when filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [filteredEntries.length]);
 
-const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-};
+    const handleVote = (entryKey, voteType) => {
+        const newVotes = {
+            ...votes,
+            [entryKey]: {
+                up: votes[entryKey]?.up || 0,
+                down: votes[entryKey]?.down || 0
+            }
+        };
 
-const handleVote = (entryId, voteType) => {
-    const newVotes = { ...votes };
-    if (!newVotes[entryId]) {
-        newVotes[entryId] = { up: 0, down: 0, userVote: null };
+        if (voteType === 'up') {
+            newVotes[entryKey].up += 1;
+        } else {
+            newVotes[entryKey].down += 1;
+        }
+
+        setVotes(newVotes);
+
+        actions.addNotification({
+            message: `Vote ${voteType === 'up' ? 'recorded' : 'recorded'}!`,
+            type: 'success'
+        });
+    };
+
+    const handleVoteOld = (entryId, voteType) => {
+        const newVotes = { ...votes };
+        if (!newVotes[entryId]) {
+            newVotes[entryId] = { up: 0, down: 0, userVote: null };
+        }
+
+        const entry = newVotes[entryId];
+
+        // Remove previous vote if exists
+        if (entry.userVote === 'up') entry.up--;
+        if (entry.userVote === 'down') entry.down--;
+
+        // Add new vote if different from current
+        if (entry.userVote !== voteType) {
+            if (voteType === 'up') entry.up++;
+            if (voteType === 'down') entry.down++;
+            entry.userVote = voteType;
+        } else {
+            entry.userVote = null; // Remove vote if clicking same button
+        }
+
+        setVotes(newVotes);
+        localStorage.setItem('knowledge-votes', JSON.stringify(newVotes));
+    };
+
+    const getVoteStats = (entryId) => {
+        return votes[entryId] || { up: 0, down: 0, userVote: null };
+    };
+
+    const getCategoryClassName = (category) => {
+        switch (category?.toLowerCase()) {
+            case 'official': return 'official';
+            case 'community': return 'community';
+            case 'scripts': return 'scripts';
+            case 'safety': return 'safety';
+            default: return 'community';
+        }
+    };
+
+    if (isLoading) {
+        return (
+            <div className={styles.container}>
+                <LoadingSpinner text="Loading knowledge base..." />
+            </div>
+        );
     }
 
-    const entry = newVotes[entryId];
-
-    // Remove previous vote if exists
-    if (entry.userVote === 'up') entry.up--;
-    if (entry.userVote === 'down') entry.down--;
-
-    // Add new vote if different from current
-    if (entry.userVote !== voteType) {
-        if (voteType === 'up') entry.up++;
-        if (voteType === 'down') entry.down++;
-        entry.userVote = voteType;
-    } else {
-        entry.userVote = null; // Remove vote if clicking same button
+    if (error) {
+        return (
+            <div className={styles.page}>
+                <ErrorMessage
+                    error={error}
+                    onRetry={() => window.location.reload()}
+                />
+            </div>
+        );
     }
 
-    setVotes(newVotes);
-    localStorage.setItem('knowledge-votes', JSON.stringify(newVotes));
-};
-
-const getVoteStats = (entryId) => {
-    return votes[entryId] || { up: 0, down: 0, userVote: null };
-};
-
-const getCategoryClassName = (category) => {
-    switch (category?.toLowerCase()) {
-        case 'official': return 'official';
-        case 'community': return 'community';
-        case 'scripts': return 'scripts';
-        case 'safety': return 'safety';
-        default: return 'community';
-    }
-};
-
-if (isLoading) {
-    return (
-        <div className={styles.container}>
-            <LoadingSpinner text="Loading knowledge base..." />
-        </div>
-    );
-}
-
-if (error) {
     return (
         <div className={styles.page}>
-            <ErrorMessage
-                error={error}
-                onRetry={() => window.location.reload()}
-            />
-        </div>
-    );
-}
+            {/* Header */}
+            <header className={styles.header}>
+                <h1 className={styles.title}>Knowledge Base</h1>
+                <p className={styles.subtitle}>
+                    Curated resources, guides, and community wisdom for safe exploration and learning
+                </p>
+            </header>
 
-return (
-    <div className={styles.page}>
-        {/* Header */}
-        <header className={styles.header}>
-            <h1 className={styles.title}>Knowledge Base</h1>
-            <p className={styles.subtitle}>
-                Curated resources, guides, and community wisdom for safe exploration and learning
-            </p>
-        </header>
+            {/* Enhanced Search with Filters */}
+            <div className={styles.searchSection}>
+                <SearchBox
+                    onSearch={handleSearch}
+                    placeholder="Search knowledge base..."
+                    showFilters={true}
+                    showHistory={true}
+                    categories={categories}
+                    className={styles.searchBox}
+                />
+            </div>
 
-        {/* Search */}
-        <div className={styles.searchBox}>
-            <Search size={20} style={{ position: 'absolute', left: '20px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-            <input
-                type="text"
-                placeholder="Search knowledge base..."
-                value={searchTerm}
-                onChange={handleSearchChange}
-                className={styles.searchInput}
-                style={{ paddingLeft: '50px' }}
-            />
-        </div>
-
-        {/* Category Filters */}
-        <div className={styles.filters}>
-            {categories.map(category => (
-                <button
-                    key={category}
-                    onClick={() => handleCategoryChange(category)}
-                    className={`${styles.filterButton} ${selectedCategory === category ? styles.active : ''}`}
-                >
-                    {category === 'all' ? 'All Categories' : category.charAt(0).toUpperCase() + category.slice(1)}
-                </button>
-            ))}
-        </div>
-
-        {/* Results Count */}
-        <div style={{ textAlign: 'center', marginBottom: '2rem', color: 'var(--text-muted)' }}>
-            Showing {organizedCategories.reduce((total, cat) => total + cat.entries.length, 0)} of {Object.keys(knowledge).length} entries
-            {selectedCategory !== 'all' && ` in "${selectedCategory}"`}
-            {searchTerm && ` matching "${searchTerm}"`}
-            {organizedCategories.length > 1 && ` across ${organizedCategories.length} categories`}
-        </div>
-
-        {/* Organized Categories */}
-        {organizedCategories.length > 0 ? (
-            <div className={styles.categoriesContainer}>
-                {organizedCategories.map((categoryGroup) => (
-                    <div key={categoryGroup.name} className={styles.categorySection}>
-                        <div className={styles.categoryHeader}>
-                            <h2 className={styles.categoryTitle}>
-                                <span className={`${styles.categoryBadge} ${styles[getCategoryClassName(categoryGroup.name)]}`}>
-                                    {categoryGroup.name.charAt(0).toUpperCase() + categoryGroup.name.slice(1)}
-                                </span>
-                                <span className={styles.categoryCount}>
-                                    {categoryGroup.entries.length} {categoryGroup.entries.length === 1 ? 'link' : 'links'}
-                                </span>
-                            </h2>
-                        </div>
-
-                        <div className={styles.linksList}>
-                            {categoryGroup.entries.map(([key, entry]) => {
-                                const voteStats = getVoteStats(key);
-                                const netVotes = voteStats.up - voteStats.down;
-
-                                return (
-                                    <article key={key} className={styles.linkItem}>
-                                        <div className={styles.linkContent}>
-                                            {entry.url ? (
-                                                <a
-                                                    href={entry.url}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className={styles.linkAnchor}
-                                                    title={entry.description}
-                                                >
-                                                    <span className={styles.linkTitle}>{entry.title}</span>
-                                                    <ExternalLink size={16} className={styles.linkIcon} />
-                                                </a>
-                                            ) : (
-                                                <div className={styles.linkTitle}>
-                                                    {entry.title}
-                                                </div>
-                                            )}
-
-                                            {entry.platform && (
-                                                <span className={styles.platformTag}>
-                                                    <Globe size={12} />
-                                                    {entry.platform}
-                                                </span>
-                                            )}
-                                        </div>
-
-                                        <div className={styles.voteControls}>
-                                            <button
-                                                className={`${styles.voteButton} ${styles.upvote} ${voteStats.userVote === 'up' ? styles.active : ''}`}
-                                                onClick={() => handleVote(key, 'up')}
-                                                title="Upvote this resource"
-                                            >
-                                                <ThumbsUp size={14} />
-                                                <span>{voteStats.up}</span>
-                                            </button>
-
-                                            <button
-                                                className={`${styles.voteButton} ${styles.downvote} ${voteStats.userVote === 'down' ? styles.active : ''}`}
-                                                onClick={() => handleVote(key, 'down')}
-                                                title="Downvote this resource"
-                                            >
-                                                <ThumbsDown size={14} />
-                                                <span>{voteStats.down}</span>
-                                            </button>
-
-                                            <div className={`${styles.netScore} ${netVotes > 0 ? styles.positive : netVotes < 0 ? styles.negative : ''}`}>
-                                                <TrendingUp size={12} />
-                                                <span>{netVotes > 0 ? '+' : ''}{netVotes}</span>
-                                            </div>
-                                        </div>
-                                    </article>
-                                );
-                            })}
-                        </div>
-                    </div>
+            {/* Category Filters */}
+            <div className={styles.filters}>
+                {categories.map(category => (
+                    <button
+                        key={category}
+                        onClick={() => handleCategoryChange(category)}
+                        className={`${styles.filterButton} ${selectedCategory === category ? styles.active : ''}`}
+                    >
+                        {category === 'all' ? 'All Categories' : category.charAt(0).toUpperCase() + category.slice(1)}
+                    </button>
                 ))}
             </div>
-        ) : (
-            <div className={styles.noResults}>
-                <h3 className={styles.noResultsTitle}>No Results Found</h3>
-                <p>
-                    {searchTerm
-                        ? `No entries match "${searchTerm}" in the selected category.`
-                        : 'No entries found in the selected category.'
-                    }
-                </p>
-                <p>Try adjusting your search terms or selecting a different category.</p>
+
+            {/* View Mode Selector */}
+            <div className={styles.viewControls}>
+                <button
+                    onClick={() => setViewMode('grid')}
+                    className={`${styles.viewButton} ${viewMode === 'grid' ? styles.active : ''}`}
+                >
+                    <Grid size={16} />
+                    Grid
+                </button>
+                <button
+                    onClick={() => setViewMode('list')}
+                    className={`${styles.viewButton} ${viewMode === 'list' ? styles.active : ''}`}
+                >
+                    <List size={16} />
+                    List
+                </button>
             </div>
-        )}
-    </div>
-);
+
+            {/* Results Count */}
+            <div className={styles.resultsCount}>
+                Showing {filteredEntries.length} of {knowledgeEntries.length} entries
+                {selectedCategory !== 'all' && ` in "${selectedCategory}"`}
+                {searchQuery && ` matching "${searchQuery}"`}
+            </div>
+
+            {/* Knowledge Entries Grid/List */}
+            {paginatedEntries.length > 0 ? (
+                <div className={`${styles.knowledgeGrid} ${styles[viewMode]}`}>
+                    {paginatedEntries.map(([key, entry]) => (
+                        <article key={key} className={styles.knowledgeCard}>
+                            <div className={styles.cardHeader}>
+                                <h3 className={styles.cardTitle}>
+                                    {entry.url ? (
+                                        <a
+                                            href={entry.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className={styles.cardLink}
+                                        >
+                                            {entry.title || 'Untitled'}
+                                            <ExternalLink size={14} />
+                                        </a>
+                                    ) : (
+                                        entry.title || 'Untitled'
+                                    )}
+                                </h3>
+                                <span className={`${styles.categoryBadge} ${styles[getCategoryClassName(entry.category)]}`}>
+                                    {entry.category || 'general'}
+                                </span>
+                            </div>
+
+                            <p className={styles.cardDescription}>
+                                {entry.description || 'No description available'}
+                            </p>
+
+                            <div className={styles.cardFooter}>
+                                <div className={styles.cardMeta}>
+                                    <Globe size={12} />
+                                    <span>{entry.platform || 'Unknown'}</span>
+                                    <span className={styles.relevanceScore}>
+                                        Score: {entry.relevance || 0}
+                                    </span>
+                                </div>
+
+                                <div className={styles.voteButtons}>
+                                    <button
+                                        onClick={() => handleVote(key, 'up')}
+                                        className={`${styles.voteButton} ${styles.upvote}`}
+                                        title="Helpful"
+                                    >
+                                        <ThumbsUp size={14} />
+                                        <span>{votes[key]?.up || 0}</span>
+                                    </button>
+                                    <button
+                                        onClick={() => handleVote(key, 'down')}
+                                        className={`${styles.voteButton} ${styles.downvote}`}
+                                        title="Not helpful"
+                                    >
+                                        <ThumbsDown size={14} />
+                                        <span>{votes[key]?.down || 0}</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
+                    ))}
+                </div>
+            ) : (
+                <div className={styles.noResults}>
+                    <div className={styles.noResultsIcon}>🔍</div>
+                    <h3>No results found</h3>
+                    <p>
+                        {searchQuery
+                            ? `No entries match "${searchQuery}"`
+                            : selectedCategory !== 'all'
+                                ? `No entries in "${selectedCategory}" category`
+                                : 'No entries available'
+                        }
+                    </p>
+                </div>
+            )}
+
+            {/* Pagination */}
+            {filteredEntries.length > 12 && (
+                <div className={styles.pagination}>
+                    <button
+                        onClick={pagination.prevPage}
+                        disabled={!pagination.hasPrev}
+                        className={styles.paginationButton}
+                    >
+                        Previous
+                    </button>
+                    <span className={styles.paginationInfo}>
+                        Page {pagination.currentPage} of {pagination.totalPages}
+                    </span>
+                    <button
+                        onClick={pagination.nextPage}
+                        disabled={!pagination.hasNext}
+                        className={styles.paginationButton}
+                    >
+                        Next
+                    </button>
+                </div>
+            )}
+        </div>
+    );
 };
 
 export default KnowledgeBase;

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Bell, Settings } from 'lucide-react';
-import { useApp, useWindowSize } from '@hooks';
+import { useApp } from '../contexts/AppContext';
+import { useWindowSize } from '@hooks';
 import ThemeSwitcher from './ThemeSwitcher/ThemeSwitcher';
 import styles from './Header.module.css';
 
@@ -104,8 +105,8 @@ const Header = () => {
                     <div className={styles.systemStatus}>
                         <div
                             className={`${styles.statusDot} ${state.systemStats.systemHealth === 'Operational' ? styles.online :
-                                    state.systemStats.systemHealth === 'Degraded' ? styles.warning :
-                                        styles.offline
+                                state.systemStats.systemHealth === 'Degraded' ? styles.warning :
+                                    styles.offline
                                 }`}
                             title={`System Status: ${state.systemStats.systemHealth}`}
                         />

@@ -1,10 +1,14 @@
 import React from 'react';
 import { Sun, Moon, Zap } from 'lucide-react';
-import { useTheme } from '@hooks';
+import { useApp } from '../../contexts/AppContext';
 import styles from './ThemeSwitcher.module.css';
 
 const ThemeSwitcher = ({ className = "", showLabels = false }) => {
-    const { theme, themes, setTheme } = useTheme();
+    const { state, actions } = useApp();
+    const { theme } = state;
+    const { setTheme } = actions;
+
+    const themes = ['light', 'dark', 'cyberpunk'];
 
     const themeIcons = {
         light: Sun,
