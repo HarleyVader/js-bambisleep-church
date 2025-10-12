@@ -389,6 +389,55 @@ Respond in JSON format only.`;
     }
 
     /**
+     * 🏷️ Classify content for analysis
+     */
+    classifyContent(content) {
+        const text = `${content.title} ${content.description} ${content.content || ''}`.toLowerCase();
+        const classifications = [];
+
+        // Safety classification
+        if (text.includes('safety') || text.includes('consent') || text.includes('warning') || text.includes('caution')) {
+            classifications.push('safety');
+        }
+
+        // Content type classification
+        if (text.includes('beginner') || text.includes('introduction') || text.includes('start')) {
+            classifications.push('beginner-friendly');
+        }
+        
+        if (text.includes('advanced') || text.includes('complex') || text.includes('experienced')) {
+            classifications.push('advanced');
+        }
+
+        // Session classification
+        if (text.includes('session') || text.includes('audio') || text.includes('file') || text.includes('hypnosis')) {
+            classifications.push('session-content');
+        }
+
+        // Trigger classification
+        if (text.includes('trigger') || text.includes('command') || text.includes('phrase') || text.includes('conditioning')) {
+            classifications.push('trigger-related');
+        }
+
+        // Community classification
+        if (text.includes('reddit') || text.includes('discussion') || text.includes('community') || text.includes('forum')) {
+            classifications.push('community');
+        }
+
+        // Technical classification  
+        if (text.includes('technical') || text.includes('guide') || text.includes('how-to') || text.includes('tutorial')) {
+            classifications.push('technical');
+        }
+
+        // Default if no classifications found
+        if (classifications.length === 0) {
+            classifications.push('general');
+        }
+
+        return classifications.join(', ');
+    }
+
+    /**
      * 🔄 Resume crawl from saved state
      */
     async resumeCrawl(frontierState, options = {}) {
