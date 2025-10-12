@@ -1,15 +1,78 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import remarkBreaks from 'remark-breaks';
-import rehypeHighlight from 'rehype-highlight';
-import rehypeRaw from 'rehype-raw';
 import { FileText, Book, Settings, Rocket, Palette, Brain, Home as HomeIcon } from 'lucide-react';
-import 'highlight.js/styles/github-dark.css';
 import { docsService } from '@services/docsService';
 import fallbackDocs from '../data/fallbackDocs';
 import styles from './Documentation.module.css';
+
+// Lazy load heavy markdown dependencies for advanced mode
+const ReactMarkdown = React.lazy(() => import('react-markdown'));
+const remarkGfm = React.lazy(() => import('remark-gfm'));
+const remarkBreaks = React.lazy(() => import('remark-breaks'));
+const rehypeHighlight = React.lazy(() => import('rehype-highlight'));
+const rehypeRaw = React.lazy(() => import('rehype-raw'));
+
+// Import highlight.js styles dynamically to avoid blocking
+const loadHighlightStyles = () => {
+    if (!document.querySelector('link[href*="highlight.js"]')) {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css';
+        document.head.appendChild(link);
+    }
+};
+
+// Simple markdown renderer for fast initial loading
+const SimpleMarkdown = ({ content }) => {
+    const renderSimpleMarkdown = (text) => {
+        return text
+            .split('\n')
+            .map((line, index) => {
+                // Headers
+                if (line.startsWith('# ')) {
+                    return <h1 key={index} className={styles.h1}>{line.slice(2)}</h1>;
+                }
+                if (line.startsWith('## ')) {
+                    return <h2 key={index} className={styles.h2}>{line.slice(3)}</h2>;
+                }
+                if (line.startsWith('### ')) {
+                    return <h3 key={index} className={styles.h3}>{line.slice(4)}</h3>;
+                }
+                if (line.startsWith('#### ')) {
+                    return <h4 key={index} className={styles.h4}>{line.slice(5)}</h4>;
+                }
+                
+                // Code blocks
+                if (line.startsWith('```')) {
+                    return <div key={index} className={styles.codeBlock}>Code Block</div>;
+                }
+                
+                // Bold text
+                line = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                
+                // Links
+                line = line.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="' + styles.link + '">$1</a>');
+                
+                // Inline code
+                line = line.replace(/`([^`]+)`/g, '<code class="' + styles.inlineCode + '">$1</code>');
+                
+                // Empty lines
+                if (!line.trim()) {
+                    return <br key={index} />;
+                }
+                
+                return (
+                    <p 
+                        key={index} 
+                        style={{ margin: '0.5em 0', lineHeight: '1.6' }}
+                        dangerouslySetInnerHTML={{ __html: line }}
+                    />
+                );
+            });
+    };
+
+    return <div>{renderSimpleMarkdown(content)}</div>;
+};
 
 const Documentation = () => {
     const { docName } = useParams();
@@ -18,6 +81,7 @@ const Documentation = () => {
     const [error, setError] = useState(null);
     const [availableDocs, setAvailableDocs] = useState([]);
     const [docCategories, setDocCategories] = useState({});
+    const [useAdvancedMarkdown, setUseAdvancedMarkdown] = useState(false);
 
     // Helper function to categorize and iconize docs based on filename
     const categorizeDocs = (docs) => {
@@ -168,7 +232,9 @@ const Documentation = () => {
             const targetDoc = docName || 'README.md';
             loadMarkdownFile(targetDoc);
         }
-    }, [docName, docCategories]); const loadMarkdownFile = async (filename) => {
+    }, [docName, docCategories]);
+
+    const loadMarkdownFile = async (filename) => {
         setLoading(true);
         setError(null);
 
@@ -217,7 +283,16 @@ This documentation system serves markdown files from the \`docs/\` directory via
         } finally {
             setLoading(false);
         }
-    }; const groupedDocs = Object.entries(docCategories).reduce((acc, [filename, info]) => {
+    };
+
+    const toggleAdvancedMarkdown = () => {
+        setUseAdvancedMarkdown(!useAdvancedMarkdown);
+        if (!useAdvancedMarkdown) {
+            loadHighlightStyles();
+        }
+    };
+
+    const groupedDocs = Object.entries(docCategories).reduce((acc, [filename, info]) => {
         if (!acc[info.category]) {
             acc[info.category] = [];
         }
@@ -240,6 +315,15 @@ This documentation system serves markdown files from the \`docs/\` directory via
     })();
 
     const currentDocInfo = docCategories[currentDoc];
+
+    if (loading) {
+        return (
+            <div className={styles.loading}>
+                <div className={styles.spinner}></div>
+                <p>Loading documentation...</p>
+            </div>
+        );
+    }
 
     return (
         <div className={styles.documentation}>
@@ -270,6 +354,16 @@ This documentation system serves markdown files from the \`docs/\` directory via
                         </ul>
                     </div>
                 ))}
+
+                <div className={styles.settings}>
+                    <button 
+                        onClick={toggleAdvancedMarkdown}
+                        className={styles.toggleButton}
+                        title="Toggle advanced markdown rendering with syntax highlighting"
+                    >
+                        {useAdvancedMarkdown ? '🔥 Advanced' : '⚡ Simple'} Rendering
+                    </button>
+                </div>
             </div>
 
             <div className={styles.content}>
@@ -288,13 +382,6 @@ This documentation system serves markdown files from the \`docs/\` directory via
                     )}
                 </div>
 
-                {loading && (
-                    <div className={styles.loading}>
-                        <div className={styles.spinner}></div>
-                        <p>Loading documentation...</p>
-                    </div>
-                )}
-
                 {error && (
                     <div className={styles.error}>
                         <h3>⚠️ Error Loading Documentation</h3>
@@ -303,49 +390,67 @@ This documentation system serves markdown files from the \`docs/\` directory via
                 )}
 
                 <div className={styles.markdownContent}>
-                    <ReactMarkdown
-                        remarkPlugins={[remarkGfm, remarkBreaks]}
-                        rehypePlugins={[rehypeHighlight, rehypeRaw]}
-                        components={{
-                            // Custom component overrides for better styling
-                            h1: ({ children }) => <h1 className={styles.h1}>{children}</h1>,
-                            h2: ({ children }) => <h2 className={styles.h2}>{children}</h2>,
-                            h3: ({ children }) => <h3 className={styles.h3}>{children}</h3>,
-                            h4: ({ children }) => <h4 className={styles.h4}>{children}</h4>,
-                            code: ({ node, inline, className, children, ...props }) => {
-                                const match = /language-(\w+)/.exec(className || '');
-                                return !inline && match ? (
-                                    <div className={styles.codeBlock}>
-                                        <div className={styles.codeHeader}>
-                                            <span className={styles.codeLang}>{match[1]}</span>
+                    {useAdvancedMarkdown ? (
+                        <Suspense fallback={
+                            <div style={{ padding: '2rem', textAlign: 'center' }}>
+                                <div className={styles.spinner}></div>
+                                <p>Loading advanced markdown renderer...</p>
+                            </div>
+                        }>
+                            <ReactMarkdown
+                                remarkPlugins={[remarkGfm, remarkBreaks]}
+                                rehypePlugins={[rehypeHighlight, rehypeRaw]}
+                                components={{
+                                    // Custom component overrides for better styling
+                                    h1: ({ children }) => <h1 className={styles.h1}>{children}</h1>,
+                                    h2: ({ children }) => <h2 className={styles.h2}>{children}</h2>,
+                                    h3: ({ children }) => <h3 className={styles.h3}>{children}</h3>,
+                                    h4: ({ children }) => <h4 className={styles.h4}>{children}</h4>,
+                                    code: ({ node, inline, className, children, ...props }) => {
+                                        const match = /language-(\w+)/.exec(className || '');
+                                        return !inline && match ? (
+                                            <div className={styles.codeBlock}>
+                                                <div className={styles.codeHeader}>
+                                                    <span className={styles.codeLang}>{match[1]}</span>
+                                                </div>
+                                                <code className={className} {...props}>
+                                                    {children}
+                                                </code>
+                                            </div>
+                                        ) : (
+                                            <code className={styles.inlineCode} {...props}>
+                                                {children}
+                                            </code>
+                                        );
+                                    },
+                                    table: ({ children }) => (
+                                        <div className={styles.tableWrapper}>
+                                            <table className={styles.table}>{children}</table>
                                         </div>
-                                        <code className={className} {...props}>
+                                    ),
+                                    blockquote: ({ children }) => (
+                                        <blockquote className={styles.blockquote}>{children}</blockquote>
+                                    ),
+                                    a: ({ href, children }) => (
+                                        <a href={href} className={styles.link} target="_blank" rel="noopener noreferrer">
                                             {children}
-                                        </code>
-                                    </div>
-                                ) : (
-                                    <code className={styles.inlineCode} {...props}>
-                                        {children}
-                                    </code>
-                                );
-                            },
-                            table: ({ children }) => (
-                                <div className={styles.tableWrapper}>
-                                    <table className={styles.table}>{children}</table>
-                                </div>
-                            ),
-                            blockquote: ({ children }) => (
-                                <blockquote className={styles.blockquote}>{children}</blockquote>
-                            ),
-                            a: ({ href, children }) => (
-                                <a href={href} className={styles.link} target="_blank" rel="noopener noreferrer">
-                                    {children}
-                                </a>
-                            )
-                        }}
-                    >
-                        {markdownContent}
-                    </ReactMarkdown>
+                                        </a>
+                                    )
+                                }}
+                            >
+                                {markdownContent}
+                            </ReactMarkdown>
+                        </Suspense>
+                    ) : (
+                        <SimpleMarkdown content={markdownContent} />
+                    )}
+                </div>
+
+                <div className={styles.footer}>
+                    <p>
+                        💡 <strong>Tip:</strong> Click "{useAdvancedMarkdown ? 'Simple' : 'Advanced'} Rendering" 
+                        to {useAdvancedMarkdown ? 'use lightweight' : 'enable syntax highlighting and'} markdown processing.
+                    </p>
                 </div>
             </div>
         </div>

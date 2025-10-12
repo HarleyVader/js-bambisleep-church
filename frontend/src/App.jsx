@@ -13,7 +13,7 @@ const KnowledgeBase = lazy(() => import('@pages/KnowledgeBase'));
 const AgentKnowledgeBase = lazy(() => import('@pages/AgentKnowledgeBase'));
 const Mission = lazy(() => import('@pages/Mission'));
 const Roadmap = lazy(() => import('@pages/Roadmap'));
-const Documentation = lazy(() => import('@pages/DocumentationFixed'));
+const Documentation = lazy(() => import('@pages/Documentation'));
 
 const App = () => {
     return (
