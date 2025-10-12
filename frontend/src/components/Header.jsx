@@ -68,6 +68,13 @@ const Header = () => {
                     >
                         Roadmap
                     </Link>
+                    <Link
+                        to="/docs"
+                        className={`${styles.navLink} ${location.pathname.startsWith('/docs') ? styles.active : ''}`}
+                        onClick={closeMobileMenu}
+                    >
+                        Docs
+                    </Link>
                 </nav>
             </div>
         </header>

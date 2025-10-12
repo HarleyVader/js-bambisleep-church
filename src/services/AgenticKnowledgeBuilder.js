@@ -1,7 +1,7 @@
-// Compact Agentic Knowledge Builder
+// Compact Agentic Knowledge Builder with MOTHER BRAIN Integration
 import { lmStudioService } from './LMStudioService.js';
 import { mongoService } from './MongoDBService.js';
-import { webCrawlerService } from './WebCrawlerService.js';
+import { MotherBrainIntegration } from './MotherBrainIntegration.js';
 import { log } from '../utils/logger.js';
 
 class AgenticKnowledgeBuilder {
@@ -10,6 +10,10 @@ class AgenticKnowledgeBuilder {
         this.baseUrl = 'https://bambisleep.info';
         this.knowledgeCollection = 'bambisleep_knowledge';
         this.crawlStats = { totalPages: 0, processedPages: 0, errors: 0, startTime: null };
+
+        // 🔥 MOTHER BRAIN Integration
+        this.motherBrain = null;
+        this.useMotherBrain = true; // Enable MOTHER BRAIN by default
     }
 
     async initialize() {
@@ -20,14 +24,35 @@ class AgenticKnowledgeBuilder {
                 throw new Error('MongoDB connection required');
             }
 
-            webCrawlerService.configure({
-                userAgent: 'BambiSleep-Church-Agent/1.0',
-                timeout: 15000,
-                crawlDelay: 2000,
-                maxPages: 100
-            });
-
             await this.setupDatabase();
+
+            // 🔥 Initialize MOTHER BRAIN if enabled
+            if (this.useMotherBrain) {
+                try {
+                    log.info('🔥 Initializing MOTHER BRAIN Spider System...');
+                    this.motherBrain = new MotherBrainIntegration({
+                        knowledgeCollection: this.knowledgeCollection,
+                        maxConcurrentRequests: 2, // Conservative for integration
+                        maxConcurrentPerHost: 1,
+                        defaultCrawlDelay: 3000, // Extra polite
+                        useAIAnalysis: true
+                    });
+
+                    const motherBrainInit = await this.motherBrain.initialize();
+                    if (motherBrainInit) {
+                        log.success('🔥✅ MOTHER BRAIN Spider System initialized');
+                    } else {
+                        log.warn('⚠️ MOTHER BRAIN initialization failed - falling back to regular crawler');
+                        this.motherBrain = null;
+                        this.useMotherBrain = false;
+                    }
+                } catch (motherBrainError) {
+                    log.warn('⚠️ MOTHER BRAIN initialization error:', motherBrainError.message);
+                    this.motherBrain = null;
+                    this.useMotherBrain = false;
+                }
+            }
+
             log.success('✅ Agentic Knowledge Builder initialized');
             return true;
         } catch (error) {
@@ -38,10 +63,30 @@ class AgenticKnowledgeBuilder {
 
     async setupDatabase() {
         try {
-            await mongoService.createIndex(this.knowledgeCollection, {
-                'analysis.title': 'text',
-                'analysis.summary': 'text'
-            }, { name: 'content_search' });
+            // Handle text index properly - use existing or recreate
+            try {
+                await mongoService.createIndex(this.knowledgeCollection, {
+                    'analysis.title': 'text',
+                    'analysis.summary': 'text'
+                }, { name: 'content_search' });
+            } catch (indexError) {
+                if (indexError.message.includes('equivalent index already exists')) {
+                    log.info('📋 Using existing text search index');
+                    // Try to drop the old index and create the new one
+                    try {
+                        await mongoService.dropIndex(this.knowledgeCollection, 'content_text_search');
+                        await mongoService.createIndex(this.knowledgeCollection, {
+                            'analysis.title': 'text',
+                            'analysis.summary': 'text'
+                        }, { name: 'content_search' });
+                        log.success('✅ Recreated text search index with correct fields');
+                    } catch (recreateError) {
+                        log.warn('⚠️ Using existing text index as-is:', recreateError.message);
+                    }
+                } else {
+                    throw indexError;
+                }
+            }
 
             await mongoService.createIndex(this.knowledgeCollection, {
                 'url': 1
@@ -64,13 +109,19 @@ class AgenticKnowledgeBuilder {
         try {
             this.isRunning = true;
             this.crawlStats.startTime = new Date();
-            log.info('🚀 Starting autonomous knowledge building...');
+
+            if (this.motherBrain) {
+                log.info('🔥🚀 Starting MOTHER BRAIN autonomous knowledge building...');
+            } else {
+                log.error('❌ MOTHER BRAIN not available - cannot perform autonomous building');
+                throw new Error('MOTHER BRAIN required for autonomous building');
+            }
 
             const discoveredLinks = await this.discoverContent();
             const prioritizedLinks = await this.prioritizeLinks(discoveredLinks);
             await this.intelligentCrawl(prioritizedLinks);
 
-            log.success('🎉 Autonomous building completed!');
+            log.success('🔥🎉 MOTHER BRAIN autonomous building completed!');
         } catch (error) {
             log.error(`❌ Building failed: ${error.message}`);
             throw error;
@@ -102,16 +153,22 @@ class AgenticKnowledgeBuilder {
 
     async discoverContent() {
         try {
-            log.info('🔍 Discovering content...');
-            const mainPageResult = await webCrawlerService.crawlSingle(this.baseUrl, { storeResults: false });
+            log.info('🔍 Discovering content with MOTHER BRAIN...');
 
-            if (!mainPageResult.success) {
-                throw new Error(`Failed to crawl main page: ${mainPageResult.error}`);
+            if (!this.motherBrain) {
+                throw new Error('MOTHER BRAIN not initialized - cannot discover content');
             }
 
-            const internalLinks = mainPageResult.data.links
-                .filter(link => link.internal && link.url.includes('bambisleep.info'))
-                .map(link => link.url);
+            // Use MOTHER BRAIN to crawl the main page
+            const crawlResult = await this.motherBrain.crawlUrl(this.baseUrl);
+
+            if (!crawlResult.success) {
+                throw new Error(`MOTHER BRAIN failed to crawl main page: ${crawlResult.error}`);
+            }
+
+            const internalLinks = crawlResult.extractedData.links
+                .filter(link => link.internal && link.href.includes('bambisleep.info'))
+                .map(link => link.href);
 
             const importantPages = [
                 'https://bambisleep.info/Bambi_Sleep_FAQ',
@@ -191,27 +248,43 @@ class AgenticKnowledgeBuilder {
 
     async intelligentCrawl(prioritizedLinks) {
         try {
-            log.info('🕷️ Starting intelligent crawl...');
+            log.info('��🕷️ Starting MOTHER BRAIN intelligent crawl...');
 
-            for (const linkInfo of prioritizedLinks.slice(0, 50)) { // Limit to top 50
+            if (!this.motherBrain) {
+                throw new Error('MOTHER BRAIN not initialized - cannot perform intelligent crawl');
+            }
+
+            // Use MOTHER BRAIN's batch crawling capability
+            const urls = prioritizedLinks.slice(0, 50).map(linkInfo => linkInfo.url); // Limit to top 50
+
+            log.info(`🔥 MOTHER BRAIN processing ${urls.length} prioritized URLs...`);
+            const crawlResults = await this.motherBrain.crawlMultipleUrls(urls);
+
+            // Process results and store in knowledge base
+            for (let i = 0; i < crawlResults.length; i++) {
+                const crawlResult = crawlResults[i];
+                const linkInfo = prioritizedLinks[i];
+
                 try {
-                    const crawlResult = await webCrawlerService.crawlSingle(linkInfo.url, { storeResults: false });
-
                     if (!crawlResult.success) {
                         this.crawlStats.errors++;
+                        log.warn(`⚠️ MOTHER BRAIN failed to crawl: ${linkInfo.url}`);
                         continue;
                     }
 
-                    const analysis = await this.analyzeContent(crawlResult.data, linkInfo);
+                    // MOTHER BRAIN already provides AI analysis if enabled
+                    const analysis = crawlResult.aiAnalysis || await this.analyzeContent(crawlResult.extractedData, linkInfo);
+
                     const knowledgeEntry = {
                         url: linkInfo.url,
                         originalPriority: linkInfo.priority,
                         priorityReason: linkInfo.reason,
-                        crawlData: crawlResult.data,
+                        crawlData: crawlResult.extractedData,
                         analysis: analysis,
                         category: this.categorizeContent(analysis),
                         processedAt: new Date(),
-                        version: 1
+                        version: 1,
+                        motherBrainProcessed: true // Mark as processed by MOTHER BRAIN
                     };
 
                     // Use upsert to handle duplicates gracefully
@@ -223,7 +296,7 @@ class AgenticKnowledgeBuilder {
                             { upsert: true }
                         );
                         this.crawlStats.processedPages++;
-                        log.success(`✅ Processed: ${analysis.title || 'Unknown'} (${linkInfo.url})`);
+                        log.success(`🔥✅ MOTHER BRAIN processed: ${analysis.title || 'Unknown'} (${linkInfo.url})`);
                     } catch (insertError) {
                         // If upsert fails, try regular insert as fallback
                         if (insertError.message.includes('E11000')) {
@@ -239,22 +312,20 @@ class AgenticKnowledgeBuilder {
                                     }
                                 }
                             );
-                            log.success(`✅ Updated existing: ${analysis.title || 'Unknown'}`);
+                            log.success(`🔥✅ MOTHER BRAIN updated existing: ${analysis.title || 'Unknown'}`);
                         } else {
                             throw insertError;
                         }
                     }
-
-                    await new Promise(resolve => setTimeout(resolve, 2000)); // Rate limiting
                 } catch (error) {
                     log.warn(`⚠️ Skipping ${linkInfo.url}: ${error.message}`);
                     this.crawlStats.errors++;
-                    // Continue crawling instead of stopping
+                    // Continue processing instead of stopping
                 }
             }
 
             log.success(`🎉 Crawl completed: ${this.crawlStats.processedPages} pages processed`);
-            
+
             return {
                 success: true,
                 processed: this.crawlStats.processedPages,
@@ -411,7 +482,7 @@ class AgenticKnowledgeBuilder {
             services: {
                 mongodb: await mongoService.isHealthy(),
                 lmstudio: await lmStudioService.isHealthy(),
-                webCrawler: true
+                motherBrain: this.motherBrain ? (this.motherBrain.getStatus().status === 'OPERATIONAL') : false
             }
         };
     }
@@ -420,6 +491,123 @@ class AgenticKnowledgeBuilder {
         if (this.isRunning) {
             this.isRunning = false;
             log.info('🛑 Stopping autonomous building...');
+        }
+    }
+
+    // 🔥 Direct MOTHER BRAIN access methods
+    async quickBambiCrawl() {
+        try {
+            if (!this.motherBrain) {
+                throw new Error('MOTHER BRAIN not initialized');
+            }
+
+            log.info('🔥⚡ Starting MOTHER BRAIN Quick BambiSleep Crawl...');
+            return await this.motherBrain.quickBambiCrawl();
+        } catch (error) {
+            log.error(`❌ Quick crawl failed: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async crawlUrlWithMotherBrain(url, options = {}) {
+        try {
+            if (!this.motherBrain) {
+                throw new Error('MOTHER BRAIN not initialized');
+            }
+
+            log.info(`🔥🕷️ MOTHER BRAIN crawling: ${url}`);
+            const result = await this.motherBrain.executeIntelligentCrawl([url], {
+                maxPages: 1,
+                maxDepth: 1,
+                storeResults: false,
+                ...options
+            });
+
+            // Adapt the result format for compatibility
+            if (result.success && result.processedPages > 0) {
+                return {
+                    success: true,
+                    extractedData: result.results[0] || {},
+                    url: url
+                };
+            } else {
+                return {
+                    success: false,
+                    error: result.error || 'No pages processed',
+                    url: url
+                };
+            }
+        } catch (error) {
+            log.error(`❌ MOTHER BRAIN crawl failed for ${url}: ${error.message}`);
+            return {
+                success: false,
+                error: error.message,
+                url: url
+            };
+        }
+    }
+
+    async crawlMultipleUrlsWithMotherBrain(urls, options = {}) {
+        try {
+            if (!this.motherBrain) {
+                throw new Error('MOTHER BRAIN not initialized');
+            }
+
+            log.info(`🔥🕷️ MOTHER BRAIN batch crawling ${urls.length} URLs`);
+            const result = await this.motherBrain.executeIntelligentCrawl(urls, {
+                maxPages: options.maxPages || 5,
+                maxDepth: options.maxDepth || 1,
+                storeResults: options.storeResults || false,
+                ...options
+            });
+
+            // Adapt the result format for compatibility
+            if (result.success) {
+                return result.results.map((pageResult, index) => ({
+                    success: true,
+                    extractedData: pageResult,
+                    url: urls[index]
+                }));
+            } else {
+                return urls.map(url => ({
+                    success: false,
+                    error: result.error || 'Crawl failed',
+                    url: url
+                }));
+            }
+        } catch (error) {
+            log.error(`❌ MOTHER BRAIN batch crawl failed: ${error.message}`);
+            return urls.map(url => ({
+                success: false,
+                error: error.message,
+                url: url
+            }));
+        }
+    } async getMotherBrainStatus() {
+        try {
+            if (!this.motherBrain) {
+                return { available: false, error: 'MOTHER BRAIN not initialized' };
+            }
+
+            const status = await this.motherBrain.getStatus();
+            return { available: true, ...status };
+        } catch (error) {
+            return { available: false, error: error.message };
+        }
+    }
+
+    async shutdownMotherBrain() {
+        try {
+            if (this.motherBrain) {
+                log.info('🔥🛑 Shutting down MOTHER BRAIN...');
+                await this.motherBrain.shutdown();
+                this.motherBrain = null;
+                this.useMotherBrain = false;
+                log.success('🔥✅ MOTHER BRAIN shutdown complete');
+            }
+        } catch (error) {
+            log.error(`❌ MOTHER BRAIN shutdown error: ${error.message}`);
+            throw error;
         }
     }
 }

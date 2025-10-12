@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 import path from 'path';
 import fs from 'fs';
 import geoip from 'geoip-lite';
-import { webAgent } from './services/SimpleWebAgent.js';
+import { motherBrainChatAgent } from './services/MinimalChatAgent.js';
 import { log } from './utils/logger.js';
 import { config } from './utils/config.js';
 import BambiMcpServer from './mcp/server.js';
@@ -98,6 +98,8 @@ app.get('/mission', serveReactApp);
 app.get('/roadmap', serveReactApp);
 app.get('/agents', serveReactApp);
 app.get('/mcp-tools', serveReactApp);
+app.get('/docs', serveReactApp);
+app.get('/docs/:docName', serveReactApp);
 
 
 
@@ -223,6 +225,63 @@ app.get('/api/stats', async (req, res) => {
     }
 });
 
+// Documentation API endpoint - serves markdown files
+app.get('/api/docs/:filename', async (req, res) => {
+    try {
+        const { filename } = req.params;
+
+        // Security: only allow markdown files and prevent directory traversal
+        if (!filename.endsWith('.md') || filename.includes('..') || filename.includes('/')) {
+            return res.status(400).json({ error: 'Invalid filename' });
+        }
+
+        const docsPath = path.join(__dirname, '..', 'docs', filename);
+
+        // Check if file exists
+        if (!fs.existsSync(docsPath)) {
+            return res.status(404).json({ error: 'Documentation file not found' });
+        }
+
+        // Read and serve the markdown content
+        const markdownContent = fs.readFileSync(docsPath, 'utf8');
+
+        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+        res.send(markdownContent);
+
+        log.info(`📚 Served documentation: ${filename}`);
+
+    } catch (error) {
+        log.error(`❌ Error serving documentation: ${error.message}`);
+        res.status(500).json({ error: 'Failed to load documentation' });
+    }
+});
+
+// Get list of available documentation files
+app.get('/api/docs', async (req, res) => {
+    try {
+        const docsPath = path.join(__dirname, '..', 'docs');
+        const files = fs.readdirSync(docsPath)
+            .filter(file => file.endsWith('.md'))
+            .map(file => ({
+                filename: file,
+                name: file.replace('.md', ''),
+                lastModified: fs.statSync(path.join(docsPath, file)).mtime
+            }));
+
+        res.json({
+            success: true,
+            docs: files,
+            total: files.length
+        });
+
+        log.info(`📚 Listed ${files.length} documentation files`);
+
+    } catch (error) {
+        log.error(`❌ Error listing documentation: ${error.message}`);
+        res.status(500).json({ error: 'Failed to list documentation' });
+    }
+});
+
 // Audio playback endpoint - client-side HTML audio
 app.post('/api/audio/play', (req, res) => {
     try {
@@ -302,7 +361,7 @@ if (config.mcp.enabled && mcpServer) {
 io.on('connection', (socket) => {
     log.info('Client connected to chat');
 
-    // Handle SimpleWebAgent messages (original)
+    // Handle MOTHER BRAIN Chat Agent messages
     socket.on('agent:message', async (data) => {
         try {
             const { message } = data;
@@ -312,7 +371,7 @@ io.on('connection', (socket) => {
             socket.emit('agent:typing', { isTyping: true });
 
             // Process message with agent
-            const result = await webAgent.chat(message);
+            const result = await motherBrainChatAgent.chat(message);
 
             // Send response
             socket.emit('agent:typing', { isTyping: false });
@@ -354,12 +413,12 @@ async function initializeAgent() {
         }
     }
 
-    // Initialize web agent (no longer needs static knowledge data)
-    const success = await webAgent.initialize();
+    // Initialize minimal chat agent
+    const success = await motherBrainChatAgent.initialize();
     if (success) {
-        log.success('✅ SimpleWebAgent ready for web chat');
+        log.success('✅ MOTHER BRAIN Chat Agent ready for web chat');
     } else {
-        log.error('❌ SimpleWebAgent initialization failed');
+        log.error('❌ MOTHER BRAIN Chat Agent initialization failed');
     }
 }
 
@@ -372,7 +431,7 @@ httpServer.listen(PORT, HOST, async () => {
 // Cleanup on exit
 process.on('SIGINT', async () => {
     log.warn('Shutting down...');
-    await webAgent.cleanup();
+    await motherBrainChatAgent.cleanup();
     if (mcpServer) {
         await mcpServer.cleanup();
     }

@@ -7,6 +7,7 @@ import KnowledgeBase from '@pages/KnowledgeBase';
 import AgentKnowledgeBase from '@pages/AgentKnowledgeBase';
 import Mission from '@pages/Mission';
 import Roadmap from '@pages/Roadmap';
+import Documentation from '@pages/Documentation';
 import { ErrorBoundary } from '@components';
 
 const App = () => {
@@ -25,6 +26,8 @@ const App = () => {
                                 <Route path="/agents" element={<AgentKnowledgeBase />} />
                                 <Route path="/mission" element={<Mission />} />
                                 <Route path="/roadmap" element={<Roadmap />} />
+                                <Route path="/docs" element={<Documentation />} />
+                                <Route path="/docs/:docName" element={<Documentation />} />
                             </Routes>
                         </div>
                     </main>

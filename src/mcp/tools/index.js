@@ -6,6 +6,7 @@ import { mongodbTools } from './mongodb/mongodbTools.js';
 import { lmstudioTools } from './lmstudio/lmstudioTools.js';
 import { crawlerTools } from './crawler/crawlerTools.js';
 import { agenticTools } from './agentic/agenticTools.js';
+import { motherBrainTools } from './motherBrain/motherBrainTools.js';
 
 // Combine all tool collections
 export const allTools = [
@@ -13,7 +14,8 @@ export const allTools = [
     ...mongodbTools,                   // 15 MongoDB management tools
     ...lmstudioTools,                  // 10 LMStudio AI tools
     ...crawlerTools,                   // 6 Web crawler tools
-    ...agenticTools                    // 7 Agentic orchestration tools
+    ...agenticTools,                   // 7 Agentic orchestration tools
+    ...Object.values(motherBrainTools) // 5 MOTHER BRAIN spider tools
 ];
 
 // Tool categories for organization
@@ -22,7 +24,8 @@ export const toolCategories = {
     mongodb: mongodbTools,
     lmstudio: lmstudioTools,
     crawler: crawlerTools,
-    agentic: agenticTools
+    agentic: agenticTools,
+    motherBrain: Object.values(motherBrainTools)
 };
 
 // Total count validation
@@ -32,7 +35,8 @@ export const TOOL_COUNTS = {
     lmstudio: 10,
     crawler: 6,
     agentic: 7,
-    total: 43  // 5 + 15 + 10 + 6 + 7 = 43 total tools
+    motherBrain: 5,
+    total: 48  // 5 + 15 + 10 + 6 + 7 + 5 = 48 total tools
 };
 
 // Tool descriptions

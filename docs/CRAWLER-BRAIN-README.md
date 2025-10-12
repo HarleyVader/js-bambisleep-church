@@ -1,8 +1,8 @@
-# 🧠 BambiSleep Church - Intelligent Crawler Brain System
+# 🧠🔥 BambiSleep Church - Intelligent Crawler Brain System with MOTHER BRAIN
 
 ## Overview
 
-The **Intelligent Crawler Brain** is an AI-powered web crawling orchestrator that combines the sophisticated reasoning capabilities of LMStudio with advanced web crawling functionality. It acts as a "brain" that makes intelligent decisions about what to crawl, how to crawl it, and what insights to extract.
+The **Intelligent Crawler Brain** is an AI-powered web crawling orchestrator that combines the sophisticated reasoning capabilities of LMStudio with the powerful **MOTHER BRAIN Spider System**. It acts as a "brain" that makes intelligent decisions about what to crawl, how to crawl it, and what insights to extract, while leveraging MOTHER BRAIN's ethical, respectful, and technically advanced crawling capabilities.
 
 ## 🌟 Key Features
 
@@ -13,12 +13,13 @@ The **Intelligent Crawler Brain** is an AI-powered web crawling orchestrator tha
 - **Adaptive Crawling**: Modifies crawl behavior based on discovered content
 - **Content Analysis**: Real-time AI analysis of crawled content for insights
 
-### 🕷️ Advanced Spider Deployment
+### ��🕷️ MOTHER BRAIN Spider Deployment
 
-- **Autonomous Spiders**: Deploy self-managing crawlers with AI guidance
-- **Priority-Based Crawling**: Focus on high-value content first
-- **Respectful Crawling**: Built-in delays and robots.txt compliance
-- **Deep Crawl Intelligence**: AI decides when to dig deeper into sites
+- **Autonomous Spiders**: Deploy MOTHER BRAIN spiders with AI guidance and ethical constraints
+- **Priority-Based Crawling**: Focus on high-value content with intelligent URL prioritization
+- **Maximum Respectfulness**: 100% robots.txt compliance, crawl delays, and politeness controls
+- **Deep Crawl Intelligence**: AI decides when to dig deeper while MOTHER BRAIN ensures ethical behavior
+- **Technical Excellence**: Minigun-level capabilities with exponential backoff and error handling
 
 ### 📊 Intelligent Insights
 
@@ -32,9 +33,18 @@ The **Intelligent Crawler Brain** is an AI-powered web crawling orchestrator tha
 ### Core Components
 
 1. **CrawlerBrain Class**: Central orchestrator managing AI decisions and crawler operations
-2. **LMStudio Integration**: Uses advanced language models for intelligent analysis
-3. **WebCrawlerService**: Handles actual web crawling operations
-4. **MongoDB Storage**: Persistent storage for crawl results and insights
+2. **MOTHER BRAIN Integration**: 🔥 Ethical spider system with minigun-level capabilities and maximum politeness
+3. **LMStudio Integration**: Uses advanced language models for intelligent analysis
+4. **AgenticKnowledgeBuilder**: Handles MOTHER BRAIN integration and knowledge processing
+5. **MongoDB Storage**: Persistent storage for crawl results and insights
+
+### 🔥 MOTHER BRAIN Spider System
+
+- **Ethical Crawling**: 100% robots.txt compliance and respectful behavior
+- **Advanced Capabilities**: Sitemap processing, rate limiting, and exponential backoff
+- **Content Extraction**: Comprehensive HTML parsing and metadata extraction
+- **Politeness Controls**: Per-host delays and concurrency management
+- **Observability**: Real-time statistics and health monitoring
 
 ### AI Models Used
 
@@ -377,6 +387,19 @@ await startAutonomousBuilding.handler({
 curl http://localhost:1234/v1/models
 ```
 
+**MOTHER BRAIN Not Available**
+
+The system will fallback to legacy crawling if MOTHER BRAIN is not initialized. To enable MOTHER BRAIN:
+
+```javascript
+// Ensure AgenticKnowledgeBuilder is initialized
+const initialized = await agenticKnowledgeBuilder.initialize();
+
+// Check MOTHER BRAIN status
+const status = await agenticKnowledgeBuilder.getMotherBrainStatus();
+console.log('MOTHER BRAIN Status:', status);
+```
+
 **Crawling Failures**
 
 - Check internet connectivity
@@ -411,7 +434,7 @@ console.log('Debug Status:', status);
 ## 📚 Related Documentation
 
 - [LMStudio Tools](./lmstudioTools.js) - Core AI integration
-- [Web Crawler Service](../services/WebCrawlerService.js) - Crawling engine
+- [MOTHER BRAIN Integration](../services/MotherBrainIntegration.js) - Primary crawling engine
 - [Agentic Knowledge Builder](../services/AgenticKnowledgeBuilder.js) - Knowledge processing
 - [MCP Server Documentation](./docs/MCP-COMPLETE-GUIDE.md) - Model Context Protocol
 

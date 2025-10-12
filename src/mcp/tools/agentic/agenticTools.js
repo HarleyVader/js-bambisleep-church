@@ -1,8 +1,10 @@
 // Agentic Knowledge Builder MCP Tools for BambiSleep Church
+// ✅ Updated to use MOTHER BRAIN integration through AgenticKnowledgeBuilder
 import { agenticKnowledgeBuilder } from '../../../services/AgenticKnowledgeBuilder.js';
 import { mongoService } from '../../../services/MongoDBService.js';
-import { webCrawlerService } from '../../../services/WebCrawlerService.js';
+// REMOVED: webCrawlerService - replaced by MOTHER BRAIN Spider System
 import { lmStudioService } from '../../../services/LMStudioService.js';
+import { MotherBrainIntegration } from '../../../services/MotherBrainIntegration.js';
 import { log } from '../../../utils/logger.js';
 
 // Tool: Initialize Agentic System
@@ -647,11 +649,11 @@ class CrawlerBrain {
     }
 
     /**
-     * Initialize the crawler brain system
+     * Initialize the crawler brain system with MOTHER BRAIN
      */
     async initialize() {
         try {
-            log.info('🧠 Initializing Crawler Brain System...');
+            log.info('🧠🔥 Initializing Crawler Brain System with MOTHER BRAIN...');
 
             // Check LMStudio availability
             const isHealthy = await lmStudioService.isHealthy();
@@ -659,16 +661,20 @@ class CrawlerBrain {
                 throw new Error('LMStudio is required for intelligent crawling decisions');
             }
 
-            // Configure web crawler for intelligent operation
-            webCrawlerService.configure({
-                userAgent: 'BambiSleep-Church-CrawlerBrain/1.0 (+https://github.com/HarleyVader/js-bambisleep-church)',
-                timeout: 20000,
-                maxRetries: 5,
-                crawlDelay: 1500,
-                respectRobotsTxt: true
-            });
+            // Initialize MOTHER BRAIN through AgenticKnowledgeBuilder
+            const initialized = await agenticKnowledgeBuilder.initialize();
+            if (!initialized) {
+                throw new Error('Failed to initialize AgenticKnowledgeBuilder with MOTHER BRAIN');
+            }
 
-            log.success('✅ Crawler Brain System initialized');
+            // Check MOTHER BRAIN status
+            const motherBrainStatus = await agenticKnowledgeBuilder.getMotherBrainStatus();
+            if (!motherBrainStatus.available) {
+                log.warn('⚠️ MOTHER BRAIN not available, some features may be limited');
+                // Don't fail completely, allow fallback behavior
+            }
+
+            log.success('🔥✅ Crawler Brain System initialized with MOTHER BRAIN');
             return true;
         } catch (error) {
             log.error(`❌ Crawler Brain initialization failed: ${error.message}`);
@@ -890,14 +896,33 @@ You must respond with ONLY a valid JSON array. Each object should have these exa
 
         for (const url of config.urls) {
             try {
-                log.info(`🔍 AI-guided crawling: ${url}`);
+                log.info(`��🔍 MOTHER BRAIN AI-guided crawling: ${url}`);
 
-                // Crawl the URL
-                const crawlResult = await webCrawlerService.crawlSingle(url, {
-                    storeResults: config.storeResults,
-                    collection: config.collection,
-                    maxDepth: 1 // Single page for intelligent analysis
-                });
+                // Use MOTHER BRAIN through AgenticKnowledgeBuilder
+                const motherBrainStatus = await agenticKnowledgeBuilder.getMotherBrainStatus();
+                let crawlResult;
+
+                if (motherBrainStatus.available) {
+                    // Use MOTHER BRAIN for crawling
+                    log.info('🔥 Using MOTHER BRAIN for intelligent crawling...');
+                    crawlResult = await agenticKnowledgeBuilder.crawlUrlWithMotherBrain(url, {
+                        storeResults: config.storeResults,
+                        collection: config.collection
+                    });
+
+                    // Adapt MOTHER BRAIN result format to expected format
+                    if (crawlResult.success) {
+                        crawlResult.data = crawlResult.extractedData;
+                    }
+                } else {
+                    // MOTHER BRAIN not available - return error
+                    log.error('❌ MOTHER BRAIN Spider System required but not available');
+                    crawlResult = {
+                        success: false,
+                        error: 'MOTHER BRAIN Spider System not available. Please initialize AgenticKnowledgeBuilder first.',
+                        url: url
+                    };
+                }
 
                 if (crawlResult.success && crawlResult.data) {
                     // AI content analysis
@@ -1034,18 +1059,44 @@ You must respond with ONLY valid JSON. Include these exact fields:
     }
 
     /**
-     * Deep crawl with AI guidance
+     * Deep crawl with AI guidance using MOTHER BRAIN
      */
     async deepCrawlWithAI(baseUrl, config, results) {
         try {
-            log.info(`🕳️ Starting AI-guided deep crawl from: ${baseUrl}`);
+            log.info(`��🕳️ Starting MOTHER BRAIN AI-guided deep crawl from: ${baseUrl}`);
 
-            const deepCrawlResult = await webCrawlerService.crawlSingle(baseUrl, {
-                maxDepth: config.maxDepth,
-                maxPages: Math.min(config.maxPages || 25, 10), // Limit deep crawl pages
-                storeResults: config.storeResults,
-                collection: config.collection
-            });
+            const motherBrainStatus = await agenticKnowledgeBuilder.getMotherBrainStatus();
+            let deepCrawlResult;
+
+            if (motherBrainStatus.available) {
+                // Use MOTHER BRAIN for deep crawling
+                log.info('🔥 Using MOTHER BRAIN for intelligent deep crawl...');
+
+                const crawlResults = await agenticKnowledgeBuilder.crawlMultipleUrlsWithMotherBrain([baseUrl], {
+                    maxDepth: config.maxDepth,
+                    maxPages: Math.min(config.maxPages || 25, 10),
+                    storeResults: config.storeResults,
+                    collection: config.collection
+                });
+
+                if (crawlResults && crawlResults.length > 0) {
+                    deepCrawlResult = {
+                        success: crawlResults[0].success,
+                        data: crawlResults[0].extractedData,
+                        discoveredUrls: crawlResults[0].extractedData?.links?.map(link => link.href) || []
+                    };
+                } else {
+                    deepCrawlResult = { success: false, error: 'MOTHER BRAIN crawl failed' };
+                }
+            } else {
+                // MOTHER BRAIN not available - return error
+                log.error('❌ MOTHER BRAIN Spider System required for deep crawl');
+                deepCrawlResult = {
+                    success: false,
+                    error: 'MOTHER BRAIN Spider System not available for deep crawl operations',
+                    discoveredUrls: []
+                };
+            }
 
             if (deepCrawlResult.success && deepCrawlResult.discoveredUrls) {
                 // AI analysis of discovered URLs

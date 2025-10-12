@@ -11,11 +11,12 @@ import { log } from '../utils/logger.js';
 import { bambiTools } from './tools/bambi-tools.js';
 import { mongodbTools } from './tools/mongodb/mongodbTools.js';
 import { lmstudioTools } from './tools/lmstudio/lmstudioTools.js';
-import { crawlerTools } from './tools/crawler/crawlerTools.js';
+// REMOVED: crawlerTools - deprecated, use MOTHER BRAIN instead
 import { agenticTools } from './tools/agentic/agenticTools.js';
+import { motherBrainTools } from './tools/motherBrain/motherBrainTools.js';
 import { mongoService } from '../services/MongoDBService.js';
 import { lmStudioService } from '../services/LMStudioService.js';
-import { webCrawlerService } from '../services/WebCrawlerService.js';
+// REMOVED: webCrawlerService - replaced by MOTHER BRAIN Spider System
 
 class BambiMcpServer {
     constructor() {
@@ -40,8 +41,9 @@ class BambiMcpServer {
             ...bambiTools,
             ...Object.fromEntries(mongodbTools.map(tool => [tool.name, tool])),
             ...Object.fromEntries(lmstudioTools.map(tool => [tool.name, tool])),
-            ...Object.fromEntries(crawlerTools.map(tool => [tool.name, tool])),
-            ...Object.fromEntries(agenticTools.map(tool => [tool.name, tool]))
+            // REMOVED: crawlerTools - deprecated, use MOTHER BRAIN instead
+            ...Object.fromEntries(agenticTools.map(tool => [tool.name, tool])),
+            ...motherBrainTools // 🔥 MOTHER BRAIN (already an object)
         };
 
         this.setupHandlers();
@@ -164,15 +166,10 @@ class BambiMcpServer {
                 log.warn('⚠️ LMSTUDIO_URL not configured, using default localhost:7777');
             }
 
-            // Initialize Web Crawler service
-            log.info('Initializing Web Crawler service...');
-            webCrawlerService.configure({
-                userAgent: 'BambiSleep-Church-Crawler/1.0 (+https://github.com/HarleyVader/js-bambisleep-church)',
-                timeout: 10000,
-                maxRetries: 3,
-                crawlDelay: 1000
-            });
-            log.success('✅ Web Crawler service initialized');
+            // Legacy Web Crawler (now handled by MOTHER BRAIN)
+            log.info('🔥 Crawling services now handled by MOTHER BRAIN Spider System');
+            log.info('💡 Use MOTHER BRAIN tools for new crawling operations');
+            // webCrawlerService kept for backward compatibility only
 
             this.isInitialized = true;
             log.success('BambiMcpServer initialized successfully');
@@ -305,12 +302,13 @@ class BambiMcpServer {
         return {
             name: "bambisleep-church-server",
             version: "1.0.0",
-            description: "BambiSleep Church MCP server with MongoDB, LMStudio, Web Crawler, and Agentic System",
+            description: "BambiSleep Church MCP server with MOTHER BRAIN Spider System, MongoDB, LMStudio, and Agentic System",
             toolCount: Object.keys(this.allTools).length,
             bambiToolCount: Object.keys(bambiTools).length,
             mongodbToolCount: mongodbTools.length,
             lmstudioToolCount: lmstudioTools.length,
-            crawlerToolCount: crawlerTools.length,
+            // REMOVED: crawlerToolCount - deprecated tools removed
+            motherBrainToolCount: Object.keys(motherBrainTools).length, // 🔥 MOTHER BRAIN
             agenticToolCount: 7,
             isInitialized: this.isInitialized,
             knowledgeEntries: this.knowledgeData.length,
