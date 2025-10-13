@@ -1,40 +1,49 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart3, TrendingUp, Globe, Database, Clock, Users, Shield, Zap } from 'lucide-react';
 import { ErrorBoundary } from '../components';
+import { mcpService } from '../services/api.js';
 import styles from './MotherBrainAnalytics.module.css';
 
 const MotherBrainAnalytics = () => {
     const [timeRange, setTimeRange] = useState('24h');
     const [activeTab, setActiveTab] = useState('overview');
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [analytics, setAnalytics] = useState({
         overview: {
-            totalPages: 15847,
-            successRate: 94.2,
-            respectfulnessScore: 98.7,
-            activeCrawlers: 3,
-            avgResponseTime: 1.2,
-            dataDiscovered: 2.3
+            totalPages: 0,
+            successRate: 0,
+            respectfulnessScore: 0,
+            activeCrawlers: 0,
+            avgResponseTime: 0,
+            dataDiscovered: 0
         },
         crawlStats: {
-            hostsVisited: 127,
+            hostsVisited: 0,
             robotsTxtRespected: 100,
             crawlDelaysHonored: 100,
-            backoffTriggered: 23,
-            errorRate: 5.8
+            backoffTriggered: 0,
+            errorRate: 0
         },
         contentAnalysis: {
-            bambiContent: 45,
-            safetyContent: 12,
-            communityContent: 38,
-            technicalContent: 15,
-            beginnerContent: 22
+            bambiContent: 0,
+            safetyContent: 0,
+            communityContent: 0,
+            technicalContent: 0,
+            beginnerContent: 0
         },
         performance: {
-            requestsPerSecond: 2.4,
-            concurrentConnections: 3,
-            queueHealth: 92,
-            memoryUsage: 156,
-            uptime: '7d 14h 32m'
+            requestsPerSecond: 0,
+            concurrentConnections: 0,
+            queueHealth: 0,
+            memoryUsage: 0,
+            uptime: '0s'
+        },
+        serverMetrics: {
+            instanceId: '',
+            uptime: 0,
+            operations: 0,
+            sessions: 0
         }
     });
 
@@ -123,18 +132,96 @@ const MotherBrainAnalytics = () => {
         { id: 'performance', name: 'Performance', icon: <Zap size={20} /> }
     ];
 
-    // Simulate real-time updates
+    // Parse real MOTHER BRAIN metrics from MCP response text
+    const parseMotherBrainMetrics = (responseText) => {
+        const metrics = {
+            overview: { ...analytics.overview },
+            crawlStats: { ...analytics.crawlStats },
+            performance: { ...analytics.performance },
+            serverMetrics: { ...analytics.serverMetrics }
+        };
+
+        // Parse instance metrics
+        const instanceIdMatch = responseText.match(/Instance ID[:\s]*([^\n\r]+)/);
+        const uptimeMatch = responseText.match(/Instance Uptime[:\s]*(\d+)s/);
+        const operationsMatch = responseText.match(/Operations Performed[:\s]*(\d+)/);
+        const sessionsMatch = responseText.match(/Active Sessions[:\s]*(\d+)/);
+
+        if (instanceIdMatch) metrics.serverMetrics.instanceId = instanceIdMatch[1].trim();
+        if (uptimeMatch) metrics.serverMetrics.uptime = parseInt(uptimeMatch[1]);
+        if (operationsMatch) metrics.serverMetrics.operations = parseInt(operationsMatch[1]);
+        if (sessionsMatch) metrics.serverMetrics.sessions = parseInt(sessionsMatch[1]);
+
+        // Parse crawl statistics
+        const totalRequestsMatch = responseText.match(/Total Requests[:\s]*(\d+)/);
+        const successfulMatch = responseText.match(/Successful[:\s]*(\d+)/);
+        const respectfulBlocksMatch = responseText.match(/Respectful Blocks[:\s]*(\d+)/);
+        const queueHealthMatch = responseText.match(/Queue Health[:\s]*(\d+)/);
+        const activeCrawlersMatch = responseText.match(/Active Crawlers[:\s]*(\d+)/);
+
+        if (totalRequestsMatch) metrics.overview.totalPages = parseInt(totalRequestsMatch[1]);
+        if (successfulMatch && totalRequestsMatch) {
+            const total = parseInt(totalRequestsMatch[1]);
+            const successful = parseInt(successfulMatch[1]);
+            metrics.overview.successRate = total > 0 ? (successful / total * 100) : 0;
+        }
+        if (respectfulBlocksMatch) metrics.crawlStats.backoffTriggered = parseInt(respectfulBlocksMatch[1]);
+        if (queueHealthMatch) metrics.performance.queueHealth = parseInt(queueHealthMatch[1]);
+        if (activeCrawlersMatch) metrics.overview.activeCrawlers = parseInt(activeCrawlersMatch[1]);
+
+        // Parse respectfulness score
+        const respectfulnessMatch = responseText.match(/Respectfulness Score[:\s]*(\d+)/);
+        if (respectfulnessMatch) {
+            metrics.overview.respectfulnessScore = parseInt(respectfulnessMatch[1]);
+        }
+
+        return metrics;
+    };
+
+    // Fetch real analytics data from MOTHER BRAIN
+    const fetchRealAnalytics = async () => {
+        try {
+            setError(null);
+            
+            // Get MOTHER BRAIN status
+            const statusResponse = await mcpService.callTool('mother-brain-status');
+            
+            // Get server instance metrics
+            const metricsResponse = await mcpService.callTool('mother-brain-server-metrics', {
+                includeSessionDetails: true
+            });
+
+            let newAnalytics = { ...analytics };
+
+            // Parse status response
+            if (statusResponse.result?.content?.[0]?.text) {
+                const statusMetrics = parseMotherBrainMetrics(statusResponse.result.content[0].text);
+                newAnalytics = { ...newAnalytics, ...statusMetrics };
+            }
+
+            // Parse metrics response
+            if (metricsResponse.result?.content?.[0]?.text) {
+                const serverMetrics = parseMotherBrainMetrics(metricsResponse.result.content[0].text);
+                newAnalytics.serverMetrics = { ...newAnalytics.serverMetrics, ...serverMetrics.serverMetrics };
+            }
+
+            setAnalytics(newAnalytics);
+            
+        } catch (error) {
+            console.error('Failed to fetch MOTHER BRAIN analytics:', error);
+            setError('Failed to fetch real-time data. Showing cached metrics.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Real-time updates with actual data
     useEffect(() => {
+        fetchRealAnalytics();
+        
         const interval = setInterval(() => {
-            setAnalytics(prev => ({
-                ...prev,
-                overview: {
-                    ...prev.overview,
-                    totalPages: prev.overview.totalPages + Math.floor(Math.random() * 10),
-                    activeCrawlers: Math.max(1, Math.min(5, prev.overview.activeCrawlers + (Math.random() > 0.5 ? 1 : -1)))
-                }
-            }));
-        }, 5000);
+            fetchRealAnalytics();
+        }, 10000); // Update every 10 seconds
 
         return () => clearInterval(interval);
     }, []);
@@ -168,10 +255,25 @@ const MotherBrainAnalytics = () => {
                         <div>
                             <h1>📊 MOTHER BRAIN Analytics</h1>
                             <p>Real-time crawler metrics and ethical compliance monitoring</p>
+                            {analytics.serverMetrics.instanceId && (
+                                <p style={{ fontSize: '0.8rem', opacity: 0.7 }}>
+                                    Instance: {analytics.serverMetrics.instanceId}
+                                </p>
+                            )}
                         </div>
                     </div>
 
                     <div className={styles.controls}>
+                        {loading && (
+                            <div style={{ color: 'var(--accent-warning)', fontSize: '0.9rem' }}>
+                                Loading real-time data...
+                            </div>
+                        )}
+                        {error && (
+                            <div style={{ color: 'var(--accent-danger)', fontSize: '0.9rem' }}>
+                                {error}
+                            </div>
+                        )}
                         <select
                             value={timeRange}
                             onChange={(e) => setTimeRange(e.target.value)}

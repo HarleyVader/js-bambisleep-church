@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Terminal, Play, Square, BarChart3, Settings, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import { ErrorBoundary } from '../components';
+import { mcpService } from '../services/api.js';
 import styles from './MotherBrainControl.module.css';
 
 const MotherBrainControl = () => {
@@ -93,33 +94,43 @@ const MotherBrainControl = () => {
         addLog(`🔥 Starting ${operation.name}...`, 'info');
 
         try {
-            // Simulate API call to MCP server
-            await new Promise(resolve => setTimeout(resolve, 2000));
-
-            if (operation.id === 'initialize') {
-                setSystemStatus('online');
-                addLog('✅ MOTHER BRAIN initialized successfully', 'success');
-            } else if (operation.id === 'shutdown') {
-                setSystemStatus('offline');
-                addLog('🔥 MOTHER BRAIN shutdown complete', 'success');
-            } else if (operation.id === 'crawl' || operation.id === 'quick-bambi') {
-                // Simulate crawl progress
-                for (let i = 0; i <= 100; i += 10) {
-                    setCrawlProgress({
-                        current: i,
-                        total: 100,
-                        rate: Math.floor(Math.random() * 5) + 2,
-                        eta: Math.max(0, (100 - i) * 2)
-                    });
-                    await new Promise(resolve => setTimeout(resolve, 300));
+            // Build real parameters from UI configuration
+            const params = buildOperationParams(operation);
+            
+            // Real MCP API call to backend
+            const response = await mcpService.callTool(operation.action, params);
+            
+            if (response.result?.content?.[0]?.text) {
+                const resultText = response.result.content[0].text;
+                
+                // Extract success message from MCP response
+                const successMatch = resultText.match(/✅[^]*?(?=\n\n|$)/);
+                const successMessage = successMatch ? successMatch[0].split('\n')[0] : `${operation.name} executed`;
+                
+                addLog(`✅ ${successMessage}`, 'success');
+                
+                // Update system status based on real response
+                updateSystemStatusFromResponse(operation.id, resultText);
+                
+                // Handle crawl operations with real progress data
+                if (operation.id === 'crawl' || operation.id === 'quick-bambi') {
+                    handleCrawlResponse(resultText);
                 }
-                addLog(`✅ ${operation.name} completed successfully`, 'success');
-                setCrawlProgress({ current: 0, total: 0, rate: 0, eta: null });
+                
+            } else if (response.error) {
+                throw new Error(response.error.message);
             } else {
-                addLog(`✅ ${operation.name} executed successfully`, 'success');
+                throw new Error('Unexpected response format');
             }
+            
         } catch (error) {
-            addLog(`❌ ${operation.name} failed: ${error.message}`, 'error');
+            const errorMsg = error.message || 'Unknown error occurred';
+            addLog(`❌ ${operation.name} failed: ${errorMsg}`, 'error');
+            
+            // Update system status on error
+            if (operation.id === 'initialize') {
+                setSystemStatus('error');
+            }
         } finally {
             setActiveOperation(null);
         }
@@ -146,6 +157,97 @@ const MotherBrainControl = () => {
     const removeSeedUrl = (index) => {
         setSeedUrls(seedUrls.filter((_, i) => i !== index));
     };
+
+    // Build operation parameters from UI state
+    const buildOperationParams = (operation) => {
+        const baseParams = {};
+        
+        if (operation.requiresConfig) {
+            baseParams.config = {
+                maxConcurrentRequests: config.maxConcurrentRequests,
+                maxConcurrentPerHost: config.maxConcurrentPerHost,
+                defaultCrawlDelay: config.defaultCrawlDelay,
+                useAIAnalysis: config.useAIAnalysis
+            };
+        }
+        
+        // Add operation-specific parameters
+        switch (operation.id) {
+            case 'crawl':
+                return {
+                    ...baseParams,
+                    seedUrls: seedUrls.filter(url => url.startsWith('http')),
+                    options: {
+                        maxPages: config.maxPages,
+                        maxDepth: config.maxDepth,
+                        timeout: 600000,
+                        followExternalLinks: true
+                    }
+                };
+            case 'quick-bambi':
+                return {
+                    includeCommunity: config.includeCommunity,
+                    maxPages: config.maxPages
+                };
+            default:
+                return baseParams;
+        }
+    };
+
+    // Update system status based on MCP response
+    const updateSystemStatusFromResponse = (operationId, responseText) => {
+        if (operationId === 'initialize' && responseText.includes('OPERATIONAL')) {
+            setSystemStatus('online');
+        } else if (operationId === 'shutdown' && responseText.includes('SHUTDOWN COMPLETE')) {
+            setSystemStatus('offline');
+        } else if (operationId === 'status') {
+            if (responseText.includes('OPERATIONAL') || responseText.includes('Status**: OPERATIONAL')) {
+                setSystemStatus('online');
+            } else if (responseText.includes('not initialized')) {
+                setSystemStatus('offline');
+            }
+        }
+    };
+
+    // Handle crawl operation response with real progress data
+    const handleCrawlResponse = (responseText) => {
+        // Extract real metrics from MCP response
+        const pagesMatch = responseText.match(/Pages Processed[:\s]*(\d+)/);
+        const entriesMatch = responseText.match(/Entries Stored[:\s]*(\d+)/);
+        const timeMatch = responseText.match(/Session Duration[:\s]*(\d+)s/);
+        
+        if (pagesMatch || entriesMatch || timeMatch) {
+            const pages = pagesMatch ? parseInt(pagesMatch[1]) : 0;
+            const entries = entriesMatch ? parseInt(entriesMatch[1]) : 0;
+            const time = timeMatch ? parseInt(timeMatch[1]) : 0;
+            
+            addLog(`📊 Processed ${pages} pages, stored ${entries} entries in ${time}s`, 'info');
+            
+            // Reset progress after showing real results
+            setCrawlProgress({ current: 0, total: 0, rate: 0, eta: null });
+        }
+    };
+
+    // Check system status on component mount and periodically
+    useEffect(() => {
+        const checkSystemStatus = async () => {
+            try {
+                const response = await mcpService.callTool('mother-brain-status');
+                
+                if (response.result?.content?.[0]?.text) {
+                    const statusText = response.result.content[0].text;
+                    updateSystemStatusFromResponse('status', statusText);
+                }
+            } catch (error) {
+                setSystemStatus('offline');
+            }
+        };
+
+        checkSystemStatus();
+        const interval = setInterval(checkSystemStatus, 30000); // Check every 30s
+        
+        return () => clearInterval(interval);
+    }, []);
 
     return (
         <ErrorBoundary>

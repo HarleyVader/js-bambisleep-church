@@ -1,16 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { Zap, Shield, Brain, Activity, Target, AlertTriangle } from 'lucide-react';
 import { ErrorBoundary } from '../components';
+import { mcpService } from '../services/api.js';
 import styles from './MotherBrainPage.module.css';
 
 const MotherBrainPage = () => {
-    const [systemStatus, setSystemStatus] = useState('offline');
+    const [systemStatus, setSystemStatus] = useState('checking');
     const [crawlStats, setCrawlStats] = useState({
         totalRequests: 0,
         successfulRequests: 0,
         respectfulBlocks: 0,
         activeCrawlers: 0,
         queuedUrls: 0
+    });
+    const [systemInfo, setSystemInfo] = useState({
+        instanceId: '',
+        uptime: 0,
+        operations: 0,
+        threatLevel: 'LOOKS SCARY BUT COMPLETELY HARMLESS',
+        motto: 'Ethical Power, Maximum Respect'
     });
 
     const motherBrainFeatures = [
@@ -95,16 +103,68 @@ const MotherBrainPage = () => {
         'Provides comprehensive error handling'
     ];
 
-    // Simulate real-time updates (in real app, this would connect to actual API)
+    // Fetch real system status and metrics
+    const fetchSystemStatus = async () => {
+        try {
+            const statusResponse = await mcpService.callTool('mother-brain-status');
+            
+            if (statusResponse.result?.content?.[0]?.text) {
+                const responseText = statusResponse.result.content[0].text;
+                
+                // Parse system status
+                if (responseText.includes('OPERATIONAL')) {
+                    setSystemStatus('online');
+                } else if (responseText.includes('not initialized')) {
+                    setSystemStatus('offline');
+                } else if (responseText.includes('Active Crawlers')) {
+                    setSystemStatus('crawling');
+                }
+                
+                // Parse real metrics
+                const totalRequestsMatch = responseText.match(/Total Requests[:\s]*(\d+)/);
+                const successfulMatch = responseText.match(/Successful[:\s]*(\d+)/);
+                const respectfulBlocksMatch = responseText.match(/Respectful Blocks[:\s]*(\d+)/);
+                const activeCrawlersMatch = responseText.match(/Active Crawlers[:\s]*(\d+)/);
+                const queuedUrlsMatch = responseText.match(/Queued URLs[:\s]*(\d+)/);
+                
+                if (totalRequestsMatch || successfulMatch || respectfulBlocksMatch || activeCrawlersMatch || queuedUrlsMatch) {
+                    setCrawlStats({
+                        totalRequests: totalRequestsMatch ? parseInt(totalRequestsMatch[1]) : 0,
+                        successfulRequests: successfulMatch ? parseInt(successfulMatch[1]) : 0,
+                        respectfulBlocks: respectfulBlocksMatch ? parseInt(respectfulBlocksMatch[1]) : 0,
+                        activeCrawlers: activeCrawlersMatch ? parseInt(activeCrawlersMatch[1]) : 0,
+                        queuedUrls: queuedUrlsMatch ? parseInt(queuedUrlsMatch[1]) : 0
+                    });
+                }
+                
+                // Parse system info
+                const instanceIdMatch = responseText.match(/Instance ID[:\s]*([^\n\r]+)/);
+                const uptimeMatch = responseText.match(/Instance Uptime[:\s]*(\d+)s/);
+                const operationsMatch = responseText.match(/Operations Performed[:\s]*(\d+)/);
+                const threatLevelMatch = responseText.match(/Threat Level[:\s]*([^\n\r]+)/);
+                const mottoMatch = responseText.match(/Motto[:\s]*([^\n\r]+)/);
+                
+                setSystemInfo(prev => ({
+                    instanceId: instanceIdMatch ? instanceIdMatch[1].trim() : prev.instanceId,
+                    uptime: uptimeMatch ? parseInt(uptimeMatch[1]) : prev.uptime,
+                    operations: operationsMatch ? parseInt(operationsMatch[1]) : prev.operations,
+                    threatLevel: threatLevelMatch ? threatLevelMatch[1].trim() : prev.threatLevel,
+                    motto: mottoMatch ? mottoMatch[1].trim() : prev.motto
+                }));
+            }
+        } catch (error) {
+            console.error('Failed to fetch system status:', error);
+            setSystemStatus('error');
+        }
+    };
+
+    // Real-time updates with actual system data
     useEffect(() => {
+        fetchSystemStatus();
+        
         const interval = setInterval(() => {
-            setCrawlStats(prev => ({
-                ...prev,
-                totalRequests: prev.totalRequests + Math.floor(Math.random() * 5),
-                activeCrawlers: Math.floor(Math.random() * 4),
-                queuedUrls: Math.max(0, prev.queuedUrls + Math.floor(Math.random() * 10) - 5)
-            }));
-        }, 3000);
+            fetchSystemStatus();
+        }, 10000); // Update every 10 seconds
 
         return () => clearInterval(interval);
     }, []);
@@ -128,7 +188,12 @@ const MotherBrainPage = () => {
                         <div>
                             <h1>🔥 MOTHER BRAIN 🔫🕷️</h1>
                             <p className={styles.subtitle}>Ethical Minigun Spider Crawler System</p>
-                            <p className={styles.motto}>"Looks scary but follows ALL the rules"</p>
+                            <p className={styles.motto}>"{systemInfo.threatLevel}"</p>
+                            {systemInfo.instanceId && (
+                                <p style={{ fontSize: '0.8rem', opacity: 0.7 }}>
+                                    Instance: {systemInfo.instanceId} | Operations: {systemInfo.operations}
+                                </p>
+                            )}
                         </div>
                     </div>
 
