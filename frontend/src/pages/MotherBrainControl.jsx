@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Terminal, Play, Square, BarChart3, Settings, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import { ErrorBoundary } from '../components';
-import { mcpService } from '../services/api.js';
+import { motherBrainService } from '../services/motherBrainService.js';
 import styles from './MotherBrainControl.module.css';
 
 const MotherBrainControl = () => {
@@ -94,33 +94,48 @@ const MotherBrainControl = () => {
         addLog(`🔥 Starting ${operation.name}...`, 'info');
 
         try {
-            // Build real parameters from UI configuration
-            const params = buildOperationParams(operation);
+            let result;
             
-            // Real MCP API call to backend
-            const response = await mcpService.callTool(operation.action, params);
+            // Use specialized MOTHER BRAIN service methods
+            switch (operation.id) {
+                case 'initialize':
+                    result = await motherBrainService.initialize(buildOperationParams(operation).config);
+                    break;
+                
+                case 'status':
+                    result = await motherBrainService.getStatus();
+                    break;
+                
+                case 'crawl':
+                    const crawlParams = buildOperationParams(operation);
+                    result = await motherBrainService.executeCrawl(crawlParams.seedUrls, crawlParams.options);
+                    break;
+                
+                case 'quick-bambi':
+                    result = await motherBrainService.quickBambiCrawl(buildOperationParams(operation));
+                    break;
+                
+                case 'shutdown':
+                    result = await motherBrainService.shutdown();
+                    break;
+                
+                default:
+                    throw new Error(`Unknown operation: ${operation.id}`);
+            }
             
-            if (response.result?.content?.[0]?.text) {
-                const resultText = response.result.content[0].text;
+            if (result.success) {
+                addLog(`✅ ${result.message || `${operation.name} completed successfully`}`, 'success');
                 
-                // Extract success message from MCP response
-                const successMatch = resultText.match(/✅[^]*?(?=\n\n|$)/);
-                const successMessage = successMatch ? successMatch[0].split('\n')[0] : `${operation.name} executed`;
-                
-                addLog(`✅ ${successMessage}`, 'success');
-                
-                // Update system status based on real response
-                updateSystemStatusFromResponse(operation.id, resultText);
+                // Update system status based on operation result
+                updateSystemStatusFromResult(operation.id, result);
                 
                 // Handle crawl operations with real progress data
                 if (operation.id === 'crawl' || operation.id === 'quick-bambi') {
-                    handleCrawlResponse(resultText);
+                    handleCrawlResult(result);
                 }
                 
-            } else if (response.error) {
-                throw new Error(response.error.message);
             } else {
-                throw new Error('Unexpected response format');
+                throw new Error(result.error || 'Operation failed');
             }
             
         } catch (error) {
@@ -194,49 +209,67 @@ const MotherBrainControl = () => {
         }
     };
 
-    // Update system status based on MCP response
-    const updateSystemStatusFromResponse = (operationId, responseText) => {
-        if (operationId === 'initialize' && responseText.includes('OPERATIONAL')) {
-            setSystemStatus('online');
-        } else if (operationId === 'shutdown' && responseText.includes('SHUTDOWN COMPLETE')) {
-            setSystemStatus('offline');
-        } else if (operationId === 'status') {
-            if (responseText.includes('OPERATIONAL') || responseText.includes('Status**: OPERATIONAL')) {
-                setSystemStatus('online');
-            } else if (responseText.includes('not initialized')) {
-                setSystemStatus('offline');
-            }
+    // Update system status based on service result
+    const updateSystemStatusFromResult = (operationId, result) => {
+        switch (operationId) {
+            case 'initialize':
+                if (result.success) {
+                    setSystemStatus('online');
+                    if (result.instanceId) {
+                        addLog(`🆔 Instance ID: ${result.instanceId}`, 'info');
+                    }
+                }
+                break;
+            
+            case 'shutdown':
+                if (result.success) {
+                    setSystemStatus('offline');
+                }
+                break;
+            
+            case 'status':
+                if (result.status) {
+                    setSystemStatus(result.status);
+                }
+                break;
         }
     };
 
-    // Handle crawl operation response with real progress data
-    const handleCrawlResponse = (responseText) => {
-        // Extract real metrics from MCP response
-        const pagesMatch = responseText.match(/Pages Processed[:\s]*(\d+)/);
-        const entriesMatch = responseText.match(/Entries Stored[:\s]*(\d+)/);
-        const timeMatch = responseText.match(/Session Duration[:\s]*(\d+)s/);
-        
-        if (pagesMatch || entriesMatch || timeMatch) {
-            const pages = pagesMatch ? parseInt(pagesMatch[1]) : 0;
-            const entries = entriesMatch ? parseInt(entriesMatch[1]) : 0;
-            const time = timeMatch ? parseInt(timeMatch[1]) : 0;
+    // Handle crawl operation result with real progress data
+    const handleCrawlResult = (result) => {
+        if (result.results) {
+            const { pagesProcessed, entriesStored, sessionDuration } = result.results;
             
-            addLog(`📊 Processed ${pages} pages, stored ${entries} entries in ${time}s`, 'info');
+            addLog(`📊 Processed ${pagesProcessed || 0} pages, stored ${entriesStored || 0} entries in ${sessionDuration || 0}s`, 'info');
             
-            // Reset progress after showing real results
-            setCrawlProgress({ current: 0, total: 0, rate: 0, eta: null });
+            if (result.sessionId) {
+                addLog(`🕷️ Session ID: ${result.sessionId}`, 'info');
+            }
         }
+        
+        if (result.knowledgeExpanded) {
+            addLog(`🧠 BambiSleep knowledge base expanded!`, 'success');
+        }
+        
+        // Reset progress after showing real results
+        setCrawlProgress({ current: 0, total: 0, rate: 0, eta: null });
     };
 
     // Check system status on component mount and periodically
     useEffect(() => {
         const checkSystemStatus = async () => {
             try {
-                const response = await mcpService.callTool('mother-brain-status');
+                const result = await motherBrainService.getStatus();
                 
-                if (response.result?.content?.[0]?.text) {
-                    const statusText = response.result.content[0].text;
-                    updateSystemStatusFromResponse('status', statusText);
+                if (result.success) {
+                    setSystemStatus(result.status);
+                    
+                    // Log any important status information
+                    if (result.serverInfo?.instanceId && result.serverInfo.instanceId !== systemInfo?.instanceId) {
+                        addLog(`🆔 Connected to instance: ${result.serverInfo.instanceId}`, 'info');
+                    }
+                } else {
+                    setSystemStatus('error');
                 }
             } catch (error) {
                 setSystemStatus('offline');

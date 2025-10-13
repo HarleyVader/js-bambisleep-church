@@ -14,6 +14,7 @@
   "homepage": "https://github.com/HarleyVader/js-bambisleep-church#readme",
   "scripts": {
     "test": "node tests/test.cjs",
+    "test:integration": "node scripts/test-integration.js",
     "start": "node scripts/main.js start",
     "dev": "node scripts/dev.js",
     "build": "node scripts/main.js install && node scripts/main.js config && node scripts/main.js build",

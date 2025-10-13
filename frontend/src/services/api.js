@@ -65,7 +65,7 @@ api.interceptors.response.use(
     }
 );
 
-// MCP Service
+// MCP Service with Enhanced MOTHER BRAIN Integration
 export const mcpService = {
     // Get MCP server status
     async getStatus() {
@@ -93,6 +93,49 @@ export const mcpService = {
                 count: 0,
                 error: 'MCP tools unavailable'
             };
+        }
+    },
+
+    // Enhanced tool discovery specifically for MOTHER BRAIN
+    async getMotherBrainTools() {
+        try {
+            const response = await api.get('/mcp/tools');
+            const allTools = response.data.tools || [];
+            const motherBrainTools = allTools.filter(tool => tool.name.startsWith('mother-brain'));
+            
+            return {
+                tools: motherBrainTools,
+                count: motherBrainTools.length,
+                available: motherBrainTools.map(tool => tool.name)
+            };
+        } catch (error) {
+            console.warn('MOTHER BRAIN tools discovery failed:', error.message);
+            return {
+                tools: [],
+                count: 0,
+                available: []
+            };
+        }
+    },
+
+    // Check if MOTHER BRAIN is operational
+    async isMotherBrainOperational() {
+        try {
+            const response = await this.callTool('mother-brain-status');
+            
+            if (response.result?.content?.[0]?.text) {
+                const statusText = response.result.content[0].text;
+                return {
+                    operational: statusText.includes('OPERATIONAL'),
+                    initialized: !statusText.includes('not initialized'),
+                    status: statusText.includes('OPERATIONAL') ? 'online' : 
+                           statusText.includes('not initialized') ? 'offline' : 'unknown'
+                };
+            }
+            
+            return { operational: false, initialized: false, status: 'unknown' };
+        } catch (error) {
+            return { operational: false, initialized: false, status: 'error', error: error.message };
         }
     },
 
