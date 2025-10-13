@@ -39,13 +39,15 @@ const HOST = config.server.host || 'localhost';
 
 // Enhanced server metrics
 const serverMetrics = {
+    instanceId: `bsc-${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 5)}`,
     startTime: Date.now(),
     requests: 0,
     errors: 0,
     activeConnections: 0,
     mcpCalls: 0,
     chatMessages: 0,
-    knowledgeQueries: 0
+    knowledgeQueries: 0,
+    responseTime: 0
 };
 
 // Initialize MCP Server
@@ -88,28 +90,28 @@ app.use(compression({
 app.use((req, res, next) => {
     serverMetrics.requests++;
     const start = Date.now();
-    
+
     res.on('finish', () => {
         const duration = Date.now() - start;
-        
+
         // Log slow requests
         if (duration > 1000) {
             log.warn(`🐌 Slow request: ${req.method} ${req.path} (${duration}ms)`);
         }
-        
+
         // Track errors
         if (res.statusCode >= 400) {
             serverMetrics.errors++;
         }
     });
-    
+
     next();
 });
 
 // CORS middleware with enhanced origin handling
 app.use(cors({
     origin: [
-        'http://localhost:7070', 
+        'http://localhost:7070',
         'http://127.0.0.1:7070',
         'http://192.168.0.118:7070', // Network access
         'https://at.bambisleep.church',
@@ -187,10 +189,10 @@ app.get('/api/knowledge', async (req, res) => {
     try {
         serverMetrics.knowledgeQueries++;
         const startTime = Date.now();
-        
+
         if (!mongoService.isConnected) {
-            return res.json({ 
-                message: 'Knowledge base connecting...', 
+            return res.json({
+                message: 'Knowledge base connecting...',
                 items: {},
                 performance: { queryTime: 0, cached: false }
             });
@@ -226,7 +228,7 @@ app.get('/api/knowledge', async (req, res) => {
         });
 
         const queryTime = Date.now() - startTime;
-        
+
         res.json({
             ...formatted,
             _metadata: {
@@ -241,12 +243,12 @@ app.get('/api/knowledge', async (req, res) => {
                 }
             }
         });
-        
+
         // Log slow queries
         if (queryTime > 500) {
             log.warn(`🐌 Slow knowledge query: ${queryTime}ms`);
         }
-        
+
     } catch (error) {
         log.error(`❌ Knowledge API error: ${error.message}`);
         res.status(500).json({ error: 'Failed to fetch knowledge base' });
@@ -344,16 +346,16 @@ app.get('/api/health', async (req, res) => {
         healthCheck.services.chat = 'healthy';
 
         // Overall health status
-        const hasErrors = Object.values(healthCheck.services).some(status => 
+        const hasErrors = Object.values(healthCheck.services).some(status =>
             status === 'error' || status === 'disconnected'
         );
-        
+
         if (hasErrors) {
             healthCheck.status = 'degraded';
         }
 
         res.json(healthCheck);
-        
+
     } catch (error) {
         log.error(`❌ Health check error: ${error.message}`);
         res.status(500).json({
@@ -510,7 +512,7 @@ app.get('/api/metrics', (req, res) => {
     try {
         const uptimeSeconds = process.uptime();
         const memUsage = process.memoryUsage();
-        
+
         res.json({
             success: true,
             timestamp: new Date().toISOString(),
@@ -530,7 +532,7 @@ app.get('/api/metrics', (req, res) => {
             application: {
                 requests: serverMetrics.requests,
                 errors: serverMetrics.errors,
-                errorRate: serverMetrics.requests > 0 ? 
+                errorRate: serverMetrics.requests > 0 ?
                     (serverMetrics.errors / serverMetrics.requests * 100).toFixed(2) + '%' : '0%',
                 activeConnections: serverMetrics.activeConnections,
                 mcpCalls: serverMetrics.mcpCalls,
@@ -568,8 +570,8 @@ app.get('/api/system/status', async (req, res) => {
 
         // Overall system health
         const degradedServices = Object.values(status.services).filter(s => s === 'degraded' || s === 'unavailable');
-        status.health = degradedServices.length === 0 ? 'healthy' : 
-                       degradedServices.length === 1 ? 'degraded' : 'critical';
+        status.health = degradedServices.length === 0 ? 'healthy' :
+            degradedServices.length === 1 ? 'degraded' : 'critical';
 
         res.json(status);
     } catch (error) {
@@ -765,10 +767,10 @@ io.on('connection', (socket) => {
 
 const serveReactApp = (req, res) => {
     const startTime = Date.now();
-    
+
     // Track page request
     serverMetrics.pageViews++;
-    
+
     if (process.env.NODE_ENV === 'production') {
         // Serve React build index.html for all routes
         const reactIndexPath = path.join(__dirname, '..', 'dist', 'index.html');
@@ -822,7 +824,7 @@ const serveReactApp = (req, res) => {
             }
         });
     }
-    
+
     // Update response time metrics
     serverMetrics.responseTime = Date.now() - startTime;
 };
@@ -831,7 +833,7 @@ const serveReactApp = (req, res) => {
 const reactRoutes = [
     '/',
     '/tools',
-    '/dashboard', 
+    '/dashboard',
     '/mission',
     '/roadmap',
     '/docs',
@@ -884,10 +886,10 @@ app.use('/api', (req, res) => {
 app.use((error, req, res, next) => {
     log.error(`💥 Server Error: ${error.message}`);
     log.error(`📍 Path: ${req.method} ${req.path}`);
-    
+
     // Track error
     serverMetrics.errors++;
-    
+
     res.status(500).json({
         error: 'Internal Server Error',
         message: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong',
@@ -906,7 +908,7 @@ function formatUptime(seconds) {
     const hours = Math.floor((seconds % 86400) / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = Math.floor(seconds % 60);
-    
+
     if (days > 0) {
         return `${days}d ${hours}h ${minutes}m ${secs}s`;
     } else if (hours > 0) {
@@ -1012,21 +1014,7 @@ httpServer.listen(PORT, HOST, async () => {
     }
 });
 
-// Process monitoring for stability
-process.on('uncaughtException', (error) => {
-    log.error('💥 Uncaught Exception:', error);
-    serverMetrics.errors++;
-    process.exit(1);
-});
-
-process.on('unhandledRejection', (reason, promise) => {
-    log.error('💥 Unhandled Rejection at:', promise, 'reason:', reason);
-    serverMetrics.errors++;
-});
-
-process.on('warning', (warning) => {
-    log.warn('⚠️  Node Warning:', warning.message);
-});
+// Process monitoring for stability (moved to bottom of file)
 
 // Graceful shutdown
 const shutdown = async (signal) => {
