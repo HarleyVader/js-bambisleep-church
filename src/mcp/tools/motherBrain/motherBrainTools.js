@@ -26,7 +26,7 @@ function logWithInstance(level, message, data = {}) {
         uptime: Date.now() - serverInstance.startTime,
         ...data
     };
-    
+
     log[level](`[${serverInstance.id}] ${message}`, instanceData);
     return instanceData;
 }
@@ -54,7 +54,7 @@ export const initializeMotherBrain = {
             });
 
             if (motherBrainIntegration && motherBrainIntegration.isInitialized) {
-                logWithInstance('warn', 'MOTHER BRAIN already initialized', { 
+                logWithInstance('warn', 'MOTHER BRAIN already initialized', {
                     existingInstance: true,
                     previousSessions: serverInstance.crawlSessions.size
                 });
@@ -62,7 +62,7 @@ export const initializeMotherBrain = {
                     content: [{
                         type: 'text',
                         text: `⚠️ MOTHER BRAIN is already initialized and operational!
-                        
+
 🆔 **Server Instance**: ${serverInstance.id}
 📊 **Operation Count**: ${instanceLog.operation}
 ⏱️  **Uptime**: ${Math.round(instanceLog.uptime / 1000)}s
@@ -76,7 +76,7 @@ export const initializeMotherBrain = {
 
             if (initialized) {
                 const status = motherBrainIntegration.getStatus();
-                
+
                 logWithInstance('info', '✅ MOTHER BRAIN initialization successful', {
                     status: status.status,
                     systemReady: true
@@ -121,7 +121,7 @@ export const initializeMotherBrain = {
             }
 
         } catch (error) {
-            logWithInstance('error', '💥 MOTHER BRAIN initialization failed', { 
+            logWithInstance('error', '💥 MOTHER BRAIN initialization failed', {
                 error: error.message,
                 stack: error.stack,
                 initializationFailed: true
@@ -130,7 +130,7 @@ export const initializeMotherBrain = {
                 content: [{
                     type: 'text',
                     text: `❌ MOTHER BRAIN initialization failed: ${error.message}
-                    
+
 🆔 **Server Instance**: ${serverInstance.id}
 🔍 **Error Logged**: Operation #${serverInstance.operationCount}`
                 }]
@@ -166,7 +166,7 @@ export const executeMotherBrainCrawl = {
                     content: [{
                         type: 'text',
                         text: `❌ MOTHER BRAIN not initialized. Please run mother-brain-initialize first.
-                        
+
 🆔 **Server Instance**: ${serverInstance.id}
 📊 **Operation**: #${serverInstance.operationCount + 1} (failed)`
                     }]
@@ -175,7 +175,7 @@ export const executeMotherBrainCrawl = {
 
             const crawlSessionId = `crawl-${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 3)}`;
             const sessionStart = Date.now();
-            
+
             serverInstance.crawlSessions.set(crawlSessionId, {
                 urls: args.seedUrls,
                 options: args.options,
@@ -197,7 +197,7 @@ export const executeMotherBrainCrawl = {
 
             if (result.success) {
                 const sessionDuration = Date.now() - sessionStart;
-                
+
                 // Update session status
                 const session = serverInstance.crawlSessions.get(crawlSessionId);
                 if (session) {
@@ -205,7 +205,7 @@ export const executeMotherBrainCrawl = {
                     session.duration = sessionDuration;
                     session.results = result;
                 }
-                
+
                 logWithInstance('info', '✅ MOTHER BRAIN crawl completed successfully', {
                     crawlSessionId,
                     sessionDuration,
@@ -258,18 +258,18 @@ export const executeMotherBrainCrawl = {
                     session.status = 'failed';
                     session.error = result.error;
                 }
-                
+
                 logWithInstance('error', 'MOTHER BRAIN crawl failed', {
                     crawlSessionId,
                     error: result.error,
                     sessionDuration: Date.now() - sessionStart
                 });
-                
+
                 return {
                     content: [{
                         type: 'text',
                         text: `❌ MOTHER BRAIN CRAWL FAILED: ${result.error}
-                        
+
 🆔 **Server Instance**: ${serverInstance.id}
 🕷️ **Session ID**: ${crawlSessionId}
 📊 **Operation**: #${instanceLog.operation}`
@@ -303,13 +303,13 @@ export const getMotherBrainStatus = {
                 statusCheck: true,
                 activeSessions: serverInstance.crawlSessions.size
             });
-            
+
             if (!motherBrainIntegration) {
                 return {
                     content: [{
                         type: 'text',
                         text: `⚠️ MOTHER BRAIN not initialized
-                        
+
 🆔 **Server Instance**: ${serverInstance.id}
 📊 **Operation**: #${instanceLog.operation}
 ⏱️  **Instance Uptime**: ${Math.round(instanceLog.uptime / 1000)}s`
@@ -324,7 +324,7 @@ export const getMotherBrainStatus = {
                     content: [{
                         type: 'text',
                         text: `⚠️ MOTHER BRAIN not initialized. Run mother-brain-initialize first.
-                        
+
 🆔 **Server Instance**: ${serverInstance.id}
 📊 **Operations Performed**: ${instanceLog.operation}`
                     }]
@@ -333,7 +333,7 @@ export const getMotherBrainStatus = {
 
             const motherBrainStatus = status.integration.motherBrain;
             const metrics = motherBrainIntegration.motherBrain.getRealTimeMetrics();
-            
+
             // Calculate session statistics
             const completedSessions = Array.from(serverInstance.crawlSessions.values())
                 .filter(s => s.status === 'completed');
@@ -421,7 +421,7 @@ export const quickBambiCrawl = {
                     content: [{
                         type: 'text',
                         text: `❌ MOTHER BRAIN not initialized. Please run mother-brain-initialize first.
-                        
+
 🆔 **Server Instance**: ${serverInstance.id}
 🎯 **Quick Bambi Crawl**: Failed - Initialization Required`
                     }]
@@ -430,7 +430,7 @@ export const quickBambiCrawl = {
 
             const bambiSessionId = `bambi-${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 3)}`;
             const sessionStart = Date.now();
-            
+
             const instanceLog = logWithInstance('info', '🎯 MOTHER BRAIN: Starting quick BambiSleep knowledge crawl', {
                 bambiSessionId,
                 includeCommunity: args.includeCommunity,
@@ -456,7 +456,7 @@ export const quickBambiCrawl = {
                     communityUrls: 2
                 });
             }
-            
+
             // Track this session
             serverInstance.crawlSessions.set(bambiSessionId, {
                 type: 'bambi-quick-crawl',
@@ -476,7 +476,7 @@ export const quickBambiCrawl = {
 
             if (result.success) {
                 const sessionDuration = Date.now() - sessionStart;
-                
+
                 // Update session status
                 const session = serverInstance.crawlSessions.get(bambiSessionId);
                 if (session) {
@@ -484,7 +484,7 @@ export const quickBambiCrawl = {
                     session.duration = sessionDuration;
                     session.results = result;
                 }
-                
+
                 logWithInstance('info', '✅ Quick Bambi crawl completed successfully', {
                     bambiSessionId,
                     sessionDuration,
@@ -527,18 +527,18 @@ The BambiSleep knowledge base has been EXPANDED! 🧠✨`
                     session.status = 'failed';
                     session.error = result.error;
                 }
-                
+
                 logWithInstance('error', 'Quick Bambi crawl failed', {
                     bambiSessionId,
                     error: result.error,
                     sessionDuration: Date.now() - sessionStart
                 });
-                
+
                 return {
                     content: [{
                         type: 'text',
                         text: `❌ Quick Bambi crawl failed: ${result.error}
-                        
+
 🆔 **Server Instance**: ${serverInstance.id}
 🎯 **Bambi Session**: ${bambiSessionId}
 📊 **Operation**: #${instanceLog.operation}`
@@ -579,7 +579,7 @@ export const getServerInstanceMetrics = {
             const completedSessions = sessions.filter(s => s.status === 'completed');
             const runningSessions = sessions.filter(s => s.status === 'running');
             const failedSessions = sessions.filter(s => s.status === 'failed');
-            
+
             const totalSessionTime = completedSessions.reduce((sum, s) => sum + (s.duration || 0), 0);
             const avgSessionTime = completedSessions.length > 0 ? totalSessionTime / completedSessions.length : 0;
 
@@ -652,13 +652,13 @@ export const shutdownMotherBrain = {
                 totalSessions: serverInstance.crawlSessions.size,
                 instanceUptime: Date.now() - serverInstance.startTime
             });
-            
+
             if (!motherBrainIntegration) {
                 return {
                     content: [{
                         type: 'text',
                         text: `⚠️ MOTHER BRAIN not running
-                        
+
 🆔 **Server Instance**: ${serverInstance.id}
 📊 **Total Operations**: ${instanceLog.operation}`
                     }]
@@ -666,13 +666,13 @@ export const shutdownMotherBrain = {
             }
 
             const shutdownResult = await motherBrainIntegration.shutdown();
-            
+
             // Calculate final instance statistics
             const totalInstanceTime = Date.now() - serverInstance.startTime;
             const sessions = Array.from(serverInstance.crawlSessions.values());
             const completedSessions = sessions.filter(s => s.status === 'completed');
             const failedSessions = sessions.filter(s => s.status === 'failed');
-            
+
             logWithInstance('info', '✅ MOTHER BRAIN shutdown completed', {
                 shutdownResult: shutdownResult.success,
                 totalSessions: sessions.length,
@@ -680,7 +680,7 @@ export const shutdownMotherBrain = {
                 failedSessions: failedSessions.length,
                 totalInstanceTime
             });
-            
+
             motherBrainIntegration = null;
 
             if (shutdownResult.success) {
@@ -717,7 +717,7 @@ ${shutdownResult.finalStats ? `
                     content: [{
                         type: 'text',
                         text: `⚠️ MOTHER BRAIN shutdown completed with warnings
-                        
+
 🆔 **Server Instance**: ${serverInstance.id}
 📊 **Operations**: ${instanceLog.operation}
 🕷️ **Sessions**: ${sessions.length}`
@@ -735,7 +735,7 @@ ${shutdownResult.finalStats ? `
                 content: [{
                     type: 'text',
                     text: `💥 Shutdown failed: ${error.message}
-                    
+
 🆔 **Server Instance**: ${serverInstance.id}
 📊 **Operations**: ${serverInstance.operationCount}
 ⚠️ **Error Logged**: Check server logs for details`
