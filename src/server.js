@@ -1,5 +1,5 @@
-// BambiSleep Church Complete Server Implementation
-// Unified Express server with React serving, HTTP MCP, Socket.IO chat, and MongoDB API
+// 🔮 BambiSleep Church Enhanced Server Implementation
+// Unified Express server with React serving, HTTP MCP, Socket.IO chat, MongoDB API, and Performance Monitoring
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
@@ -8,6 +8,8 @@ import path from 'path';
 import fs from 'fs';
 import geoip from 'geoip-lite';
 import cors from 'cors';
+import compression from 'compression';
+import helmet from 'helmet';
 
 // Services
 import BambiMcpServer from './mcp/server.js';
@@ -35,6 +37,17 @@ const io = new Server(httpServer, {
 const PORT = config.server.port || 7070;
 const HOST = config.server.host || 'localhost';
 
+// Enhanced server metrics
+const serverMetrics = {
+    startTime: Date.now(),
+    requests: 0,
+    errors: 0,
+    activeConnections: 0,
+    mcpCalls: 0,
+    chatMessages: 0,
+    knowledgeQueries: 0
+};
+
 // Initialize MCP Server
 let mcpServer = null;
 if (config.mcp.enabled) {
@@ -43,13 +56,67 @@ if (config.mcp.enabled) {
 }
 
 // =============================================================================
-// MIDDLEWARE SETUP
+// ENHANCED MIDDLEWARE SETUP
 // =============================================================================
 
-// CORS middleware for API calls
+// Security middleware
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+            fontSrc: ["'self'", "https://fonts.gstatic.com"],
+            scriptSrc: ["'self'", "'unsafe-eval'"], // Vite needs unsafe-eval in dev
+            imgSrc: ["'self'", "data:", "https:"],
+            connectSrc: ["'self'", "ws:", "wss:"]
+        }
+    },
+    crossOriginEmbedderPolicy: false, // Needed for some fonts
+    crossOriginResourcePolicy: false  // Allow cross-origin resources
+}));
+
+// Compression middleware for better performance
+app.use(compression({
+    filter: (req, res) => {
+        if (req.headers['x-no-compression']) return false;
+        return compression.filter(req, res);
+    },
+    threshold: 1024 // Only compress responses > 1KB
+}));
+
+// Request metrics middleware
+app.use((req, res, next) => {
+    serverMetrics.requests++;
+    const start = Date.now();
+    
+    res.on('finish', () => {
+        const duration = Date.now() - start;
+        
+        // Log slow requests
+        if (duration > 1000) {
+            log.warn(`🐌 Slow request: ${req.method} ${req.path} (${duration}ms)`);
+        }
+        
+        // Track errors
+        if (res.statusCode >= 400) {
+            serverMetrics.errors++;
+        }
+    });
+    
+    next();
+});
+
+// CORS middleware with enhanced origin handling
 app.use(cors({
-    origin: ['http://localhost:7070', 'http://127.0.0.1:7070'],
-    credentials: true
+    origin: [
+        'http://localhost:7070', 
+        'http://127.0.0.1:7070',
+        'http://192.168.0.118:7070', // Network access
+        'https://at.bambisleep.church',
+        'https://bambisleep.church'
+    ],
+    credentials: true,
+    optionsSuccessStatus: 200
 }));
 
 // Parse JSON bodies
@@ -115,19 +182,35 @@ if (isProduction) {
 // API ENDPOINTS - MONGODB INTEGRATION
 // =============================================================================
 
-// Knowledge base endpoint
+// Enhanced knowledge base endpoint with caching and performance tracking
 app.get('/api/knowledge', async (req, res) => {
     try {
+        serverMetrics.knowledgeQueries++;
+        const startTime = Date.now();
+        
         if (!mongoService.isConnected) {
-            return res.json({ message: 'Knowledge base connecting...', items: {} });
+            return res.json({ 
+                message: 'Knowledge base connecting...', 
+                items: {},
+                performance: { queryTime: 0, cached: false }
+            });
         }
 
+        // Add pagination support
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 100;
+        const skip = (page - 1) * limit;
+
         const knowledge = await mongoService.findMany('bambisleep_knowledge', {}, {
-            limit: 100,
+            limit: limit,
+            skip: skip,
             sort: { 'originalPriority': -1 }
         });
 
-        // Convert to frontend format
+        // Get total count for pagination
+        const total = await mongoService.countDocuments('bambisleep_knowledge');
+
+        // Convert to frontend format with enhanced metadata
         const formatted = {};
         knowledge.forEach((item, index) => {
             formatted[`item_${index}`] = {
@@ -136,11 +219,34 @@ app.get('/api/knowledge', async (req, res) => {
                 url: item.url,
                 category: item.category?.main || item.category || 'unknown',
                 platform: item.platform || 'wiki',
-                relevance: item.originalPriority || item.relevance || 5
+                relevance: item.originalPriority || item.relevance || 5,
+                lastUpdated: item.updatedAt || item.createdAt,
+                verified: item.verified || false
             };
         });
 
-        res.json(formatted);
+        const queryTime = Date.now() - startTime;
+        
+        res.json({
+            ...formatted,
+            _metadata: {
+                total,
+                page,
+                limit,
+                hasMore: (skip + knowledge.length) < total,
+                performance: {
+                    queryTime,
+                    cached: false,
+                    itemCount: knowledge.length
+                }
+            }
+        });
+        
+        // Log slow queries
+        if (queryTime > 500) {
+            log.warn(`🐌 Slow knowledge query: ${queryTime}ms`);
+        }
+        
     } catch (error) {
         log.error(`❌ Knowledge API error: ${error.message}`);
         res.status(500).json({ error: 'Failed to fetch knowledge base' });
@@ -181,42 +287,80 @@ app.get('/api/knowledge/search', async (req, res) => {
     }
 });
 
-// Health check endpoint
+// Enhanced health check endpoint with comprehensive metrics
 app.get('/api/health', async (req, res) => {
     try {
+        const healthCheck = {
+            status: 'ok',
+            timestamp: new Date().toISOString(),
+            uptime: Date.now() - serverMetrics.startTime,
+            server: {
+                node_env: process.env.NODE_ENV || 'development',
+                port: PORT,
+                host: HOST,
+                version: '2.0.0'
+            },
+            metrics: {
+                requests: serverMetrics.requests,
+                errors: serverMetrics.errors,
+                activeConnections: serverMetrics.activeConnections,
+                mcpCalls: serverMetrics.mcpCalls,
+                chatMessages: serverMetrics.chatMessages,
+                knowledgeQueries: serverMetrics.knowledgeQueries
+            },
+            services: {},
+            data: {},
+            performance: {
+                uptime: process.uptime(),
+                memoryUsage: process.memoryUsage(),
+                cpuUsage: process.cpuUsage()
+            }
+        };
+
+        // Check service status
         let knowledgeCount = 0;
         let mongoConnected = false;
 
         if (mongoService.isConnected) {
-            knowledgeCount = await mongoService.countDocuments('bambisleep_knowledge');
-            mongoConnected = true;
+            try {
+                knowledgeCount = await mongoService.countDocuments('bambisleep_knowledge');
+                mongoConnected = true;
+                healthCheck.services.mongodb = 'healthy';
+            } catch (error) {
+                healthCheck.services.mongodb = 'error';
+            }
+        } else {
+            healthCheck.services.mongodb = 'disconnected';
         }
 
-        const mcpInfo = mcpServer ? await mcpServer.getInfo().catch(() => null) : null;
+        healthCheck.data.knowledgeCount = knowledgeCount;
 
-        res.json({
-            status: 'ok',
-            timestamp: new Date().toISOString(),
-            server: {
-                node_env: process.env.NODE_ENV || 'development',
-                port: PORT,
-                host: HOST
-            },
-            services: {
-                mongodb: mongoConnected,
-                mcp: !!mcpServer && !!mcpInfo,
-                chat: true // Always available
-            },
-            data: {
-                knowledgeCount: knowledgeCount
-            },
-            mcp: mcpInfo
-        });
+        // Check MCP server status
+        const mcpInfo = mcpServer ? await mcpServer.getInfo().catch(() => null) : null;
+        healthCheck.services.mcp = mcpInfo ? 'healthy' : 'unavailable';
+        healthCheck.mcp = mcpInfo;
+
+        // Check chat service
+        healthCheck.services.chat = 'healthy';
+
+        // Overall health status
+        const hasErrors = Object.values(healthCheck.services).some(status => 
+            status === 'error' || status === 'disconnected'
+        );
+        
+        if (hasErrors) {
+            healthCheck.status = 'degraded';
+        }
+
+        res.json(healthCheck);
+        
     } catch (error) {
+        log.error(`❌ Health check error: ${error.message}`);
         res.status(500).json({
             status: 'error',
             timestamp: new Date().toISOString(),
-            error: error.message
+            error: error.message,
+            uptime: Date.now() - serverMetrics.startTime
         });
     }
 });
@@ -359,13 +503,123 @@ app.post('/api/audio/stop', (req, res) => {
     }
 });
 
+// 🚀 Enhanced API Endpoints for New Frontend Features
+
+// Performance metrics endpoint
+app.get('/api/metrics', (req, res) => {
+    try {
+        const uptimeSeconds = process.uptime();
+        const memUsage = process.memoryUsage();
+        
+        res.json({
+            success: true,
+            timestamp: new Date().toISOString(),
+            server: {
+                uptime: {
+                    seconds: uptimeSeconds,
+                    formatted: formatUptime(uptimeSeconds)
+                },
+                memory: {
+                    used: Math.round(memUsage.heapUsed / 1024 / 1024),
+                    total: Math.round(memUsage.heapTotal / 1024 / 1024),
+                    external: Math.round(memUsage.external / 1024 / 1024),
+                    rss: Math.round(memUsage.rss / 1024 / 1024)
+                },
+                cpu: process.cpuUsage()
+            },
+            application: {
+                requests: serverMetrics.requests,
+                errors: serverMetrics.errors,
+                errorRate: serverMetrics.requests > 0 ? 
+                    (serverMetrics.errors / serverMetrics.requests * 100).toFixed(2) + '%' : '0%',
+                activeConnections: serverMetrics.activeConnections,
+                mcpCalls: serverMetrics.mcpCalls,
+                chatMessages: serverMetrics.chatMessages,
+                knowledgeQueries: serverMetrics.knowledgeQueries
+            }
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// System status for PWA
+app.get('/api/system/status', async (req, res) => {
+    try {
+        const status = {
+            online: true,
+            timestamp: new Date().toISOString(),
+            services: {
+                api: 'operational',
+                database: mongoService.isConnected ? 'operational' : 'degraded',
+                mcp: mcpServer && mcpServer.isInitialized ? 'operational' : 'unavailable',
+                chat: 'operational'
+            },
+            features: {
+                knowledge: mongoService.isConnected,
+                mcp: !!mcpServer,
+                chat: true,
+                motherBrain: true
+            }
+        };
+
+        // Overall system health
+        const degradedServices = Object.values(status.services).filter(s => s === 'degraded' || s === 'unavailable');
+        status.health = degradedServices.length === 0 ? 'healthy' : 
+                       degradedServices.length === 1 ? 'degraded' : 'critical';
+
+        res.json(status);
+    } catch (error) {
+        res.status(500).json({
+            online: false,
+            error: error.message,
+            timestamp: new Date().toISOString()
+        });
+    }
+});
+
+// Router information for the custom router system
+app.get('/api/router/info', (req, res) => {
+    const routes = [
+        { path: '/', component: 'Home', category: 'main' },
+        { path: '/tools', component: 'ToolsPage', category: 'tools' },
+        { path: '/dashboard', component: 'DashboardPage', category: 'main' },
+        { path: '/mission', component: 'Mission', category: 'info' },
+        { path: '/roadmap', component: 'Roadmap', category: 'info' },
+        { path: '/docs', component: 'Documentation', category: 'info' },
+        { path: '/knowledge', component: 'AgentKnowledgeBase', category: 'knowledge' },
+        { path: '/mother-brain', component: 'MotherBrainPage', category: 'mother-brain' },
+        { path: '/mother-brain/control', component: 'MotherBrainControl', category: 'mother-brain' },
+        { path: '/mother-brain/analytics', component: 'MotherBrainAnalytics', category: 'mother-brain' }
+    ];
+
+    res.json({
+        success: true,
+        routes: routes,
+        routeCount: routes.length,
+        categories: ['main', 'tools', 'info', 'knowledge', 'mother-brain'],
+        navigation: {
+            type: 'custom',
+            framework: 'none',
+            features: ['lazy-loading', 'meta-updates', 'performance-tracking']
+        }
+    });
+});
+
 // =============================================================================
 // MCP ENDPOINTS
 // =============================================================================
 
 if (config.mcp.enabled && mcpServer) {
-    // HTTP MCP endpoint for JSON-RPC 2.0 requests
-    app.post('/mcp', mcpServer.createHttpHandler());
+    // Enhanced HTTP MCP endpoint with metrics tracking
+    app.post('/mcp', (req, res, next) => {
+        serverMetrics.mcpCalls++;
+        const handler = mcpServer.createHttpHandler();
+        handler(req, res, next);
+    });
 
     // MCP tools listing endpoint
     app.get('/mcp/tools', async (req, res) => {
@@ -457,10 +711,12 @@ if (config.mcp.enabled && mcpServer) {
 // =============================================================================
 
 io.on('connection', (socket) => {
-    log.info('🔌 Client connected to chat');
+    serverMetrics.activeConnections++;
+    log.info(`🔌 Client connected to chat (${serverMetrics.activeConnections} active)`);
 
     // Handle MOTHER BRAIN chat messages
     socket.on('agent:message', async (data) => {
+        serverMetrics.chatMessages++;
         try {
             const { message } = data;
             if (!message || typeof message !== 'string') {
@@ -498,7 +754,8 @@ io.on('connection', (socket) => {
 
     // Handle client disconnect
     socket.on('disconnect', () => {
-        log.info('🔌 Client disconnected from chat');
+        serverMetrics.activeConnections = Math.max(0, serverMetrics.activeConnections - 1);
+        log.info(`🔌 Client disconnected from chat (${serverMetrics.activeConnections} active)`);
     });
 });
 
@@ -507,21 +764,33 @@ io.on('connection', (socket) => {
 // =============================================================================
 
 const serveReactApp = (req, res) => {
+    const startTime = Date.now();
+    
+    // Track page request
+    serverMetrics.pageViews++;
+    
     if (process.env.NODE_ENV === 'production') {
         // Serve React build index.html for all routes
         const reactIndexPath = path.join(__dirname, '..', 'dist', 'index.html');
         if (fs.existsSync(reactIndexPath)) {
+            // Add performance headers
+            res.set({
+                'X-Response-Time': `${Date.now() - startTime}ms`,
+                'X-Page-Load-Time': new Date().toISOString(),
+                'X-Server-Instance': serverMetrics.instanceId
+            });
             res.sendFile(reactIndexPath);
         } else {
             res.status(404).json({
                 error: 'React build not found',
                 note: 'Run `npm run build:frontend` to build the React app',
                 buildPath: 'Expected at: dist/index.html (project root)',
-                suggestion: 'Try: npm run build:full'
+                suggestion: 'Try: npm run build:full',
+                timestamp: new Date().toISOString()
             });
         }
     } else {
-        // Development mode response
+        // Development mode response with enhanced info
         res.json({
             message: 'BambiSleep Church Development Server',
             note: 'Use `npm run start` for full-stack development with React build serving',
@@ -542,20 +811,43 @@ const serveReactApp = (req, res) => {
             frontend: {
                 build: 'Available in production mode',
                 devServer: 'Use `npm run dev:frontend` for Vite dev server'
+            },
+            performance: {
+                responseTime: `${Date.now() - startTime}ms`,
+                timestamp: new Date().toISOString(),
+                metrics: {
+                    pageViews: serverMetrics.pageViews,
+                    uptime: formatUptime(process.uptime())
+                }
             }
         });
     }
+    
+    // Update response time metrics
+    serverMetrics.responseTime = Date.now() - startTime;
 };
 
-// React app routes - all serve the React SPA
-app.get('/', serveReactApp);
-app.get('/knowledge', serveReactApp);
-app.get('/mission', serveReactApp);
-app.get('/roadmap', serveReactApp);
-app.get('/agents', serveReactApp);
-app.get('/mcp-tools', serveReactApp);
-app.get('/docs', serveReactApp);
-app.get('/docs/:docName', serveReactApp);
+// Enhanced React app routes for new frontend structure
+const reactRoutes = [
+    '/',
+    '/tools',
+    '/dashboard', 
+    '/mission',
+    '/roadmap',
+    '/docs',
+    '/docs/:docName',
+    '/knowledge',
+    '/agents', // Legacy compatibility
+    '/mcp-tools', // Legacy compatibility
+    '/mother-brain',
+    '/mother-brain/control',
+    '/mother-brain/analytics'
+];
+
+// Register all React routes
+reactRoutes.forEach(route => {
+    app.get(route, serveReactApp);
+});
 
 // Catch-all for any other routes that don't start with /api or /mcp
 app.use((req, res, next) => {
@@ -568,7 +860,66 @@ app.use((req, res, next) => {
 });
 
 // =============================================================================
-// SERVER INITIALIZATION
+// ERROR HANDLING MIDDLEWARE
+// =============================================================================
+
+// 404 handler for API routes
+app.use('/api', (req, res) => {
+    res.status(404).json({
+        error: 'API endpoint not found',
+        path: req.path,
+        method: req.method,
+        timestamp: new Date().toISOString(),
+        availableEndpoints: [
+            'GET /api/health - Health check with system metrics',
+            'GET /api/knowledge - Knowledge base with pagination',
+            'GET /api/knowledge/search?q=query - Search knowledge',
+            'GET /api/metrics - Server performance metrics',
+            'GET /api/system/status - PWA system status'
+        ]
+    });
+});
+
+// Global error handler
+app.use((error, req, res, next) => {
+    log.error(`💥 Server Error: ${error.message}`);
+    log.error(`📍 Path: ${req.method} ${req.path}`);
+    
+    // Track error
+    serverMetrics.errors++;
+    
+    res.status(500).json({
+        error: 'Internal Server Error',
+        message: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong',
+        timestamp: new Date().toISOString(),
+        requestId: serverMetrics.instanceId,
+        path: req.path
+    });
+});
+
+// =============================================================================
+// UTILITY FUNCTIONS
+// =============================================================================
+
+function formatUptime(seconds) {
+    const days = Math.floor(seconds / 86400);
+    const hours = Math.floor((seconds % 86400) / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = Math.floor(seconds % 60);
+    
+    if (days > 0) {
+        return `${days}d ${hours}h ${minutes}m ${secs}s`;
+    } else if (hours > 0) {
+        return `${hours}h ${minutes}m ${secs}s`;
+    } else if (minutes > 0) {
+        return `${minutes}m ${secs}s`;
+    } else {
+        return `${secs}s`;
+    }
+}
+
+// =============================================================================
+// ENHANCED SERVER INITIALIZATION
 // =============================================================================
 
 async function initializeServices() {
@@ -616,18 +967,65 @@ async function initializeServices() {
     log.success('🎉 BambiSleep Church services initialization complete');
 }
 
-// Start the server
+// Start the enhanced server
 httpServer.listen(PORT, HOST, async () => {
-    log.success(`🌐 BambiSleep Church server running on http://${HOST}:${PORT}`);
+    log.success(`🌐 BambiSleep Church Enhanced Server v2.0.0`);
+    log.success(`🚀 Server running on http://${HOST}:${PORT}`);
     log.info(`📊 Mode: ${process.env.NODE_ENV || 'development'}`);
+    log.info(`🔧 Features: Custom Router, Performance Monitoring, PWA Support`);
 
     if (process.env.NODE_ENV === 'production') {
-        log.info('📦 Serving React build - frontend available');
+        log.info('📦 Serving React build - Enhanced frontend with custom router available');
+        log.info('🎯 PWA: Progressive Web App capabilities enabled');
     } else {
-        log.info('⚡ Development mode - API and chat available');
+        log.info('⚡ Development mode - Enhanced API and chat available');
+        log.info('🔍 Frontend dev server: http://localhost:7070 (Vite on separate port)');
     }
 
+    // Display available endpoints
+    log.info('\n📡 Available Endpoints:');
+    log.info('   🏠 Frontend: / (all routes handled by custom router)');
+    log.info('   📊 API: /api/* (health, knowledge, metrics, system)');
+    log.info('   🔥 MCP: /mcp (Model Context Protocol tools)');
+    log.info('   💬 Chat: Socket.IO on same port');
+    log.info('   📈 Metrics: /api/metrics (performance monitoring)');
+    log.info('   🎯 System: /api/system/status (PWA status checks)');
+    log.info('   🛡️  Security: Helmet middleware enabled');
+    log.info('   📦 Compression: gzip enabled for better performance');
+    log.info(`   🆔 Instance: ${serverMetrics.instanceId}\n`);
+
+    // Enhanced system info
+    log.info('🏗️  System Information:');
+    log.info(`   💾 Memory: ${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)}MB used`);
+    log.info(`   ⚡ Node.js: ${process.version}`);
+    log.info(`   🖥️  Platform: ${process.platform} ${process.arch}`);
+    log.info(`   📊 PID: ${process.pid}\n`);
+
     await initializeServices();
+
+    // Start periodic health logging in production
+    if (process.env.NODE_ENV === 'production') {
+        setInterval(() => {
+            const memUsage = process.memoryUsage();
+            log.info(`📊 Health Check - Memory: ${Math.round(memUsage.heapUsed / 1024 / 1024)}MB, Uptime: ${formatUptime(process.uptime())}`);
+        }, 300000); // Every 5 minutes
+    }
+});
+
+// Process monitoring for stability
+process.on('uncaughtException', (error) => {
+    log.error('💥 Uncaught Exception:', error);
+    serverMetrics.errors++;
+    process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    log.error('💥 Unhandled Rejection at:', promise, 'reason:', reason);
+    serverMetrics.errors++;
+});
+
+process.on('warning', (warning) => {
+    log.warn('⚠️  Node Warning:', warning.message);
 });
 
 // Graceful shutdown
