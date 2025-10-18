@@ -374,6 +374,38 @@ class LMStudioService {
         }
     }
 
+    // Generate response (compatibility method for legacy code)
+    async generateResponse(prompt, options = {}) {
+        try {
+            // Convert simple prompt to messages format
+            const messages = [
+                { role: 'user', content: prompt }
+            ];
+
+            const result = await this.chatCompletion(messages, options);
+
+            if (result.success && result.response.choices && result.response.choices.length > 0) {
+                return {
+                    success: true,
+                    response: result.response.choices[0].message.content,
+                    usage: result.usage || {}
+                };
+            } else {
+                return {
+                    success: false,
+                    error: 'No response generated',
+                    response: null
+                };
+            }
+        } catch (error) {
+            return {
+                success: false,
+                error: error.message,
+                response: null
+            };
+        }
+    }
+
     // Get connection information
     getConnectionInfo() {
         return {

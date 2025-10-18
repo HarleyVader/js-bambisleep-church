@@ -840,6 +840,30 @@ class MotherBrain {
     }
 
     /**
+     * 📄 Fetch page content with full ethical controls
+     */
+    async fetchPageContent(url) {
+        try {
+            const response = await this.makeEthicalRequest(url);
+
+            if (response.success) {
+                return {
+                    html: response.data,
+                    headers: response.headers,
+                    url: url,
+                    status: response.status
+                };
+            } else {
+                log.warn(`⚠️ MOTHER BRAIN: Failed to fetch ${url}: ${response.message || response.error}`);
+                return null;
+            }
+        } catch (error) {
+            log.error(`💥 MOTHER BRAIN: Error fetching ${url}: ${error.message}`);
+            return null;
+        }
+    }
+
+    /**
      * 🏷️ Extract robots directives from HTML and headers
      */
     extractRobotsDirectives(html, headers) {

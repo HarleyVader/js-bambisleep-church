@@ -404,16 +404,24 @@ class AutoDiscoveryAgent extends EventEmitter {
                     await this.respectRateLimit();
 
                     // Search repositories
+                    const headers = {
+                        'User-Agent': 'AutoDiscoveryAgent/2.0 (BambiSleep-Church)',
+                        'Accept': 'application/vnd.github.v3+json'
+                    };
+
+                    // Add GitHub token if available
+                    const githubToken = process.env.GITHUB_TOKEN || process.env.GITHUB_API_TOKEN;
+                    if (githubToken) {
+                        headers['Authorization'] = `Bearer ${githubToken}`;
+                    }
+
                     const repoResponse = await axios.get(`https://api.github.com/search/repositories`, {
                         params: {
                             q: query,
                             sort: 'updated',
                             per_page: 10
                         },
-                        headers: {
-                            'User-Agent': 'AutoDiscoveryAgent/2.0 (BambiSleep-Church)',
-                            'Accept': 'application/vnd.github.v3+json'
-                        },
+                        headers: headers,
                         timeout: 15000
                     });
 
@@ -429,15 +437,22 @@ class AutoDiscoveryAgent extends EventEmitter {
 
                     // Search code (if we have more API quota)
                     if (this.canMakeRequest()) {
+                        const codeHeaders = {
+                            'User-Agent': 'AutoDiscoveryAgent/2.0 (BambiSleep-Church)',
+                            'Accept': 'application/vnd.github.v3+json'
+                        };
+
+                        // Add GitHub token if available (required for code search)
+                        if (githubToken) {
+                            codeHeaders['Authorization'] = `Bearer ${githubToken}`;
+                        }
+
                         const codeResponse = await axios.get(`https://api.github.com/search/code`, {
                             params: {
                                 q: `${query} in:file`,
                                 per_page: 5
                             },
-                            headers: {
-                                'User-Agent': 'AutoDiscoveryAgent/2.0 (BambiSleep-Church)',
-                                'Accept': 'application/vnd.github.v3+json'
-                            },
+                            headers: codeHeaders,
                             timeout: 15000
                         });
 
@@ -450,7 +465,14 @@ class AutoDiscoveryAgent extends EventEmitter {
                     }
 
                 } catch (queryError) {
-                    log.warn(`⚠️ GitHub query failed '${query}': ${queryError.message}`);
+                    if (queryError.response?.status === 401) {
+                        log.warn(`⚠️ GitHub API authentication required. Set GITHUB_TOKEN environment variable for API access.`);
+                        log.info('💡 GitHub discovery will be limited without authentication');
+                    } else if (queryError.response?.status === 403) {
+                        log.warn(`⚠️ GitHub API rate limit exceeded for '${query}'. Will retry later.`);
+                    } else {
+                        log.warn(`⚠️ GitHub query failed '${query}': ${queryError.message}`);
+                    }
                     platformStats.errors++;
                 }
             }

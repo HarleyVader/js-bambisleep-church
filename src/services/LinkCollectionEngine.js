@@ -281,6 +281,63 @@ class LinkCollectionEngine {
     }
 
     /**
+     * 🌱 Discover links from a seed URL (web crawling)
+     */
+    async discoverFromSeed(seedUrl) {
+        try {
+            log.info(`🌱 LINK COLLECTION ENGINE: Discovering from seed: ${seedUrl}`);
+
+            // Validate seed URL
+            if (!seedUrl || typeof seedUrl !== 'string') {
+                throw new Error('Invalid seed URL provided');
+            }
+
+            // Use mother brain to fetch and analyze the seed URL
+            if (!this.motherBrain || !this.motherBrain.fetchPageContent) {
+                log.warn('⚠️ Mother Brain not available for seed discovery');
+                return [];
+            }
+
+            // Check if URL is allowed by robots.txt
+            if (this.motherBrain.isUrlAllowed && !(await this.motherBrain.isUrlAllowed(seedUrl))) {
+                log.warn(`🛡️ LINK COLLECTION ENGINE: Seed URL blocked by robots.txt: ${seedUrl}`);
+                return [];
+            }
+
+            // Fetch the page content
+            const content = await this.motherBrain.fetchPageContent(seedUrl);
+            if (!content) {
+                log.warn(`⚠️ Could not fetch content from seed URL: ${seedUrl}`);
+                return [];
+            }
+
+            // Extract and analyze links from the content
+            const discoveredLinks = [];
+            if (this.motherBrain.discoverAndNormalizeUrls) {
+                const discoveredUrls = this.motherBrain.discoverAndNormalizeUrls(content.html, seedUrl);
+
+                for (const url of discoveredUrls) {
+                    if (this.motherBrain.analyzeLink) {
+                        const linkData = await this.motherBrain.analyzeLink(url, content.html, seedUrl);
+
+                        if (linkData && this.motherBrain.isRelevantToBambiSleep &&
+                            this.motherBrain.isRelevantToBambiSleep(linkData)) {
+                            discoveredLinks.push(linkData);
+                        }
+                    }
+                }
+            }
+
+            log.info(`🌱 LINK COLLECTION ENGINE: Discovered ${discoveredLinks.length} relevant links from ${seedUrl}`);
+            return discoveredLinks;
+
+        } catch (error) {
+            log.warn(`⚠️ Web seed failed ${seedUrl}: ${error.message}`);
+            return [];
+        }
+    }
+
+    /**
      * ⏱️ Perform periodic scan of monitored sources
      */
     async performPeriodicScan() {
@@ -642,10 +699,14 @@ Please rate this link on a scale of 1-10 considering:
 Respond with just a number between 1-10.
             `;
 
-            const response = await lmStudioService.generateResponse(prompt);
-            const score = parseFloat(response.trim());
+            const result = await lmStudioService.generateResponse(prompt);
 
-            return isNaN(score) ? null : Math.max(1, Math.min(score, 10));
+            if (result.success && result.response) {
+                const score = parseFloat(result.response.trim());
+                return isNaN(score) ? null : Math.max(1, Math.min(score, 10));
+            } else {
+                return null;
+            }
 
         } catch (error) {
             log.warn(`⚠️ AI analysis failed for ${linkData.url}: ${error.message}`);

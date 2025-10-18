@@ -25,7 +25,7 @@ class LinkQualityAnalyzer {
             // AI Analysis settings
             useAdvancedAnalysis: config.useAdvancedAnalysis !== false,
             confidenceThreshold: config.confidenceThreshold || 0.7,
-            maxContentLength: config.maxContentLength || 8000,
+            maxContentLength: config.maxContentLength || 50000, // Increased from 8000 to 50KB
 
             // Analysis timeouts
             analysisTimeoutMs: config.analysisTimeoutMs || 30000,
@@ -120,16 +120,20 @@ class LinkQualityAnalyzer {
         try {
             const testPrompt = "Rate this test on a scale of 1-10: 'High quality BambiSleep safety guide with comprehensive consent information.' Respond with just a number.";
 
-            const response = await lmStudioService.generateResponse(testPrompt, {
+            const result = await lmStudioService.generateResponse(testPrompt, {
                 maxTokens: 10,
                 temperature: 0.1
             });
 
-            const score = parseFloat(response.trim());
-            if (!isNaN(score) && score >= 7) {
-                log.success('🧪 AI test passed - Quality analysis ready');
+            if (result.success && result.response) {
+                const score = parseFloat(result.response.trim());
+                if (!isNaN(score) && score >= 7) {
+                    log.success('🧪 AI test passed - Quality analysis ready');
+                } else {
+                    log.warn('⚠️ AI test inconclusive - Analysis may be limited');
+                }
             } else {
-                log.warn('⚠️ AI test inconclusive - Analysis may be limited');
+                log.warn(`⚠️ AI test failed: ${result.error || 'No response'}`);
             }
 
         } catch (error) {
@@ -505,12 +509,16 @@ SCORE: [1-10]
 REASONING: [brief explanation]
         `;
 
-        const response = await lmStudioService.generateResponse(prompt, {
+        const result = await lmStudioService.generateResponse(prompt, {
             maxTokens: 200,
             temperature: 0.3
         });
 
-        return this.parseAIResponse(response);
+        if (result.success && result.response) {
+            return this.parseAIResponse(result.response);
+        } else {
+            return { score: 5, reasoning: 'AI quality analysis failed', confidence: 0.1 };
+        }
     }
 
     /**
@@ -531,20 +539,24 @@ FLAGS: [any safety concerns]
 REASONING: [brief explanation]
         `;
 
-        const response = await lmStudioService.generateResponse(prompt, {
+        const result = await lmStudioService.generateResponse(prompt, {
             maxTokens: 300,
             temperature: 0.2
         });
 
-        const parsed = this.parseAIResponse(response);
+        if (result.success && result.response) {
+            const parsed = this.parseAIResponse(result.response);
 
-        // Extract safety flags
-        const flagMatch = response.match(/FLAGS:\s*(.+)/i);
-        if (flagMatch && flagMatch[1].toLowerCase() !== 'none') {
-            parsed.flags = flagMatch[1].split(',').map(f => f.trim());
+            // Extract safety flags
+            const flagMatch = result.response.match(/FLAGS:\s*(.+)/i);
+            if (flagMatch && flagMatch[1].toLowerCase() !== 'none') {
+                parsed.flags = flagMatch[1].split(',').map(f => f.trim());
+            }
+
+            return parsed;
+        } else {
+            return { score: 5, reasoning: 'AI safety analysis failed', confidence: 0.1, flags: [] };
         }
-
-        return parsed;
     }
 
     /**
@@ -564,12 +576,16 @@ SCORE: [1-10]
 REASONING: [brief explanation]
         `;
 
-        const response = await lmStudioService.generateResponse(prompt, {
+        const result = await lmStudioService.generateResponse(prompt, {
             maxTokens: 200,
             temperature: 0.3
         });
 
-        return this.parseAIResponse(response);
+        if (result.success && result.response) {
+            return this.parseAIResponse(result.response);
+        } else {
+            return { score: 5, reasoning: 'AI relevance analysis failed', confidence: 0.1 };
+        }
     }
 
     /**
@@ -590,20 +606,28 @@ CONFIDENCE: [0.0-1.0]
 REASONING: [brief explanation]
         `;
 
-        const response = await lmStudioService.generateResponse(prompt, {
+        const result = await lmStudioService.generateResponse(prompt, {
             maxTokens: 150,
             temperature: 0.2
         });
 
-        const categoryMatch = response.match(/CATEGORY:\s*(\w+)/i);
-        const confidenceMatch = response.match(/CONFIDENCE:\s*([\d.]+)/);
-        const reasoningMatch = response.match(/REASONING:\s*(.+)/i);
+        if (result.success && result.response) {
+            const categoryMatch = result.response.match(/CATEGORY:\s*(\w+)/i);
+            const confidenceMatch = result.response.match(/CONFIDENCE:\s*([\d.]+)/);
+            const reasoningMatch = result.response.match(/REASONING:\s*(.+)/i);
 
-        return {
-            category: categoryMatch ? categoryMatch[1].toLowerCase() : 'community',
-            confidence: confidenceMatch ? parseFloat(confidenceMatch[1]) : 0.5,
-            reasoning: reasoningMatch ? reasoningMatch[1].trim() : 'No reasoning provided'
-        };
+            return {
+                category: categoryMatch ? categoryMatch[1].toLowerCase() : 'community',
+                confidence: confidenceMatch ? parseFloat(confidenceMatch[1]) : 0.5,
+                reasoning: reasoningMatch ? reasoningMatch[1].trim() : 'No reasoning provided'
+            };
+        } else {
+            return {
+                category: 'community',
+                confidence: 0.5,
+                reasoning: 'AI categorization failed'
+            };
+        }
     }
 
     /**

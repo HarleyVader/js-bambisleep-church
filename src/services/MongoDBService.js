@@ -7,7 +7,7 @@ class MongoDBService {
     constructor() {
         this.client = null;
         this.db = null;
-        this.isConnected = false;
+        this._connected = false;
         this.connectionString = process.env.MONGODB_URL || process.env.MONGODB_URI;
         this.defaultDatabase = process.env.MONGODB_DATABASE || 'bambisleep-church';
 
@@ -39,7 +39,7 @@ class MongoDBService {
     }
 
     async connect() {
-        if (this.isConnected) {
+        if (this._connected) {
             return true;
         }
 
@@ -75,7 +75,7 @@ class MongoDBService {
             await this.client.db("admin").command({ ping: 1 });
 
             this.db = this.client.db(this.defaultDatabase);
-            this.isConnected = true;
+            this._connected = true;
 
             log.success('✅ Connected to MongoDB Atlas');
             log.info(`📊 Database: ${this.defaultDatabase}`);
@@ -93,7 +93,7 @@ class MongoDBService {
             }
 
             log.warn('⚠️ MongoDB connection failed - knowledge base will be limited');
-            this.isConnected = false;
+            this._connected = false;
             return false;
         }
     }
@@ -101,13 +101,13 @@ class MongoDBService {
     async disconnect() {
         if (this.client) {
             await this.client.close();
-            this.isConnected = false;
+            this._connected = false;
             log.info('MongoDB connection closed');
         }
     }
 
     async getDatabase(dbName = null) {
-        if (!this.isConnected) {
+        if (!this._connected) {
             await this.connect();
         }
         return dbName ? this.client.db(dbName) : this.db;
@@ -121,7 +121,7 @@ class MongoDBService {
     // Health check
     async isHealthy() {
         try {
-            if (!this.isConnected) {
+            if (!this._connected) {
                 return false;
             }
             await this.client.db("admin").command({ ping: 1 });
@@ -133,7 +133,7 @@ class MongoDBService {
 
     // List all databases
     async listDatabases() {
-        if (!this.isConnected) {
+        if (!this._connected) {
             await this.connect();
         }
 
@@ -352,6 +352,21 @@ class MongoDBService {
         } catch (error) {
             throw new Error(`Failed to get collection stats: ${error.message}`);
         }
+    }
+
+    // Check if MongoDB is connected (method version for compatibility)
+    isConnected() {
+        return this._connected;
+    }
+
+    // Get connection status with detailed information
+    getConnectionStatus() {
+        return {
+            connected: this._connected,
+            database: this.defaultDatabase,
+            hasClient: !!this.client,
+            hasDb: !!this.db
+        };
     }
 }
 
