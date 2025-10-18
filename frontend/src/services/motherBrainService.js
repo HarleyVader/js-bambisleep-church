@@ -8,17 +8,17 @@ import { mcpService } from './api.js';
  * High-level interface for MOTHER BRAIN operations
  */
 export const motherBrainService = {
-    
+
     /**
      * 🚀 Initialize MOTHER BRAIN with configuration
      */
     async initialize(config = {}) {
         try {
             const response = await mcpService.callTool('mother-brain-initialize', { config });
-            
+
             if (response.result?.content?.[0]?.text) {
                 const responseText = response.result.content[0].text;
-                
+
                 return {
                     success: responseText.includes('OPERATIONAL'),
                     alreadyInitialized: responseText.includes('already initialized'),
@@ -27,9 +27,9 @@ export const motherBrainService = {
                     fullResponse: responseText
                 };
             }
-            
+
             throw new Error(response.error?.message || 'Initialization failed');
-            
+
         } catch (error) {
             return {
                 success: false,
@@ -45,10 +45,10 @@ export const motherBrainService = {
     async getStatus() {
         try {
             const response = await mcpService.callTool('mother-brain-status');
-            
+
             if (response.result?.content?.[0]?.text) {
                 const responseText = response.result.content[0].text;
-                
+
                 return {
                     success: true,
                     status: this.parseSystemStatus(responseText),
@@ -57,9 +57,9 @@ export const motherBrainService = {
                     fullResponse: responseText
                 };
             }
-            
+
             throw new Error(response.error?.message || 'Status check failed');
-            
+
         } catch (error) {
             return {
                 success: false,
@@ -78,10 +78,10 @@ export const motherBrainService = {
                 seedUrls,
                 options
             });
-            
+
             if (response.result?.content?.[0]?.text) {
                 const responseText = response.result.content[0].text;
-                
+
                 return {
                     success: responseText.includes('COMPLETED'),
                     sessionId: this.extractSessionId(responseText),
@@ -90,9 +90,9 @@ export const motherBrainService = {
                     fullResponse: responseText
                 };
             }
-            
+
             throw new Error(response.error?.message || 'Crawl failed');
-            
+
         } catch (error) {
             return {
                 success: false,
@@ -107,10 +107,10 @@ export const motherBrainService = {
     async quickBambiCrawl(options = {}) {
         try {
             const response = await mcpService.callTool('mother-brain-quick-bambi-crawl', options);
-            
+
             if (response.result?.content?.[0]?.text) {
                 const responseText = response.result.content[0].text;
-                
+
                 return {
                     success: responseText.includes('COMPLETED'),
                     results: this.parseCrawlResults(responseText),
@@ -118,9 +118,9 @@ export const motherBrainService = {
                     fullResponse: responseText
                 };
             }
-            
+
             throw new Error(response.error?.message || 'Quick crawl failed');
-            
+
         } catch (error) {
             return {
                 success: false,
@@ -137,19 +137,19 @@ export const motherBrainService = {
             const response = await mcpService.callTool('mother-brain-server-metrics', {
                 includeSessionDetails: includeDetails
             });
-            
+
             if (response.result?.content?.[0]?.text) {
                 const responseText = response.result.content[0].text;
-                
+
                 return {
                     success: true,
                     metrics: this.parseServerMetrics(responseText),
                     fullResponse: responseText
                 };
             }
-            
+
             throw new Error(response.error?.message || 'Metrics fetch failed');
-            
+
         } catch (error) {
             return {
                 success: false,
@@ -164,19 +164,19 @@ export const motherBrainService = {
     async shutdown() {
         try {
             const response = await mcpService.callTool('mother-brain-shutdown');
-            
+
             if (response.result?.content?.[0]?.text) {
                 const responseText = response.result.content[0].text;
-                
+
                 return {
                     success: responseText.includes('SHUTDOWN COMPLETE'),
                     finalStats: this.parseFinalStats(responseText),
                     fullResponse: responseText
                 };
             }
-            
+
             throw new Error(response.error?.message || 'Shutdown failed');
-            
+
         } catch (error) {
             return {
                 success: false,
@@ -229,7 +229,7 @@ export const motherBrainService = {
      */
     parseMetrics(responseText) {
         const metrics = {};
-        
+
         const patterns = {
             totalRequests: /Total Requests[:\s]*(\d+)/,
             successful: /Successful[:\s]*(\d+)/,
@@ -245,7 +245,7 @@ export const motherBrainService = {
         Object.entries(patterns).forEach(([key, pattern]) => {
             const match = responseText.match(pattern);
             if (match) {
-                metrics[key] = key.includes('Rate') || key.includes('PerSecond') ? 
+                metrics[key] = key.includes('Rate') || key.includes('PerSecond') ?
                     parseFloat(match[1]) : parseInt(match[1]);
             }
         });
@@ -258,7 +258,7 @@ export const motherBrainService = {
      */
     parseServerInfo(responseText) {
         const info = {};
-        
+
         const patterns = {
             instanceId: /Instance ID[:\s]*([^\n\r]+)/,
             uptime: /Instance Uptime[:\s]*(\d+)s/,
@@ -271,7 +271,7 @@ export const motherBrainService = {
         Object.entries(patterns).forEach(([key, pattern]) => {
             const match = responseText.match(pattern);
             if (match) {
-                info[key] = ['uptime', 'operations', 'sessions'].includes(key) ? 
+                info[key] = ['uptime', 'operations', 'sessions'].includes(key) ?
                     parseInt(match[1]) : match[1].trim();
             }
         });
@@ -284,7 +284,7 @@ export const motherBrainService = {
      */
     parseCrawlResults(responseText) {
         const results = {};
-        
+
         const patterns = {
             pagesProcessed: /Pages Processed[:\s]*(\d+)/,
             entriesStored: /Entries Stored[:\s]*(\d+)/,
@@ -311,7 +311,7 @@ export const motherBrainService = {
      */
     parsePerformanceMetrics(responseText) {
         const performance = {};
-        
+
         const patterns = {
             avgPageTime: /Average per Page[:\s]*(\d+)ms/,
             totalDuration: /MOTHER BRAIN Processing[:\s]*(\d+)s/,
@@ -333,7 +333,7 @@ export const motherBrainService = {
      */
     parseServerMetrics(responseText) {
         const serverMetrics = {};
-        
+
         const patterns = {
             totalSessions: /Total Sessions[:\s]*(\d+)/,
             completed: /Completed[:\s]*(\d+)/,
@@ -348,7 +348,7 @@ export const motherBrainService = {
         Object.entries(patterns).forEach(([key, pattern]) => {
             const match = responseText.match(pattern);
             if (match) {
-                serverMetrics[key] = key.includes('PerMinute') ? 
+                serverMetrics[key] = key.includes('PerMinute') ?
                     parseFloat(match[1]) : parseInt(match[1]);
             }
         });
@@ -361,7 +361,7 @@ export const motherBrainService = {
      */
     parseFinalStats(responseText) {
         const finalStats = {};
-        
+
         const patterns = {
             totalInstanceTime: /Total Instance Time[:\s]*(\d+)s/,
             totalOperations: /Total Operations[:\s]*(\d+)/,

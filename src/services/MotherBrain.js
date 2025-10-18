@@ -2651,6 +2651,599 @@ ${users.map((user, i) => {
             return { success: false, error: error.message };
         }
     }
+
+    // ==========================================
+    // 🔗 COMPREHENSIVE LINK COLLECTION SYSTEM 🔗
+    // ==========================================
+
+    /**
+     * 🎯 Initialize comprehensive link discovery for BambiSleep content
+     */
+    async initializeLinkCollection() {
+        log.info('🔗 MOTHER BRAIN: Initializing comprehensive link collection system...');
+
+        this.linkCollection = {
+            // Core collections
+            discoveredLinks: new Map(), // url -> link data
+            verifiedLinks: new Map(),   // url -> verified link data
+            pendingLinks: new Set(),    // urls pending verification
+
+            // Categorization
+            categories: new Map([       // category -> links
+                ['official', new Set()],
+                ['community', new Set()],
+                ['safety', new Set()],
+                ['church', new Set()],
+                ['guides', new Set()],
+                ['forums', new Set()],
+                ['media', new Set()],
+                ['tools', new Set()]
+            ]),
+
+            // Quality metrics
+            linkScores: new Map(),      // url -> quality score
+            communityVotes: new Map(),  // url -> {upvotes, downvotes, reports}
+
+            // Discovery patterns
+            discoveryPatterns: {
+                // High priority BambiSleep patterns
+                bambiPatterns: [
+                    /bambi[_\s\-]?sleep/gi,
+                    /bambi[_\s\-]?conditioning/gi,
+                    /bambi[_\s\-]?training/gi,
+                    /bambi[_\s\-]?hypno/gi,
+                    /bambi[_\s\-]?files/gi
+                ],
+
+                // Hypnosis and related content
+                hypnosisPatterns: [
+                    /hypnosis/gi,
+                    /hypnotic/gi,
+                    /trance/gi,
+                    /conditioning/gi,
+                    /subliminal/gi,
+                    /brainwashing/gi,
+                    /mind[_\s\-]?control/gi
+                ],
+
+                // Community and safety
+                communityPatterns: [
+                    /safety/gi,
+                    /consent/gi,
+                    /guidelines/gi,
+                    /community/gi,
+                    /support/gi,
+                    /help/gi
+                ],
+
+                // Platform-specific patterns
+                platformPatterns: {
+                    reddit: /r\/bambisleep|bambisleep|r\/hypnosis|r\/erotichypnosis/gi,
+                    github: /bambisleep|bambi-sleep|hypnosis|conditioning/gi,
+                    discord: /bambisleep|bambi.*sleep/gi
+                }
+            },
+
+            // Statistics
+            stats: {
+                totalDiscovered: 0,
+                totalVerified: 0,
+                categorizedLinks: 0,
+                communityApproved: 0,
+                lastScanTime: null,
+                discoveryRate: 0 // links per hour
+            }
+        };
+
+        log.success('🔗✅ MOTHER BRAIN: Link collection system initialized');
+        return true;
+    }
+
+    /**
+     * 🌐 Comprehensive link discovery across multiple platforms
+     */
+    async discoverLinksComprehensively(seedUrls = []) {
+        try {
+            log.info('🌐 MOTHER BRAIN: Starting comprehensive link discovery...');
+
+            const defaultSeedUrls = [
+                // Official BambiSleep sources
+                'https://bambisleep.info',
+                'https://bambisleep.chat',
+                'https://bambisleep.chat',
+
+                // Community platforms
+                'https://www.reddit.com/r/BambiSleep/',
+                'https://www.reddit.com/r/hypnosis/',
+                'https://www.reddit.com/r/EroticHypnosis/',
+
+                // Documentation and wikis
+                'https://bambisleep.fandom.com',
+                'https://github.com/search?q=bambisleep',
+
+                // Safety and community resources
+                'https://www.reddit.com/r/BambiSleep/wiki/safety',
+                'https://www.reddit.com/r/BambiSleep/wiki/resources'
+            ];
+
+            const allSeedUrls = [...new Set([...defaultSeedUrls, ...seedUrls])];
+
+            for (const seedUrl of allSeedUrls) {
+                await this.discoverFromSeed(seedUrl);
+
+                // Respectful delay between seeds
+                await new Promise(resolve => setTimeout(resolve, 2000));
+            }
+
+            this.linkCollection.stats.lastScanTime = new Date();
+
+            log.success(`🔗✅ MOTHER BRAIN: Discovered ${this.linkCollection.discoveredLinks.size} links`);
+            return Array.from(this.linkCollection.discoveredLinks.values());
+
+        } catch (error) {
+            log.error(`💥 MOTHER BRAIN: Link discovery failed: ${error.message}`);
+            throw error;
+        }
+    }
+
+    /**
+     * 🌱 Discover links from a seed URL
+     */
+    async discoverFromSeed(seedUrl) {
+        try {
+            log.info(`🌱 MOTHER BRAIN: Discovering from seed: ${seedUrl}`);
+
+            // Check if URL is allowed
+            if (!(await this.isUrlAllowed(seedUrl))) {
+                log.warn(`🛡️ MOTHER BRAIN: Seed URL blocked by robots.txt: ${seedUrl}`);
+                return [];
+            }
+
+            // Fetch the page
+            const content = await this.fetchPageContent(seedUrl);
+            if (!content) return [];
+
+            // Extract and analyze links
+            const discoveredUrls = this.discoverAndNormalizeUrls(content.html, seedUrl);
+            const relevantLinks = [];
+
+            for (const url of discoveredUrls) {
+                const linkData = await this.analyzeLink(url, content.html, seedUrl);
+
+                if (linkData && this.isRelevantToBambiSleep(linkData)) {
+                    this.linkCollection.discoveredLinks.set(url, linkData);
+                    this.linkCollection.stats.totalDiscovered++;
+                    relevantLinks.push(linkData);
+
+                    // Categorize the link
+                    const category = this.categorizeLink(linkData);
+                    this.linkCollection.categories.get(category)?.add(url);
+
+                    log.info(`🔗 MOTHER BRAIN: Found relevant link [${category}]: ${url}`);
+                }
+            }
+
+            return relevantLinks;
+
+        } catch (error) {
+            log.error(`💥 MOTHER BRAIN: Failed to discover from seed ${seedUrl}: ${error.message}`);
+            return [];
+        }
+    }
+
+    /**
+     * 🔍 Analyze a discovered link for relevance and quality
+     */
+    async analyzeLink(url, sourceHtml, sourceUrl) {
+        try {
+            const urlObj = new URL(url);
+
+            // Basic link data
+            const linkData = {
+                url: url,
+                domain: urlObj.hostname,
+                discoveredAt: new Date(),
+                discoveredFrom: sourceUrl,
+                title: null,
+                description: null,
+                keywords: [],
+                relevanceScore: 0,
+                qualityIndicators: {
+                    hasTitle: false,
+                    hasDescription: false,
+                    isHttps: urlObj.protocol === 'https:',
+                    isTrustedDomain: this.isTrustedDomain(urlObj.hostname)
+                }
+            };
+
+            // Extract context from source page
+            this.extractLinkContext(linkData, sourceHtml, url);
+
+            // Calculate relevance score
+            linkData.relevanceScore = this.calculateRelevanceScore(linkData);
+
+            // Try to fetch additional metadata (if high relevance)
+            if (linkData.relevanceScore >= 5) {
+                await this.enrichLinkMetadata(linkData);
+            }
+
+            return linkData;
+
+        } catch (error) {
+            log.warn(`⚠️ MOTHER BRAIN: Failed to analyze link ${url}: ${error.message}`);
+            return null;
+        }
+    }
+
+    /**
+     * 🧠 Extract link context from source HTML
+     */
+    extractLinkContext(linkData, html, targetUrl) {
+        try {
+            const $ = cheerio.load(html);
+
+            // Find the link element
+            const linkElement = $(`a[href*="${targetUrl}"], a[href="${targetUrl}"]`).first();
+
+            if (linkElement.length > 0) {
+                // Extract title and text
+                linkData.title = linkElement.attr('title') || linkElement.text().trim();
+
+                // Extract surrounding context
+                const parent = linkElement.parent();
+                const context = parent.text().trim();
+
+                // Extract keywords from context
+                linkData.keywords = this.extractKeywords(context);
+
+                // Look for description in surrounding elements
+                const siblings = linkElement.siblings();
+                siblings.each((_, el) => {
+                    const text = $(el).text().trim();
+                    if (text.length > 20 && text.length < 200) {
+                        linkData.description = linkData.description || text;
+                    }
+                });
+            }
+
+        } catch (error) {
+            log.warn(`⚠️ MOTHER BRAIN: Failed to extract link context: ${error.message}`);
+        }
+    }
+
+    /**
+     * 🎯 Calculate relevance score for BambiSleep content
+     */
+    calculateRelevanceScore(linkData) {
+        let score = 0;
+
+        // Domain-based scoring
+        if (this.isTrustedDomain(linkData.domain)) {
+            score += 3;
+        }
+
+        // URL pattern scoring
+        const url = linkData.url.toLowerCase();
+        this.linkCollection.discoveryPatterns.bambiPatterns.forEach(pattern => {
+            if (pattern.test(url)) score += 4;
+        });
+
+        this.linkCollection.discoveryPatterns.hypnosisPatterns.forEach(pattern => {
+            if (pattern.test(url)) score += 2;
+        });
+
+        // Title and description scoring
+        const titleText = (linkData.title || '').toLowerCase();
+        const descText = (linkData.description || '').toLowerCase();
+
+        this.linkCollection.discoveryPatterns.bambiPatterns.forEach(pattern => {
+            if (pattern.test(titleText)) score += 3;
+            if (pattern.test(descText)) score += 2;
+        });
+
+        // Keywords scoring
+        const keywordText = linkData.keywords.join(' ').toLowerCase();
+        this.linkCollection.discoveryPatterns.bambiPatterns.forEach(pattern => {
+            if (pattern.test(keywordText)) score += 1;
+        });
+
+        // Quality indicators
+        if (linkData.qualityIndicators.hasTitle) score += 1;
+        if (linkData.qualityIndicators.hasDescription) score += 1;
+        if (linkData.qualityIndicators.isHttps) score += 1;
+        if (linkData.qualityIndicators.isTrustedDomain) score += 2;
+
+        return Math.min(score, 10); // Cap at 10
+    }
+
+    /**
+     * 🏷️ Categorize discovered links
+     */
+    categorizeLink(linkData) {
+        const url = linkData.url.toLowerCase();
+        const title = (linkData.title || '').toLowerCase();
+        const desc = (linkData.description || '').toLowerCase();
+        const domain = linkData.domain.toLowerCase();
+
+        // Official content
+        if (domain.includes('bambisleep.info') ||
+            domain.includes('bambi-sleep.com') ||
+            url.includes('official')) {
+            return 'official';
+        }
+
+        // Safety content
+        if (title.includes('safety') || desc.includes('safety') ||
+            url.includes('safety') || title.includes('consent') ||
+            desc.includes('guidelines')) {
+            return 'safety';
+        }
+
+        // Church content
+        if (url.includes('church') || title.includes('church') ||
+            desc.includes('church') || desc.includes('religious')) {
+            return 'church';
+        }
+
+        // Guides and tutorials
+        if (title.includes('guide') || title.includes('tutorial') ||
+            title.includes('how to') || desc.includes('guide') ||
+            url.includes('wiki') || url.includes('guide')) {
+            return 'guides';
+        }
+
+        // Forums and discussions
+        if (domain.includes('reddit.com') || domain.includes('forum') ||
+            url.includes('discussion') || url.includes('thread')) {
+            return 'forums';
+        }
+
+        // Tools and utilities
+        if (title.includes('tool') || title.includes('app') ||
+            title.includes('script') || url.includes('github.com')) {
+            return 'tools';
+        }
+
+        // Media content
+        if (url.includes('audio') || url.includes('video') ||
+            url.includes('media') || title.includes('file')) {
+            return 'media';
+        }
+
+        // Default to community
+        return 'community';
+    }
+
+    /**
+     * 🌐 Enrich link metadata by fetching the target page
+     */
+    async enrichLinkMetadata(linkData) {
+        try {
+            // Check if we can fetch this URL
+            if (!(await this.isUrlAllowed(linkData.url))) {
+                return;
+            }
+
+            const content = await this.fetchPageContent(linkData.url);
+            if (!content) return;
+
+            const $ = cheerio.load(content.html);
+
+            // Extract title
+            if (!linkData.title) {
+                linkData.title = $('title').text().trim() ||
+                    $('h1').first().text().trim();
+            }
+
+            // Extract description
+            if (!linkData.description) {
+                linkData.description = $('meta[name="description"]').attr('content') ||
+                    $('meta[property="og:description"]').attr('content') ||
+                    $('p').first().text().trim().substring(0, 200);
+            }
+
+            // Extract additional keywords
+            const metaKeywords = $('meta[name="keywords"]').attr('content');
+            if (metaKeywords) {
+                const additional = metaKeywords.split(',').map(k => k.trim());
+                linkData.keywords = [...new Set([...linkData.keywords, ...additional])];
+            }
+
+            // Update quality indicators
+            linkData.qualityIndicators.hasTitle = !!linkData.title;
+            linkData.qualityIndicators.hasDescription = !!linkData.description;
+
+            // Recalculate relevance score with new data
+            linkData.relevanceScore = this.calculateRelevanceScore(linkData);
+
+        } catch (error) {
+            log.warn(`⚠️ MOTHER BRAIN: Failed to enrich metadata for ${linkData.url}: ${error.message}`);
+        }
+    }
+
+    /**
+     * 🔑 Extract keywords from text content
+     */
+    extractKeywords(text) {
+        const keywords = [];
+        const words = text.toLowerCase().split(/\s+/);
+
+        // BambiSleep specific keywords
+        const bambiKeywords = ['bambi', 'sleep', 'conditioning', 'training', 'hypnosis', 'trance'];
+        const relevantKeywords = words.filter(word =>
+            bambiKeywords.some(keyword => word.includes(keyword)) ||
+            word.length > 4
+        );
+
+        return [...new Set(relevantKeywords)].slice(0, 10);
+    }
+
+    /**
+     * 🛡️ Check if domain is trusted for BambiSleep content
+     */
+    isTrustedDomain(domain) {
+        const trustedDomains = [
+            'bambisleep.info',
+            'bambi-sleep.com',
+            'reddit.com',
+            'www.reddit.com',
+            'old.reddit.com',
+            'github.com',
+            'bambisleep.fandom.com',
+            'wiki.bambi-sleep.com'
+        ];
+
+        return trustedDomains.some(trusted =>
+            domain === trusted || domain.endsWith('.' + trusted)
+        );
+    }
+
+    /**
+     * ✅ Check if link is relevant to BambiSleep
+     */
+    isRelevantToBambiSleep(linkData) {
+        // Must have minimum relevance score
+        if (linkData.relevanceScore < 3) return false;
+
+        // Check URL patterns
+        const url = linkData.url.toLowerCase();
+        const hasRelevantPattern = this.linkCollection.discoveryPatterns.bambiPatterns.some(pattern =>
+            pattern.test(url)
+        ) || this.linkCollection.discoveryPatterns.hypnosisPatterns.some(pattern =>
+            pattern.test(url)
+        );
+
+        // Check title/description patterns
+        const title = (linkData.title || '').toLowerCase();
+        const desc = (linkData.description || '').toLowerCase();
+        const hasRelevantContent = this.linkCollection.discoveryPatterns.bambiPatterns.some(pattern =>
+            pattern.test(title) || pattern.test(desc)
+        );
+
+        return hasRelevantPattern || hasRelevantContent || linkData.qualityIndicators.isTrustedDomain;
+    }
+
+    /**
+     * 📊 Get comprehensive link collection statistics
+     */
+    getLinkCollectionStats() {
+        if (!this.linkCollection) {
+            return { error: 'Link collection not initialized' };
+        }
+
+        const categories = {};
+        for (const [category, links] of this.linkCollection.categories.entries()) {
+            categories[category] = {
+                count: links.size,
+                links: Array.from(links).slice(0, 5) // Sample links
+            };
+        }
+
+        return {
+            total: {
+                discovered: this.linkCollection.stats.totalDiscovered,
+                verified: this.linkCollection.stats.totalVerified,
+                categorized: this.linkCollection.stats.categorizedLinks,
+                communityApproved: this.linkCollection.stats.communityApproved
+            },
+            categories: categories,
+            qualityDistribution: this.getQualityDistribution(),
+            recentDiscoveries: this.getRecentDiscoveries(10),
+            topDomains: this.getTopDomains(),
+            lastScanTime: this.linkCollection.stats.lastScanTime
+        };
+    }
+
+    /**
+     * 📈 Get quality distribution of discovered links
+     */
+    getQualityDistribution() {
+        const distribution = { high: 0, medium: 0, low: 0 };
+
+        for (const linkData of this.linkCollection.discoveredLinks.values()) {
+            if (linkData.relevanceScore >= 7) {
+                distribution.high++;
+            } else if (linkData.relevanceScore >= 4) {
+                distribution.medium++;
+            } else {
+                distribution.low++;
+            }
+        }
+
+        return distribution;
+    }
+
+    /**
+     * 🕒 Get recent discoveries
+     */
+    getRecentDiscoveries(limit = 10) {
+        return Array.from(this.linkCollection.discoveredLinks.values())
+            .sort((a, b) => b.discoveredAt - a.discoveredAt)
+            .slice(0, limit)
+            .map(link => ({
+                url: link.url,
+                title: link.title,
+                category: this.categorizeLink(link),
+                relevanceScore: link.relevanceScore,
+                discoveredAt: link.discoveredAt
+            }));
+    }
+
+    /**
+     * 🌐 Get top domains by link count
+     */
+    getTopDomains() {
+        const domainCounts = new Map();
+
+        for (const linkData of this.linkCollection.discoveredLinks.values()) {
+            const domain = linkData.domain;
+            domainCounts.set(domain, (domainCounts.get(domain) || 0) + 1);
+        }
+
+        return Array.from(domainCounts.entries())
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 10)
+            .map(([domain, count]) => ({ domain, count }));
+    }
+
+    /**
+     * 🔗 Export discovered links for knowledge base integration
+     */
+    exportLinksForKnowledgeBase() {
+        const exportData = {
+            metadata: {
+                exportedAt: new Date(),
+                totalLinks: this.linkCollection.discoveredLinks.size,
+                categories: Object.fromEntries(this.linkCollection.categories),
+                version: '2.0'
+            },
+            links: []
+        };
+
+        for (const [url, linkData] of this.linkCollection.discoveredLinks.entries()) {
+            if (linkData.relevanceScore >= 5) { // Only export high-quality links
+                const category = this.categorizeLink(linkData);
+
+                exportData.links.push({
+                    id: url.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase(),
+                    title: linkData.title || 'Discovered BambiSleep Resource',
+                    description: linkData.description || 'Automatically discovered BambiSleep related content',
+                    url: url,
+                    category: category,
+                    platform: linkData.domain.includes('reddit') ? 'reddit' :
+                        linkData.domain.includes('github') ? 'github' : 'web',
+                    relevanceScore: linkData.relevanceScore,
+                    tags: [...linkData.keywords, category, 'discovered', 'motherbrain'],
+                    lastUpdated: linkData.discoveredAt.toISOString().split('T')[0],
+                    verified: linkData.qualityIndicators.isTrustedDomain,
+                    discoveredBy: 'MOTHER-BRAIN-SPIDER',
+                    discoveredFrom: linkData.discoveredFrom
+                });
+            }
+        }
+
+        return exportData;
+    }
 }
 
 export { MotherBrain };

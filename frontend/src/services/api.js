@@ -102,7 +102,7 @@ export const mcpService = {
             const response = await api.get('/mcp/tools');
             const allTools = response.data.tools || [];
             const motherBrainTools = allTools.filter(tool => tool.name.startsWith('mother-brain'));
-            
+
             return {
                 tools: motherBrainTools,
                 count: motherBrainTools.length,
@@ -122,17 +122,17 @@ export const mcpService = {
     async isMotherBrainOperational() {
         try {
             const response = await this.callTool('mother-brain-status');
-            
+
             if (response.result?.content?.[0]?.text) {
                 const statusText = response.result.content[0].text;
                 return {
                     operational: statusText.includes('OPERATIONAL'),
                     initialized: !statusText.includes('not initialized'),
-                    status: statusText.includes('OPERATIONAL') ? 'online' : 
-                           statusText.includes('not initialized') ? 'offline' : 'unknown'
+                    status: statusText.includes('OPERATIONAL') ? 'online' :
+                        statusText.includes('not initialized') ? 'offline' : 'unknown'
                 };
             }
-            
+
             return { operational: false, initialized: false, status: 'unknown' };
         } catch (error) {
             return { operational: false, initialized: false, status: 'error', error: error.message };
