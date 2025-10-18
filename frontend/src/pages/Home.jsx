@@ -17,13 +17,13 @@ const Home = () => {
                 </p>
                 <div className={styles.description}>
                     <p>
-                        Welcome to the BambiSleep Church - now powered by our new 
-                        <strong> Comprehensive Mother Brain System</strong> for 
+                        Welcome to the BambiSleep Church - now powered by our new
+                        <strong> Comprehensive Mother Brain System</strong> for
                         autonomous content discovery and community curation.
                     </p>
                 </div>
             </div>
-            
+
             <div className={styles.features}>
                 <div className={styles.feature}>
                     <h3>🧠 Autonomous Discovery</h3>

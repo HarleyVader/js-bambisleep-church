@@ -7,7 +7,7 @@ const AgentKnowledgeBase = () => (
             <div style={{ background: 'rgba(255,255,255,0.1)', padding: '2rem', borderRadius: '12px', marginBottom: '2rem' }}>
                 <h2>📚 Curated BambiSleep Resources</h2>
                 <p>Community-curated knowledge base powered by the Comprehensive Mother Brain System.</p>
-                
+
                 <h3>🔍 Discovery Sources:</h3>
                 <ul>
                     <li><strong>Reddit:</strong> r/BambiSleep and related communities</li>
@@ -16,7 +16,7 @@ const AgentKnowledgeBase = () => (
                     <li><strong>Community:</strong> User-submitted resources</li>
                 </ul>
             </div>
-            
+
             <div style={{ background: 'rgba(255,255,255,0.1)', padding: '2rem', borderRadius: '12px', marginBottom: '2rem' }}>
                 <h2>🗳️ Quality Assurance Process</h2>
                 <ol>
@@ -26,7 +26,7 @@ const AgentKnowledgeBase = () => (
                     <li><strong>Knowledge Base Update:</strong> Approved content added automatically</li>
                 </ol>
             </div>
-            
+
             <div style={{ background: 'rgba(255,255,255,0.1)', padding: '2rem', borderRadius: '12px' }}>
                 <h2>📊 Current Status</h2>
                 <p>The knowledge base is continuously updated through:</p>

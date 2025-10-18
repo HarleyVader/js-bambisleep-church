@@ -15,7 +15,7 @@ const Roadmap = () => (
                     <li>✅ ComprehensiveIntegration unified orchestration</li>
                 </ul>
             </div>
-            
+
             <div style={{ background: 'rgba(255,255,255,0.1)', padding: '2rem', borderRadius: '12px', marginBottom: '2rem' }}>
                 <h2>🔄 Phase 2: Current - System Integration</h2>
                 <ul>
@@ -25,7 +25,7 @@ const Roadmap = () => (
                     <li>⏳ MongoDB integration and deployment</li>
                 </ul>
             </div>
-            
+
             <div style={{ background: 'rgba(255,255,255,0.1)', padding: '2rem', borderRadius: '12px' }}>
                 <h2>🎯 Phase 3: Future - Advanced Features</h2>
                 <ul>

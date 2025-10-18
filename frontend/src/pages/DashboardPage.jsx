@@ -12,7 +12,7 @@ const DashboardPage = () => {
                 <h1 className={styles.title}>📊 System Dashboard</h1>
                 <p className={styles.subtitle}>Mother Brain System Overview</p>
             </div>
-            
+
             <div className={styles.grid}>
                 <div className={styles.card}>
                     <h3>🧠 Mother Brain Status</h3>
@@ -22,7 +22,7 @@ const DashboardPage = () => {
                         <strong>Ready for Discovery</strong>
                     </div>
                 </div>
-                
+
                 <div className={styles.card}>
                     <h3>🗳️ Community System</h3>
                     <p className={styles.status}>Ready for Voting</p>
@@ -31,7 +31,7 @@ const DashboardPage = () => {
                         <strong>Connecting...</strong>
                     </div>
                 </div>
-                
+
                 <div className={styles.card}>
                     <h3>📚 Knowledge Base</h3>
                     <p className={styles.status}>Ready for Updates</p>
@@ -40,7 +40,7 @@ const DashboardPage = () => {
                         <strong>Loading...</strong>
                     </div>
                 </div>
-                
+
                 <div className={styles.card}>
                     <h3>🔍 Auto Discovery</h3>
                     <p className={styles.status}>Agent Ready</p>
@@ -50,7 +50,7 @@ const DashboardPage = () => {
                     </div>
                 </div>
             </div>
-            
+
             <div className={styles.info}>
                 <p>
                     🚀 <strong>Comprehensive Mother Brain System</strong> is ready for deployment.

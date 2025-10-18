@@ -7,7 +7,7 @@ const Documentation = () => (
             <div style={{ background: 'rgba(255,255,255,0.1)', padding: '2rem', borderRadius: '12px', marginBottom: '2rem' }}>
                 <h2>🧠 Mother Brain System Documentation</h2>
                 <p>Complete documentation for the Comprehensive Mother Brain System.</p>
-                
+
                 <h3>Core Components:</h3>
                 <ul>
                     <li><strong>MotherBrain.js:</strong> Enhanced web crawling engine</li>
@@ -18,7 +18,7 @@ const Documentation = () => (
                     <li><strong>ComprehensiveMotherBrainIntegration.js:</strong> Unified orchestration</li>
                 </ul>
             </div>
-            
+
             <div style={{ background: 'rgba(255,255,255,0.1)', padding: '2rem', borderRadius: '12px', marginBottom: '2rem' }}>
                 <h2>🚀 Getting Started</h2>
                 <ol>
@@ -29,7 +29,7 @@ const Documentation = () => (
                     <li>Begin autonomous discovery</li>
                 </ol>
             </div>
-            
+
             <div style={{ background: 'rgba(255,255,255,0.1)', padding: '2rem', borderRadius: '12px' }}>
                 <h2>🔗 API Endpoints</h2>
                 <p>RESTful APIs for integrating with the Mother Brain system:</p>
