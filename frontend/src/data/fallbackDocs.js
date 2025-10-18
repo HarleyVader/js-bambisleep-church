@@ -161,10 +161,12 @@ The MOTHER BRAIN system is the core intelligence powering the BambiSleep Church 
 
 ### Core Components
 
-1. **MotherBrain.js** - Primary spider system with chat integration
-2. **MinimalChatAgent.js** - MOTHER BRAIN-powered chat interface
-3. **AgenticKnowledgeBuilder.js** - AI knowledge building with MOTHER BRAIN
-4. **MotherBrainIntegration.js** - Integration utilities and helpers
+1. **MotherBrain.js** - Enhanced core web crawling engine
+2. **ComprehensiveMotherBrainIntegration.js** - Unified system orchestration
+3. **LinkCollectionEngine.js** - Intelligent processing pipeline
+4. **CommunityVotingSystem.js** - Real-time democratic curation
+5. **LinkQualityAnalyzer.js** - AI-powered content analysis
+6. **AutoDiscoveryAgent.js** - Autonomous multi-platform discovery
 
 ### Integration Status
 

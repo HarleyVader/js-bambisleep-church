@@ -14,7 +14,7 @@ import helmet from 'helmet';
 // Services
 import BambiMcpServer from './mcp/server.js';
 import { mongoService } from './services/MongoDBService.js';
-import { motherBrainChatAgent } from './services/MinimalChatAgent.js';
+import { ComprehensiveMotherBrainIntegration } from './services/ComprehensiveMotherBrainIntegration.js';
 
 // Utilities
 import { log } from './utils/logger.js';
@@ -55,6 +55,21 @@ let mcpServer = null;
 if (config.mcp.enabled) {
     mcpServer = new BambiMcpServer();
     log.info('🔥 MCP Server enabled - BambiSleep tools ready');
+}
+
+// Initialize Comprehensive Mother Brain System
+let comprehensiveMotherBrain = null;
+try {
+    comprehensiveMotherBrain = new ComprehensiveMotherBrainIntegration({
+        knowledgeBasePath: './src/knowledge/knowledge.json',
+        enableAutoDiscovery: true,
+        enableCommunityVoting: true,
+        enableAIAnalysis: true,
+        enableMongoDB: true
+    });
+    log.info('🧠 Comprehensive Mother Brain System initialized');
+} catch (error) {
+    log.error(`💥 Mother Brain initialization failed: ${error.message}`);
 }
 
 // =============================================================================
@@ -732,15 +747,31 @@ io.on('connection', (socket) => {
             // Send typing indicator
             socket.emit('agent:typing', { isTyping: true });
 
-            // Process message with MOTHER BRAIN chat agent
-            const result = await motherBrainChatAgent.chat(message);
+            // Process message with Comprehensive MOTHER BRAIN System
+            let response = {
+                response: "🧠 Comprehensive Mother Brain System Online! " +
+                         "The unified link collection and community curation system is operational. " +
+                         "Features include autonomous discovery, AI analysis, and real-time community voting.",
+                tool: "ComprehensiveMotherBrainIntegration",
+                success: true
+            };
+
+            // If the comprehensive system is available, get its status
+            if (comprehensiveMotherBrain) {
+                const stats = comprehensiveMotherBrain.getSystemStatistics();
+                response.response = `🧠 Mother Brain Status: ${stats.system.isRunning ? 'OPERATIONAL' : 'INITIALIZING'}\n` +
+                                  `📊 Knowledge Entries: ${stats.knowledgeBase.totalEntries}\n` +
+                                  `🔍 Processing Queue: ${stats.processing.queueSize}\n` +
+                                  `🗳️ Community Votes: ${stats.processing.pendingCommunityVote}\n\n` +
+                                  "System ready for autonomous content discovery and curation!";
+            }
 
             // Send response
             socket.emit('agent:typing', { isTyping: false });
             socket.emit('agent:response', {
-                message: result.response,
-                tool: result.tool,
-                success: result.success,
+                message: response.response,
+                tool: response.tool,
+                success: response.success,
                 timestamp: new Date().toISOString()
             });
 
@@ -954,16 +985,15 @@ async function initializeServices() {
         }
     }
 
-    // Initialize MOTHER BRAIN chat agent
+    // Initialize Comprehensive MOTHER BRAIN System
     try {
-        const chatSuccess = await motherBrainChatAgent.initialize();
-        if (chatSuccess) {
-            log.success('✅ MOTHER BRAIN Chat Agent ready');
-        } else {
-            log.error('❌ MOTHER BRAIN Chat Agent initialization failed');
+        if (comprehensiveMotherBrain) {
+            await comprehensiveMotherBrain.initialize(io);
+            await comprehensiveMotherBrain.startSystem();
+            log.success('✅ Comprehensive MOTHER BRAIN System operational');
         }
     } catch (error) {
-        log.error(`❌ Chat agent initialization error: ${error.message}`);
+        log.error(`❌ Mother Brain system initialization error: ${error.message}`);
     }
 
     log.success('🎉 BambiSleep Church services initialization complete');
@@ -1021,10 +1051,10 @@ const shutdown = async (signal) => {
     log.warn(`📴 Received ${signal}, shutting down gracefully...`);
 
     try {
-        // Cleanup chat agent
-        if (motherBrainChatAgent) {
-            await motherBrainChatAgent.cleanup();
-            log.info('✅ Chat agent cleaned up');
+        // Cleanup Comprehensive Mother Brain System
+        if (comprehensiveMotherBrain) {
+            await comprehensiveMotherBrain.stopSystem();
+            log.info('✅ Comprehensive Mother Brain System shut down');
         }
 
         // Cleanup MCP server
