@@ -70,6 +70,9 @@ class ComprehensiveMotherBrainIntegration extends EventEmitter {
             autoDiscoveryAgent: null
         };
 
+        // External service status
+        this.lmStudioConnected = false;
+
         // System state
         this.systemState = {
             isInitialized: false,
@@ -118,6 +121,10 @@ class ComprehensiveMotherBrainIntegration extends EventEmitter {
     async initialize(io = null) {
         try {
             log.info('🚀 COMPREHENSIVE MOTHER BRAIN INTEGRATION: Starting system initialization...');
+
+            // 0. Check external service availability
+            this.lmStudioConnected = await lmStudioService.isHealthy();
+            log.info(`🔌 LMStudio status: ${this.lmStudioConnected ? 'Connected' : 'Disconnected'}`);
 
             // 1. Initialize core components
             await this.initializeComponents();
@@ -1011,7 +1018,7 @@ class ComprehensiveMotherBrainIntegration extends EventEmitter {
 
             externalServices: {
                 mongodb: mongoService.isConnected(),
-                lmstudio: lmStudioService.isConnected()
+                lmstudio: this.lmStudioConnected || false
             }
         };
     }

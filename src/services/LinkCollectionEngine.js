@@ -514,7 +514,7 @@ class LinkCollectionEngine {
             validationResult.communityScore = this.calculateCommunityScore(linkData);
 
             // AI analysis if enabled
-            if (this.config.useAIAnalysis && lmStudioService.isConnected()) {
+            if (this.config.useAIAnalysis && (await lmStudioService.isHealthy())) {
                 validationResult.aiScore = await this.performAIAnalysis(linkData);
             }
 

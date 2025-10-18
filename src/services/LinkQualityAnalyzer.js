@@ -51,6 +51,9 @@ class LinkQualityAnalyzer {
             ...config
         };
 
+        // AI availability status
+        this.aiAvailable = false;
+
         // Analysis cache
         this.analysisCache = new Map(); // url -> analysis result
         this.pendingAnalyses = new Map(); // url -> Promise
@@ -91,7 +94,8 @@ class LinkQualityAnalyzer {
             log.info('🚀 LINK QUALITY ANALYZER: Starting initialization...');
 
             // Verify LMStudio connection
-            if (!lmStudioService.isConnected()) {
+            this.aiAvailable = await lmStudioService.isHealthy();
+            if (!this.aiAvailable) {
                 log.warn('⚠️ LMStudio not connected - AI analysis will be limited');
             } else {
                 log.success('🔌 LMStudio connected - Full AI analysis available');
@@ -213,7 +217,7 @@ class LinkQualityAnalyzer {
 
             // Confidence metrics
             analysisConfidence: 0,
-            aiAvailable: lmStudioService.isConnected(),
+            aiAvailable: await lmStudioService.isHealthy(),
 
             // Flags and warnings
             safetyFlags: [],
@@ -251,7 +255,7 @@ class LinkQualityAnalyzer {
         }
 
         // 3. AI-powered deep analysis (if available)
-        if (lmStudioService.isConnected() && this.config.useAdvancedAnalysis) {
+        if ((await lmStudioService.isHealthy()) && this.config.useAdvancedAnalysis) {
             try {
                 const aiAnalysis = await this.performAIAnalysis(linkData, analysisResult.contentAnalysis);
 
@@ -972,7 +976,7 @@ REASONING: [brief explanation]
             ...this.qualityMetrics,
             cacheSize: this.analysisCache.size,
             pendingAnalyses: this.pendingAnalyses.size,
-            aiAvailable: lmStudioService.isConnected(),
+            aiAvailable: this.aiAvailable,
             config: {
                 useAdvancedAnalysis: this.config.useAdvancedAnalysis,
                 confidenceThreshold: this.config.confidenceThreshold,

@@ -750,8 +750,8 @@ io.on('connection', (socket) => {
             // Process message with Comprehensive MOTHER BRAIN System
             let response = {
                 response: "🧠 Comprehensive Mother Brain System Online! " +
-                         "The unified link collection and community curation system is operational. " +
-                         "Features include autonomous discovery, AI analysis, and real-time community voting.",
+                    "The unified link collection and community curation system is operational. " +
+                    "Features include autonomous discovery, AI analysis, and real-time community voting.",
                 tool: "ComprehensiveMotherBrainIntegration",
                 success: true
             };
@@ -760,10 +760,10 @@ io.on('connection', (socket) => {
             if (comprehensiveMotherBrain) {
                 const stats = comprehensiveMotherBrain.getSystemStatistics();
                 response.response = `🧠 Mother Brain Status: ${stats.system.isRunning ? 'OPERATIONAL' : 'INITIALIZING'}\n` +
-                                  `📊 Knowledge Entries: ${stats.knowledgeBase.totalEntries}\n` +
-                                  `🔍 Processing Queue: ${stats.processing.queueSize}\n` +
-                                  `🗳️ Community Votes: ${stats.processing.pendingCommunityVote}\n\n` +
-                                  "System ready for autonomous content discovery and curation!";
+                    `📊 Knowledge Entries: ${stats.knowledgeBase.totalEntries}\n` +
+                    `🔍 Processing Queue: ${stats.processing.queueSize}\n` +
+                    `🗳️ Community Votes: ${stats.processing.pendingCommunityVote}\n\n` +
+                    "System ready for autonomous content discovery and curation!";
             }
 
             // Send response

@@ -1,0 +1,85 @@
+{
+    "safety-basics": {
+        "title": "BambiSleep Safety Basics",
+        "description": "Essential safety information for BambiSleep practice including consent, boundaries, and risk awareness.",
+        "category": "safety",
+        "url": "https://bambisleep.com/safety",
+        "platform": "official",
+        "relevanceScore": 10,
+        "tags": [
+            "safety",
+            "consent",
+            "basics",
+            "essential"
+        ],
+        "lastUpdated": "2024-10-12",
+        "verified": true
+    },
+    "community-guidelines": {
+        "title": "Community Guidelines",
+        "description": "Guidelines for safe and respectful participation in the BambiSleep community.",
+        "category": "community",
+        "url": "https://bambisleep.com/guidelines",
+        "platform": "official",
+        "relevanceScore": 9,
+        "tags": [
+            "community",
+            "guidelines",
+            "respect",
+            "participation"
+        ],
+        "lastUpdated": "2024-10-12",
+        "verified": true
+    },
+    "church-establishment": {
+        "title": "BambiSleep Church Establishment",
+        "description": "Information about establishing BambiSleep Church as a legal Austrian religious community.",
+        "category": "church",
+        "url": "/mission",
+        "platform": "church",
+        "relevanceScore": 8,
+        "tags": [
+            "church",
+            "austria",
+            "legal",
+            "community",
+            "religious"
+        ],
+        "lastUpdated": "2024-10-12",
+        "verified": true
+    },
+    "hypnosis-basics": {
+        "title": "Hypnosis and Consent Fundamentals",
+        "description": "Understanding hypnosis, trance states, and the critical importance of ongoing consent.",
+        "category": "education",
+        "url": "https://bambisleep.com/education/hypnosis-basics",
+        "platform": "official",
+        "relevanceScore": 9,
+        "tags": [
+            "hypnosis",
+            "consent",
+            "education",
+            "trance",
+            "fundamentals"
+        ],
+        "lastUpdated": "2024-10-12",
+        "verified": true
+    },
+    "digital-sanctuary": {
+        "title": "Digital Sanctuary Concept",
+        "description": "How BambiSleep Church provides a digital sanctuary for safe practice and community building.",
+        "category": "church",
+        "url": "/knowledge",
+        "platform": "church",
+        "relevanceScore": 7,
+        "tags": [
+            "sanctuary",
+            "digital",
+            "safety",
+            "community",
+            "practice"
+        ],
+        "lastUpdated": "2024-10-12",
+        "verified": true
+    }
+}
