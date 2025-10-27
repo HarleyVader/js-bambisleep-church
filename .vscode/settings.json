@@ -1,0 +1,137 @@
+{
+    // MCP Control Tower Development Settings
+    // Based on .github/copilot-instructions.md
+    // GitHub Copilot Configuration
+    "github.copilot.enable": {
+        "*": true,
+        "yaml": true,
+        "plaintext": false,
+        "markdown": true,
+        "javascript": true,
+        "typescript": true,
+        "json": true,
+        "jsonc": true
+    },
+    "github.copilot.editor.enableAutoCompletions": true,
+    "github.copilot.chat.welcomeMessage": "always",
+    "github.copilot.advanced": {
+        "organizationName": "BambiSleepChat"
+    },
+    // Editor Configuration for MCP Development
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": null,
+    "editor.codeActionsOnSave": {
+        "source.fixAll": "explicit",
+        "source.organizeImports": "explicit"
+    },
+    "editor.rulers": [
+        80,
+        120
+    ],
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true,
+    // File Associations for MCP Project
+    "files.associations": {
+        "*.json": "jsonc",
+        "*.jsonc": "jsonc",
+        ".cursorrules": "markdown",
+        ".windsurfrules": "markdown",
+        ".clinerules": "markdown"
+    },
+    "files.exclude": {
+        "**/node_modules": true,
+        "**/package-lock.json": false,
+        "**/.git": false
+    },
+    // JavaScript/TypeScript Settings
+    "javascript.updateImportsOnFileMove.enabled": "always",
+    "typescript.updateImportsOnFileMove.enabled": "always",
+    "javascript.suggest.autoImports": true,
+    "typescript.suggest.autoImports": true,
+    // Prettier Configuration (when extension is available)
+    "[javascript]": {
+        "editor.defaultFormatter": null
+    },
+    "[typescript]": {
+        "editor.defaultFormatter": null
+    },
+    "[json]": {
+        "editor.defaultFormatter": "vscode.json-language-features"
+    },
+    "[jsonc]": {
+        "editor.defaultFormatter": "vscode.json-language-features"
+    },
+    // Tailwind CSS Support
+    "tailwindCSS.includeLanguages": {
+        "javascript": "javascript",
+        "html": "html",
+        "css": "css"
+    },
+    "css.validate": false,
+    "scss.validate": false,
+    // Terminal Configuration
+    "terminal.integrated.defaultProfile.linux": "bash",
+    "terminal.integrated.cwd": "/workspace",
+    // Debug Configuration
+    "debug.allowBreakpointsEverywhere": true,
+    "debug.internalConsoleOptions": "openOnSessionStart",
+    // Extension Recommendations Alignment
+    "extensions.ignoreRecommendations": false,
+    // Git Configuration for MCP Development
+    "git.enableSmartCommit": true,
+    "git.confirmSync": false,
+    "git.autofetch": true,
+    // JSON Schema Validation
+    "json.schemaDownload.enable": true,
+    "json.validate.enable": true,
+    // Live Server Configuration (for port 3000 dashboard)
+    "liveServer.settings.port": 3000,
+    "liveServer.settings.CustomBrowser": "microsoft-edge",
+    // ECL Configuration (keeping existing)
+    "ecl.launchConfiguration": "not found",
+    "ecl.targetCluster": {},
+    // MCP Server Configuration (Model Context Protocol)
+    // These servers provide filesystem, git, and github integration
+    "mcp.servers": {
+        "filesystem": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-filesystem",
+                "/workspace"
+            ]
+        },
+        "git": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-git",
+                "--repository",
+                "/workspace"
+            ]
+        },
+        "github": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-github"
+            ]
+        }
+    },
+    // Search Configuration
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/package-lock.json": true,
+        "**/.git": true
+    },
+    // Workspace Trust
+    "security.workspace.trust.untrustedFiles": "open",
+    // Emmet Configuration
+    "emmet.includeLanguages": {
+        "javascript": "javascriptreact",
+        "typescript": "typescriptreact"
+    },
+    // Problems Panel Configuration
+    "problems.decorations.enabled": true,
+    "problems.showCurrentInStatus": true
+}

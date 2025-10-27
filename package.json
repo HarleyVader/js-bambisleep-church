@@ -1,0 +1,41 @@
+{
+  "name": "@bambisleepchat/bambisleep-church",
+  "version": "1.0.0",
+  "description": "BambiSleep™ Church MCP Control Tower - Model Context Protocol server management and orchestration",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "echo 'Development server not yet implemented'",
+    "build": "echo 'Build process not yet implemented'",
+    "test": "echo 'Tests not yet implemented'",
+    "start": "echo 'Production server not yet implemented'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BambiSleepChat/bambisleep-church.git"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "control-tower",
+    "bambisleep",
+    "server-management"
+  ],
+  "author": "BambiSleepChat Organization",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/BambiSleepChat/bambisleep-church/issues"
+  },
+  "homepage": "https://github.com/BambiSleepChat/bambisleep-church#readme",
+  "organization": {
+    "name": "BambiSleepChat",
+    "trademark": "BambiSleep™ is a trademark of BambiSleepChat",
+    "url": "https://github.com/BambiSleepChat"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  }
+}
