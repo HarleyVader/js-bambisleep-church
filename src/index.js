@@ -81,6 +81,17 @@ if (process.env.CLARITY_PROJECT_ID) {
   };
 }
 
+// Add Cathedral MCP Tools if Unity is enabled
+// This is a custom MCP server wrapping Unity cathedral functionality
+if (process.env.UNITY_ENABLED !== 'false') {
+  MCP_SERVERS.cathedral = {
+    command: 'node',
+    args: [path.join(__dirname, 'mcp', 'cathedral-server.js')],
+    type: 'custom', // Indicates this is a custom server, not from npm registry
+    description: 'Unity Cathedral 3D visualization and interaction tools'
+  };
+}
+
 // Initialize orchestrator
 const orchestrator = new MCPOrchestrator({
   workspacePath: CONFIG.workspacePath,

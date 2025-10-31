@@ -1066,5 +1066,66 @@ namespace BambiSleep.Cathedral
       public int totalFrames;
       public float uptime;
     }
+
+    /// <summary>
+    /// Update visual effects in real-time
+    /// Called when style parameters change via MCP tools
+    /// </summary>
+    public void UpdateVisuals()
+    {
+      Debug.Log("🎨 Updating cathedral visuals...");
+
+      // Update neon light intensities
+      foreach (Light neonLight in neonLights)
+      {
+        if (neonLight != null)
+        {
+          neonLight.intensity = style.neonIntensity;
+          neonLight.color = Color.Lerp(neonLight.color, style.primaryNeonColor, style.pinkIntensity);
+        }
+      }
+
+      // Update material colors
+      UpdateMaterialColors();
+
+      // Update particle systems
+      foreach (ParticleSystem ps in glowParticles)
+      {
+        if (ps != null)
+        {
+          var main = ps.main;
+          main.startColor = new ParticleSystem.MinMaxGradient(
+            Color.Lerp(Color.white, style.primaryNeonColor, style.pinkIntensity)
+          );
+        }
+      }
+
+      Debug.Log($"✨ Visuals updated - Pink:{style.pinkIntensity:F2} Eldritch:{style.eldritchLevel} Neon:{style.neonIntensity:F2}");
+    }
+
+    /// <summary>
+    /// Update all material colors based on current style
+    /// </summary>
+    void UpdateMaterialColors()
+    {
+      if (cathedralRoot == null) return;
+
+      Renderer[] renderers = cathedralRoot.GetComponentsInChildren<Renderer>();
+      foreach (Renderer rend in renderers)
+      {
+        if (rend != null && rend.material != null)
+        {
+          Color baseColor = rend.material.color;
+          Color newColor = Color.Lerp(baseColor, style.primaryNeonColor, style.pinkIntensity * 0.5f);
+          rend.material.color = newColor;
+
+          // Update emission
+          if (rend.material.HasProperty("_EmissionColor"))
+          {
+            rend.material.SetColor("_EmissionColor", newColor * style.neonIntensity);
+          }
+        }
+      }
+    }
   }
 }

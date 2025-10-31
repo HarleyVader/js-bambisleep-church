@@ -153,6 +153,16 @@
                 "-y",
                 "@modelcontextprotocol/server-microsoft-clarity"
             ]
+        },
+        "cathedral": {
+            "command": "node",
+            "args": [
+                "f:\\js-bambisleep-church\\src\\mcp\\cathedral-server.js"
+            ],
+            "env": {
+                "UNITY_PATH": "C:\\Program Files\\Unity\\Hub\\Editor\\6000.2.11f1\\Editor\\Unity.exe",
+                "UNITY_ENABLED": "true"
+            }
         }
     },
     // Search Configuration

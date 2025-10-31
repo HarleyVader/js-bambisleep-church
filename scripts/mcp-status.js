@@ -92,8 +92,13 @@ function checkServerAvailability(serverName, config) {
       return;
     }
 
+    const serverProcess = spawn(config.command, [...config.args, '--help'], {
+      stdio: ['ignore', 'pipe', 'pipe'],
+      env: { ...process.env }
+    });
+
     const timeout = setTimeout(() => {
-      process.kill();
+      serverProcess.kill();
       resolve({
         name: serverName,
         status: 'TIMEOUT',
@@ -102,23 +107,18 @@ function checkServerAvailability(serverName, config) {
       });
     }, 5000);
 
-    const process = spawn(config.command, [...config.args, '--help'], {
-      stdio: ['ignore', 'pipe', 'pipe'],
-      env: { ...process.env }
-    });
-
     let stdout = '';
     let stderr = '';
 
-    process.stdout.on('data', (data) => {
+    serverProcess.stdout.on('data', (data) => {
       stdout += data.toString();
     });
 
-    process.stderr.on('data', (data) => {
+    serverProcess.stderr.on('data', (data) => {
       stderr += data.toString();
     });
 
-    process.on('exit', (code) => {
+    serverProcess.on('exit', (code) => {
       clearTimeout(timeout);
       resolve({
         name: serverName,
@@ -129,7 +129,7 @@ function checkServerAvailability(serverName, config) {
       });
     });
 
-    process.on('error', (err) => {
+    serverProcess.on('error', (err) => {
       clearTimeout(timeout);
       resolve({
         name: serverName,
