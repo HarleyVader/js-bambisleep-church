@@ -212,19 +212,21 @@ Unity Cathedral (C# MCPToolHandler)
 ### MCP Server Registration
 
 **In `src/index.js`** (lines 76-83):
+
 ```javascript
 // Conditional loading based on UNITY_ENABLED env var
-if (process.env.UNITY_ENABLED !== 'false') {
+if (process.env.UNITY_ENABLED !== "false") {
   MCP_SERVERS.cathedral = {
-    command: 'node',
-    args: [path.join(__dirname, 'mcp', 'cathedral-server.js')],
-    type: 'custom',
-    description: 'Unity Cathedral 3D visualization and interaction tools'
+    command: "node",
+    args: [path.join(__dirname, "mcp", "cathedral-server.js")],
+    type: "custom",
+    description: "Unity Cathedral 3D visualization and interaction tools",
   };
 }
 ```
 
 **In `.vscode/settings.json`** (lines 165-174):
+
 ```jsonc
 "cathedral": {
   "command": "node",
@@ -238,18 +240,19 @@ if (process.env.UNITY_ENABLED !== 'false') {
 
 ### 6 MCP Tools Available
 
-| Tool | Input Parameters | Returns |
-|------|------------------|---------|
-| `setCathedralStyle` | pinkIntensity, eldritchLevel, neonIntensity, lightingMode | Visual update confirmation |
-| `spawnObject` | objectType, x/y/z, scale, color | Spawned object details |
-| `applyPhysics` | action, x/y/z, force, radius | Physics result (affected count) |
-| `clearObjects` | (none) | Cleanup confirmation |
-| `getCathedralStatus` | (none) | FPS, object count, uptime, style |
-| `setTimeOfDay` | hour (0-24) | Lighting update confirmation |
+| Tool                 | Input Parameters                                          | Returns                          |
+| -------------------- | --------------------------------------------------------- | -------------------------------- |
+| `setCathedralStyle`  | pinkIntensity, eldritchLevel, neonIntensity, lightingMode | Visual update confirmation       |
+| `spawnObject`        | objectType, x/y/z, scale, color                           | Spawned object details           |
+| `applyPhysics`       | action, x/y/z, force, radius                              | Physics result (affected count)  |
+| `clearObjects`       | (none)                                                    | Cleanup confirmation             |
+| `getCathedralStatus` | (none)                                                    | FPS, object count, uptime, style |
+| `setTimeOfDay`       | hour (0-24)                                               | Lighting update confirmation     |
 
 ### JSON-RPC 2.0 Protocol Flow
 
 **1. Initialization:**
+
 ```json
 // Client → Server
 {
@@ -276,6 +279,7 @@ if (process.env.UNITY_ENABLED !== 'false') {
 ```
 
 **2. Tool Discovery:**
+
 ```json
 // Client → Server
 { "jsonrpc": "2.0", "id": 2, "method": "tools/list" }
@@ -298,6 +302,7 @@ if (process.env.UNITY_ENABLED !== 'false') {
 ```
 
 **3. Tool Execution:**
+
 ```json
 // Client → Server
 {
@@ -333,6 +338,7 @@ if (process.env.UNITY_ENABLED !== 'false') {
 ### Usage from AI Agents
 
 **In Claude Desktop** - Tools appear automatically in tools list:
+
 ```
 🔧 Available MCP Tools:
   → setCathedralStyle
@@ -344,14 +350,17 @@ if (process.env.UNITY_ENABLED !== 'false') {
 ```
 
 **In VS Code** - AI agents can discover and call tools:
+
 ```typescript
 // AI agent workflow
 const tools = await mcpClient.listTools();
-const result = await mcpClient.callTool('spawnObject', {
-  objectType: 'cross',
-  x: 5, y: 10, z: 0,
+const result = await mcpClient.callTool("spawnObject", {
+  objectType: "cross",
+  x: 5,
+  y: 10,
+  z: 0,
   scale: 2.0,
-  color: '#FFB6C1'
+  color: "#FFB6C1",
 });
 ```
 
@@ -371,12 +380,14 @@ echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":
 ### Error Handling
 
 **MCP Error Codes:**
+
 - `-32600` - Invalid Request (not JSON-RPC 2.0)
 - `-32601` - Method not found
 - `-32700` - Parse error (invalid JSON)
 - `-32603` - Internal error (Unity crash, etc.)
 
 **Custom Error Codes:**
+
 - `MCP_DISABLED` - Unity not enabled
 - `UNITY_ERROR` - Unity-side error
 - `TIMEOUT` - 30s timeout exceeded
@@ -386,14 +397,16 @@ echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":
 
 ```javascript
 // ❌ NEVER DO THIS in STDIO servers:
-console.log('Debug message'); // Corrupts JSON-RPC on stdout
+console.log("Debug message"); // Corrupts JSON-RPC on stdout
 
 // ✅ ALWAYS DO THIS:
-process.stderr.write(JSON.stringify({
-  timestamp: new Date().toISOString(),
-  level: 'info',
-  message: 'Debug message'
-}) + '\n');
+process.stderr.write(
+  JSON.stringify({
+    timestamp: new Date().toISOString(),
+    level: "info",
+    message: "Debug message",
+  }) + "\n"
+);
 ```
 
 ### Performance Metrics
