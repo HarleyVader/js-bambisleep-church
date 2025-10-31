@@ -71,7 +71,7 @@
     "scss.validate": false,
     // Terminal Configuration
     "terminal.integrated.defaultProfile.linux": "bash",
-    "terminal.integrated.cwd": "/workspace",
+    "terminal.integrated.cwd": "/mnt/f/bambisleep-church",
     // Debug Configuration
     "debug.allowBreakpointsEverywhere": true,
     "debug.internalConsoleOptions": "openOnSessionStart",
@@ -133,5 +133,8 @@
     },
     // Problems Panel Configuration
     "problems.decorations.enabled": true,
-    "problems.showCurrentInStatus": true
+    "problems.showCurrentInStatus": true,
+    // Spell Checker Configuration
+    "cSpell.enabled": true,
+    "cSpell.showStatus": true
 }

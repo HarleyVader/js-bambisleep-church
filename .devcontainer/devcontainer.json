@@ -19,18 +19,24 @@
 			"extensions": [
 				"ms-vscode.vscode-json",
 				"bradlc.vscode-tailwindcss",
-				"esbenp.prettier-vscode"
+				"esbenp.prettier-vscode",
+				"streetsidesoftware.code-spell-checker"
 			]
 		}
 	},
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [
 		3000,
+		4000,
 		8080
 	],
 	"portsAttributes": {
 		"3000": {
 			"label": "Control Tower Dashboard",
+			"onAutoForward": "notify"
+		},
+		"4000": {
+			"label": "Documentation Server",
 			"onAutoForward": "notify"
 		}
 	},

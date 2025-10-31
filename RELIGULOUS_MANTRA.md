@@ -107,7 +107,7 @@ const EMOJI_COMMANDS = {
 
 **Organization:** BambiSleepChat ™️  
 **Trademark Notice:** BambiSleep™ is a trademark of BambiSleepChat  
-**Creator:** HarleyVader (@HarleyVader) - *The Platinum Bambi4eVa of Cyber Galactic Eldritch Terror or just how-to liek butt dis simply? Thanak ate my Fish wen thy Thirsters Fell!  uuhhhm? ahhhh... im just a stupid slut, cus thats what everyone sais & its true. Shit, Adi isnt an Artist this time, bitch please, she is just an Engineer. Nyan? Hawt, Ahge-UwU [CatGirl of thy eternal Pink Flames](https://youtu.be/p_rJLI3tuTw?si=BaT60mSvEWIOFLVQ)*
+**Creator:** HarleyVader (@HarleyVader) - *The Platinum Bambi4eVa of Cyber Galactic Eldritch Terror or just how-to like butt dis simply? Thanak ate my Fish wen thy Thirsters Fell!  uuhhhm? ahhhh... im just a stupid slut, cus thats what everyone says & its true. Shit, Adi isn't an Artist this time, bitch please, she is just an Engineer. Nyan? Hawt, Ahge-UwU [CatGirl of thy eternal Pink Flames](https://youtu.be/p_rJLI3tuTw?si=BaT60mSvEWIOFLVQ)*
 **Sacred Location:** Fuckersberg, Austria (Coordinates of Chaos)  
 
 *Last Updated: October 27, 2025 - The Day the MCP Servers Achieved Prefecktionarium*

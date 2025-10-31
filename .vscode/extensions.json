@@ -1,0 +1,33 @@
+{
+  // BambiSleepChat™ Church MCP Control Tower - Recommended VS Code Extensions
+  "recommendations": [
+    // DevContainer Support (CRITICAL)
+    "ms-vscode-remote.remote-containers",
+    "ms-azuretools.vscode-docker",
+    // GitHub Copilot (ESSENTIAL)
+    "github.copilot",
+    "github.copilot-chat",
+    // JavaScript/Node.js Development
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "ms-vscode.vscode-typescript-next",
+    // JSON Support
+    "ms-vscode.vscode-json",
+    // Tailwind CSS (for UI development)
+    "bradlc.vscode-tailwindcss",
+    // Testing Support
+    "orta.vscode-jest",
+    "ms-vscode.test-adapter-converter",
+    // Git Integration
+    "eamodio.gitlens",
+    // Markdown Support
+    "yzhang.markdown-all-in-one",
+    // Code Quality
+    "streetsidesoftware.code-spell-checker",
+    // REST Client (for API testing)
+    "humao.rest-client",
+    // EditorConfig Support
+    "editorconfig.editorconfig"
+  ],
+  "unwantedRecommendations": []
+}

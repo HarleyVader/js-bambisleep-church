@@ -1,0 +1,153 @@
+{
+  // BambiSleepChat™ Church MCP Control Tower - VS Code Tasks
+  // See https://go.microsoft.com/fwlink/?LinkId=733558
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "🌸 Start Control Tower (Dev)",
+      "type": "npm",
+      "script": "dev",
+      "problemMatcher": [],
+      "detail": "Start development server with auto-reload on port 3000",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "💎 Run Tests (100% Coverage)",
+      "type": "npm",
+      "script": "test",
+      "problemMatcher": [],
+      "detail": "Run Jest test suite with coverage enforcement",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "🌀 Check MCP Server Status",
+      "type": "npm",
+      "script": "mcp:status",
+      "problemMatcher": [],
+      "detail": "Verify 8/8 MCP server operational status",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    },
+    {
+      "label": "📚 Start Documentation Server",
+      "type": "npm",
+      "script": "docs",
+      "problemMatcher": [],
+      "detail": "Launch documentation server on port 4000",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    },
+    {
+      "label": "🚀 Start Production Server",
+      "type": "npm",
+      "script": "start",
+      "problemMatcher": [],
+      "detail": "Launch production server on port 3000",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    },
+    {
+      "label": "🧹 Lint & Fix Code",
+      "type": "npm",
+      "script": "lint:fix",
+      "problemMatcher": [
+        "$eslint-stylish"
+      ],
+      "detail": "Run ESLint with auto-fix",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    },
+    {
+      "label": "💅 Format Code (Prettier)",
+      "type": "npm",
+      "script": "format",
+      "problemMatcher": [],
+      "detail": "Format all JavaScript files with Prettier",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    },
+    {
+      "label": "🔍 Test Watch Mode",
+      "type": "npm",
+      "script": "test:watch",
+      "problemMatcher": [],
+      "detail": "Run tests in watch mode for continuous development",
+      "isBackground": true,
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    },
+    {
+      "label": "🏗️ Build Production",
+      "type": "npm",
+      "script": "build",
+      "problemMatcher": [],
+      "detail": "Run tests and build documentation",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    }
+  ]
+}
