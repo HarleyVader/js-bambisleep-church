@@ -1,9 +1,6 @@
 {
   // BambiSleepChat™ Church MCP Control Tower - Recommended VS Code Extensions
   "recommendations": [
-    // DevContainer Support (CRITICAL)
-    "ms-vscode-remote.remote-containers",
-    "ms-azuretools.vscode-docker",
     // GitHub Copilot (ESSENTIAL)
     "github.copilot",
     "github.copilot-chat",

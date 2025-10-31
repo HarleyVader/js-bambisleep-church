@@ -98,7 +98,7 @@
             "args": [
                 "-y",
                 "@modelcontextprotocol/server-filesystem",
-                "/workspace"
+                "/mnt/f/bambisleep-church"
             ]
         },
         "git": {
@@ -107,7 +107,7 @@
                 "-y",
                 "@modelcontextprotocol/server-git",
                 "--repository",
-                "/workspace"
+                "/mnt/f/bambisleep-church"
             ]
         },
         "github": {

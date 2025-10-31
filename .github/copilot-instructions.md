@@ -17,24 +17,21 @@ This is an MCP (Model Context Protocol) Control Tower for managing and orchestra
 - **Package.json**: Configured but all npm scripts are placeholders (`echo 'not yet implemented'`)
 - **Source Code**: `src/ui/` directory exists but is empty - no actual implementation yet
 - **Test Infrastructure**: Jest coverage reports exist showing previous MCP orchestrator and logger implementations
-- **Container Setup**: Fully configured devcontainer with proper BambiSleepChat organization labels
 - **VS Code Integration**: Complete configuration for MCP servers, tasks, and AI assistant integration
 
 ## Architecture & Current State
 
 ### MCP Server Configuration (3/8 Active)
 - **Location**: `.vscode/settings.json` - MCP server registry with proper workspace paths
-- **Active Servers**: `filesystem`, `git`, `github` (configured for `/workspace`)
+- **Active Servers**: `filesystem`, `git`, `github` (configured for `/mnt/f/bambisleep-church`)
 - **Missing Servers**: MongoDB, Stripe, HuggingFace, Azure Quantum, Microsoft Clarity (per RELIGULOUS_MANTRA.md)
 - **Pattern**: All servers use `npx -y @modelcontextprotocol/server-*` to avoid version conflicts
 
-### Container Architecture 
-- **Base**: `mcr.microsoft.com/devcontainers/javascript-node:1-20-bullseye` with BambiSleepChat labels
-- **Organization Labels**: Full trademark compliance via `org.bambi.*` labels (see CONTAINER_ORGANIZATION.md)  
-- **Workspace**: Bind mount `/workspace` for live development
-- **Ports**: 3000 (Control Tower), 4000 (Docs), 8080 (secondary), forwarded in devcontainer.json
-- **Extensions**: JSON, Tailwind CSS, Prettier, Code Spell Checker auto-installed
-- **Features**: Git and GitHub CLI included via devcontainer features
+### Development Environment
+- **Node.js**: Version 20+ LTS required for MCP server compatibility
+- **Ports**: 3000 (Control Tower), 4000 (Docs), 8080 (secondary)
+- **Extensions**: JSON, Tailwind CSS, Prettier, Code Spell Checker recommended
+- **Tools**: Git and GitHub CLI for repository management
 
 ### Test Infrastructure (Evidence Exists)
 - **Coverage Reports**: Jest coverage in `/coverage/` shows ~79% for MCP orchestrator
@@ -64,36 +61,16 @@ All npm scripts are currently placeholders that echo 'not yet implemented':
 
 ### BambiSleepChat Organization Compliance
 - **Trademark**: Always use "BambiSleep™" with symbol in public materials
-- **Container Registry**: `ghcr.io/bambisleepchat/bambisleep-church`
-- **Labeling**: All containers must include org.bambi.* labels (see CONTAINER_ORGANIZATION.md)
 - **Repository**: Proper GitHub organization attribution required
-
-#### Required Container Labels (CRITICAL)
-All Dockerfiles MUST include these labels for trademark compliance:
-```dockerfile
-LABEL org.opencontainers.image.vendor="BambiSleepChat"
-LABEL org.opencontainers.image.source="https://github.com/BambiSleepChat/bambisleep-church"
-LABEL org.opencontainers.image.documentation="https://github.com/BambiSleepChat/bambisleep-church"
-LABEL org.opencontainers.image.licenses="MIT"
-LABEL org.opencontainers.image.title="BambiSleep Church MCP Control Tower"
-LABEL org.opencontainers.image.description="Model Context Protocol server management and orchestration for BambiSleep Church"
-LABEL org.bambi.trademark="BambiSleep™ is a trademark of BambiSleepChat"
-LABEL org.bambi.organization="BambiSleepChat"
-```
-
-#### Container Registry Tagging Convention
-- `latest` - Latest stable release
-- `main` - Latest main branch build  
-- `v{major}.{minor}.{patch}` - Semantic version releases
-- `dev-{branch}` - Development branches
+- **License**: MIT license with proper BambiSleepChat attribution
 
 ## Critical Configuration Files
 
 ### VS Code MCP Integration (`.vscode/settings.json`)
 ```jsonc
 "mcp.servers": {
-  "filesystem": { "command": "npx", "args": ["-y", "@modelcontextprotocol/server-filesystem", "/workspace"] },
-  "git": { "command": "npx", "args": ["-y", "@modelcontextprotocol/server-git", "--repository", "/workspace"] },
+  "filesystem": { "command": "npx", "args": ["-y", "@modelcontextprotocol/server-filesystem", "/mnt/f/bambisleep-church"] },
+  "git": { "command": "npx", "args": ["-y", "@modelcontextprotocol/server-git", "--repository", "/mnt/f/bambisleep-church"] },
   "github": { "command": "npx", "args": ["-y", "@modelcontextprotocol/server-github"] }
 }
 ```
@@ -143,11 +120,7 @@ Add these to `.vscode/settings.json` mcp.servers section:
 │   ├── settings.json          # MCP server registry + GitHub Copilot config
 │   ├── tasks.json             # Emoji-prefixed task definitions
 │   └── launch.json            # Edge browser debugging
-├── .devcontainer/             # Container with org labels
-│   ├── devcontainer.json      # Container config with port forwarding
-│   └── Dockerfile             # Custom container with org labels
 ├── RELIGULOUS_MANTRA.md       # Philosophical framework & emoji mappings
-├── CONTAINER_ORGANIZATION.md  # Trademark compliance guide
 ├── cspell.json                # Spell checker config with technical terms
 └── package.json               # Complete project config (scripts are placeholders)
 ```
@@ -156,7 +129,7 @@ Add these to `.vscode/settings.json` mcp.servers section:
 
 #### MCP Server Management
 - **Add New Server**: Update `.vscode/settings.json` mcp.servers section
-- **Path Consistency**: All servers use `/workspace` as repository path
+- **Path Consistency**: All servers use `/mnt/f/bambisleep-church` as repository path
 - **Version Safety**: `npx -y` prevents local version conflicts
 - **Target Goal**: 8/8 servers (filesystem, git, github, mongodb, stripe, huggingface, azure-quantum, clarity)
 
@@ -214,11 +187,9 @@ Add these to `.vscode/settings.json` mcp.servers section:
 ```
 
 #### Trademark & Organization Compliance
-```dockerfile
-# Required in all containers (from .devcontainer/Dockerfile)
-LABEL org.bambi.trademark="BambiSleep™ is a trademark of BambiSleepChat"
-LABEL org.bambi.organization="BambiSleepChat"
-```
+- **Always** include BambiSleep™ trademark symbol in documentation
+- **Repository** should reference BambiSleepChat organization context
+- **License** must include proper MIT license with BambiSleepChat attribution
 
 #### Emoji-Driven Development (RELIGULOUS_MANTRA.md patterns)
 ```javascript
@@ -238,13 +209,6 @@ const EMOJI_COMMANDS = {
 - **Command**: Use "💎 Run Tests (100% Coverage)" task (currently placeholder)
 - **Philosophy**: "100% test coverage or suffer in callback hell eternal"
 
-### Container Development
-```bash
-# Container automatically runs npm install on creation
-# Use VS Code tasks (not direct npm commands) for consistency
-# All task labels use emoji prefixes for visual organization
-```
-
 ### Formatter Configuration (Zero-Config Approach)
 - **Prettier**: Pre-installed but no default formatter set (intentional)
 - **ESLint**: Problem matcher configured for `$eslint-stylish`
@@ -258,17 +222,15 @@ const EMOJI_COMMANDS = {
    ```jsonc
    "{name}": {
      "command": "npx",
-     "args": ["-y", "@modelcontextprotocol/server-{name}", "/workspace"]
+     "args": ["-y", "@modelcontextprotocol/server-{name}", "/mnt/f/bambisleep-church"]
    }
    ```
 3. Test via VS Code MCP integration
-4. Update port forwards in `devcontainer.json` if needed
 
 ## Critical Patterns for AI Agents
 
 ### Organization Compliance Requirements
 - **Always** include BambiSleep™ trademark symbol in documentation
-- **Container images** must have proper org.bambi.* labels
 - **GitHub operations** should reference BambiSleepChat organization context
 
 ### Development Priority Order
@@ -281,6 +243,5 @@ const EMOJI_COMMANDS = {
 - Use **emoji-prefixed tasks** for all operations (matches RELIGULOUS_MANTRA.md)
 - **MCP servers** auto-register in VS Code for AI assistant integration
 - **Problem matchers** configured for ESLint integration
-- **Container bind mount** enables live development without rebuilds
 - **Zero-config approach**: No default formatter set (intentional design choice)
 - **GitHub Copilot** configured for BambiSleepChat organization context

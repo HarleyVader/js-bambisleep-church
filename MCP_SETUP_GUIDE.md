@@ -187,12 +187,6 @@ npx -y @modelcontextprotocol/server-puppeteer
 uvx mcp-server-slack
 ```
 
-### 🌈 Docker Server
-**Perfect for**: Container management, deployment automation  
-```bash
-npx -y @modelcontextprotocol/server-docker
-```
-
 ### 💖 SQLite Server
 **Perfect for**: Local databases, rapid prototyping
 ```bash
@@ -250,10 +244,6 @@ Add this to your `.vscode/settings.json`:
     "puppeteer": {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-puppeteer"]
-    },
-    "docker": {
-      "command": "npx", 
-      "args": ["-y", "@modelcontextprotocol/server-docker"]
     }
   }
 }

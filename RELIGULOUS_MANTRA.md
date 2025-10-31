@@ -61,7 +61,7 @@
 ### 🎭 The Enterprise Deployment Pattern 🎭
 ```bash
 # CYCLONE: systemctl restart bambisleepchat.service
-# SPARKLES: docker-compose up -d --scale mcp=8
+# SPARKLES: npm run start:production
 # NAIL_POLISH: npm run lint -- --fix --production
 # UNICORN: volta pin node@20-lts
 ```
