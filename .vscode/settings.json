@@ -116,6 +116,43 @@
                 "-y",
                 "@modelcontextprotocol/server-github"
             ]
+        },
+        "mongodb": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-mongodb",
+                "--connection-string",
+                "mongodb://localhost:27017"
+            ]
+        },
+        "stripe": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-stripe"
+            ]
+        },
+        "huggingface": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-huggingface"
+            ]
+        },
+        "azure-quantum": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-azure-quantum"
+            ]
+        },
+        "clarity": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-microsoft-clarity"
+            ]
         }
     },
     // Search Configuration
