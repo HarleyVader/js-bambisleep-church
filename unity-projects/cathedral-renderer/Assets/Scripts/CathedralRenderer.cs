@@ -81,6 +81,7 @@ namespace BambiSleep.Cathedral
       {
         Debug.Log("💎 Running in server mode - listening for commands");
         StartCoroutine(CommandListener());
+        StartCoroutine(HeartbeatLoop());
       }
 
       GenerateCathedral();
@@ -484,10 +485,12 @@ namespace BambiSleep.Cathedral
     }
 
     /// <summary>
-    /// Listen for commands from Node.js bridge (stdin)
+    /// Listen for commands from Node.js bridge (stdin) - IPC Protocol v1.0.0
     /// </summary>
     IEnumerator CommandListener()
     {
+      Debug.Log("🔮 IPC Command Listener started (Protocol v1.0.0)");
+      
       while (true)
       {
         if (Console.KeyAvailable)
@@ -495,7 +498,7 @@ namespace BambiSleep.Cathedral
           string input = Console.ReadLine();
           if (!string.IsNullOrEmpty(input))
           {
-            ProcessCommand(input);
+            ProcessIPCMessage(input);
           }
         }
 
@@ -504,48 +507,332 @@ namespace BambiSleep.Cathedral
     }
 
     /// <summary>
-    /// Process JSON command from Node.js
+    /// Process JSON IPC message from Node.js (Protocol v1.0.0)
     /// </summary>
-    void ProcessCommand(string commandJson)
+    void ProcessIPCMessage(string messageJson)
     {
       try
       {
-        var command = JsonUtility.FromJson<CommandData>(commandJson);
+        var message = JsonUtility.FromJson<IPCMessage>(messageJson);
 
-        switch (command.type)
+        if (string.IsNullOrEmpty(message.type))
         {
-          case "updateConfig":
-            UpdateStyleFromJson(command.config);
-            RegenerateCathedral();
+          SendError("INVALID_MESSAGE", "Message type is required", "");
+          return;
+        }
+
+        Debug.Log($"📨 IPC Message received: {message.type}");
+
+        switch (message.type)
+        {
+          case "initialize":
+            ProcessInitialize(message.data);
             break;
 
-          case "triggerEffect":
-            TriggerEffect(command.effectType, command.parameters);
+          case "updateStyle":
+            ProcessUpdateStyle(message.data);
             break;
 
-          case "quit":
-            Debug.Log("Quit command received, shutting down...");
-#if UNITY_EDITOR
-                        UnityEditor.EditorApplication.isPlaying = false;
-#else
-            Application.Quit();
-#endif
+          case "camera":
+            ProcessCameraControl(message.data);
+            break;
+
+          case "render":
+            ProcessRenderCommand(message.data);
+            break;
+
+          case "postprocessing":
+            ProcessPostProcessing(message.data);
+            break;
+
+          case "setPaused":
+            ProcessSetPaused(message.data);
+            break;
+
+          case "shutdown":
+            ProcessShutdown(message.data);
+            break;
+
+          default:
+            SendError("INVALID_MESSAGE", $"Unknown message type: {message.type}", "");
             break;
         }
       }
       catch (Exception e)
       {
-        Debug.LogError($"Failed to process command: {e.Message}");
+        SendError("INVALID_MESSAGE", $"Failed to parse JSON: {e.Message}", e.StackTrace);
       }
     }
 
     /// <summary>
-    /// Update style from JSON config
+    /// Process initialize command
     /// </summary>
-    void UpdateStyleFromJson(string configJson)
+    void ProcessInitialize(string dataJson)
     {
-      style = JsonUtility.FromJson<CathedralStyle>(configJson);
-      Debug.Log($"Style updated: {style.style}");
+      try
+      {
+        var initData = JsonUtility.FromJson<InitializeData>(dataJson);
+        
+        // Update style parameters
+        if (initData.pinkIntensity >= 0)
+          style.pinkIntensity = Mathf.Clamp01(initData.pinkIntensity);
+        if (initData.eldritchLevel >= 0)
+          style.eldritchLevel = Mathf.Clamp(initData.eldritchLevel, 0, 1000);
+        if (initData.neonIntensity >= 0)
+          style.neonIntensity = initData.neonIntensity;
+        if (initData.archCount > 0)
+          style.archCount = initData.archCount;
+
+        RegenerateCathedral();
+
+        // Send scene-loaded acknowledgment
+        SendIPCMessage("scene-loaded", JsonUtility.ToJson(new SceneLoadedData
+        {
+          sceneName = initData.sceneName,
+          objectCount = cathedralRoot.transform.childCount,
+          renderTime = Time.realtimeSinceStartup
+        }));
+      }
+      catch (Exception e)
+      {
+        SendError("SCENE_LOAD_FAILED", $"Failed to initialize: {e.Message}", e.StackTrace);
+      }
+    }
+
+    /// <summary>
+    /// Process updateStyle command
+    /// </summary>
+    void ProcessUpdateStyle(string dataJson)
+    {
+      try
+      {
+        var updateData = JsonUtility.FromJson<UpdateStyleData>(dataJson);
+        
+        bool updated = false;
+        
+        if (updateData.pinkIntensity >= 0)
+        {
+          style.pinkIntensity = Mathf.Clamp01(updateData.pinkIntensity);
+          updated = true;
+        }
+        
+        if (updateData.eldritchLevel >= 0)
+        {
+          style.eldritchLevel = Mathf.Clamp(updateData.eldritchLevel, 0, 1000);
+          updated = true;
+        }
+        
+        if (updateData.neonFlickerSpeed >= 0)
+        {
+          style.neonFlickerSpeed = updateData.neonFlickerSpeed;
+          updated = true;
+        }
+        
+        if (updateData.nuclearPulseSpeed >= 0)
+        {
+          style.nuclearPulseSpeed = updateData.nuclearPulseSpeed;
+          updated = true;
+        }
+
+        if (updated)
+        {
+          ApplyNeonEffects();
+          
+          // Send update-ack
+          SendIPCMessage("update-ack", JsonUtility.ToJson(new UpdateAckData
+          {
+            success = true,
+            pinkIntensity = style.pinkIntensity,
+            eldritchLevel = style.eldritchLevel
+          }));
+        }
+      }
+      catch (Exception e)
+      {
+        SendError("PARAMETER_OUT_OF_RANGE", $"Failed to update style: {e.Message}", e.StackTrace);
+      }
+    }
+
+    /// <summary>
+    /// Process camera control command
+    /// </summary>
+    void ProcessCameraControl(string dataJson)
+    {
+      try
+      {
+        var cameraData = JsonUtility.FromJson<CameraData>(dataJson);
+        Camera mainCamera = Camera.main;
+        
+        if (mainCamera != null)
+        {
+          if (cameraData.position != null)
+            mainCamera.transform.position = new Vector3(cameraData.position.x, cameraData.position.y, cameraData.position.z);
+          
+          if (cameraData.rotation != null)
+            mainCamera.transform.rotation = Quaternion.Euler(cameraData.rotation.x, cameraData.rotation.y, cameraData.rotation.z);
+          
+          if (cameraData.fieldOfView > 0)
+            mainCamera.fieldOfView = cameraData.fieldOfView;
+        }
+      }
+      catch (Exception e)
+      {
+        SendError("RENDER_FAILED", $"Failed to update camera: {e.Message}", e.StackTrace);
+      }
+    }
+
+    /// <summary>
+    /// Process render command
+    /// </summary>
+    void ProcessRenderCommand(string dataJson)
+    {
+      try
+      {
+        var renderData = JsonUtility.FromJson<RenderData>(dataJson);
+        StartCoroutine(CaptureScreenshot(renderData));
+      }
+      catch (Exception e)
+      {
+        SendError("RENDER_FAILED", $"Failed to render: {e.Message}", e.StackTrace);
+      }
+    }
+
+    /// <summary>
+    /// Capture screenshot to file
+    /// </summary>
+    IEnumerator CaptureScreenshot(RenderData renderData)
+    {
+      yield return new WaitForEndOfFrame();
+      
+      float startTime = Time.realtimeSinceStartup;
+
+      try
+      {
+        Texture2D screenshot = new Texture2D(renderData.width, renderData.height, TextureFormat.RGB24, false);
+        screenshot.ReadPixels(new Rect(0, 0, renderData.width, renderData.height), 0, 0);
+        screenshot.Apply();
+
+        byte[] bytes = renderData.format == "PNG" ? screenshot.EncodeToPNG() : screenshot.EncodeToJPG();
+        File.WriteAllBytes(renderData.outputPath, bytes);
+
+        float renderTime = Time.realtimeSinceStartup - startTime;
+
+        SendIPCMessage("render-complete", JsonUtility.ToJson(new RenderCompleteData
+        {
+          outputPath = renderData.outputPath,
+          renderTime = renderTime * 1000f, // Convert to milliseconds
+          width = renderData.width,
+          height = renderData.height
+        }));
+
+        Destroy(screenshot);
+      }
+      catch (Exception e)
+      {
+        SendError("RENDER_FAILED", $"Screenshot capture failed: {e.Message}", e.StackTrace);
+      }
+    }
+
+    /// <summary>
+    /// Process post-processing command
+    /// </summary>
+    void ProcessPostProcessing(string dataJson)
+    {
+      // Post-processing would be implemented with Unity's Post Processing Stack
+      // Placeholder for now
+      Debug.Log($"Post-processing updated: {dataJson}");
+    }
+
+    /// <summary>
+    /// Process setPaused command
+    /// </summary>
+    void ProcessSetPaused(string dataJson)
+    {
+      var pauseData = JsonUtility.FromJson<PauseData>(dataJson);
+      Time.timeScale = pauseData.paused ? 0f : 1f;
+      Debug.Log($"Time scale set to: {Time.timeScale}");
+    }
+
+    /// <summary>
+    /// Process shutdown command
+    /// </summary>
+    void ProcessShutdown(string dataJson)
+    {
+      Debug.Log("🌸 Shutdown command received");
+      
+      SendIPCMessage("shutdownComplete", JsonUtility.ToJson(new ShutdownData
+      {
+        totalFrames = Time.frameCount,
+        uptime = Time.realtimeSinceStartup * 1000f // Convert to milliseconds
+      }));
+
+      StartCoroutine(GracefulShutdown());
+    }
+
+    /// <summary>
+    /// Gracefully shutdown Unity
+    /// </summary>
+    IEnumerator GracefulShutdown()
+    {
+      yield return new WaitForSeconds(0.5f);
+      
+#if UNITY_EDITOR
+      UnityEditor.EditorApplication.isPlaying = false;
+#else
+      Application.Quit();
+#endif
+    }
+
+    /// <summary>
+    /// Send IPC message to Node.js via stdout (Protocol v1.0.0)
+    /// </summary>
+    void SendIPCMessage(string type, string dataJson)
+    {
+      var message = new
+      {
+        type = type,
+        timestamp = DateTime.UtcNow.ToString("o"),
+        data = dataJson
+      };
+
+      string json = JsonUtility.ToJson(message);
+      Console.WriteLine(json);
+    }
+
+    /// <summary>
+    /// Send error message to Node.js
+    /// </summary>
+    void SendError(string errorCode, string message, string stack)
+    {
+      var errorData = new ErrorData
+      {
+        errorCode = errorCode,
+        message = message,
+        stack = stack
+      };
+
+      SendIPCMessage("error", JsonUtility.ToJson(errorData));
+    }
+
+    /// <summary>
+    /// Send periodic heartbeat
+    /// </summary>
+    IEnumerator HeartbeatLoop()
+    {
+      while (true)
+      {
+        yield return new WaitForSeconds(5f);
+        
+        if (isServerMode)
+        {
+          SendIPCMessage("heartbeat", JsonUtility.ToJson(new HeartbeatData
+          {
+            fps = (int)(1f / Time.deltaTime),
+            memoryUsageMB = (int)(UnityEngine.Profiling.Profiler.GetTotalAllocatedMemoryLong() / 1024 / 1024),
+            activeObjects = cathedralRoot != null ? cathedralRoot.transform.childCount : 0
+          }));
+        }
+      }
     }
 
     /// <summary>
@@ -672,12 +959,112 @@ namespace BambiSleep.Cathedral
     }
 
     [System.Serializable]
-    class CommandData
+    class IPCMessage
     {
       public string type;
-      public string config;
-      public string effectType;
-      public string parameters;
+      public string timestamp;
+      public string data;
+    }
+
+    [System.Serializable]
+    class InitializeData
+    {
+      public string sceneName;
+      public float pinkIntensity = -1f;
+      public int eldritchLevel = -1;
+      public float neonIntensity = -1f;
+      public int archCount = -1;
+      public float cathedralWidth = -1f;
+      public float cathedralLength = -1f;
+      public float cathedralHeight = -1f;
+    }
+
+    [System.Serializable]
+    class UpdateStyleData
+    {
+      public float pinkIntensity = -1f;
+      public int eldritchLevel = -1;
+      public float neonFlickerSpeed = -1f;
+      public float nuclearPulseSpeed = -1f;
+    }
+
+    [System.Serializable]
+    class CameraData
+    {
+      public Vector3Data position;
+      public Vector3Data rotation;
+      public float fieldOfView;
+    }
+
+    [System.Serializable]
+    class Vector3Data
+    {
+      public float x;
+      public float y;
+      public float z;
+    }
+
+    [System.Serializable]
+    class RenderData
+    {
+      public string outputPath;
+      public int width = 1920;
+      public int height = 1080;
+      public string format = "PNG";
+    }
+
+    [System.Serializable]
+    class PauseData
+    {
+      public bool paused;
+    }
+
+    [System.Serializable]
+    class SceneLoadedData
+    {
+      public string sceneName;
+      public int objectCount;
+      public float renderTime;
+    }
+
+    [System.Serializable]
+    class UpdateAckData
+    {
+      public bool success;
+      public float pinkIntensity;
+      public int eldritchLevel;
+    }
+
+    [System.Serializable]
+    class RenderCompleteData
+    {
+      public string outputPath;
+      public float renderTime;
+      public int width;
+      public int height;
+    }
+
+    [System.Serializable]
+    class ErrorData
+    {
+      public string errorCode;
+      public string message;
+      public string stack;
+    }
+
+    [System.Serializable]
+    class HeartbeatData
+    {
+      public int fps;
+      public int memoryUsageMB;
+      public int activeObjects;
+    }
+
+    [System.Serializable]
+    class ShutdownData
+    {
+      public int totalFrames;
+      public float uptime;
     }
   }
 }
