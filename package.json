@@ -4,10 +4,16 @@
   "description": "BambiSleep™ Church MCP Control Tower - Model Context Protocol server management and orchestration",
   "main": "src/index.js",
   "scripts": {
-    "dev": "echo 'Development server not yet implemented'",
-    "build": "echo 'Build process not yet implemented'",
-    "test": "echo 'Tests not yet implemented'",
-    "start": "echo 'Production server not yet implemented'"
+    "dev": "nodemon src/index.js --watch src",
+    "build": "npm run test && npm run docs",
+    "test": "jest --coverage --verbose",
+    "test:watch": "jest --watch --verbose",
+    "start": "node src/index.js",
+    "lint": "eslint src/ --ext .js",
+    "lint:fix": "eslint src/ --ext .js --fix",
+    "format": "prettier --write \"src/**/*.js\"",
+    "docs": "node scripts/serve-docs.js",
+    "mcp:status": "node scripts/mcp-status.js"
   },
   "repository": {
     "type": "git",
@@ -31,11 +37,40 @@
     "trademark": "BambiSleep™ is a trademark of BambiSleepChat",
     "url": "https://github.com/BambiSleepChat"
   },
+  "dependencies": {
+    "dotenv": "^16.4.5"
+  },
   "devDependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.0"
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "eslint": "^8.57.0",
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.0",
+    "prettier": "^3.2.5"
   },
   "engines": {
     "node": ">=20.0.0",
     "npm": ">=10.0.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "coverageDirectory": "coverage",
+    "collectCoverageFrom": [
+      "src/**/*.js",
+      "!src/**/*.test.js",
+      "!src/ui/dist/**"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      }
+    },
+    "testMatch": [
+      "**/src/tests/**/*.test.js",
+      "**/__tests__/**/*.js"
+    ],
+    "verbose": true
   }
 }
