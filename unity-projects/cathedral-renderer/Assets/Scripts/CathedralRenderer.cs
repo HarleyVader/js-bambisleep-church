@@ -490,7 +490,7 @@ namespace BambiSleep.Cathedral
     IEnumerator CommandListener()
     {
       Debug.Log("🔮 IPC Command Listener started (Protocol v1.0.0)");
-      
+
       while (true)
       {
         if (Console.KeyAvailable)
@@ -572,7 +572,7 @@ namespace BambiSleep.Cathedral
       try
       {
         var initData = JsonUtility.FromJson<InitializeData>(dataJson);
-        
+
         // Update style parameters
         if (initData.pinkIntensity >= 0)
           style.pinkIntensity = Mathf.Clamp01(initData.pinkIntensity);
@@ -607,27 +607,27 @@ namespace BambiSleep.Cathedral
       try
       {
         var updateData = JsonUtility.FromJson<UpdateStyleData>(dataJson);
-        
+
         bool updated = false;
-        
+
         if (updateData.pinkIntensity >= 0)
         {
           style.pinkIntensity = Mathf.Clamp01(updateData.pinkIntensity);
           updated = true;
         }
-        
+
         if (updateData.eldritchLevel >= 0)
         {
           style.eldritchLevel = Mathf.Clamp(updateData.eldritchLevel, 0, 1000);
           updated = true;
         }
-        
+
         if (updateData.neonFlickerSpeed >= 0)
         {
           style.neonFlickerSpeed = updateData.neonFlickerSpeed;
           updated = true;
         }
-        
+
         if (updateData.nuclearPulseSpeed >= 0)
         {
           style.nuclearPulseSpeed = updateData.nuclearPulseSpeed;
@@ -637,7 +637,7 @@ namespace BambiSleep.Cathedral
         if (updated)
         {
           ApplyNeonEffects();
-          
+
           // Send update-ack
           SendIPCMessage("update-ack", JsonUtility.ToJson(new UpdateAckData
           {
@@ -662,15 +662,15 @@ namespace BambiSleep.Cathedral
       {
         var cameraData = JsonUtility.FromJson<CameraData>(dataJson);
         Camera mainCamera = Camera.main;
-        
+
         if (mainCamera != null)
         {
           if (cameraData.position != null)
             mainCamera.transform.position = new Vector3(cameraData.position.x, cameraData.position.y, cameraData.position.z);
-          
+
           if (cameraData.rotation != null)
             mainCamera.transform.rotation = Quaternion.Euler(cameraData.rotation.x, cameraData.rotation.y, cameraData.rotation.z);
-          
+
           if (cameraData.fieldOfView > 0)
             mainCamera.fieldOfView = cameraData.fieldOfView;
         }
@@ -703,7 +703,7 @@ namespace BambiSleep.Cathedral
     IEnumerator CaptureScreenshot(RenderData renderData)
     {
       yield return new WaitForEndOfFrame();
-      
+
       float startTime = Time.realtimeSinceStartup;
 
       try
@@ -759,7 +759,7 @@ namespace BambiSleep.Cathedral
     void ProcessShutdown(string dataJson)
     {
       Debug.Log("🌸 Shutdown command received");
-      
+
       SendIPCMessage("shutdownComplete", JsonUtility.ToJson(new ShutdownData
       {
         totalFrames = Time.frameCount,
@@ -775,7 +775,7 @@ namespace BambiSleep.Cathedral
     IEnumerator GracefulShutdown()
     {
       yield return new WaitForSeconds(0.5f);
-      
+
 #if UNITY_EDITOR
       UnityEditor.EditorApplication.isPlaying = false;
 #else
@@ -822,7 +822,7 @@ namespace BambiSleep.Cathedral
       while (true)
       {
         yield return new WaitForSeconds(5f);
-        
+
         if (isServerMode)
         {
           SendIPCMessage("heartbeat", JsonUtility.ToJson(new HeartbeatData

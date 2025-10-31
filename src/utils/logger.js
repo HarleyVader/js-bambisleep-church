@@ -34,7 +34,7 @@ class Logger {
     this.level = options.level || process.env.LOG_LEVEL || 'INFO';
     this.logFile = options.logFile || process.env.LOG_FILE || null;
     this.enableConsole = options.enableConsole !== false;
-    this.enableFile = options.enableFile !== false && this.logFile;
+    this.enableFile = options.enableFile !== undefined ? options.enableFile : !!(options.enableFile !== false && this.logFile);
     this.jsonFormat = options.jsonFormat || false;
     this.includeTimestamp = options.includeTimestamp !== false;
     this.includeContext = options.includeContext !== false;
@@ -42,9 +42,17 @@ class Logger {
 
     // Ensure log directory exists if file logging is enabled
     if (this.enableFile && this.logFile) {
-      const logDir = path.dirname(this.logFile);
-      if (!fs.existsSync(logDir)) {
-        fs.mkdirSync(logDir, { recursive: true });
+      try {
+        const logDir = path.dirname(this.logFile);
+        if (!fs.existsSync(logDir)) {
+          fs.mkdirSync(logDir, { recursive: true });
+        }
+      } catch (error) {
+        // If directory creation fails, disable file logging
+        this.enableFile = false;
+        if (this.enableConsole) {
+          console.warn(`[Logger] Failed to create log directory: ${error.message}`);
+        }
       }
     }
   }

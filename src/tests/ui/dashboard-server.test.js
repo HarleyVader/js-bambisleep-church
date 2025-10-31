@@ -9,12 +9,12 @@ const request = require('supertest');
 const WebSocket = require('ws');
 
 // Mock dependencies
-jest.mock('../mcp/orchestrator');
-jest.mock('../utils/logger');
+jest.mock('../../mcp/orchestrator');
+jest.mock('../../utils/logger');
 
-const DashboardServer = require('../ui/dashboard-server');
-const MCPOrchestrator = require('../mcp/orchestrator');
-const Logger = require('../utils/logger');
+const DashboardServer = require('../../ui/dashboard-server');
+const MCPOrchestrator = require('../../mcp/orchestrator');
+const Logger = require('../../utils/logger');
 
 describe('DashboardServer', () => {
   let dashboardServer;
@@ -55,16 +55,31 @@ describe('DashboardServer', () => {
     mockOrchestrator.stopAll = jest.fn().mockResolvedValue(3);
     MCPOrchestrator.mockImplementation(() => mockOrchestrator);
 
-    // Create dashboard server instance
+    // Create dashboard server instance with mock logger
     dashboardServer = new DashboardServer({
       port: 0, // Use random port for testing
-      orchestrator: mockOrchestrator
+      orchestrator: mockOrchestrator,
+      logger: mockLogger
     });
   });
 
   afterEach(async () => {
-    if (dashboardServer && dashboardServer.server) {
-      await dashboardServer.stop();
+    // Always cleanup - server is created in constructor
+    if (dashboardServer) {
+      if (dashboardServer.server && dashboardServer.server.listening) {
+        await dashboardServer.stop();
+      } else {
+        // Server created but not started - force close
+        if (dashboardServer.wss) {
+          dashboardServer.wss.clients.forEach(client => client.terminate());
+          dashboardServer.wss.close();
+        }
+        if (dashboardServer.server) {
+          dashboardServer.connections.forEach(conn => conn.destroy());
+          dashboardServer.server.close();
+        }
+      }
+      dashboardServer = null;
     }
   });
 

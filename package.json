@@ -4,14 +4,15 @@
   "description": "BambiSleep™ Church MCP Control Tower - Model Context Protocol server management and orchestration",
   "main": "src/index.js",
   "scripts": {
-    "dev": "nodemon src/index.js --watch src",
+    "dev": "node node_modules/nodemon/bin/nodemon.js src/index.js --watch src",
     "build": "npm run test && npm run docs",
-    "test": "jest --coverage --verbose",
-    "test:watch": "jest --watch --verbose",
+    "test": "node node_modules/jest/bin/jest.js --coverage --verbose --forceExit",
+    "test:watch": "node node_modules/jest/bin/jest.js --watch --verbose",
+    "test:quick": "node node_modules/jest/bin/jest.js --no-coverage --forceExit",
     "start": "node src/index.js",
-    "lint": "eslint src/ --ext .js",
-    "lint:fix": "eslint src/ --ext .js --fix",
-    "format": "prettier --write \"src/**/*.js\"",
+    "lint": "node node_modules/eslint/bin/eslint.js src/ --ext .js",
+    "lint:fix": "node node_modules/eslint/bin/eslint.js src/ --ext .js --fix",
+    "format": "node node_modules/prettier/bin/prettier.js --write \"src/**/*.js\"",
     "docs": "node scripts/serve-docs.js",
     "mcp:status": "node scripts/mcp-status.js"
   },
@@ -56,6 +57,9 @@
   },
   "jest": {
     "testEnvironment": "node",
+    "setupFilesAfterEnv": [
+      "<rootDir>/jest.setup.js"
+    ],
     "coverageDirectory": "coverage",
     "collectCoverageFrom": [
       "src/**/*.js",
@@ -74,6 +78,8 @@
       "**/src/tests/**/*.test.js",
       "**/__tests__/**/*.js"
     ],
-    "verbose": true
+    "verbose": true,
+    "testTimeout": 10000,
+    "forceExit": true
   }
 }

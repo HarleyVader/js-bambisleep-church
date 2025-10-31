@@ -1,4 +1,5 @@
 # MCP Server Setup Guide
+
 *Complete installation and configuration guide for BambiSleep™ Church development*
 
 ## 🌸✨ Essential 8 MCP Servers (Official) ✨🌸
@@ -6,7 +7,9 @@
 Based on the official ModelContextProtocol servers and optimized for your development style:
 
 ### 🦋 1. Filesystem Server
+
 **Purpose**: File operations, directory management, code editing
+
 ```bash
 # Installation via npx (recommended)
 npx -y @modelcontextprotocol/server-filesystem
@@ -27,7 +30,9 @@ npx -y @modelcontextprotocol/server-filesystem
 ---
 
 ### 💎 2. Git Server  
+
 **Purpose**: Version control, commit management, branch operations
+
 ```bash
 # Installation
 npx -y @modelcontextprotocol/server-git
@@ -48,7 +53,9 @@ npx -y @modelcontextprotocol/server-git
 ---
 
 ### 👑 3. GitHub Server
+
 **Purpose**: Repository management, issues, pull requests, releases
+
 ```bash
 # Installation
 npx -y @modelcontextprotocol/server-github
@@ -69,7 +76,9 @@ npx -y @modelcontextprotocol/server-github
 ---
 
 ### 🔮 4. Memory Server
+
 **Purpose**: Persistent context, conversation history, knowledge retention
+
 ```bash
 # Installation
 npx -y @modelcontextprotocol/server-memory
@@ -90,7 +99,9 @@ npx -y @modelcontextprotocol/server-memory
 ---
 
 ### ✨ 5. Sequential Thinking Server
+
 **Purpose**: Complex reasoning, step-by-step problem solving
+
 ```bash
 # Installation
 npx -y @modelcontextprotocol/server-sequential-thinking
@@ -111,7 +122,9 @@ npx -y @modelcontextprotocol/server-sequential-thinking
 ---
 
 ### 🎭 6. Everything Server (Testing/Demo)
+
 **Purpose**: Comprehensive testing, MCP feature demonstration
+
 ```bash
 # Installation
 npx -y @modelcontextprotocol/server-everything
@@ -132,7 +145,9 @@ npx -y @modelcontextprotocol/server-everything
 ---
 
 ### 🌀 7. Brave Search Server  
+
 **Purpose**: Web search, real-time information, research
+
 ```bash
 # Installation via uvx
 uvx mcp-server-brave-search
@@ -153,7 +168,9 @@ uvx mcp-server-brave-search
 ---
 
 ### 💅 8. Postgres Server
+
 **Purpose**: Database operations, SQL queries, data management
+
 ```bash
 # Installation via uvx  
 uvx mcp-server-postgres
@@ -176,25 +193,33 @@ uvx mcp-server-postgres
 ## 🌸💫 Recommended Servers (Based on Your Style) 💫🌸
 
 ### 🦄 Puppeteer (Browser Automation)
+
 **Perfect for**: Web scraping, UI testing, automation
+
 ```bash
 npx -y @modelcontextprotocol/server-puppeteer
 ```
 
 ### 🎪 Slack Integration  
+
 **Perfect for**: Team communication, BambiSleepChat coordination
+
 ```bash
 uvx mcp-server-slack
 ```
 
 ### 💖 SQLite Server
+
 **Perfect for**: Local databases, rapid prototyping
+
 ```bash
 uvx mcp-server-sqlite
 ```
 
 ### 🔥 MongoDB Server (Community)
+
 **Perfect for**: NoSQL data, flexible schemas for AI applications
+
 ```bash
 # Community server - matches your MongoDB usage
 npx -y mcp-mongodb-server
@@ -277,6 +302,7 @@ echo "🦋 Configure VS Code settings and start developing! 🦋"
 ## 🌸🔧 Testing Your Setup 🔧🌸
 
 ### Verify MCP Integration
+
 ```bash
 # Test filesystem server
 npx @modelcontextprotocol/server-filesystem --help
@@ -289,6 +315,7 @@ gh auth status
 ```
 
 ### VS Code MCP Status
+
 1. Open Command Palette (`Ctrl+Shift+P`)
 2. Run `MCP: Show Server Status`
 3. Verify all servers show "Connected" ✅
@@ -296,6 +323,7 @@ gh auth status
 ## 🌸💫 Advanced Configuration 💫🌸
 
 ### Environment Variables
+
 ```bash
 # Add to your shell profile (.bashrc, .zshrc)
 export MCP_SERVER_LOG_LEVEL=INFO
@@ -305,7 +333,9 @@ export DATABASE_URL="postgresql://localhost:5432/bambisleep"
 ```
 
 ### Custom MCP Server Development
+
 Based on your coding style, consider creating:
+
 - **bambisleep-hypnosis-mcp**: Audio file management
 - **aigf-personality-mcp**: AI girlfriend personality switching
 - **trigger-system-mcp**: Hypnotic trigger management

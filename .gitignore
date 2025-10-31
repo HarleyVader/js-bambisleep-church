@@ -17,12 +17,44 @@ yarn-error.log*
 coverage/
 *.lcov
 
+# Test artifacts
+.nyc_output/
+
 # IDE and OS files
 .vscode/settings.json.bak
 .DS_Store
 Thumbs.db
+*.swp
+*.swo
+*~
 
 # Build outputs
 dist/
 build/
 tmp/
+out/
+
+# Unity artifacts (if Unity project generates files in root)
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# Package manager files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Miscellaneous
+.cache/
+.temp/

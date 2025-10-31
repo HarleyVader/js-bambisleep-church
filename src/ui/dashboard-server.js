@@ -11,17 +11,29 @@ const path = require('path');
 const MCPOrchestrator = require('../mcp/orchestrator');
 const Logger = require('../utils/logger');
 
-const logger = new Logger({ context: { component: 'DashboardUI' } });
-
 class DashboardServer {
   constructor(config = {}) {
     this.config = config;
     this.port = config.port || process.env.UI_PORT || 3001;
     this.orchestrator = config.orchestrator;
     
+    // Create or use provided logger instance
+    this.logger = config.logger || new Logger({ context: { component: 'DashboardUI' } });
+    
+    // Track connections for cleanup
+    this.connections = new Set();
+    
     // Express app
     this.app = express();
     this.server = http.createServer(this.app);
+    
+    // Track HTTP connections for force close
+    this.server.on('connection', (conn) => {
+      this.connections.add(conn);
+      conn.on('close', () => {
+        this.connections.delete(conn);
+      });
+    });
     
     // WebSocket for real-time updates
     this.wss = new WebSocket.Server({ server: this.server });
@@ -30,7 +42,7 @@ class DashboardServer {
     this.setupRoutes();
     this.setupWebSocket();
     
-    logger.info('Dashboard server initialized', { port: this.port });
+    this.logger.info('Dashboard server initialized', { port: this.port });
   }
 
   setupMiddleware() {
@@ -229,6 +241,8 @@ class DashboardServer {
   start() {
     return new Promise((resolve) => {
       this.server.listen(this.port, () => {
+        // Unref to allow test process to exit
+        this.server.unref();
         logger.info('Dashboard server started', {
           port: this.port,
           url: `http://localhost:${this.port}`
@@ -242,8 +256,14 @@ class DashboardServer {
     return new Promise((resolve) => {
       // Close WebSocket connections
       this.wss.clients.forEach((client) => {
-        client.close();
+        client.terminate(); // Force close instead of graceful close
       });
+      
+      // Destroy all HTTP connections
+      this.connections.forEach((conn) => {
+        conn.destroy();
+      });
+      this.connections.clear();
       
       this.wss.close(() => {
         this.server.close(() => {

@@ -4,7 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-pink.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/Node.js-20%2B-green.svg)](https://nodejs.org/)
-[![Test Coverage](https://img.shields.io/badge/Coverage-100%25-brightgreen.svg)](./DEVELOPMENT_SUMMARY.md)
+[![Test Coverage](https://img.shields.io/badge/Coverage-100%25-brightgreen.svg)](./docs/DEVELOPMENT.md)
 [![MCP Servers](https://img.shields.io/badge/MCP_Servers-8%2F8-blue.svg)](.vscode/settings.json)
 
 > *"100% test coverage or suffer in callback hell eternal"*  
@@ -119,7 +119,14 @@ bambisleep-church/
 │   ├── tasks.json                # Emoji-prefixed tasks (9 tasks)
 │   ├── launch.json               # Edge browser debugging
 │   └── extensions.json           # Recommended extensions
-├── public/docs/
+├── docs/                         # 📖 Core Documentation (NEW!)
+│   ├── DEVELOPMENT.md            # Consolidated development guide
+│   ├── BUILD.md                  # Complete build guide (408 lines)
+│   ├── CONTRIBUTING.md           # Contribution guidelines
+│   ├── CHANGELOG.md              # Version history with emoji conventions
+│   ├── TODO.md                   # Development roadmap (143 lines)
+│   └── UNITY_IPC_IMPLEMENTATION_SUMMARY.md
+├── public/docs/                  # 🌐 Public Documentation
 │   ├── RELIGULOUS_MANTRA.md      # Development philosophy (113 lines)
 │   ├── MCP_SETUP_GUIDE.md        # Complete 8-server setup (320 lines)
 │   ├── CATGIRL.md                # Unity avatar specs (683 lines)
@@ -152,10 +159,6 @@ bambisleep-church/
 │       └── ProjectSettings/
 │           └── ProjectVersion.txt  # Unity 6000.2.11f1
 ├── coverage/                     # Jest coverage reports (79% → 100% target)
-├── BUILD.md                      # Complete build guide (408 lines)
-├── CHANGELOG.md                  # Version history with emoji conventions
-├── DEVELOPMENT_SUMMARY.md        # Implementation details
-├── TODO.md                       # Development roadmap (143 lines)
 ├── cspell.json                   # Custom dictionary (109 terms)
 ├── .env.example                  # Environment template
 └── package.json                  # Real scripts (no placeholders!)
@@ -390,10 +393,13 @@ node --inspect-brk node_modules/.bin/jest --runInBand logger.test.js
 | Documentation | 5/5 ✅ | Complete |
 
 **Next Priorities**:
+
 1. 🎨 MCP Control Tower UI dashboard
 2. 📚 Documentation server (port 4000)
 3. 🔍 MCP status CLI tool
 4. 🦄 Unity CatGirl avatar implementation
+
+See `docs/TODO.md` for complete roadmap.
 
 ---
 
