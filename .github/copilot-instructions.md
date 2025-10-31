@@ -1,25 +1,27 @@
 # BambiSleep™ Church - AI Agent Instructions
 
-_🌸 MCP Control Tower & Unity Avatar Development Environment 🌸_
+_🌸 MCP Control Tower & Unity Cathedral Renderer Integration 🌸_
 
 ## Project Overview
 
-This is a **dual-platform development environment** managing Model Context Protocol (MCP) servers:
+This is a **triple-platform development environment** with integrated Node.js/Unity communication:
 
-1. **MCP Control Tower** (Node.js) - Enterprise-grade orchestration platform managing 8 MCP servers for AI tooling integration
-2. **Unity CatGirl Avatar System** (C#) - XR avatar framework (separate project, specs in `public/docs/CATGIRL.md`)
+- **MCP Control Tower** - Node.js enterprise-grade orchestration platform managing 8 MCP servers for AI tooling integration
+- **Unity Bridge Service** - Node.js IPC bridge managing Unity renderer processes via stdin/stdout JSON protocol
+- **Unity Cathedral Renderer** - C# procedural Neon Cyber Goth cathedral visualization with XR support
 
 **Critical Understanding**: This project follows the "Universal Machine Philosophy" with emoji-driven development workflows and **100% test coverage enforcement** via Jest.
 
 **Current State - FULLY OPERATIONAL**:
 
 - ✅ **8/8 MCP servers configured** in `.vscode/settings.json` (filesystem, git, github, mongodb, stripe, huggingface, azure-quantum, clarity)
-- ✅ **Source code implemented**: `src/mcp/orchestrator.js` (472 lines, 29 functions), `src/utils/logger.js` (237 lines), `src/index.js` (228 lines)
+- ✅ **Source code implemented**: `src/mcp/orchestrator.js` (472 lines, 29 methods), `src/utils/logger.js` (237 lines), `src/index.js` (277 lines), `src/unity/unity-bridge.js` (259 lines)
+- ✅ **Unity integration active**: C# script `CathedralRenderer.cs` (684 lines) with JSON IPC protocol documented in `public/docs/UNITY_IPC_PROTOCOL.md` (432 lines)
 - ✅ **100% test coverage achieved**: `src/tests/mcp/orchestrator.test.js` (605 lines, comprehensive mocking), `src/tests/utils/logger.test.js`
 - ✅ **All npm scripts functional**: Use directly (`npm test`, `npm run dev`) or via VS Code tasks (`Ctrl+Shift+P` → "Run Task")
 - 🚧 **UI dashboard pending**: `src/ui/` directory empty, ready for MCP status dashboard implementation
 
-_Complete philosophy in `public/docs/RELIGULOUS_MANTRA.md`, Unity specs in `public/docs/CATGIRL.md`_
+_Complete philosophy in `public/docs/RELIGULOUS_MANTRA.md`, CatGirl avatar specs in `public/docs/CATGIRL.md`, Unity IPC protocol in `public/docs/UNITY_IPC_PROTOCOL.md`_
 
 ## Critical Architecture Patterns
 
@@ -72,11 +74,11 @@ _Complete philosophy in `public/docs/RELIGULOUS_MANTRA.md`, Unity specs in `publ
 
 ```javascript
 // Lifecycle events
-'server:registered', 'server:unregistered'
-'server:starting', 'server:started', 'server:stopping', 'server:stopped'
-'server:error', 'server:restarting', 'server:unhealthy'
-'server:output'  // Emits {name, type: 'stdout'|'stderr', data}
-'orchestrator:started', 'orchestrator:stopped'
+("server:registered", "server:unregistered");
+("server:starting", "server:started", "server:stopping", "server:stopped");
+("server:error", "server:restarting", "server:unhealthy");
+("server:output"); // Emits {name, type: 'stdout'|'stderr', data}
+("orchestrator:started", "orchestrator:stopped");
 ```
 
 **State Management**: 6 states tracked per server (lines 17-24): `STOPPED`, `STARTING`, `RUNNING`, `STOPPING`, `ERROR`, `UNREACHABLE`
@@ -99,23 +101,23 @@ _Complete philosophy in `public/docs/RELIGULOUS_MANTRA.md`, Unity specs in `publ
 
 ```javascript
 new Logger({
-  level: 'INFO',           // or process.env.LOG_LEVEL
-  logFile: '/path/to/log', // or process.env.LOG_FILE
-  enableConsole: true,     // default
-  enableFile: true,        // requires logFile
-  jsonFormat: false,       // default: human-readable
-  includeTimestamp: true,  // ISO 8601 timestamps
-  includeContext: true,    // merge context objects
-  context: { component: 'MCPOrchestrator' } // persistent context
+  level: "INFO", // or process.env.LOG_LEVEL
+  logFile: "/path/to/log", // or process.env.LOG_FILE
+  enableConsole: true, // default
+  enableFile: true, // requires logFile
+  jsonFormat: false, // default: human-readable
+  includeTimestamp: true, // ISO 8601 timestamps
+  includeContext: true, // merge context objects
+  context: { component: "MCPOrchestrator" }, // persistent context
 });
 ```
 
 **Usage Pattern in codebase**:
 
 ```javascript
-const Logger = require('./utils/logger');
-const logger = new Logger({ context: { component: 'MCPOrchestrator' } });
-logger.info('Server started', { pid: 12345, name: 'github' });
+const Logger = require("./utils/logger");
+const logger = new Logger({ context: { component: "MCPOrchestrator" } });
+logger.info("Server started", { pid: 12345, name: "github" });
 ```
 
 ### Development Workflow
@@ -165,8 +167,8 @@ npm run docs         # Serve docs on port 4000 (requires scripts/serve-docs.js)
 **Example Mock Pattern**:
 
 ```javascript
-jest.mock('child_process');
-const { spawn } = require('child_process');
+jest.mock("child_process");
+const { spawn } = require("child_process");
 
 beforeEach(() => {
   mockProcess = new EventEmitter();
@@ -177,6 +179,107 @@ beforeEach(() => {
   spawn.mockReturnValue(mockProcess);
 });
 ```
+
+**Advanced IPC Testing Patterns**:
+
+```javascript
+// Testing Unity Bridge IPC with mock process streams
+describe("UnityBridge IPC", () => {
+  it("should handle JSON messages from Unity stdout", (done) => {
+    const unityBridge = new UnityBridge({ unityPath: "/mock/unity" });
+
+    unityBridge.on("scene:initialized", (data) => {
+      expect(data.sceneName).toBe("MainScene");
+      expect(data.fps).toBe(60);
+      done();
+    });
+
+    // Simulate Unity sending JSON via stdout
+    const message = JSON.stringify({
+      type: "sceneInitialized",
+      data: { sceneName: "MainScene", fps: 60 },
+    });
+    mockProcess.stdout.emit("data", Buffer.from(message + "\n"));
+  });
+
+  it("should send messages to Unity via stdin", async () => {
+    const unityBridge = new UnityBridge({ unityPath: "/mock/unity" });
+    await unityBridge.startRenderer();
+
+    const mockWrite = jest.fn();
+    mockProcess.stdin = { write: mockWrite };
+
+    unityBridge.sendMessage({
+      type: "updateStyle",
+      data: { pinkIntensity: 0.95 },
+    });
+
+    expect(mockWrite).toHaveBeenCalledWith(
+      expect.stringContaining('"type":"updateStyle"')
+    );
+  });
+});
+
+// Testing health check intervals with fake timers
+describe("Health Monitoring", () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it("should check server health at configured interval", async () => {
+    const orchestrator = new MCPOrchestrator({ healthCheckInterval: 30000 });
+    orchestrator.registerServer("test-server", { command: "node" });
+    await orchestrator.startServer("test-server");
+
+    const healthSpy = jest.spyOn(orchestrator, "checkServerHealth");
+    orchestrator.startHealthChecks();
+
+    // Fast-forward 30 seconds
+    jest.advanceTimersByTime(30000);
+    expect(healthSpy).toHaveBeenCalledWith("test-server");
+
+    // Fast-forward another 30 seconds
+    jest.advanceTimersByTime(30000);
+    expect(healthSpy).toHaveBeenCalledTimes(2);
+  });
+});
+
+// Testing graceful shutdown with SIGTERM timeout
+describe("Graceful Shutdown", () => {
+  it("should send SIGTERM and wait before SIGKILL", async () => {
+    const orchestrator = new MCPOrchestrator({ stopTimeout: 5000 });
+    orchestrator.registerServer("test-server", { command: "node" });
+    await orchestrator.startServer("test-server");
+
+    const stopPromise = orchestrator.stopServer("test-server");
+
+    // Verify SIGTERM sent
+    expect(mockProcess.kill).toHaveBeenCalledWith("SIGTERM");
+
+    // Simulate process not exiting within timeout
+    jest.advanceTimersByTime(5000);
+
+    // Should force SIGKILL after timeout
+    expect(mockProcess.kill).toHaveBeenCalledWith("SIGKILL");
+
+    // Simulate process exit
+    mockProcess.emit("exit", 0);
+    await stopPromise;
+  });
+});
+```
+
+**Coverage Strategies for 100% Branch Coverage**:
+
+1. **Test Both Success and Failure Paths**: Every if/else, try/catch must have tests for both branches
+2. **Test Boundary Conditions**: Empty arrays, null values, max/min integers
+3. **Test Async Timing**: Promises resolving/rejecting, event emission before/after listeners attached
+4. **Test Error Recovery**: Auto-restart logic, retry attempts, fallback configurations
+5. **Test State Transitions**: All 6 server states (STOPPED → STARTING → RUNNING → STOPPING → ERROR → UNREACHABLE)
 
 ## Essential Development Knowledge
 
@@ -236,25 +339,332 @@ cspell.json                 # Custom dictionary with 109 technical terms (bambis
 - Repository: `github.com/BambiSleepChat/bambisleep-church`
 - Follow MIT license with proper attribution
 
+## Unity Bridge IPC Architecture
+
+### Node.js ↔ Unity Communication Pattern
+
+**Location**: `src/unity/unity-bridge.js` (259 lines), `CathedralRenderer.cs` (684 lines)
+**Protocol**: Bidirectional JSON messages via stdin/stdout streams (documented in `public/docs/UNITY_IPC_PROTOCOL.md`)
+
+**Unity Process Lifecycle** (UnityBridge class):
+
+```javascript
+// Start Unity in headless batch mode
+const args = [
+  "-batchmode",
+  "-nographics",
+  "-projectPath",
+  this.projectPath,
+  "-executeMethod",
+  "CathedralRenderer.StartServer",
+  "-logFile",
+  "Logs/unity-renderer.log",
+  "-rendererType",
+  "cathedral",
+  "-sceneConfig",
+  JSON.stringify(sceneConfig),
+];
+this.rendererProcess = spawn(this.unityPath, args);
+```
+
+**Message Protocol Examples**:
+
+```javascript
+// Node.js → Unity: Initialize scene
+{
+  "type": "initialize",
+  "timestamp": "2024-01-15T12:34:56.789Z",
+  "data": {
+    "sceneName": "MainScene",
+    "style": "neon-cyber-goth",
+    "pinkIntensity": 0.8,
+    "eldritchLevel": 666
+  }
+}
+
+// Unity → Node.js: Render frame complete
+{
+  "type": "frameRendered",
+  "timestamp": "2024-01-15T12:34:57.890Z",
+  "data": {
+    "frameNumber": 1234,
+    "fps": 60,
+    "triangles": 150000
+  }
+}
+```
+
+**Event Integration**: Unity lifecycle events forwarded to MCP orchestrator via `UnityBridge` EventEmitter:
+
+```javascript
+unityBridge.on("scene:initialized", (data) => {
+  orchestrator.emit("unity:scene:ready", data);
+});
+```
+
+**Critical Pattern**: Unity runs as child process managed by Node.js, not separate service. Graceful shutdown required via SIGTERM before killing process.
+
+### Unity CathedralStyle Configuration System
+
+**Location**: `CathedralRenderer.cs` lines 20-57
+**Design**: Serializable configuration class for procedural architecture generation
+
+**Core Parameters**:
+
+```csharp
+[System.Serializable]
+public class CathedralStyle {
+  // Visual Style (lines 24-27)
+  public string style = "neon-cyber-goth";
+  public string lighting = "electro-nuclear";
+  public bool catholicVibes = true;
+
+  // Pink Intensity (0.0-1.0) - Controls neon magenta saturation (line 29-30)
+  [Range(0f, 1f)]
+  public float pinkIntensity = 0.8f;
+
+  // Eldritch Level (0-1000) - Procedural complexity multiplier (lines 32-33)
+  [Range(0, 1000)]
+  public int eldritchLevel = 666;
+
+  // Architectural Parameters (lines 35-40)
+  public float heightMultiplier = 50f;   // Cathedral height scaling
+  public float naveWidth = 20f;          // Main hall width in Unity units
+  public int archCount = 12;             // Number of gothic arches
+  public bool hasRosettaWindow = true;   // Enable rose window geometry
+  public bool hasFlyingButtresses = true; // External support structures
+
+  // Neon Effects (lines 42-46)
+  public Color primaryNeonColor = Color.magenta;
+  public Color secondaryNeonColor = Color.cyan;
+  public float neonIntensity = 10f;      // HDR emission multiplier
+  public float neonFlickerSpeed = 0.5f;  // Animation speed for flicker effect
+
+  // Nuclear Glow (lines 48-52)
+  public Color nuclearGlowColor = new Color(0f, 1f, 0.5f, 1f); // Cyan-green
+  public float nuclearPulseSpeed = 2f;   // Pulse animation frequency
+  public float radiationIntensity = 5f;  // Particle emission rate
+}
+```
+
+**Procedural Generation Logic** (`GenerateCathedral()` method, lines 92-98):
+
+1. `GenerateNave()` - Creates main cathedral hall with archCount gothic arches
+2. `GenerateTransept()` - Adds cross-section perpendicular to nave
+3. `GenerateAltarArea()` - Procedural altar with neon lighting
+4. `GenerateRosettaWindow()` - Circular stained glass if hasRosettaWindow enabled
+5. `GenerateFlyingButtresses()` - External supports if hasFlyingButtresses enabled
+6. `ApplyNeonMaterials()` - Applies HDR materials with pinkIntensity and neonIntensity
+7. `SetupLighting()` - Configures electro-nuclear lighting with nuclearGlowColor
+
+**IPC Integration**: Node.js can update CathedralStyle at runtime via "updateStyle" message type:
+
+```javascript
+// Node.js sends style update to Unity
+unityBridge.sendMessage({
+  type: "updateStyle",
+  data: {
+    pinkIntensity: 0.95,
+    eldritchLevel: 777,
+    neonFlickerSpeed: 1.2,
+  },
+});
+```
+
+### Unity IPC Message Types (Complete Reference)
+
+**Node.js → Unity (Commands)** - All messages use JSON format via stdin:
+
+```javascript
+// 1. Initialize Scene
+{
+  type: "initialize",
+  timestamp: "2024-01-15T12:34:56.789Z",
+  data: {
+    sceneName: "MainScene",
+    style: "neon-cyber-goth",
+    pinkIntensity: 0.8,
+    eldritchLevel: 666,
+    catholicVibes: true
+  }
+}
+
+// 2. Update Visual Style (runtime configuration)
+{
+  type: "updateStyle",
+  data: {
+    pinkIntensity: 0.95,           // 0.0-1.0 range
+    eldritchLevel: 777,            // 0-1000 complexity
+    neonFlickerSpeed: 1.2,         // Animation speed
+    nuclearPulseSpeed: 2.5         // Glow animation
+  }
+}
+
+// 3. Camera Control
+{
+  type: "setCameraPosition",
+  data: {
+    position: { x: 0, y: 10, z: -20 },
+    rotation: { x: 15, y: 0, z: 0 },
+    fov: 60
+  }
+}
+
+// 4. Capture Screenshot
+{
+  type: "captureScreenshot",
+  data: {
+    width: 1920,
+    height: 1080,
+    filename: "cathedral_render.png"
+  }
+}
+
+// 5. Pause/Resume Rendering
+{
+  type: "setPaused",
+  data: { paused: true }
+}
+
+// 6. Shutdown Command
+{
+  type: "shutdown",
+  data: { graceful: true }
+}
+```
+
+**Unity → Node.js (Status Reports)** - All messages sent via stdout:
+
+```javascript
+// 1. Scene Initialized
+{
+  type: "sceneInitialized",
+  timestamp: "2024-01-15T12:34:57.890Z",
+  data: {
+    sceneName: "MainScene",
+    fps: 60,
+    renderer: "Universal Render Pipeline",
+    triangles: 150000
+  }
+}
+
+// 2. Frame Rendered (periodic updates)
+{
+  type: "frameRendered",
+  data: {
+    frameNumber: 1234,
+    fps: 60,
+    renderTime: 16.67,  // milliseconds
+    triangles: 150000
+  }
+}
+
+// 3. Style Updated (confirmation)
+{
+  type: "styleUpdated",
+  data: {
+    pinkIntensity: 0.95,
+    eldritchLevel: 777,
+    success: true
+  }
+}
+
+// 4. Screenshot Captured
+{
+  type: "screenshotCaptured",
+  data: {
+    filename: "cathedral_render.png",
+    path: "/absolute/path/to/file.png",
+    width: 1920,
+    height: 1080
+  }
+}
+
+// 5. Error Report
+{
+  type: "error",
+  data: {
+    message: "Failed to load material",
+    stack: "UnityEngine.Material...",
+    severity: "warning"
+  }
+}
+
+// 6. Shutdown Complete
+{
+  type: "shutdownComplete",
+  data: {
+    totalFrames: 5000,
+    uptime: 300000  // milliseconds
+  }
+}
+```
+
+**IPC Error Handling Pattern**:
+
+```javascript
+// In UnityBridge class (src/unity/unity-bridge.js)
+this.rendererProcess.stdout.on("data", (data) => {
+  try {
+    const messages = data.toString().split("\n").filter(Boolean);
+    messages.forEach((msg) => {
+      const parsed = JSON.parse(msg);
+
+      // Emit typed event based on message type
+      this.emit(`unity:${parsed.type}`, parsed.data);
+
+      // Handle errors
+      if (parsed.type === "error") {
+        logger.error("Unity error", parsed.data);
+      }
+    });
+  } catch (error) {
+    logger.error("Failed to parse Unity message", {
+      error,
+      data: data.toString(),
+    });
+  }
+});
+```
+
 ## Dual-Platform Architecture
 
 ### Node.js MCP Control Tower
 
-**Current State**: Package structure ready but implementation missing
+**Current State**: Fully operational with 8/8 MCP servers
 
-- `src/ui/` directory is empty - needs MCP dashboard implementation
-- All npm scripts are placeholders - use VS Code tasks instead
-- Jest infrastructure exists with 79% coverage from previous implementation
-- Missing source files: `src/mcp/orchestrator.js`, `src/utils/logger.js`
+- ✅ `src/mcp/orchestrator.js` - EventEmitter-based process manager (472 lines)
+- ✅ `src/utils/logger.js` - Multi-level structured logging (237 lines)
+- ✅ `src/index.js` - Main entry point with conditional server registration (277 lines)
+- ✅ `src/unity/unity-bridge.js` - Unity process management via IPC (259 lines)
+- 🚧 `src/ui/` - Directory empty, ready for MCP dashboard implementation
+- ✅ All npm scripts functional (dev, test, start, lint:fix, format, mcp:status, docs)
 
-### Unity CatGirl Avatar System
+**Key Workflows**:
+
+```bash
+npm run dev          # Development with nodemon auto-reload
+npm test             # Jest with 100% coverage enforcement
+npm run mcp:status   # Check operational status of all 8 MCP servers
+```
+
+### Unity Cathedral Renderer
 
 **Specifications**: Complete 683-line spec in `public/docs/CATGIRL.md`
 
-- Unity 6.2 LTS with XR Interaction Toolkit
-- Eye/hand tracking, RPG inventory, universal banking system
-- Separate project from Node.js MCP codebase
+- Unity 6.2 LTS with Universal Render Pipeline
+- Procedural gothic architecture with HDR neon materials
+- Post-processing: Bloom (3.0), chromatic aberration (0.3), vignette (0.4)
+- JSON IPC protocol documented in `UNITY_IPC_PROTOCOL.md` (432 lines)
+- Separate project in `unity-projects/cathedral-renderer/`
 - Setup guide: `public/docs/UNITY_SETUP_GUIDE.md`
+
+**Unity C# Architecture** (`CathedralRenderer.cs`, 684 lines):
+
+- `CathedralStyle` class: Configuration with pink intensity (0-1), eldritch level (0-1000), neon colors
+- `CathedralRenderer` MonoBehaviour: Procedural geometry generation, IPC command listener
+- Batch mode support: Detects `Application.isBatchMode` for headless rendering
+- Command listener coroutine: Reads stdin JSON messages, executes Unity operations
 
 ### VS Code Integration Patterns
 
@@ -265,47 +675,116 @@ cspell.json                 # Custom dictionary with 109 technical terms (bambis
 
 ## MCP Server Configuration Guide
 
-### Adding Missing Servers (5/8 Need Setup)
+### All 8 Servers Configured (Operational Status: 8/8)
 
-To add the remaining MCP servers to `.vscode/settings.json`:
+All MCP servers are configured in `.vscode/settings.json` and conditionally loaded in `src/index.js` based on environment variables:
 
-```jsonc
-// MongoDB - requires connection string
-"mongodb": {
-  "command": "npx",
-  "args": ["-y", "@modelcontextprotocol/server-mongodb", "--connection-string", "mongodb://localhost:27017"]
-},
+```javascript
+// Core servers (no authentication required)
+const MCP_SERVERS = {
+  filesystem: {
+    command: "npx",
+    args: ["-y", "@modelcontextprotocol/server-filesystem", workspacePath],
+  },
+  git: {
+    command: "npx",
+    args: [
+      "-y",
+      "@modelcontextprotocol/server-git",
+      "--repository",
+      workspacePath,
+    ],
+  },
+  github: {
+    command: "npx",
+    args: ["-y", "@modelcontextprotocol/server-github"],
+  },
+};
 
-// Stripe - requires API keys (set STRIPE_SECRET_KEY env var)
-"stripe": {
-  "command": "npx",
-  "args": ["-y", "@modelcontextprotocol/server-stripe"]
-},
-
-// HuggingFace - requires token (set HUGGINGFACE_HUB_TOKEN env var)
-"huggingface": {
-  "command": "npx",
-  "args": ["-y", "@modelcontextprotocol/server-huggingface"]
-},
-
-// Azure Quantum - requires workspace config
-"azure-quantum": {
-  "command": "npx",
-  "args": ["-y", "@modelcontextprotocol/server-azure-quantum"]
-},
-
-// Microsoft Clarity - requires project ID
-"clarity": {
-  "command": "npx",
-  "args": ["-y", "@modelcontextprotocol/server-microsoft-clarity"]
+// Optional servers (conditional loading in src/index.js lines 46-77)
+if (process.env.MONGODB_CONNECTION_STRING) {
+  /* add mongodb */
+}
+if (process.env.STRIPE_SECRET_KEY) {
+  /* add stripe */
+}
+if (process.env.HUGGINGFACE_HUB_TOKEN) {
+  /* add huggingface */
+}
+if (process.env.AZURE_QUANTUM_WORKSPACE_ID) {
+  /* add azure-quantum */
+}
+if (process.env.CLARITY_PROJECT_ID) {
+  /* add clarity */
 }
 ```
 
+**Environment Variables Required** (see `.env.example`):
+
+- `GITHUB_TOKEN` - Required for github server operations
+- `MONGODB_CONNECTION_STRING` - Default: `mongodb://localhost:27017`
+- `STRIPE_SECRET_KEY` - Required for stripe server (payment processing)
+- `HUGGINGFACE_HUB_TOKEN` - Required for huggingface server (AI/ML models)
+- `AZURE_QUANTUM_WORKSPACE_ID` - Required for azure-quantum server
+- `CLARITY_PROJECT_ID` - Required for clarity server (analytics)
+
+**Environment Variable Security Patterns**:
+
+```javascript
+// Pattern 1: Conditional server loading (src/index.js lines 46-77)
+// Servers only register if credentials exist - fail-safe deployment
+if (process.env.STRIPE_SECRET_KEY) {
+  MCP_SERVERS.stripe = {
+    command: "npx",
+    args: ["-y", "@modelcontextprotocol/server-stripe"],
+  };
+} // No error thrown if key missing - graceful degradation
+
+// Pattern 2: Default values for optional services
+const MONGODB_URI =
+  process.env.MONGODB_CONNECTION_STRING || "mongodb://localhost:27017";
+
+// Pattern 3: VS Code reload required after .env changes
+// Environment variables loaded at VS Code startup via dotenv
+// Must reload window (Ctrl+Shift+P → "Reload Window") after editing .env
+```
+
+**Secret Management Best Practices**:
+
+1. **Never commit `.env`** - Only commit `.env.example` with placeholder values
+2. **Use .gitignore** - `.env` already ignored in project root
+3. **Reload VS Code Window** - Required after adding/modifying environment variables
+4. **Test with Minimal Keys** - Core servers (filesystem, git, github) work without API keys
+5. **Verify Server Status** - Run `npm run mcp:status` to check which servers are operational
+6. **Rotate Secrets Regularly** - Especially production keys (Stripe, Azure)
+7. **Use Different Keys per Environment** - Dev vs staging vs production credentials
+
+**Debugging Environment Issues**:
+
+```bash
+# Check if environment variables are loaded
+node -e "console.log(process.env.GITHUB_TOKEN ? 'GitHub token loaded' : 'Missing')"
+
+# Verify MCP server can start
+npx -y @modelcontextprotocol/server-github
+
+# Check VS Code MCP extension logs
+# View → Output → Select "MCP" from dropdown
+```
+
+**Adding New MCP Servers**:
+
+1. Add to `.vscode/settings.json` for VS Code AI assistant integration
+2. Add conditional loading in `src/index.js` (follow existing pattern)
+3. Add environment variable to `.env.example` with documentation
+4. Register server in main initialization loop (`src/index.js` lines 90-92)
+
 ### Unity Development Patterns
 
-**Architecture**: Component-based XR system with Unity 6.2
-**Key Systems**: Eye/hand tracking, RPG inventory, multi-currency economy
-**Implementation**: Separate Unity project following `CATGIRL.md` specifications
+**Architecture**: Component-based procedural generation with Unity 6.2 URP
+**Key Systems**: Neon lighting, post-processing stack, JSON IPC communication
+**Implementation**: Separate Unity project in `unity-projects/cathedral-renderer/`
+**IPC Protocol**: Documented in `public/docs/UNITY_IPC_PROTOCOL.md` (432 lines)
 
 ## Development Workflows
 
@@ -316,9 +795,9 @@ To add the remaining MCP servers to `.vscode/settings.json`:
 ```javascript
 // Add to MCP_SERVERS object (lines 46-77 in src/index.js)
 if (process.env.NEW_SERVER_API_KEY) {
-  MCP_SERVERS['new-server'] = {
-    command: 'npx',
-    args: ['-y', '@modelcontextprotocol/server-new-server']
+  MCP_SERVERS["new-server"] = {
+    command: "npx",
+    args: ["-y", "@modelcontextprotocol/server-new-server"],
   };
 }
 
@@ -359,6 +838,67 @@ npm run test:watch       # Watch mode for development
 5. **Test events**: Use `done()` callback or promises to test emitted events
 
 **Critical**: Jest enforces 100% coverage on branches, functions, lines, statements. Pull requests failing coverage checks will not merge.
+
+### VS Code Tasks & Debugging Patterns
+
+**Task Execution** (`.vscode/tasks.json` - 9 emoji-prefixed tasks):
+
+```bash
+# Method 1: VS Code Command Palette (Recommended)
+Ctrl+Shift+P → "Tasks: Run Task" → Select task
+
+# Method 2: Direct npm scripts (if tasks unavailable)
+npm run dev          # Start with nodemon auto-reload
+npm test             # Jest with 100% coverage enforcement
+npm run mcp:status   # Check MCP server operational status
+```
+
+**Available Tasks**:
+
+1. **🌸 Start Control Tower (Dev)** - `npm run dev` with nodemon auto-reload
+2. **💎 Run Tests (100% Coverage)** - `npm test` with coverage enforcement
+3. **🌀 Check MCP Server Status** - `npm run mcp:status` to verify 8/8 operational
+4. **📚 Start Documentation Server** - `npm run docs` on port 4000
+5. **🚀 Start Production Server** - `npm start` on port 3000
+6. **🧹 Lint & Fix Code** - `npm run lint:fix` with ESLint auto-fix
+7. **💅 Format Code (Prettier)** - `npm run format` for all JS files
+8. **🔍 Test Watch Mode** - `npm run test:watch` for continuous development
+9. **🏗️ Build Production** - `npm run build` (tests + docs)
+
+**Problem Matchers**: All tasks configured with `$eslint-stylish` for automatic error detection in Problems panel.
+
+**Debugging Configuration** (`.vscode/launch.json`):
+
+```json
+{
+  "type": "node",
+  "request": "launch",
+  "name": "Debug MCP Control Tower",
+  "program": "${workspaceFolder}/src/index.js",
+  "envFile": "${workspaceFolder}/.env",
+  "console": "integratedTerminal",
+  "internalConsoleOptions": "neverOpen"
+}
+```
+
+**Debugging Workflows**:
+
+1. **MCP Orchestrator**: Set breakpoints in `src/mcp/orchestrator.js`, debug spawn() calls and event emission
+2. **Unity Bridge**: Debug IPC message parsing in `src/unity/unity-bridge.js` stdout/stdin handlers
+3. **Logger Output**: Check `logs/` directory for file-based logs (if `LOG_FILE` env var set)
+4. **VS Code Output Panel**: View → Output → Select "MCP" for MCP extension diagnostics
+
+**Task Problem Matcher Example**:
+
+```json
+"problemMatcher": ["$eslint-stylish"],
+"presentation": {
+  "reveal": "always",
+  "panel": "dedicated"
+}
+```
+
+This automatically parses ESLint output and populates VS Code's Problems panel with clickable errors.
 
 ### Formatter Configuration (Zero-Config Approach)
 
@@ -444,12 +984,18 @@ src/
 ├── mcp/orchestrator.js      # 472 lines, 29 methods, EventEmitter-based lifecycle management
 ├── utils/logger.js          # 237 lines, 5-level logging with dual output
 ├── tests/                   # 100% coverage enforced via Jest
-└── index.js                 # 228 lines, main entry with conditional MCP registration
+├── unity/unity-bridge.js    # 259 lines, Unity process management via IPC
+└── index.js                 # 277 lines, main entry with conditional MCP registration
 
 public/docs/
 ├── RELIGULOUS_MANTRA.md     # Development philosophy & emoji mappings
 ├── MCP_SETUP_GUIDE.md       # Complete 8-server setup instructions
-└── CATGIRL.md               # Unity avatar specs (separate project)
+├── CATGIRL.md               # Unity avatar specs (separate project)
+└── UNITY_IPC_PROTOCOL.md    # JSON IPC protocol documentation (432 lines)
+
+unity-projects/cathedral-renderer/
+├── Assets/Scripts/CathedralRenderer.cs    # 684 lines, procedural cathedral generation
+└── Assets/Scenes/MainScene.unity          # Cathedral scene configuration
 
 .vscode/settings.json        # Lines 116-169: MCP server registry (8/8 configured)
 package.json                 # Lines 53-74: Jest config with 100% coverage thresholds
@@ -463,4 +1009,3 @@ package.json                 # Lines 53-74: Jest config with 100% coverage thres
 - Eye/hand tracking, RPG inventory, multi-currency economy
 - Setup guide: `public/docs/UNITY_SETUP_GUIDE.md`
 - **Important**: Separate Unity project, not in this Node.js codebase
-
