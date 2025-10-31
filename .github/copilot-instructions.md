@@ -224,3 +224,36 @@ To add the remaining MCP servers to `.vscode/settings.json`:
 - **Problem matchers** configured for ESLint integration
 - **Zero-config approach**: No default formatter set (intentional design choice)
 - **GitHub Copilot** configured for BambiSleepChat organization context
+
+### Git Workflow (Emoji-Driven Commits)
+**Standard Development Workflow**:
+```bash
+git add .
+git commit -m "🌸💎 <commit_message>"
+git push
+```
+
+**Emoji Commit Patterns** (from RELIGULOUS_MANTRA.md):
+```bash
+# Package management, npm operations
+git commit -m "🌸 Add missing dependencies for MCP server integration"
+
+# Architecture decisions, major refactors  
+git commit -m "👑 Restructure MCP server configuration for scalability"
+
+# Quality metrics, test coverage enforcement
+git commit -m "💎 Implement Jest tests to achieve 100% coverage"
+
+# Transformation processes, migrations
+git commit -m "🦋 Migrate documentation to public/docs/ structure"
+
+# Server operations, MCP management
+git commit -m "✨ Configure MongoDB and Stripe MCP servers"
+
+# Development lifecycle, deployment
+git commit -m "🎭 Set up production deployment pipeline"
+
+# Combined patterns for complex changes
+git commit -m "🌸👑 Update package.json and refactor MCP orchestrator architecture"
+git commit -m "💎🦋 Add comprehensive tests and migrate legacy code patterns"
+```
