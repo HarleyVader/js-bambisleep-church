@@ -50,6 +50,13 @@ This repository implements the **Universal Machine Philosophy** with emoji-drive
 - **Multi-Level Logging**: ERROR, WARN, INFO, DEBUG, TRACE with file/console output
 - **Error Handling**: Uncaught exceptions, unhandled rejections, process errors
 
+### 🔮 Unity Cathedral Renderer (NEW)
+- **Neon Cyber Goth Aesthetic**: Procedural gothic architecture with HDR neon materials
+- **Real-Time IPC**: JSON message protocol via stdin/stdout between Node.js and Unity
+- **Post-Processing Stack**: Bloom (3.0), chromatic aberration (0.3), vignette (0.4)
+- **Unity 6.2 LTS**: Universal Render Pipeline with Shader Graph support
+- **Event Integration**: Unity lifecycle events forwarded to MCP orchestrator
+
 ---
 
 ## 🚀 Quick Start
@@ -117,10 +124,13 @@ bambisleep-church/
 │   ├── MCP_SETUP_GUIDE.md        # Complete 8-server setup (320 lines)
 │   ├── CATGIRL.md                # Unity avatar specs (683 lines)
 │   ├── CATGIRL_SERVER.md         # Unity server implementation
-│   └── UNITY_SETUP_GUIDE.md      # Unity 6.2 installation
+│   ├── UNITY_SETUP_GUIDE.md      # Unity 6.2 installation
+│   └── UNITY_IPC_PROTOCOL.md     # Unity-Node.js IPC specification
 ├── src/
 │   ├── mcp/
 │   │   └── orchestrator.js       # MCP server lifecycle (29 functions)
+│   ├── unity/
+│   │   └── unity-bridge.js       # Unity process management & IPC
 │   ├── utils/
 │   │   └── logger.js             # Multi-level logging utility
 │   ├── tests/
@@ -130,6 +140,17 @@ bambisleep-church/
 │   │       └── logger.test.js        # 30+ test cases
 │   ├── ui/                       # Dashboard (to be implemented)
 │   └── index.js                  # Main entry point
+├── unity-projects/
+│   └── cathedral-renderer/       # Unity 6.2 Cathedral Renderer
+│       ├── Assets/
+│       │   ├── Scenes/
+│       │   │   └── MainScene.unity  # Cathedral scene
+│       │   └── Scripts/
+│       │       └── CathedralRenderer.cs  # Neon Cyber Goth renderer
+│       ├── Packages/
+│       │   └── manifest.json     # URP, Post Processing, Shader Graph
+│       └── ProjectSettings/
+│           └── ProjectVersion.txt  # Unity 6000.2.11f1
 ├── coverage/                     # Jest coverage reports (79% → 100% target)
 ├── BUILD.md                      # Complete build guide (408 lines)
 ├── CHANGELOG.md                  # Version history with emoji conventions

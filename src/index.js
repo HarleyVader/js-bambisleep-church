@@ -6,6 +6,7 @@
 
 require('dotenv').config();
 const MCPOrchestrator = require('./mcp/orchestrator');
+const UnityBridge = require('./unity/unity-bridge');
 const Logger = require('./utils/logger');
 const path = require('path');
 const fs = require('fs');
@@ -117,6 +118,39 @@ orchestrator.on('orchestrator:stopped', ({ total, success }) => {
   logger.info(`🌸 MCP Control Tower stopped: ${success}/${total} servers terminated`);
 });
 
+// Initialize Unity Cathedral Renderer Bridge
+const unityBridge = new UnityBridge({
+  unityPath: process.env.UNITY_PATH || '/opt/unity/Editor/Unity',
+  projectPath: path.join(__dirname, '..', 'unity-projects', 'cathedral-renderer'),
+  renderOnStart: process.env.UNITY_RENDER_ON_START !== 'false',
+  logger
+});
+
+// Register Unity event listeners
+unityBridge.on('unity:starting', () => {
+  logger.info('🔮 Unity Cathedral Renderer initializing...');
+});
+
+unityBridge.on('unity:started', ({ pid }) => {
+  logger.info('🔮✨ Unity Cathedral Renderer started', { pid });
+});
+
+unityBridge.on('unity:scene-loaded', ({ sceneName }) => {
+  logger.info('🔮🌸 Unity scene loaded', { sceneName });
+});
+
+unityBridge.on('unity:render-complete', ({ timestamp }) => {
+  logger.info('🔮💎 Cathedral render complete', { timestamp });
+});
+
+unityBridge.on('unity:error', ({ error }) => {
+  logger.error('🔮💥 Unity error', { error });
+});
+
+unityBridge.on('unity:stopped', ({ code }) => {
+  logger.info('🔮🌀 Unity Cathedral Renderer stopped', { exitCode: code });
+});
+
 /**
  * Initialize and start all MCP servers
  */
@@ -153,6 +187,15 @@ async function initialize() {
     logger.info(`📚 Documentation available on port ${CONFIG.docsPort}`);
     logger.info(`🔧 Control interface available on port ${CONFIG.port}`);
     
+    // Start Unity Cathedral Renderer if configured
+    if (process.env.UNITY_ENABLED !== 'false') {
+      logger.info('🔮 Starting Unity Cathedral Renderer...');
+      await unityBridge.start();
+      logger.info('🔮✨ Unity Cathedral Renderer ready for commands');
+    } else {
+      logger.info('🔮 Unity Cathedral Renderer disabled (UNITY_ENABLED=false)');
+    }
+    
     return true;
   } catch (error) {
     logger.error('💎 Failed to initialize MCP Control Tower', {
@@ -170,6 +213,12 @@ async function shutdown(signal) {
   logger.info(`🌀 Received ${signal}, initiating graceful shutdown...`);
   
   try {
+    // Stop Unity renderer first
+    if (unityBridge.isRunning()) {
+      logger.info('🔮 Stopping Unity Cathedral Renderer...');
+      await unityBridge.stop();
+    }
+    
     await orchestrator.shutdown();
     logger.info('🌸 Shutdown complete. Goodbye! 🌸');
     process.exit(0);
