@@ -1,6 +1,6 @@
 # Unity IPC Protocol v1.0.0 Implementation Summary
 
-_🔮 Applied UNITY_IPC_PROTOCOL.md specification to codebase 🔮_
+🔮 Applied UNITY_IPC_PROTOCOL.md specification to codebase 🔮
 
 ## Overview
 
@@ -13,30 +13,35 @@ Successfully applied the complete Unity IPC Protocol specification from `public/
 **Updated Methods:**
 
 - **`sendMessage(type, data)`** - New primary method following IPC Protocol v1.0.0
+
   - Sends JSON messages with `type`, `timestamp`, `data` structure
   - Replaces legacy `sendCommand()` method
   - Automatic ISO 8601 timestamp generation
   - Returns boolean success/failure
 
 - **`sendCommand(command)`** - Marked as deprecated (legacy support)
+
   - Logs deprecation warning
   - Forwards to `sendMessage()` for backwards compatibility
 
 **New Message Handling:**
 
 - **`handleIPCMessage(message)`** - Processes incoming Unity messages
+
   - Parses JSON with `type`, `timestamp`, `data` structure
   - Emits typed events: `unity:{type}` for all message types
   - Special handling for error messages (creates Error objects)
   - Trace-level logging for heartbeat to avoid log spam
 
 - **`setupProcessHandlers()`** - Enhanced stdout parsing
+
   - Message buffer for incomplete JSON across multiple data chunks
   - Line-by-line JSON parsing with graceful fallback to log output
   - Preserves legacy "Cathedral Ready" detection
   - Handles malformed JSON without crashing
 
 **New Protocol Methods:**
+
 
 ```javascript
 // Scene initialization
@@ -63,11 +68,13 @@ setPaused(paused)
 // Style updates (existing method updated)
 updateCathedralConfig(config)
 // Now sends "updateStyle" message type (was "updateConfig")
+
 ```
 
 **Event Emissions:**
 
 All Unity → Node.js messages emit typed events:
+
 - `unity:scene-loaded` - Scene initialization complete
 - `unity:render-complete` - Render to file complete
 - `unity:update-ack` - Style update acknowledged
@@ -76,6 +83,7 @@ All Unity → Node.js messages emit typed events:
 - `unity:shutdownComplete` - Graceful shutdown complete
 
 Legacy events preserved:
+
 - `cathedral:ready` - Emitted on scene-loaded or legacy "Cathedral Ready" message
 - `renderer:output` - Non-JSON Unity log output
 - `renderer:error` - Process errors or Unity error messages
@@ -85,16 +93,19 @@ Legacy events preserved:
 **Renamed/Updated Methods:**
 
 - **`CommandListener()`** → **`CommandListener()`** (enhanced)
+
   - Now logs "IPC Command Listener started (Protocol v1.0.0)"
   - Calls `ProcessIPCMessage()` instead of `ProcessCommand()`
 
 - **`ProcessCommand()`** → **`ProcessIPCMessage()`**
+
   - Parses JSON with `IPCMessage` structure (type, timestamp, data)
   - Validates message type field (sends error if missing)
   - Comprehensive error handling with `SendError()` calls
   - Supports all protocol message types
 
 **New Message Handlers:**
+
 
 ```csharp
 ProcessInitialize(dataJson)
@@ -120,9 +131,11 @@ ProcessSetPaused(dataJson)
 ProcessShutdown(dataJson)
 // Sends shutdownComplete message
 // Triggers GracefulShutdown() coroutine (0.5s delay before quit)
+
 ```
 
 **New IPC Methods:**
+
 
 ```csharp
 SendIPCMessage(string type, string dataJson)
@@ -142,11 +155,13 @@ CaptureScreenshot(RenderData renderData)
 HeartbeatLoop()
 // Coroutine: Sends heartbeat every 5 seconds (only in server mode)
 // Data: fps, memoryUsageMB, activeObjects
+
 ```
 
 **New Data Structures:**
 
 Added 11 serializable classes for IPC protocol:
+
 
 ```csharp
 IPCMessage              // Base message structure
@@ -162,6 +177,7 @@ RenderCompleteData      // Render complete result
 ErrorData               // Error message structure
 HeartbeatData           // Periodic status update
 ShutdownData            // Shutdown complete result
+
 ```
 
 ### 3. New Test Suite (`src/tests/unity/unity-ipc-protocol.test.js`)
@@ -171,6 +187,7 @@ ShutdownData            // Shutdown complete result
 **Test Categories:**
 
 1. **Node.js → Unity Messages** (14 tests)
+
    - Initialize scene with full parameter validation
    - Update style with partial parameters
    - Camera control (position, rotation, FOV)
@@ -211,6 +228,7 @@ ShutdownData            // Shutdown complete result
 
 All messages follow this exact structure:
 
+
 ```json
 {
   "type": "message_type",
@@ -219,6 +237,7 @@ All messages follow this exact structure:
     // Message-specific data
   }
 }
+
 ```
 
 ### Node.js → Unity Messages (8/8 Implemented)
@@ -288,6 +307,7 @@ All messages follow this exact structure:
 
 ### Example 1: Initialize and Render Cathedral
 
+
 ```javascript
 const UnityBridge = require('./src/unity/unity-bridge');
 
@@ -329,9 +349,11 @@ bridge.once('unity:render-complete', (data) => {
   // Shutdown gracefully
   bridge.stopRenderer();
 });
+
 ```
 
 ### Example 2: Real-Time Style Updates
+
 
 ```javascript
 // Update cathedral style at runtime
@@ -345,9 +367,11 @@ bridge.updateCathedralConfig({
 bridge.once('unity:update-ack', (data) => {
   console.log(`Style updated: pink=${data.pinkIntensity}, eldritch=${data.eldritchLevel}`);
 });
+
 ```
 
 ### Example 3: Error Handling
+
 
 ```javascript
 bridge.on('renderer:error', ({ error, errorCode, stack }) => {
@@ -359,9 +383,11 @@ bridge.on('renderer:error', ({ error, errorCode, stack }) => {
     // Retry render operation
   }
 });
+
 ```
 
 ### Example 4: Monitoring Unity Health
+
 
 ```javascript
 bridge.on('unity:heartbeat', ({ fps, memoryUsageMB, activeObjects }) => {
@@ -372,26 +398,33 @@ bridge.on('unity:heartbeat', ({ fps, memoryUsageMB, activeObjects }) => {
     bridge.updateCathedralConfig({ eldritchLevel: 333 });
   }
 });
+
 ```
 
 ## Testing
 
 Run the new IPC protocol test suite:
 
+
 ```bash
 npm test -- src/tests/unity/unity-ipc-protocol.test.js
+
 ```
 
 Run all Unity-related tests:
 
+
 ```bash
 npm test -- src/tests/unity/
+
 ```
 
 Run full test suite with coverage:
 
+
 ```bash
 npm test
+
 ```
 
 ## Documentation References
@@ -410,6 +443,7 @@ npm test
 **Commit Message**: 🔮✨ Apply Unity IPC Protocol v1.0.0 specification to codebase
 
 **Files Changed**: 3 files, 1,233 insertions(+), 49 deletions(-)
+
 - `src/unity/unity-bridge.js` (modified)
 - `unity-projects/cathedral-renderer/Assets/Scripts/CathedralRenderer.cs` (modified)
 - `src/tests/unity/unity-ipc-protocol.test.js` (new)
@@ -417,6 +451,7 @@ npm test
 ## Next Steps
 
 1. **Install Dependencies**: Run `npm install` to get Jest for test execution
+
 2. **Run Tests**: Execute `npm test` to validate 100% protocol coverage
 3. **Unity Build**: Open Unity project and test C# implementation in Editor
 4. **Integration Testing**: Test real Node.js ↔ Unity communication with Unity in batch mode
@@ -439,4 +474,4 @@ The implementation is **100% compliant** with the documented protocol specificat
 
 ---
 
-_🔮 Built with the Universal Machine Philosophy - "Messages flow like neon light through the void" 🔮_
+🔮 Built with the Universal Machine Philosophy - "Messages flow like neon light through the void" 🔮
