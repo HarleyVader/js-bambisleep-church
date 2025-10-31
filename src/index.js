@@ -1,9 +1,4 @@
-/**
- * BambiSleep™ Church MCP Control Tower - Main Entry Point
- * Initializes and manages the MCP server orchestration system
- * 🌸 Built with the Universal Machine Philosophy 🌸
- */
-
+// BambiSleep™ Church MCP Control Tower
 require('dotenv').config();
 const MCPOrchestrator = require('./mcp/orchestrator');
 const UnityBridge = require('./unity/unity-bridge');
@@ -11,7 +6,6 @@ const Logger = require('./utils/logger');
 const path = require('path');
 const fs = require('fs');
 
-// Initialize logger
 const logger = new Logger({
   level: process.env.LOG_LEVEL || 'INFO',
   logFile: process.env.LOG_FILE,
@@ -19,7 +13,6 @@ const logger = new Logger({
   enableFile: !!process.env.LOG_FILE
 });
 
-// Configuration
 const CONFIG = {
   port: process.env.PORT || 3000,
   docsPort: process.env.DOCS_PORT || 4000,
@@ -29,7 +22,6 @@ const CONFIG = {
   maxRestartAttempts: parseInt(process.env.MAX_RESTART_ATTEMPTS) || 3
 };
 
-// MCP Server configurations from .vscode/settings.json
 const MCP_SERVERS = {
   filesystem: {
     command: 'npx',
@@ -45,7 +37,6 @@ const MCP_SERVERS = {
   }
 };
 
-// Add optional MCP servers if environment variables are set
 if (process.env.MONGODB_CONNECTION_STRING) {
   MCP_SERVERS.mongodb = {
     command: 'npx',
@@ -81,18 +72,15 @@ if (process.env.CLARITY_PROJECT_ID) {
   };
 }
 
-// Add Cathedral MCP Tools if Unity is enabled
-// This is a custom MCP server wrapping Unity cathedral functionality
 if (process.env.UNITY_ENABLED !== 'false') {
   MCP_SERVERS.cathedral = {
     command: 'node',
     args: [path.join(__dirname, 'mcp', 'cathedral-server.js')],
-    type: 'custom', // Indicates this is a custom server, not from npm registry
+    type: 'custom',
     description: 'Unity Cathedral 3D visualization and interaction tools'
   };
 }
 
-// Initialize orchestrator
 const orchestrator = new MCPOrchestrator({
   workspacePath: CONFIG.workspacePath,
   healthCheckInterval: CONFIG.healthCheckInterval,

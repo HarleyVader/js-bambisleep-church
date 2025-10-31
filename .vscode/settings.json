@@ -24,7 +24,10 @@
     "source.fixAll": "explicit",
     "source.organizeImports": "explicit"
   },
-  "editor.rulers": [80, 120],
+  "editor.rulers": [
+    80,
+    120
+  ],
   "editor.tabSize": 2,
   "editor.insertSpaces": true,
   // File Associations for MCP Project
@@ -94,21 +97,29 @@
     "microsoft/markitdown": {
       "type": "stdio",
       "command": "uvx",
-      "args": ["markitdown-mcp==0.0.1a4"],
+      "args": [
+        "markitdown-mcp==0.0.1a4"
+      ],
       "gallery": "https://api.mcp.github.com/2025-09-15/v0/servers/976a2f68-e16c-4e2b-9709-7133487f8c14",
       "version": "1.0.0"
     },
     "microsoft/playwright-mcp": {
       "type": "stdio",
       "command": "npx",
-      "args": ["@playwright/mcp@latest"],
+      "args": [
+        "@playwright/mcp@latest"
+      ],
       "gallery": "https://api.mcp.github.com/2025-09-15/v0/servers/41b79849-7e6c-4fc7-82c0-5a611ea21523",
       "version": "0.0.1-seed"
     },
     "mongodb-js/mongodb-mcp-server": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "mongodb-mcp-server@latest", "--readOnly"],
+      "args": [
+        "-y",
+        "mongodb-mcp-server@latest",
+        "--readOnly"
+      ],
       "env": {
         "MDB_MCP_CONNECTION_STRING": "${input:mcp_connection_string}"
       },
@@ -147,7 +158,11 @@
     // Core MCP Servers
     "filesystem": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/mnt/f/bambisleep-church"],
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/mnt/f/bambisleep-church"
+      ],
       "type": "stdio"
     },
     "git": {
@@ -164,37 +179,55 @@
       "type": "http",
       "url": "https://api.githubcopilot.com/mcp/",
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-github"]
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ]
     },
     "memory": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-memory"],
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-memory"
+      ],
       "type": "stdio"
     },
     "sequential-thinking": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ],
       "type": "stdio"
     },
     "everything": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-everything"],
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-everything"
+      ],
       "type": "stdio"
     },
     // Additional Utility Servers
     "docker": {
       "command": "npx",
-      "args": ["mcp-server-docker"],
+      "args": [
+        "mcp-server-docker"
+      ],
       "type": "stdio"
     },
     "brave-search": {
       "command": "uvx",
-      "args": ["mcp-server-brave-search"],
+      "args": [
+        "mcp-server-brave-search"
+      ],
       "type": "stdio"
     },
     "postgres": {
       "command": "uvx",
-      "args": ["mcp-server-postgres"],
+      "args": [
+        "mcp-server-postgres"
+      ],
       "type": "stdio"
     },
     // Optional: HTTP-based HuggingFace (alternative to evalstate)
@@ -205,7 +238,10 @@
     // Optional: Legacy Stripe STDIO (alternative to agent-toolkit)
     "stripe": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-stripe"],
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-stripe"
+      ],
       "type": "stdio",
       "env": {
         "STRIPE_API_KEY": "${env:STRIPE_API_KEY}"
@@ -214,7 +250,9 @@
     // Custom Cathedral Server (Unity 3D visualization)
     "cathedral": {
       "command": "node",
-      "args": ["f:\\js-bambisleep-church\\src\\mcp\\cathedral-server.js"],
+      "args": [
+        "f:\\js-bambisleep-church\\src\\mcp\\cathedral-server.js"
+      ],
       "type": "stdio",
       "env": {
         "UNITY_PATH": "C:\\Program Files\\Unity\\Hub\\Editor\\6000.2.11f1\\Editor\\Unity.exe",
