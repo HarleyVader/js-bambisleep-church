@@ -88,15 +88,67 @@
   "ecl.launchConfiguration": "not found",
   "ecl.targetCluster": {},
   // MCP Server Configuration (Model Context Protocol)
-  // These servers provide filesystem, git, and github integration
+  // Upgraded with official MCP Gallery servers + custom cathedral server
   "mcp.servers": {
-    "filesystem": {
+    // Official MCP Gallery Servers
+    "microsoft/markitdown": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["markitdown-mcp==0.0.1a4"],
+      "gallery": "https://api.mcp.github.com/2025-09-15/v0/servers/976a2f68-e16c-4e2b-9709-7133487f8c14",
+      "version": "1.0.0"
+    },
+    "microsoft/playwright-mcp": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["@playwright/mcp@latest"],
+      "gallery": "https://api.mcp.github.com/2025-09-15/v0/servers/41b79849-7e6c-4fc7-82c0-5a611ea21523",
+      "version": "0.0.1-seed"
+    },
+    "mongodb-js/mongodb-mcp-server": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "mongodb-mcp-server@latest", "--readOnly"],
+      "env": {
+        "MDB_MCP_CONNECTION_STRING": "${input:mcp_connection_string}"
+      },
+      "gallery": "https://api.mcp.github.com/2025-09-15/v0/servers/7de30975-08be-4120-997e-86f772f784bd",
+      "version": "1.0.0"
+    },
+    "stripe/agent-toolkit": {
+      "type": "http",
+      "url": "https://mcp.stripe.com",
+      "gallery": "https://api.mcp.github.com/2025-09-15/v0/servers/f0b8ecdd-498c-4087-8ae2-b2677215b7ca",
+      "version": "1.0.0"
+    },
+    "evalstate/hf-mcp-server": {
+      "type": "http",
+      "url": "https://huggingface.co/mcp?login",
+      "gallery": "https://api.mcp.github.com/2025-09-15/v0/servers/1094d85c-b89b-4a7b-a4da-74718f67d839",
+      "version": "1.0.0"
+    },
+    "microsoft/clarity-mcp-server": {
+      "type": "stdio",
       "command": "npx",
       "args": [
-        "-y",
-        "@modelcontextprotocol/server-filesystem",
-        "/mnt/f/bambisleep-church"
-      ]
+        "@microsoft/clarity-mcp-server@latest",
+        "--clarity_api_token",
+        "${input:clarity_api_token}"
+      ],
+      "gallery": "https://api.mcp.github.com/2025-09-15/v0/servers/782c24a9-e88c-4ee7-8f17-e073dc9c71a6",
+      "version": "1.0.0"
+    },
+    "github/github-mcp-server": {
+      "type": "http",
+      "url": "https://api.githubcopilot.com/mcp/",
+      "gallery": "https://api.mcp.github.com/2025-09-15/v0/servers/ab12cd34-5678-90ef-1234-567890abcdef",
+      "version": "0.13.0"
+    },
+    // Core MCP Servers
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/mnt/f/bambisleep-church"],
+      "type": "stdio"
     },
     "git": {
       "command": "npx",
@@ -105,40 +157,65 @@
         "@modelcontextprotocol/server-git",
         "--repository",
         "/mnt/f/bambisleep-church"
-      ]
+      ],
+      "type": "stdio"
     },
     "github": {
+      "type": "http",
+      "url": "https://api.githubcopilot.com/mcp/",
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-github"]
     },
-    "mongodb": {
+    "memory": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-mongodb",
-        "--connection-string",
-        "mongodb://localhost:27017"
-      ]
+      "args": ["-y", "@modelcontextprotocol/server-memory"],
+      "type": "stdio"
     },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "type": "stdio"
+    },
+    "everything": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-everything"],
+      "type": "stdio"
+    },
+    // Additional Utility Servers
+    "docker": {
+      "command": "npx",
+      "args": ["mcp-server-docker"],
+      "type": "stdio"
+    },
+    "brave-search": {
+      "command": "uvx",
+      "args": ["mcp-server-brave-search"],
+      "type": "stdio"
+    },
+    "postgres": {
+      "command": "uvx",
+      "args": ["mcp-server-postgres"],
+      "type": "stdio"
+    },
+    // Optional: HTTP-based HuggingFace (alternative to evalstate)
+    "hf-mcp-server": {
+      "url": "https://huggingface.co/mcp?login",
+      "type": "http"
+    },
+    // Optional: Legacy Stripe STDIO (alternative to agent-toolkit)
     "stripe": {
       "command": "npx",
-      "args": ["-y", "@stripe/mcp"]
+      "args": ["-y", "@modelcontextprotocol/server-stripe"],
+      "type": "stdio",
+      "env": {
+        "STRIPE_API_KEY": "${env:STRIPE_API_KEY}"
+      }
     },
-    "huggingface": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-huggingface"]
-    },
-    "azure-quantum": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-azure-quantum"]
-    },
-    "clarity": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-microsoft-clarity"]
-    },
+    // Custom Cathedral Server (Unity 3D visualization)
     "cathedral": {
       "command": "node",
       "args": ["f:\\js-bambisleep-church\\src\\mcp\\cathedral-server.js"],
+      "type": "stdio",
       "env": {
         "UNITY_PATH": "C:\\Program Files\\Unity\\Hub\\Editor\\6000.2.11f1\\Editor\\Unity.exe",
         "UNITY_ENABLED": "true"
