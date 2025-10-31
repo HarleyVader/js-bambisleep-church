@@ -1,9 +1,3 @@
-/**
- * BambiSleep™ Church MCP Control Tower - MCP Orchestrator
- * Manages Model Context Protocol server lifecycle, health monitoring, and coordination
- * Based on coverage data: 29 functions (20/29 hit = 68.97%), 51.16% branches
- */
-
 const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
@@ -12,9 +6,6 @@ const Logger = require('../utils/logger');
 
 const logger = new Logger({ context: { component: 'MCPOrchestrator' } });
 
-/**
- * MCP Server states
- */
 const SERVER_STATES = {
   STOPPED: 'stopped',
   STARTING: 'starting',
@@ -24,15 +15,12 @@ const SERVER_STATES = {
   UNREACHABLE: 'unreachable'
 };
 
-/**
- * MCP Orchestrator - manages multiple MCP servers
- */
 class MCPOrchestrator extends EventEmitter {
   constructor(config = {}) {
     super();
     this.config = config;
     this.servers = new Map();
-    this.healthCheckInterval = config.healthCheckInterval || 30000; // 30 seconds
+    this.healthCheckInterval = config.healthCheckInterval || 30000;
     this.healthCheckTimer = null;
     this.workspacePath = config.workspacePath || process.cwd();
     this.autoRestart = config.autoRestart !== false;
@@ -46,9 +34,6 @@ class MCPOrchestrator extends EventEmitter {
     });
   }
 
-  /**
-   * Register a new MCP server
-   */
   registerServer(name, serverConfig) {
     if (this.servers.has(name)) {
       logger.warn(`Server ${name} already registered`, { name });
@@ -74,9 +59,6 @@ class MCPOrchestrator extends EventEmitter {
     return true;
   }
 
-  /**
-   * Unregister an MCP server
-   */
   async unregisterServer(name) {
     const server = this.servers.get(name);
     if (!server) {
@@ -94,9 +76,6 @@ class MCPOrchestrator extends EventEmitter {
     return true;
   }
 
-  /**
-   * Start a specific MCP server
-   */
   async startServer(name) {
     const server = this.servers.get(name);
     if (!server) {
@@ -126,19 +105,16 @@ class MCPOrchestrator extends EventEmitter {
       server.state = SERVER_STATES.RUNNING;
       server.restartAttempts = 0;
 
-      // Handle stdout
       serverProcess.stdout.on('data', (data) => {
         logger.debug(`[${name}] stdout: ${data.toString().trim()}`);
         this.emit('server:output', { name, type: 'stdout', data: data.toString() });
       });
 
-      // Handle stderr
       serverProcess.stderr.on('data', (data) => {
         logger.debug(`[${name}] stderr: ${data.toString().trim()}`);
         this.emit('server:output', { name, type: 'stderr', data: data.toString() });
       });
 
-      // Handle process exit
       serverProcess.on('exit', (code, signal) => {
         logger.info(`Server ${name} exited`, { name, code, signal });
         server.state = code === 0 ? SERVER_STATES.STOPPED : SERVER_STATES.ERROR;
@@ -152,7 +128,6 @@ class MCPOrchestrator extends EventEmitter {
         }
       });
 
-      // Handle process errors
       serverProcess.on('error', (error) => {
         logger.error(`Server ${name} process error`, { name, error: error.message });
         server.state = SERVER_STATES.ERROR;
@@ -172,9 +147,6 @@ class MCPOrchestrator extends EventEmitter {
     }
   }
 
-  /**
-   * Stop a specific MCP server
-   */
   async stopServer(name) {
     const server = this.servers.get(name);
     if (!server) {
@@ -194,7 +166,6 @@ class MCPOrchestrator extends EventEmitter {
       if (server.process) {
         server.process.kill('SIGTERM');
         
-        // Wait for graceful shutdown
         await new Promise((resolve) => {
           const timeout = setTimeout(() => {
             if (server.process) {
@@ -231,9 +202,6 @@ class MCPOrchestrator extends EventEmitter {
     }
   }
 
-  /**
-   * Restart a specific MCP server
-   */
   async restartServer(name) {
     logger.info(`Restarting server ${name}`, { name });
     await this.stopServer(name);
@@ -242,9 +210,6 @@ class MCPOrchestrator extends EventEmitter {
     return true;
   }
 
-  /**
-   * Schedule a server restart
-   */
   scheduleRestart(name) {
     const server = this.servers.get(name);
     if (!server) return;
@@ -268,9 +233,6 @@ class MCPOrchestrator extends EventEmitter {
     }, delay);
   }
 
-  /**
-   * Start all registered servers
-   */
   async startAll() {
     logger.info('Starting all MCP servers', { count: this.servers.size });
     const startPromises = [];
@@ -290,19 +252,14 @@ class MCPOrchestrator extends EventEmitter {
     logger.info(`Started ${successCount}/${this.servers.size} servers`);
     this.emit('orchestrator:started', { total: this.servers.size, success: successCount });
     
-    // Start health checks
     this.startHealthChecks();
     
     return successCount;
   }
 
-  /**
-   * Stop all running servers
-   */
   async stopAll() {
     logger.info('Stopping all MCP servers', { count: this.servers.size });
     
-    // Stop health checks
     this.stopHealthChecks();
     
     const stopPromises = [];
@@ -327,9 +284,6 @@ class MCPOrchestrator extends EventEmitter {
     return successCount;
   }
 
-  /**
-   * Get status of a specific server
-   */
   getServerStatus(name) {
     const server = this.servers.get(name);
     if (!server) {
@@ -348,9 +302,6 @@ class MCPOrchestrator extends EventEmitter {
     };
   }
 
-  /**
-   * Get status of all servers
-   */
   getAllStatus() {
     const statuses = {};
     for (const [name] of this.servers) {
@@ -359,16 +310,12 @@ class MCPOrchestrator extends EventEmitter {
     return statuses;
   }
 
-  /**
-   * Perform health check on a server
-   */
   async checkServerHealth(name) {
     const server = this.servers.get(name);
     if (!server) return null;
 
     try {
       if (server.state === SERVER_STATES.RUNNING && server.process) {
-        // Simple health check: verify process is still running
         const isAlive = server.process.exitCode === null;
         server.healthStatus = isAlive ? 'healthy' : 'unhealthy';
         server.lastHealthCheck = Date.now();
@@ -392,9 +339,6 @@ class MCPOrchestrator extends EventEmitter {
     }
   }
 
-  /**
-   * Perform health checks on all servers
-   */
   async checkAllHealth() {
     const healthPromises = [];
     for (const [name] of this.servers) {
@@ -403,9 +347,6 @@ class MCPOrchestrator extends EventEmitter {
     return await Promise.all(healthPromises);
   }
 
-  /**
-   * Start periodic health checks
-   */
   startHealthChecks() {
     if (this.healthCheckTimer) {
       return;
@@ -420,9 +361,6 @@ class MCPOrchestrator extends EventEmitter {
     }, this.healthCheckInterval);
   }
 
-  /**
-   * Stop periodic health checks
-   */
   stopHealthChecks() {
     if (this.healthCheckTimer) {
       clearInterval(this.healthCheckTimer);
@@ -431,9 +369,6 @@ class MCPOrchestrator extends EventEmitter {
     }
   }
 
-  /**
-   * Get orchestrator statistics
-   */
   getStats() {
     const stats = {
       totalServers: this.servers.size,
@@ -455,9 +390,6 @@ class MCPOrchestrator extends EventEmitter {
     return stats;
   }
 
-  /**
-   * Clean up and shutdown orchestrator
-   */
   async shutdown() {
     logger.info('Shutting down MCP Orchestrator');
     this.stopHealthChecks();
