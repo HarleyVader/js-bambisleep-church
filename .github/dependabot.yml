@@ -1,11 +1,57 @@
-# To get started with Dependabot version updates, you'll need to specify which
-# package ecosystems to update and where the package manifests are located.
-# Please see the documentation for more information:
-# https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
+# BambiSleep™ Church MCP Control Tower - Dependabot Configuration
+# Automated dependency updates for the HarleyVader/js-bambisleep-church repository
+# Maintains security and keeps MCP servers up to date with latest versions
 
 version: 2
 updates:
- - package-ecosystem: "npm"
-   directory: "/"
-   schedule:
-     interval: weekly
+  # 🌸 Node.js/NPM Dependencies
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    # Semantic versioning strategy for MCP servers
+    versioning-strategy: "increase"
+    # Group MCP server updates together
+    groups:
+      mcp-servers:
+        patterns:
+          - "@modelcontextprotocol/*"
+        update-types:
+          - "minor"
+          - "patch"
+      dev-dependencies:
+        patterns:
+          - "*"
+        dependency-type: "development"
+    # Auto-merge safe updates
+    open-pull-requests-limit: 10
+    reviewers:
+      - "HarleyVader"
+    assignees:
+      - "HarleyVader"
+    labels:
+      - "🌸 dependencies"
+      - "💎 auto-update"
+    commit-message:
+      prefix: "🌸"
+      include: "scope"
+    
+  # 🔒 GitHub Actions Security Updates  
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "tuesday"
+      time: "09:00"
+      timezone: "UTC"
+    labels:
+      - "🔒 security"
+      - "🤖 actions"
+    reviewers:
+      - "HarleyVader"
+    commit-message:
+      prefix: "🔒"
+      include: "scope"
