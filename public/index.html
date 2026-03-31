@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chat | Express Socket.IO</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <header>
+        <div>
+          <h1>Live Chat</h1>
+          <p>Streamlined interface for real-time messaging with Socket.IO and MongoDB.</p>
+        </div>
+        <div class="status" id="status">Connecting…</div>
+      </header>
+
+      <section class="chat-window">
+        <div class="main-panel">
+          <div id="messages" class="messages"></div>
+
+          <form id="chat-form" class="form-row">
+            <textarea id="message" placeholder="Write a message..." aria-label="Message"></textarea>
+            <div class="controls">
+              <input id="sender" type="text" placeholder="Your name (optional)" aria-label="Sender name" />
+              <button type="submit">Send message</button>
+            </div>
+          </form>
+        </div>
+
+        <aside class="profile-panel">
+          <div class="profile-card" id="profile-card">
+            <div class="profile-avatar" id="profile-avatar">A</div>
+            <div class="profile-info">
+              <div class="profile-name" id="profile-name">Anonymous</div>
+              <div class="profile-status" id="profile-status">Ready to chat</div>
+              <div class="profile-details">
+                <span class="profile-detail" id="profile-role">Visitor</span>
+                <span class="profile-detail" id="profile-location">Unknown</span>
+                <span class="profile-detail" id="profile-words">Words: 0</span>
+              </div>
+            </div>
+            <button id="edit-profile" type="button">Edit</button>
+          </div>
+        </aside>
+      </section>
+    </div>
+
+    <footer>
+      <p>Messages persist in MongoDB and update live for all connected clients.</p>
+    </footer>
+  </div>
+
+  <div class="profile-modal" id="profile-modal" aria-hidden="true">
+    <div class="profile-modal-panel" role="dialog" aria-modal="true" aria-labelledby="profile-modal-title">
+      <div class="profile-modal-header">
+        <h3 id="profile-modal-title">Edit Profile</h3>
+        <button class="profile-modal-close" id="profile-modal-close" type="button">×</button>
+      </div>
+      <form id="profile-form">
+        <div class="profile-modal-field">
+          <label for="modal-name">Name</label>
+          <input id="modal-name" name="name" type="text" placeholder="Your display name" />
+        </div>
+        <div class="profile-modal-field">
+          <label for="modal-status">Status</label>
+          <input id="modal-status" name="status" type="text" placeholder="Ready to chat" />
+        </div>
+        <div class="profile-modal-field">
+          <label for="modal-role">Role</label>
+          <input id="modal-role" name="role" type="text" placeholder="Visitor" />
+        </div>
+        <div class="profile-modal-field">
+          <label for="modal-location">Location</label>
+          <input id="modal-location" name="location" type="text" placeholder="Unknown" />
+        </div>
+        <div class="profile-modal-actions">
+          <button type="button" id="profile-cancel">Cancel</button>
+          <button type="submit">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/chat.js"></script>
+</body>
+</html>
