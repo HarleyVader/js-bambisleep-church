@@ -38,8 +38,8 @@ express-socketio-chat
 1. Clone the repository:
 
    ```
-   git clone https://github.com/BambiSleepChurch/bambisleep-church.git
-   cd bambisleep-church/express-socketio-chat
+   git clone https://github.com/HarleyVader/js-bambisleep-church.git
+   cd js-bambisleep-church
    ```
 
 2. Install the dependencies:
