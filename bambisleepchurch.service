@@ -1,5 +1,5 @@
 [Unit]
-Description=BambiSleep Chat Server
+Description=BambiSleep Church Server
 After=network.target
 Wants=network.target
 
