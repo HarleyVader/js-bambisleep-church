@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Chat | Express Socket.IO</title>
+  <title>Chat | BambiSleep Church</title>
   <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
@@ -11,8 +11,8 @@
     <div class="card">
       <header>
         <div>
-          <h1>Live Chat</h1>
-          <p>Streamlined interface for real-time messaging with Socket.IO and MongoDB.</p>
+          <h1>BambiSleep Church</h1>
+          <p>Real-time chat with evolving bimbot avatars.</p>
         </div>
         <div class="status" id="status">Connecting…</div>
       </header>
@@ -31,34 +31,60 @@
         </div>
 
         <aside class="profile-panel">
+          <!-- Profile card -->
           <div class="profile-card" id="profile-card">
-            <div class="profile-avatar" id="profile-avatar">A</div>
+            <div class="profile-avatar-wrap" id="profile-avatar-wrap" data-palette="1">
+              <img class="avatar-sprite" id="profile-avatar-sprite" src="/avatars/b0-t1.svg" alt="avatar" />
+              <div class="avatar-deco-layer" id="avatar-deco-layer"></div>
+            </div>
             <div class="profile-info">
               <div class="profile-name" id="profile-name">Anonymous</div>
+              <div class="profile-title" id="profile-title">Bambi Bud</div>
               <div class="profile-status" id="profile-status">Ready to chat</div>
               <div class="profile-details">
+                <span class="level-badge" id="level-badge">Lv 1</span>
                 <span class="profile-detail" id="profile-role">Visitor</span>
-                <span class="profile-detail" id="profile-location">Unknown</span>
-                <span class="profile-detail" id="profile-words">Words: 0</span>
               </div>
+              <div class="xp-bar-wrap" id="xp-bar-wrap" title="0 / 50 XP">
+                <div class="xp-bar-fill" id="xp-bar-fill" style="width:0%"></div>
+                <span class="xp-bar-label" id="xp-bar-label">0 / 50 XP</span>
+              </div>
+              <div class="prestige-badges" id="prestige-badges"></div>
             </div>
             <button id="edit-profile" type="button">Edit</button>
+          </div>
+
+          <!-- Online users -->
+          <div class="online-panel">
+            <div class="online-panel-header">Online</div>
+            <div class="online-users-list" id="online-users-list"></div>
           </div>
         </aside>
       </section>
     </div>
 
     <footer>
-      <p>Messages persist in MongoDB and update live for all connected clients.</p>
+      <p>Avatars evolve as you chat. Messages persist in MongoDB.</p>
     </footer>
   </div>
 
+  <!-- Profile/avatar modal -->
   <div class="profile-modal" id="profile-modal" aria-hidden="true">
     <div class="profile-modal-panel" role="dialog" aria-modal="true" aria-labelledby="profile-modal-title">
       <div class="profile-modal-header">
         <h3 id="profile-modal-title">Edit Profile</h3>
         <button class="profile-modal-close" id="profile-modal-close" type="button">×</button>
       </div>
+      <!-- Avatar preview + re-roll -->
+      <div class="modal-avatar-row">
+        <div class="modal-avatar-wrap" id="modal-avatar-wrap" data-palette="1">
+          <img class="avatar-sprite" id="modal-avatar-sprite" src="/avatars/b0-t1.svg" alt="avatar preview" />
+        </div>
+        <button type="button" id="reroll-btn" class="reroll-btn">🎲 Re-roll avatar</button>
+      </div>
+      <!-- Palette picker -->
+      <div class="palette-picker-label">Color palette</div>
+      <div class="palette-picker" id="palette-picker"></div>
       <form id="profile-form">
         <div class="profile-modal-field">
           <label for="modal-name">Name</label>
@@ -72,16 +98,25 @@
           <label for="modal-role">Role</label>
           <input id="modal-role" name="role" type="text" placeholder="Visitor" />
         </div>
-        <div class="profile-modal-field">
-          <label for="modal-location">Location</label>
-          <input id="modal-location" name="location" type="text" placeholder="Unknown" />
-        </div>
         <div class="profile-modal-actions">
           <button type="button" id="profile-cancel">Cancel</button>
           <button type="submit">Save</button>
         </div>
       </form>
     </div>
+  </div>
+
+  <!-- Level-up toast -->
+  <div class="levelup-toast" id="levelup-toast" aria-live="polite"></div>
+
+  <!-- Reaction emoji picker (hidden by default) -->
+  <div class="emoji-picker" id="emoji-picker" hidden>
+    <button data-emoji="💋">💋</button>
+    <button data-emoji="💕">💕</button>
+    <button data-emoji="🎀">🎀</button>
+    <button data-emoji="✨">✨</button>
+    <button data-emoji="🌙">🌙</button>
+    <button data-emoji="🌸">🌸</button>
   </div>
 
   <script src="/socket.io/socket.io.js"></script>

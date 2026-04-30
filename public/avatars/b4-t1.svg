@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Luna — Tier 1: base face + crescent moon hairpiece -->
+  <circle cx="32" cy="35" r="18" fill="currentColor" opacity="0.9"/>
+  <ellipse cx="27" cy="30" rx="6" ry="5" fill="white" opacity="0.1"/>
+  <circle cx="25" cy="33" r="3" fill="white"/>
+  <circle cx="39" cy="33" r="3" fill="white"/>
+  <circle cx="26" cy="33" r="1.5" fill="#111"/>
+  <circle cx="40" cy="33" r="1.5" fill="#111"/>
+  <circle cx="26.5" cy="32.5" r="0.6" fill="white"/>
+  <circle cx="40.5" cy="32.5" r="0.6" fill="white"/>
+  <ellipse cx="21" cy="38" rx="4" ry="2" fill="var(--avatar-accent,#cc0174)" opacity="0.45"/>
+  <ellipse cx="43" cy="38" rx="4" ry="2" fill="var(--avatar-accent,#cc0174)" opacity="0.45"/>
+  <path d="M26 43 Q32 47 38 43" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <!-- Crescent moon -->
+  <path d="M38 5 A10 10 0 1 0 38 22 A6 6 0 1 1 38 5 Z" fill="var(--avatar-accent,#cc0174)"/>
+</svg>
