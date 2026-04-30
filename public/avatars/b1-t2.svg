@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Nova — Tier 2: star crown + sparkle trail -->
+  <circle cx="32" cy="35" r="18" fill="currentColor" opacity="0.9"/>
+  <ellipse cx="27" cy="30" rx="6" ry="5" fill="white" opacity="0.1"/>
+  <circle cx="25" cy="33" r="3" fill="white"/>
+  <circle cx="39" cy="33" r="3" fill="white"/>
+  <circle cx="26" cy="33" r="1.5" fill="#111"/>
+  <circle cx="40" cy="33" r="1.5" fill="#111"/>
+  <circle cx="26.5" cy="32.5" r="0.6" fill="white"/>
+  <circle cx="40.5" cy="32.5" r="0.6" fill="white"/>
+  <ellipse cx="21" cy="38" rx="4" ry="2" fill="var(--avatar-accent,#cc0174)" opacity="0.45"/>
+  <ellipse cx="43" cy="38" rx="4" ry="2" fill="var(--avatar-accent,#cc0174)" opacity="0.45"/>
+  <path d="M26 43 Q32 47 38 43" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <!-- Star crown (slightly enlarged) -->
+  <path d="M32,4 L34.1,9.2 L39.8,9.5 L35.5,13.1 L37,18.7 L32,15.5 L27,18.7 L28.5,13.1 L24.2,9.5 L29.9,9.2 Z"
+        fill="var(--avatar-accent,#cc0174)" stroke="white" stroke-width="0.5"/>
+  <!-- Sparkle dots -->
+  <circle cx="10" cy="18" r="2" fill="white" opacity="0.8"/>
+  <circle cx="7" cy="24" r="1.2" fill="var(--avatar-accent,#cc0174)" opacity="0.7"/>
+  <circle cx="54" cy="18" r="2" fill="white" opacity="0.8"/>
+  <circle cx="57" cy="24" r="1.2" fill="var(--avatar-accent,#cc0174)" opacity="0.7"/>
+  <circle cx="13" cy="12" r="1" fill="white" opacity="0.5"/>
+  <circle cx="51" cy="12" r="1" fill="white" opacity="0.5"/>
+</svg>

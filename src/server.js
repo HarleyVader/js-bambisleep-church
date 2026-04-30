@@ -3,6 +3,8 @@ const http = require('http');
 const socketIo = require('socket.io');
 const app = require('./app');
 const { connectDB } = require('./config/db');
+const { setupSockets } = require('./sockets/chatSocket');
+const chatRoute = require('./routes/chat');
 
 const PORT = process.env.PORT || 3000;
 
@@ -12,18 +14,12 @@ connectDB();
 // Create HTTP server
 const server = http.createServer(app);
 
-// Initialize Socket.IO
+// Initialize Socket.IO and wire all socket logic
 const io = socketIo(server);
+setupSockets(io);
 
-// Listen for Socket.IO connections
-io.on('connection', (socket) => {
-    console.log('New client connected');
-
-    // Handle disconnection
-    socket.on('disconnect', () => {
-        console.log('Client disconnected');
-    });
-});
+// Give chat route access to io for XP socket events
+chatRoute.setIo(io);
 
 // Start the server
 server.listen(PORT, () => {
