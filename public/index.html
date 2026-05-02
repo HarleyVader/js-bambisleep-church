@@ -4,85 +4,101 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Chat | BambiSleep Church</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Audiowide&display=swap" />
   <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
-  <div class="container">
-    <div class="card">
-      <header>
-        <div>
-          <h1>BambiSleep Church</h1>
-          <p>Real-time chat with evolving bimbot avatars.</p>
-        </div>
-        <div class="status" id="status">Connecting…</div>
-      </header>
+  <div class="app-layout">
 
-      <section class="chat-window">
-        <div class="main-panel">
-          <div id="messages" class="messages"></div>
+    <!-- LEFT: 3-D avatar column (outside the chat card) -->
+    <aside class="avatar-column" id="avatar-column">
 
-          <form id="chat-form" class="form-row">
-            <textarea id="message" placeholder="Write a message..." aria-label="Message"></textarea>
-            <div class="controls">
-              <input id="sender" type="text" placeholder="Your name (optional)" aria-label="Sender name" />
-              <button type="submit">Send message</button>
-            </div>
-          </form>
-        </div>
-
-        <aside class="profile-panel">
-          <!-- Profile card -->
-          <div class="profile-card" id="profile-card">
-            <div class="profile-avatar-wrap" id="profile-avatar-wrap" data-palette="1">
-              <img class="avatar-sprite" id="profile-avatar-sprite" src="/avatars/b0-t1.svg" alt="avatar" />
+      <div class="avatar-stage">
+        <!-- 3-D scene -->
+        <div class="avatar-3d-scene" id="avatar-3d-scene">
+          <div class="avatar-3d-body" id="avatar-3d-body">
+            <div class="profile-avatar-wrap" id="profile-avatar-wrap">
+              <img class="avatar-sprite" id="profile-avatar-sprite"
+                   src="/avatars/b0-t1.svg" alt="avatar" />
               <div class="avatar-deco-layer" id="avatar-deco-layer"></div>
             </div>
-            <div class="profile-info">
-              <div class="profile-name" id="profile-name">Anonymous</div>
-              <div class="profile-title" id="profile-title">Bambi Bud</div>
-              <div class="profile-status" id="profile-status">Ready to chat</div>
-              <div class="profile-details">
-                <span class="level-badge" id="level-badge">Lv 1</span>
-                <span class="profile-detail" id="profile-role">Visitor</span>
-              </div>
-              <div class="xp-bar-wrap" id="xp-bar-wrap" title="0 / 50 XP">
-                <div class="xp-bar-fill" id="xp-bar-fill" style="width:0%"></div>
-                <span class="xp-bar-label" id="xp-bar-label">0 / 50 XP</span>
-              </div>
-              <div class="prestige-badges" id="prestige-badges"></div>
+          </div>
+          <div class="avatar-shadow-floor"></div>
+        </div>
+
+        <!-- Nameplate -->
+        <div class="avatar-nameplate">
+          <div class="profile-name" id="profile-name">Anonymous</div>
+          <div class="profile-title" id="profile-title">Bambi Bud</div>
+          <div class="profile-status" id="profile-status">Ready to chat</div>
+          <div class="profile-details">
+            <span class="level-badge" id="level-badge">Lv 1</span>
+            <span class="profile-detail" id="profile-role">Visitor</span>
+          </div>
+          <div class="xp-bar-wrap" id="xp-bar-wrap">
+            <div class="xp-bar-fill" id="xp-bar-fill" style="width:0%"></div>
+            <span class="xp-bar-label" id="xp-bar-label">0 / 50 XP</span>
+          </div>
+          <div class="prestige-badges" id="prestige-badges"></div>
+          <button id="edit-profile" type="button">Edit Profile</button>
+        </div>
+      </div>
+
+      <!-- Online users -->
+      <div class="online-panel">
+        <div class="online-panel-header">Online</div>
+        <div class="online-users-list" id="online-users-list"></div>
+      </div>
+
+    </aside><!-- /.avatar-column -->
+
+    <!-- RIGHT: chat -->
+    <div class="chat-area">
+      <div class="container">
+        <div class="card">
+          <header>
+            <div>
+              <h1>BambiSleep Church</h1>
+              <p>Real-time chat with evolving bimbot avatars.</p>
             </div>
-            <button id="edit-profile" type="button">Edit</button>
+            <div class="status" id="status">Connecting&hellip;</div>
+          </header>
+
+          <div class="main-panel">
+            <div id="messages" class="messages"></div>
+
+            <form id="chat-form" class="form-row">
+              <textarea id="message" placeholder="Write a message..." aria-label="Message"></textarea>
+              <div class="controls">
+                <input id="sender" type="text" placeholder="Your name (optional)" aria-label="Sender name" />
+                <button type="submit">Send message</button>
+              </div>
+            </form>
           </div>
+        </div>
 
-          <!-- Online users -->
-          <div class="online-panel">
-            <div class="online-panel-header">Online</div>
-            <div class="online-users-list" id="online-users-list"></div>
-          </div>
-        </aside>
-      </section>
-    </div>
+        <footer>
+          <p>Avatars evolve as you chat. Messages persist in MongoDB.</p>
+        </footer>
+      </div>
+    </div><!-- /.chat-area -->
 
-    <footer>
-      <p>Avatars evolve as you chat. Messages persist in MongoDB.</p>
-    </footer>
-  </div>
+  </div><!-- /.app-layout -->
 
-  <!-- Profile/avatar modal -->
+  <!-- Profile modal -->
   <div class="profile-modal" id="profile-modal" aria-hidden="true">
     <div class="profile-modal-panel" role="dialog" aria-modal="true" aria-labelledby="profile-modal-title">
       <div class="profile-modal-header">
         <h3 id="profile-modal-title">Edit Profile</h3>
-        <button class="profile-modal-close" id="profile-modal-close" type="button">×</button>
+        <button class="profile-modal-close" id="profile-modal-close" type="button">&times;</button>
       </div>
-      <!-- Avatar preview + re-roll -->
       <div class="modal-avatar-row">
-        <div class="modal-avatar-wrap" id="modal-avatar-wrap" data-palette="1">
+        <div class="modal-avatar-wrap" id="modal-avatar-wrap">
           <img class="avatar-sprite" id="modal-avatar-sprite" src="/avatars/b0-t1.svg" alt="avatar preview" />
         </div>
-        <button type="button" id="reroll-btn" class="reroll-btn">🎲 Re-roll avatar</button>
+        <button type="button" id="reroll-btn" class="reroll-btn">&#127922; Re-roll avatar</button>
       </div>
-      <!-- Palette picker -->
       <div class="palette-picker-label">Color palette</div>
       <div class="palette-picker" id="palette-picker"></div>
       <form id="profile-form">
@@ -109,14 +125,14 @@
   <!-- Level-up toast -->
   <div class="levelup-toast" id="levelup-toast" aria-live="polite"></div>
 
-  <!-- Reaction emoji picker (hidden by default) -->
+  <!-- Emoji picker -->
   <div class="emoji-picker" id="emoji-picker" hidden>
-    <button data-emoji="💋">💋</button>
-    <button data-emoji="💕">💕</button>
-    <button data-emoji="🎀">🎀</button>
-    <button data-emoji="✨">✨</button>
-    <button data-emoji="🌙">🌙</button>
-    <button data-emoji="🌸">🌸</button>
+    <button data-emoji="&#128139;">&#128139;</button>
+    <button data-emoji="&#128149;">&#128149;</button>
+    <button data-emoji="&#127872;">&#127872;</button>
+    <button data-emoji="&#10024;">&#10024;</button>
+    <button data-emoji="&#127769;">&#127769;</button>
+    <button data-emoji="&#127800;">&#127800;</button>
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
