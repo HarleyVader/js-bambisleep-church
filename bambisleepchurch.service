@@ -6,7 +6,7 @@ Wants=network.target
 [Service]
 Type=simple
 User=zathras
-WorkingDirectory=/home/brandynette/web/bambisleep.church/nodeapp/bambisleep-church
+WorkingDirectory=/home/brandynette/web/bambisleep.church/nodeapp/js-bambisleep-church
 ExecStart=/bin/bash -c 'source /home/zathras/.nvm/nvm.sh && node server.js'
 Restart=always
 RestartSec=10
