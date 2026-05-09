@@ -7,7 +7,7 @@ Wants=network.target
 Type=simple
 User=brandynette
 WorkingDirectory=/home/brandynette/web/bambisleep.church/nodeapp/js-bambisleep-church
-ExecStart=/bin/bash -c 'source /home/brandynette/.nvm/nvm.sh && node src/server.js'
+ExecStart=/bin/bash -c 'source /home/zathras/.nvm/nvm.sh && node src/server.js'
 Restart=always
 RestartSec=10
 Environment=NODE_ENV=production
