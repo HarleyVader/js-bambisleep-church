@@ -106,8 +106,11 @@ class AvatarViewer {
     this._controls.autoRotate      = true;
     this._controls.autoRotateSpeed = 0.8;
 
-    // Place camera for TARGET_H model (visible placeholder before first model loads)
-    this._placeCamera(TARGET_H);
+    // Default camera position while no model is loaded yet
+    this._camera.position.set(0, TARGET_H / 2, 2.5);
+    this._camera.lookAt(0, TARGET_H / 2, 0);
+    this._controls.target.set(0, TARGET_H / 2, 0);
+    this._controls.update();
 
     // Resize observer
     new ResizeObserver(() => this._onResize()).observe(c);
@@ -116,27 +119,29 @@ class AvatarViewer {
   }
 
   /**
-   * Hip-centred full-body framing.
+   * Frame the camera to exactly contain `root` after it is fully
+   * positioned in the scene.  Measures the ACTUAL world-space bounding
+   * box — no assumptions about where the model ended up.
    *
-   * Camera looks at the exact centre of the model (hips, modelH/2).
-   * FOV 50 ° fills the portrait container with the whole figure.
-   *
-   *   midY = modelH / 2                              → hip / centre target
-   *   dist = (modelH / 2) / tan(fov/2) * 1.15       → full body + 15 % pad
+   *   center = bbox centre (= hips for a standing humanoid)
+   *   dist   = (height/2) / tan(fov/2) * 1.15   → full body + 15 % pad
    */
-  _placeCamera (modelH) {
-    this._camera.fov = 50;
+  _frameModel (root) {
+    root.updateWorldMatrix(true, true);
+    const box    = new THREE.Box3().setFromObject(root, true);
+    const center = new THREE.Vector3();
+    const size   = new THREE.Vector3();
+    box.getCenter(center);
+    box.getSize(size);
+
+    const fovRad = (this._camera.fov * Math.PI) / 180;
+    const dist   = (size.y / 2) / Math.tan(fovRad / 2) * 1.15;
+
+    this._camera.position.set(center.x, center.y, center.z + dist);
+    this._camera.lookAt(center.x, center.y, center.z);
     this._camera.updateProjectionMatrix();
 
-    const midY   = modelH / 2;
-    const fovRad = (50 * Math.PI) / 180;
-    const dist   = (modelH / 2) / Math.tan(fovRad / 2) * 1.15;
-
-    this._camera.position.set(0, midY, dist);
-    this._camera.lookAt(0, midY, 0);
-    this._camera.updateProjectionMatrix();
-
-    this._controls.target.set(0, midY, 0);
+    this._controls.target.set(center.x, center.y, center.z);
     this._controls.update();
   }
 
@@ -246,8 +251,8 @@ class AvatarViewer {
 
         this._model = root;
 
-        // STEP 5 – position camera for exact TARGET_H model
-        this._placeCamera(TARGET_H);
+        // STEP 5 – frame camera to actual final bounds of the positioned model
+        this._frameModel(root);
 
         // STEP 6 – start animation (prefer 'Idle', else first clip)
         if (gltf.animations && gltf.animations.length > 0) {
@@ -262,7 +267,7 @@ class AvatarViewer {
         // Load error – use procedural fallback
         this._model = this._buildFallback(this._tier, this._palette);
         this._scene.add(this._model);
-        this._placeCamera(TARGET_H);
+        this._frameModel(this._model);
       },
     );
   }
