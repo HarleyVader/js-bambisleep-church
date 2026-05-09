@@ -432,7 +432,7 @@ const showToast = (html) => {
 // ── Socket events ─────────────────────────────────────────────────────────────
 socket.on('connect',    () => { statusText.textContent = 'Connected to live chat.'; });
 socket.on('disconnect', () => { statusText.textContent = 'Disconnected. Reconnect to continue.'; });
-socket.on('chatMessage', () => { loadMessages(); });
+socket.on('chatMessage', (msg) => { appendMessage(msg); });
 
 socket.on('xpGained', ({ newTotal, level }) => {
   if (!myUser) return;
