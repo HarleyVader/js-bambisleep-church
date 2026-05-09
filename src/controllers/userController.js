@@ -146,16 +146,8 @@ class UserController {
       const viewerToken = (req.query.session || '').trim();
       if (!viewerToken) return res.status(401).json({ error: 'Session token required' });
 
-      const GATED_TIERS = ['Pink Poodle', 'Airhead Barbie'];
-
       const viewer = User.findOneLean({ sessionToken: viewerToken });
-      const hasAccess = viewer &&
-        viewer.patreon?.patronStatus === 'active_patron' &&
-        GATED_TIERS.includes(viewer.patreon?.tierName);
-
-      if (!hasAccess) {
-        return res.status(403).json({ error: 'Pink Poodle Patreon tier required', gated: true });
-      }
+      if (!viewer) return res.status(401).json({ error: 'Invalid session' });
 
       const target = User.findOneLean({ username: req.params.username });
       if (!target) return res.status(404).json({ error: 'User not found' });
