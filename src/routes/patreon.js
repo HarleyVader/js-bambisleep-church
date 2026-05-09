@@ -32,7 +32,7 @@ const express = require('express');
 const https   = require('https');
 const crypto  = require('crypto');
 const { URL, URLSearchParams } = require('url');
-const User    = require('../models/User');
+const User    = require('../models/UserSqlite');
 const logger  = require('../utils/logger');
 
 const router = express.Router();
@@ -232,21 +232,21 @@ router.get('/callback', async (req, res) => {
     }
 
     // 4. Persist to the User document that matches the chat session token
-    const updated = await User.findOneAndUpdate(
+    const updated = User.findOneAndUpdate(
       { sessionToken },
       {
         $set: {
           'patreon.userId':                       patreonUserId,
           'patreon.accessToken':                  access_token,
           'patreon.refreshToken':                 refresh_token || null,
-          'patreon.tokenExpiry':                  tokenExpiry,
+          'patreon.tokenExpiry':                  tokenExpiry instanceof Date ? tokenExpiry.toISOString() : tokenExpiry,
           'patreon.patronStatus':                 patronStatus,
           'patreon.currentlyEntitledAmountCents': amountCents,
           'patreon.tierId':                       tierId,
           'patreon.tierName':                     tierName,
           'patreon.fullName':                     fullName,
           'patreon.thumbUrl':                     thumbUrl,
-          'patreon.linkedAt':                     new Date(),
+          'patreon.linkedAt':                     new Date().toISOString(),
         },
       },
       { new: false },
@@ -270,7 +270,7 @@ router.get('/status', async (req, res) => {
   if (!sessionToken) return res.status(400).json({ error: 'Missing session token' });
 
   try {
-    const user = await User.findOne({ sessionToken }).lean();
+    const user = User.findOneLean({ sessionToken });
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     const p = user.patreon || {};
@@ -297,7 +297,7 @@ router.post('/unlink', async (req, res) => {
   if (!sessionToken) return res.status(400).json({ error: 'Missing session token' });
 
   try {
-    await User.findOneAndUpdate(
+    User.findOneAndUpdate(
       { sessionToken },
       {
         $set: {
@@ -381,17 +381,14 @@ router.post(
 
     if (patreonUserId) {
       try {
-        await User.updateMany(
-          { 'patreon.userId': patreonUserId },
-          {
-            $set: {
-              'patreon.patronStatus':                 finalStatus,
-              'patreon.currentlyEntitledAmountCents': amountCents,
-              'patreon.tierId':                       finalTierId,
-              'patreon.tierName':                     finalTierName,
-            },
+        User.updateManyByPatreonUserId(patreonUserId, {
+          $set: {
+            'patreon.patronStatus':                 finalStatus,
+            'patreon.currentlyEntitledAmountCents': amountCents,
+            'patreon.tierId':                       finalTierId,
+            'patreon.tierName':                     finalTierName,
           },
-        );
+        });
       } catch (err) {
         // Log but don't leak error to Patreon's retry logic
         logger.error(`[patreon] webhook DB error: ${err.message}`);

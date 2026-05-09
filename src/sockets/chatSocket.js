@@ -1,6 +1,6 @@
 'use strict';
 
-const User = require('../models/User');
+const User = require('../models/UserSqlite');
 const { processSessionEnd } = require('../controllers/userController');
 const logger = require('../utils/logger');
 
@@ -14,19 +14,18 @@ const emitToToken = (token, event, data) => {
 };
 
 /** Build the online-users list for broadcast. */
-const buildOnlineUsers = async () => {
+const buildOnlineUsers = () => {
   const tokens = [...tokenToSocket.keys()];
   if (tokens.length === 0) return [];
-  const users = await User.find({ sessionToken: { $in: tokens } })
-    .select('username avatar.currentSprite avatar.colorPaletteId avatar.decorations avatar.title avatar.prestigeBadges progress.level progress.xp progress.prestige');
+  const users = User.findByTokens(tokens);
   return users.map((u) => ({
-    username:     u.username,
-    sprite:       u.avatar.currentSprite,
-    paletteId:    u.avatar.colorPaletteId,
-    decorations:  u.avatar.decorations,
-    title:        u.avatar.title,
+    username:       u.username,
+    sprite:         u.avatar.currentSprite,
+    paletteId:      u.avatar.colorPaletteId,
+    decorations:    u.avatar.decorations,
+    title:          u.avatar.title,
     prestigeBadges: u.avatar.prestigeBadges,
-    level:        u.progress.level,
+    level:          u.progress.level,
   }));
 };
 
@@ -44,7 +43,7 @@ const setupSockets = (io) => {
 
     // Broadcast updated online users to everyone
     try {
-      const onlineUsers = await buildOnlineUsers();
+      const onlineUsers = buildOnlineUsers();
       io.emit('onlineUsers', onlineUsers);
     } catch (err) {
       logger.error('onlineUsers build error', err);
@@ -59,9 +58,9 @@ const setupSockets = (io) => {
       if (!Array.isArray(mentionedNames) || !mentionedNames.length) return;
       const safeSender = String(sender || '').slice(0, 64);
       const uniqueNames = [...new Set(mentionedNames.slice(0, 10))]; // cap at 10
-      uniqueNames.forEach(async (username) => {
+      uniqueNames.forEach((username) => {
         try {
-          const user = await User.findOne({ username }).select('sessionToken').lean();
+          const user = User.findOneLean({ username });
           if (!user) return;
           const targetSocket = tokenToSocket.get(user.sessionToken);
           if (targetSocket && targetSocket.id !== socket.id) {
@@ -92,7 +91,7 @@ const setupSockets = (io) => {
 
         // Broadcast updated online users
         try {
-          const onlineUsers = await buildOnlineUsers();
+          const onlineUsers = buildOnlineUsers();
           io.emit('onlineUsers', onlineUsers);
         } catch (err) {
           logger.error('onlineUsers build error on disconnect', err);

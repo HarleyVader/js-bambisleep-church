@@ -2,15 +2,11 @@ require('dotenv').config();
 const http = require('http');
 const socketIo = require('socket.io');
 const app = require('./app');
-const { connectDB } = require('./config/db');
 const { setupSockets } = require('./sockets/chatSocket');
 const chatRoute = require('./routes/chat');
 const logger    = require('./utils/logger');
 
 const PORT = process.env.PORT;
-
-// Connect to MongoDB
-connectDB();
 
 // Create HTTP server
 const server = http.createServer(app);

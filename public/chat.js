@@ -45,6 +45,10 @@ const mediaAttachBtn  = document.getElementById('media-attach-btn');
 const mediaFileInput  = document.getElementById('media-file-input');
 const mediaPreview    = document.getElementById('media-preview');
 
+// ── XP / level constants (must match src/config/xpConfig.js) ─────────────────
+const LEVEL_THRESHOLDS = [0, 0, 50, 150, 300, 500, 750, 1050, 1400, 1800, 2250];
+const MAX_LEVEL = 10;
+
 // ── State ─────────────────────────────────────────────────────────────────────
 const TOKEN_KEY  = 'bimbot_token';
 let myToken      = localStorage.getItem(TOKEN_KEY) || null;

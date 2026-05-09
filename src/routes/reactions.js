@@ -2,7 +2,7 @@
 
 const express        = require('express');
 const MessageSqlite  = require('../models/MessageSqlite');
-const User           = require('../models/User');
+const User           = require('../models/UserSqlite');
 const { awardXp }   = require('../utils/xpService');
 const { XP_RATES }  = require('../config/xpConfig');
 const logger        = require('../utils/logger');
@@ -11,7 +11,7 @@ const router = express.Router();
 
 /** Award XP to author and emit socket events so their stats update live. */
 const rewardAuthor = async (authorToken, xpAmount) => {
-  const author = await User.findOne({ sessionToken: authorToken });
+  const author = User.findOne({ sessionToken: authorToken });
   if (!author) return;
 
   const xpResult = awardXp(author, xpAmount);
@@ -56,7 +56,7 @@ const rewardAuthor = async (authorToken, xpAmount) => {
 
 /** Increment reactor's reactionsGiven, award XP, and push their updated stats to their socket. */
 const trackReactorGiven = async (reactorToken) => {
-  const reactor = await User.findOne({ sessionToken: reactorToken });
+  const reactor = User.findOne({ sessionToken: reactorToken });
   if (!reactor) return;
   reactor.stats.reactionsGiven = (reactor.stats.reactionsGiven || 0) + 1;
   const xpResult = awardXp(reactor, XP_RATES.REACTION_GIVEN);

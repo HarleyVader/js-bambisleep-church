@@ -1,7 +1,7 @@
 'use strict';
 
 const crypto = require('crypto');
-const User = require('../models/User');
+const User = require('../models/UserSqlite');
 const { generateFromUsername, reroll, getSpriteForLevel } = require('../utils/avatarGenerator');
 const { awardXp, xpFromSession } = require('../utils/xpService');
 const { XP_RATES, LEVEL_UNLOCKS, SESSION_MAX_SECONDS } = require('../config/xpConfig');
@@ -11,7 +11,7 @@ const todayKey = () => new Date().toISOString().slice(0, 10); // 'YYYY-MM-DD'
 
 // Shared helper used by both HTTP route and socket disconnect handler
 const processSessionEnd = async (token, durationSeconds) => {
-  const user = await User.findOne({ sessionToken: token });
+  const user = User.findOne({ sessionToken: token });
   if (!user) return null;
 
   const secs = Math.min(Math.max(0, parseInt(durationSeconds, 10) || 0), SESSION_MAX_SECONDS);
@@ -34,7 +34,7 @@ class UserController {
       const { username, token } = req.body;
       const name = (username || 'Anonymous').trim().substring(0, 32);
 
-      let user = token ? await User.findOne({ sessionToken: token }) : null;
+      let user = token ? User.findOne({ sessionToken: token }) : null;
       let newToken = token;
 
       if (!user) {
@@ -42,7 +42,7 @@ class UserController {
         newToken = crypto.randomUUID();
         const { seed, baseVariant, colorPaletteId } = generateFromUsername(name);
         const sprite = getSpriteForLevel(baseVariant, 1);
-        user = new User({
+        user = User.create({
           username: name,
           sessionToken: newToken,
           avatar: {
@@ -79,7 +79,7 @@ class UserController {
 
   async getUser(req, res) {
     try {
-      const user = await User.findOne({ sessionToken: req.params.token });
+      const user = User.findOne({ sessionToken: req.params.token });
       if (!user) return res.status(404).json({ error: 'User not found' });
       res.status(200).json(user);
     } catch (error) {
@@ -90,7 +90,7 @@ class UserController {
 
   async rerollAvatar(req, res) {
     try {
-      const user = await User.findOne({ sessionToken: req.params.token });
+      const user = User.findOne({ sessionToken: req.params.token });
       if (!user) return res.status(404).json({ error: 'User not found' });
 
       const { seed, baseVariant } = reroll();
@@ -108,7 +108,7 @@ class UserController {
 
   async updatePalette(req, res) {
     try {
-      const user = await User.findOne({ sessionToken: req.params.token });
+      const user = User.findOne({ sessionToken: req.params.token });
       if (!user) return res.status(404).json({ error: 'User not found' });
 
       const paletteId = parseInt(req.body.paletteId, 10);
@@ -148,7 +148,7 @@ class UserController {
 
       const GATED_TIERS = ['Pink Poodle', 'Airhead Barbie'];
 
-      const viewer = await User.findOne({ sessionToken: viewerToken }).lean();
+      const viewer = User.findOneLean({ sessionToken: viewerToken });
       const hasAccess = viewer &&
         viewer.patreon?.patronStatus === 'active_patron' &&
         GATED_TIERS.includes(viewer.patreon?.tierName);
@@ -157,7 +157,7 @@ class UserController {
         return res.status(403).json({ error: 'Pink Poodle Patreon tier required', gated: true });
       }
 
-      const target = await User.findOne({ username: req.params.username }).lean();
+      const target = User.findOneLean({ username: req.params.username });
       if (!target) return res.status(404).json({ error: 'User not found' });
 
       // Return public-safe fields only — no tokens, no Patreon auth data

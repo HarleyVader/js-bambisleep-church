@@ -1,6 +1,6 @@
 'use strict';
 
-const User           = require('../models/User');
+const User           = require('../models/UserSqlite');
 const MessageSqlite  = require('../models/MessageSqlite');
 const { awardXp, xpFromWords } = require('../utils/xpService');
 const { XP_RATES }   = require('../config/xpConfig');
@@ -23,7 +23,7 @@ class ChatController {
       let xpResult = null;
 
       if (token) {
-        const user = await User.findOne({ sessionToken: token });
+        const user = User.findOne({ sessionToken: token });
         if (user) {
           resolvedSender = user.username;
 
