@@ -156,13 +156,12 @@ class UserController {
       const viewer = User.findOneLean({ sessionToken: viewerToken });
       if (!viewer) return res.status(401).json({ error: 'Invalid session' });
 
-      // Creator always has access; everyone else needs at least Good Girl tier
-      const ALLOWED_TIERS = ['Good Girl', 'Pink Poodle', 'Airhead Barbie'];
+      // Creator always has access; any active patron (any amount > 0) can also view
       const creatorPatreonId = (process.env.PATREON_CREATOR_USER_ID || '').trim();
       const isCreator = viewer.role === 'creator'
                         || (creatorPatreonId && viewer.patreon?.userId === creatorPatreonId);
       const isPatron  = viewer.patreon?.patronStatus === 'active_patron'
-                        && ALLOWED_TIERS.includes(viewer.patreon?.tierName);
+                        && (viewer.patreon?.currentlyEntitledAmountCents || 0) >= 200;
 
       if (!isCreator && !isPatron) {
         return res.status(403).json({ error: 'Good Girl Patreon tier required', gated: true });

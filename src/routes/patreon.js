@@ -210,6 +210,8 @@ router.get('/callback', async (req, res) => {
 
     // 3. Extract membership status and tier
     const memberships = (identity.included || []).filter((r) => r.type === 'member');
+    // Tier resources included by Patreon API (type === 'tier')
+    const includedTiers = (identity.included || []).filter((r) => r.type === 'tier');
     let patronStatus  = null;
     let amountCents   = 0;
     let tierId        = null;
@@ -227,8 +229,33 @@ router.get('/callback', async (req, res) => {
         .map((t) => t.id);
       if (entitledTierIds.length > 0) {
         tierId = entitledTierIds[0];
+        // Primary: look up by known campaign tier IDs from env vars
         tierName = getTierNames()[tierId] || null;
+        // Fallback: use the tier title directly from the API response
+        if (!tierName) {
+          const tierResource = includedTiers.find((t) => t.id === tierId);
+          tierName = tierResource?.attributes?.title || null;
+        }
       }
+      // Last resort: infer tier name from amount if still unknown
+      if (!tierName && amountCents > 0) {
+        const knownTiers = getTierNames();
+        // Sort env-var tiers by amount (we don't have amounts, so use a static map)
+        const AMOUNT_MAP = {
+          [process.env.PATREON_TIER_GOOD_GIRL]:      200,
+          [process.env.PATREON_TIER_PINK_POODLE]:    500,
+          [process.env.PATREON_TIER_AIRHEAD_BARBIE]: 1000,
+        };
+        // Pick the highest tier whose threshold the patron meets
+        const eligible = Object.entries(AMOUNT_MAP)
+          .filter(([, threshold]) => amountCents >= threshold)
+          .sort(([, a], [, b]) => b - a);
+        if (eligible.length > 0) {
+          tierId   = tierId || eligible[0][0];
+          tierName = knownTiers[eligible[0][0]] || null;
+        }
+      }
+      logger.info(`[patreon] callback: userId=${patreonUserId} status=${patronStatus} amountCents=${amountCents} tierId=${tierId} tierName=${tierName}`);
     }
 
     // 4. Persist to the User document that matches the chat session token
@@ -379,9 +406,28 @@ router.post(
     const eventType     = req.headers['x-patreon-event'] || '';
 
     // Resolve tier from the webhook's included resources
+    const webhookIncludedTiers = (payload.included || []).filter((r) => r.type === 'tier');
     const entitledTierData = (member.relationships?.currently_entitled_tiers?.data || []);
     const webhookTierId    = entitledTierData.length > 0 ? entitledTierData[0].id : null;
-    const webhookTierName  = webhookTierId ? (getTierNames()[webhookTierId] || null) : null;
+    let   webhookTierName  = webhookTierId ? (getTierNames()[webhookTierId] || null) : null;
+    // Fallback: use tier title from included resources
+    if (!webhookTierName && webhookTierId) {
+      const tr = webhookIncludedTiers.find((t) => t.id === webhookTierId);
+      webhookTierName = tr?.attributes?.title || null;
+    }
+    // Last resort: infer from amount
+    if (!webhookTierName && amountCents >= 200) {
+      const AMOUNT_MAP = {
+        [process.env.PATREON_TIER_GOOD_GIRL]:      200,
+        [process.env.PATREON_TIER_PINK_POODLE]:    500,
+        [process.env.PATREON_TIER_AIRHEAD_BARBIE]: 1000,
+      };
+      const knownTiers = getTierNames();
+      const eligible = Object.entries(AMOUNT_MAP)
+        .filter(([, threshold]) => amountCents >= threshold)
+        .sort(([, a], [, b]) => b - a);
+      if (eligible.length > 0) webhookTierName = knownTiers[eligible[0][0]] || null;
+    }
 
     // On delete events, clear patron status and tier
     const finalStatus   = eventType === 'members:delete' ? 'former_patron' : patronStatus;

@@ -190,11 +190,11 @@
 
       // Patreon tier badge
       const tierEl = document.getElementById('profile-tier-badge');
-      if (p.patreon?.tierName && p.patreon?.patronStatus === 'active_patron') {
-        tierEl.textContent = `&#10022; ${p.patreon.tierName}`;
-        tierEl.innerHTML   = `&#10022; ${esc(p.patreon.tierName)}`;
-        tierEl.hidden      = false;
-        tierEl.dataset.tier = p.patreon.tierName.toLowerCase().replace(/\s+/g, '-');
+      if (p.patreon?.patronStatus === 'active_patron') {
+        const label = p.patreon.tierName || 'Active Patron';
+        tierEl.innerHTML    = `&#10022; ${esc(label)}`;
+        tierEl.hidden       = false;
+        tierEl.dataset.tier = label.toLowerCase().replace(/\s+/g, '-');
       }
     }
 
