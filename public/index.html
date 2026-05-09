@@ -78,6 +78,33 @@
         <div class="online-users-list" id="online-users-list"></div>
       </div>
 
+      <!-- Buttplug / Intiface device panel -->
+      <div class="bp-panel">
+        <div class="bp-panel-header">
+          <span>&#128268; Toy Control</span>
+          <button class="bp-panel-toggle" id="bp-panel-toggle"
+                  type="button" aria-expanded="true" aria-controls="bp-panel-body">&#9660;</button>
+        </div>
+        <div class="bp-panel-body" id="bp-panel-body">
+          <p class="bp-hint">
+            Requires <a href="https://intiface.com/central" target="_blank" rel="noopener">Intiface&nbsp;Central</a>
+            running locally.
+          </p>
+          <div class="bp-address-row">
+            <input  class="bp-address" id="bp-address" type="text"
+                    value="ws://localhost:12345"
+                    placeholder="ws://localhost:12345"
+                    aria-label="Intiface Central WebSocket address" />
+          </div>
+          <div class="bp-action-row">
+            <button class="bp-btn" id="bp-connect-btn" type="button">Connect</button>
+            <button class="bp-btn" id="bp-scan-btn"    type="button" disabled>Scan</button>
+          </div>
+          <div class="bp-status" id="bp-status">Not connected</div>
+          <div class="bp-device-list" id="bp-device-list"></div>
+        </div>
+      </div>
+
     </aside><!-- /.avatar-column -->
 
     <!-- RIGHT: chat -->
@@ -194,5 +221,9 @@
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="/chat.js"></script>
+  <!-- Buttplug v4 – browser UMD bundle (exposes window.buttplug) -->
+  <script src="https://cdn.jsdelivr.net/npm/buttplug@4.0.1/dist/web/buttplug.js"
+          crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="/buttplug-panel.js"></script>
 </body>
 </html>
