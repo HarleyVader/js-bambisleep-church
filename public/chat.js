@@ -424,12 +424,6 @@ const appendMessage = (data) => {
   messagesList.appendChild(item);
   messagesList.scrollTop = messagesList.scrollHeight;
 
-  // Auto-load the first playlist URL found in the message
-  const playlistUrl = extractPlaylistUrl(data.content);
-  if (playlistUrl && window._audioPlayer) {
-    window._audioPlayer.loadPlaylist(playlistUrl);
-  }
-
   // Wire any "▶ Load playlist" buttons in this message
   item.querySelectorAll('.bambi-load-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
