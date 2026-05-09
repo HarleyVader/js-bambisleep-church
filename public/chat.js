@@ -12,8 +12,7 @@ const profileNameEl     = document.getElementById('profile-name');
 const profileTitleEl    = document.getElementById('profile-title');
 const profileStatusEl   = document.getElementById('profile-status');
 const profileRoleEl     = document.getElementById('profile-role');
-const profileSpriteEl   = document.getElementById('profile-avatar-sprite');
-const profileAvatarWrap = document.getElementById('profile-avatar-wrap');
+const avatarFigureEl    = document.getElementById('avatar-figure');
 const avatarDecoLayer   = document.getElementById('avatar-deco-layer');
 const levelBadgeEl      = document.getElementById('level-badge');
 const xpBarFill         = document.getElementById('xp-bar-fill');
@@ -29,7 +28,7 @@ const profileForm       = document.getElementById('profile-form');
 const modalNameInput    = document.getElementById('modal-name');
 const modalStatusInput  = document.getElementById('modal-status');
 const modalRoleInput    = document.getElementById('modal-role');
-const modalSpriteEl     = document.getElementById('modal-avatar-sprite');
+const modalAvatarFigureEl = document.getElementById('modal-avatar-figure');
 const modalAvatarWrap   = document.getElementById('modal-avatar-wrap');
 const rerollBtn         = document.getElementById('reroll-btn');
 const palettePicker     = document.getElementById('palette-picker');
@@ -73,9 +72,24 @@ const setCookie = (name, value, days = 30) => {
 };
 
 // ── Avatar helpers ────────────────────────────────────────────────────────────
-const applyPalette = (paletteId, wrapEl) => {
-  if (!wrapEl) return;
-  wrapEl.style.setProperty('--avatar-accent', PALETTES[paletteId] || PALETTES[1]);
+/** Parse a sprite filename like "b3-t2.svg" → [variant, tier] */
+const parseSprite = (sprite) => {
+  const m = (sprite || '').match(/^b(\d)-t(\d)\.svg$/);
+  return m ? [parseInt(m[1]), parseInt(m[2])] : [0, 1];
+};
+
+const applyPalette = (paletteId, figureEl) => {
+  if (!figureEl) return;
+  figureEl.style.setProperty('--avatar-accent', PALETTES[paletteId] || PALETTES[1]);
+};
+
+const spriteTier = (level) => (level >= 10 ? 3 : level >= 7 ? 2 : 1);
+
+const applyFigure = (figureEl, baseVariant, tier, paletteId) => {
+  if (!figureEl) return;
+  figureEl.dataset.variant = baseVariant;
+  figureEl.dataset.tier    = tier;
+  applyPalette(paletteId, figureEl);
 };
 
 const applyDecorations = (decorations) => {
@@ -83,6 +97,11 @@ const applyDecorations = (decorations) => {
   avatarDecoLayer.innerHTML = '';
   avatarDecoLayer.className = 'avatar-deco-layer';
   (decorations || []).forEach((d) => avatarDecoLayer.classList.add(`deco-${d}`));
+  // also forward to the figure element for CSS selectors
+  if (avatarFigureEl) {
+    avatarFigureEl.classList.remove('deco-crown', 'deco-glow', 'deco-halo');
+    (decorations || []).forEach((d) => avatarFigureEl.classList.add(`deco-${d}`));
+  }
 };
 
 const updateXpBar = (xp, level) => {
@@ -106,8 +125,9 @@ const updateProfileUI = (user) => {
   profileRoleEl.textContent   = getCookie('chat_role') || 'Visitor';
   senderInput.value           = user.username;
 
-  profileSpriteEl.src = `/avatars/${user.avatar.currentSprite}`;
-  applyPalette(user.avatar.colorPaletteId, profileAvatarWrap);
+  const tier = spriteTier(user.progress.level);
+  applyFigure(avatarFigureEl, user.avatar.baseVariant, tier, user.avatar.colorPaletteId);
+  applyFigure(modalAvatarFigureEl, user.avatar.baseVariant, tier, user.avatar.colorPaletteId);
   applyDecorations(user.avatar.decorations);
 
   levelBadgeEl.textContent = `Lv ${user.progress.level}`;
@@ -120,9 +140,6 @@ const updateProfileUI = (user) => {
     span.textContent = b;
     prestigeBadgesEl.appendChild(span);
   });
-
-  if (modalSpriteEl) modalSpriteEl.src = `/avatars/${user.avatar.currentSprite}`;
-  applyPalette(user.avatar.colorPaletteId, modalAvatarWrap);
 };
 
 // ── Palette picker ────────────────────────────────────────────────────────────
@@ -154,8 +171,8 @@ const selectPalette = async (paletteId) => {
     if (!res.ok) return;
     const { avatar } = await res.json();
     myUser.avatar = avatar;
-    applyPalette(avatar.colorPaletteId, profileAvatarWrap);
-    applyPalette(avatar.colorPaletteId, modalAvatarWrap);
+    applyPalette(avatar.colorPaletteId, avatarFigureEl);
+    applyPalette(avatar.colorPaletteId, modalAvatarFigureEl);
     renderPalettePicker(avatar.unlockedPalettes, avatar.colorPaletteId);
   } catch (_) { /* no-op */ }
 };
@@ -214,10 +231,9 @@ rerollBtn.addEventListener('click', async () => {
     if (!res.ok) return;
     const { avatar } = await res.json();
     myUser.avatar = avatar;
-    if (modalSpriteEl)  modalSpriteEl.src  = `/avatars/${avatar.currentSprite}`;
-    profileSpriteEl.src = `/avatars/${avatar.currentSprite}`;
-    applyPalette(avatar.colorPaletteId, modalAvatarWrap);
-    applyPalette(avatar.colorPaletteId, profileAvatarWrap);
+    const tier = spriteTier(myUser.progress.level);
+    applyFigure(avatarFigureEl, avatar.baseVariant, tier, avatar.colorPaletteId);
+    applyFigure(modalAvatarFigureEl, avatar.baseVariant, tier, avatar.colorPaletteId);
   } catch (_) { /* no-op */ }
 });
 
@@ -269,12 +285,13 @@ socket.on('levelUp', ({ newLevel, unlocks, prestiged }) => {
 socket.on('onlineUsers', (users) => {
   onlineUsersList.innerHTML = '';
   users.forEach((u) => {
+    const [variant, tier] = parseSprite(u.sprite || 'b0-t1.svg');
+    const accent  = PALETTES[u.paletteId] || PALETTES[1];
+    const initial = (u.username || '?').charAt(0).toUpperCase();
     const el = document.createElement('div');
     el.className = 'online-user';
     el.innerHTML = `
-      <div class="online-avatar-wrap" style="--avatar-accent:${PALETTES[u.paletteId] || PALETTES[1]}">
-        <img class="avatar-sprite small" src="/avatars/${u.sprite}" alt="${u.username}" />
-      </div>
+      <div class="online-avatar-badge" data-variant="${variant}" data-tier="${tier}" style="--avatar-accent:${accent}">${initial}</div>
       <span class="online-name">${u.username}</span>
       <span class="online-level">Lv ${u.level}</span>
     `;
@@ -353,18 +370,16 @@ const appendMessage = (data) => {
     return;
   }
   const snap      = data.avatarSnapshot || {};
-  const sprite    = snap.sprite    || 'b0-t1.svg';
   const paletteId = snap.paletteId || 1;
   const accent    = PALETTES[paletteId] || PALETTES[1];
-  const decoClass = (snap.decorations || []).map((d) => `deco-${d}`).join(' ');
+  const [variant, tier] = parseSprite(snap.sprite || 'b0-t1.svg');
+  const initial   = (data.sender || '?').charAt(0).toUpperCase();
 
   const item = document.createElement('div');
   item.className     = 'message';
   item.dataset.msgId = data._id;
   item.innerHTML = `
-    <div class="msg-avatar-wrap ${decoClass}" style="--avatar-accent:${accent}">
-      <img class="avatar-sprite small" src="/avatars/${sprite}" alt="${data.sender}" />
-    </div>
+    <div class="msg-avatar-badge" data-variant="${variant}" data-tier="${tier}" style="--avatar-accent:${accent}">${initial}</div>
     <div class="msg-body">
       <div class="msg-header">
         <strong>${data.sender}</strong>

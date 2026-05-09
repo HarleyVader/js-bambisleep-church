@@ -152,16 +152,16 @@ header p   { margin: 0; color: var(--text-muted); }
 /* Perspective container */
 .avatar-3d-scene {
   position: relative;
-  width: 180px;
-  height: 210px;
-  perspective: 520px;
-  perspective-origin: 50% 55%;
+  width: 200px;
+  height: 340px;
+  perspective: 600px;
+  perspective-origin: 50% 45%;
 }
 
 /* The element that rotates in 3-D space */
 .avatar-3d-body {
   width: 100%;
-  height: 175px;
+  height: 320px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -169,62 +169,469 @@ header p   { margin: 0; color: var(--text-muted); }
   animation: avatar-hover 5s ease-in-out infinite;
 }
 
-/* Avatar sprite wrapper inside the 3-D body */
-.avatar-3d-body .profile-avatar-wrap {
-  position: relative;
-  width: 160px;
-  height: 160px;
-  color: var(--avatar-accent, #cc0174);   /* SVG currentColor */
+/* ============================================================
+   CSS 3-D FULL-BODY FEMALE AVATAR FIGURE
+   Driven by [data-variant] and [data-tier] attributes.
+   ============================================================ */
+
+/* ── Variant colour tokens ── */
+.avatar-figure[data-variant="0"] {
+  --skin: #fde8e0; --skin-sh: #e8b5a5; --skin-hi: #fff5f2;
+  --hair: #d4365e; --hair-dk: #9a2044; --hair-hi: #ff87b2;
+  --outfit: #cc0174; --outfit-alt: #ff69b0; --outfit-dk: #8c004e;
+  --eye: #2d1a1a;
+}
+.avatar-figure[data-variant="1"] {
+  --skin: #fde8d3; --skin-sh: #e8c4a0; --skin-hi: #fffaf4;
+  --hair: #f0d060; --hair-dk: #c8a820; --hair-hi: #fff09a;
+  --outfit: #0369a1; --outfit-alt: #38bdf8; --outfit-dk: #024975;
+  --eye: #1a2d3a;
+}
+.avatar-figure[data-variant="2"] {
+  --skin: #f0d4b8; --skin-sh: #d4a87a; --skin-hi: #fff0e0;
+  --hair: #5c3018; --hair-dk: #3a1c08; --hair-hi: #a0603c;
+  --outfit: #7c3aed; --outfit-alt: #c084fc; --outfit-dk: #4c1d95;
+  --eye: #1a1a2d;
+}
+.avatar-figure[data-variant="3"] {
+  --skin: #fde0c8; --skin-sh: #e8b890; --skin-hi: #fff5ec;
+  --hair: #c03020; --hair-dk: #8c1e10; --hair-hi: #f07060;
+  --outfit: #065f46; --outfit-alt: #34d399; --outfit-dk: #022c20;
+  --eye: #0a2a1a;
+}
+.avatar-figure[data-variant="4"] {
+  --skin: #e8c48c; --skin-sh: #c4944c; --skin-hi: #f8e8c0;
+  --hair: #1a1410; --hair-dk: #0a0806; --hair-hi: #4a3a30;
+  --outfit: #b45309; --outfit-alt: #f59e0b; --outfit-dk: #7c3404;
+  --eye: #1a0a00;
+}
+.avatar-figure[data-variant="5"] {
+  --skin: #ede8f0; --skin-sh: #c4b8d4; --skin-hi: #faf8fc;
+  --hair: #c4b8e0; --hair-dk: #8a7ab0; --hair-hi: #f0eaff;
+  --outfit: #0d7377; --outfit-alt: #17dbd8; --outfit-dk: #063638;
+  --eye: #1a0a2d;
 }
 
-/* The sprite itself gets the depth-shadow treatment */
-.avatar-3d-body .avatar-sprite {
+/* ── Base figure ── */
+.avatar-figure {
+  position: relative;
+  width: 200px;
+  height: 320px;
+  transform-style: preserve-3d;
+  flex-shrink: 0;
+}
+
+/* ── All panels are absolute within the figure ── */
+.avatar-figure > *,
+.avatar-figure .af-face > *,
+.avatar-figure .af-head > * { position: absolute; }
+
+/* ────────────────── HAIR BACK ────────────────── */
+.af-hair-back {
+  top: 8px; left: 38px;
+  width: 124px; height: 140px;
+  background: radial-gradient(ellipse 55% 60% at 50% 40%,
+    var(--hair-hi) 0%, var(--hair) 40%, var(--hair-dk) 100%);
+  border-radius: 50% 50% 35% 35% / 55% 55% 30% 30%;
+  transform: translateZ(-6px);
+}
+
+/* ────────────────── HEAD ────────────────── */
+.af-head {
+  top: 14px; left: 50px;
+  width: 100px; height: 96px;
+  transform: translateZ(12px);
+}
+
+/* ────────────────── FACE ────────────────── */
+.af-face {
+  top: 8px; left: 6px;
+  width: 88px; height: 78px;
+  background: radial-gradient(ellipse 70% 80% at 45% 35%,
+    var(--skin-hi) 0%, var(--skin) 50%, var(--skin-sh) 100%);
+  border-radius: 46% 46% 42% 42% / 50% 50% 44% 44%;
+}
+
+/* ────────────────── HAIR FRONT ────────────────── */
+.af-hair-front {
+  top: 0px; left: -2px;
+  width: 104px; height: 44px;
+  background: linear-gradient(180deg, var(--hair-dk) 0%, var(--hair) 55%, transparent 100%);
+  clip-path: polygon(
+    0% 0%, 100% 0%,
+    100% 65%, 88% 80%, 80% 55%, 65% 85%, 50% 60%, 35% 85%, 20% 55%, 12% 80%, 0% 65%
+  );
+  z-index: 2;
+}
+
+/* ────────────────── EYEBROWS ────────────────── */
+.af-brow-l {
+  top: 18px; left: 10px;
+  width: 26px; height: 5px;
+  background: var(--hair-dk);
+  border-radius: 3px;
+  transform: rotate(-6deg);
+}
+.af-brow-r {
+  top: 18px; left: 52px;
+  width: 26px; height: 5px;
+  background: var(--hair-dk);
+  border-radius: 3px;
+  transform: rotate(6deg);
+}
+
+/* ────────────────── EYES ────────────────── */
+.af-eye-l, .af-eye-r {
+  top: 28px;
+  width: 22px; height: 16px;
+  background: radial-gradient(ellipse at 35% 38%, white 30%, #d0c8e0 70%, #b0a8c8 100%);
+  border-radius: 50%;
+  border: 1.5px solid rgba(0,0,0,0.18);
+  overflow: hidden;
+}
+.af-eye-l { left: 8px; }
+.af-eye-r { left: 58px; }
+
+.af-eye-pupil {
+  position: absolute;
+  top: 2px; left: 5px;
+  width: 12px; height: 12px;
+  background: radial-gradient(circle at 35% 32%, #5a4a70 0%, var(--eye) 55%, #000 100%);
+  border-radius: 50%;
+}
+.af-eye-pupil::after {
+  content: '';
+  position: absolute;
+  top: 2px; left: 2px;
+  width: 4px; height: 4px;
+  background: rgba(255,255,255,0.82);
+  border-radius: 50%;
+}
+
+/* ────────────────── NOSE ────────────────── */
+.af-nose {
+  top: 46px; left: 37px;
+  width: 14px; height: 10px;
+  border-bottom: 2.5px solid var(--skin-sh);
+  border-left:   2px   solid var(--skin-sh);
+  border-bottom-left-radius:  60%;
+  border-bottom-right-radius: 60%;
+  border-right:  2px   solid transparent;
+}
+
+/* ────────────────── MOUTH ────────────────── */
+.af-mouth {
+  top: 60px; left: 24px;
+  width: 40px; height: 14px;
+  border-bottom: 3px solid var(--skin-sh);
+  border-radius: 0 0 50% 50%;
+}
+.af-mouth::before {
+  content: '';
+  position: absolute;
+  top: 6px; left: 4px;
+  width: 32px; height: 8px;
+  background: #c04070;
+  border-radius: 0 0 50% 50%;
+}
+
+/* ────────────────── BLUSH ────────────────── */
+.af-blush-l, .af-blush-r {
+  top: 46px;
+  width: 22px; height: 10px;
+  background: rgba(220, 90, 130, 0.32);
+  border-radius: 50%;
+  filter: blur(3px);
+}
+.af-blush-l { left: 2px; }
+.af-blush-r { left: 64px; }
+
+/* ────────────────── NECK ────────────────── */
+.af-neck {
+  top: 102px; left: 76px;
+  width: 48px; height: 30px;
+  background: linear-gradient(180deg, var(--skin) 0%, var(--skin-sh) 100%);
+  border-radius: 4px 4px 8px 8px;
+  transform: translateZ(6px);
+}
+
+/* ────────────────── UPPER BODY (torso) ────────────────── */
+.af-upper-body {
+  top: 122px; left: 48px;
+  width: 104px; height: 78px;
+  background: radial-gradient(ellipse 80% 90% at 50% 30%,
+    var(--skin-hi) 0%, var(--skin) 45%, var(--skin-sh) 100%);
+  clip-path: polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%);
+  transform: translateZ(4px);
+}
+
+/* ────────────────── ARMS ────────────────── */
+.af-arm-l {
+  top: 126px; left: 18px;
+  width: 28px; height: 88px;
+  background: linear-gradient(170deg, var(--skin) 0%, var(--skin-sh) 65%, var(--skin-sh) 100%);
+  border-radius: 12px 12px 10px 10px;
+  transform: translateZ(8px) rotate(6deg);
+}
+.af-arm-r {
+  top: 126px; left: 154px;
+  width: 28px; height: 88px;
+  background: linear-gradient(190deg, var(--skin) 0%, var(--skin-sh) 65%, var(--skin-sh) 100%);
+  border-radius: 12px 12px 10px 10px;
+  transform: translateZ(8px) rotate(-6deg);
+}
+
+/* ────────────────── OUTFIT TOP (clothing over torso) ────────────────── */
+.af-outfit-top {
+  top: 122px; left: 48px;
+  width: 104px; height: 78px;
+  background: linear-gradient(160deg,
+    var(--outfit-alt) 0%, var(--outfit) 50%, var(--outfit-dk) 100%);
+  clip-path: polygon(12% 0%, 88% 0%, 100% 100%, 0% 100%);
+  transform: translateZ(5px);
+  opacity: 0.92;
+}
+
+/* Neckline cutout pseudo-element */
+.af-outfit-top::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 40px; height: 26px;
+  background: var(--skin);
+  border-radius: 0 0 50% 50%;
+}
+
+/* ────────────────── BUST HIGHLIGHT ────────────────── */
+.af-bust {
+  top: 130px; left: 48px;
+  width: 104px; height: 32px;
+  pointer-events: none;
+  transform: translateZ(7px);
+}
+.af-bust::before,
+.af-bust::after {
+  content: '';
+  position: absolute;
+  top: 6px;
+  width: 46px; height: 30px;
+  background: radial-gradient(ellipse 65% 100% at 42% 30%,
+    rgba(255,255,255,0.24) 0%, rgba(255,255,255,0.10) 50%, transparent 78%);
+  border-radius: 50% 50% 40% 40%;
+}
+.af-bust::before { left: 4px; }
+.af-bust::after  { right: 4px; transform: scaleX(-1); }
+
+/* ────────────────── WAIST ────────────────── */
+.af-waist {
+  top: 196px; left: 72px;
+  width: 56px; height: 20px;
+  background: linear-gradient(180deg, var(--outfit) 0%, var(--outfit-dk) 100%);
+  border-radius: 2px;
+  transform: translateZ(4px);
+}
+
+/* ────────────────── HIPS ────────────────── */
+.af-hips {
+  top: 212px; left: 34px;
+  width: 132px; height: 28px;
+  background: linear-gradient(180deg, var(--outfit-dk) 0%, var(--outfit) 100%);
+  border-radius: 4px 4px 14px 14px;
+  transform: translateZ(2px);
+}
+
+/* ────────────────── OUTFIT BOTTOM (skirt) ────────────────── */
+.af-outfit-bottom {
+  top: 210px; left: 34px;
+  width: 132px; height: 84px;
+  background: linear-gradient(175deg,
+    var(--outfit) 0%, var(--outfit-alt) 50%, var(--outfit-dk) 100%);
+  clip-path: polygon(6% 0%, 94% 0%, 100% 100%, 0% 100%);
+  transform: translateZ(3px);
+}
+
+/* Tier 2: wider skirt + collar accents */
+.avatar-figure[data-tier="2"] .af-outfit-bottom {
+  left: 20px;
   width: 160px;
-  height: 160px;
-  display: block;
+  clip-path: polygon(5% 0%, 95% 0%, 100% 100%, 0% 100%);
+}
+.avatar-figure[data-tier="2"] .af-outfit-bottom::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: var(--outfit-alt);
+  border-radius: 2px;
+}
+/* Collar on tier 2 outfit */
+.avatar-figure[data-tier="2"] .af-outfit-top::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 16px;
+  width: 64px; height: 14px;
+  background: linear-gradient(180deg, var(--outfit-alt) 0%, transparent 100%);
+  border-radius: 0 0 8px 8px;
+}
+/* Earring pseudo-elements on tier 2 face */
+.avatar-figure[data-tier="2"] .af-face::before,
+.avatar-figure[data-tier="2"] .af-face::after {
+  content: '';
+  position: absolute;
+  top: 52px;
+  width: 7px; height: 12px;
+  background: linear-gradient(180deg, var(--outfit-alt), var(--outfit-dk));
+  border-radius: 50% 50% 60% 60%;
+}
+.avatar-figure[data-tier="2"] .af-face::before { left: -5px; }
+.avatar-figure[data-tier="2"] .af-face::after  { right: -5px; }
+
+/* Tier 3: full evening gown + additional details */
+.avatar-figure[data-tier="3"] .af-outfit-bottom {
+  left: 4px;
+  width: 192px;
+  clip-path: polygon(3% 0%, 97% 0%, 100% 100%, 0% 100%);
+}
+/* Sparkle on tier-3 skirt */
+.avatar-figure[data-tier="3"] .af-outfit-bottom::before,
+.avatar-figure[data-tier="3"] .af-outfit-bottom::after {
+  content: '✦';
+  position: absolute;
+  font-size: 16px;
+  color: rgba(255,255,255,0.65);
+  text-shadow: 0 0 8px var(--outfit-alt);
+}
+.avatar-figure[data-tier="3"] .af-outfit-bottom::before { top: 20px; left: 12px; }
+.avatar-figure[data-tier="3"] .af-outfit-bottom::after  { top: 44px; right: 14px; }
+/* Collar on tier 3 */
+.avatar-figure[data-tier="3"] .af-outfit-top::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 10px;
+  width: 76px; height: 18px;
+  background: linear-gradient(180deg, var(--outfit-alt) 0%, transparent 100%);
+  border-radius: 0 0 12px 12px;
+}
+/* Earrings on tier 3 */
+.avatar-figure[data-tier="3"] .af-face::before,
+.avatar-figure[data-tier="3"] .af-face::after {
+  content: '';
+  position: absolute;
+  top: 50px;
+  width: 8px; height: 16px;
+  background: linear-gradient(180deg, var(--outfit-alt), var(--outfit-dk));
+  border-radius: 50% 50% 60% 60%;
+  box-shadow: 0 0 6px var(--outfit-alt);
+}
+.avatar-figure[data-tier="3"] .af-face::before { left: -6px; }
+.avatar-figure[data-tier="3"] .af-face::after  { right: -6px; }
+
+/* ────────────────── LEGS ────────────────── */
+.af-leg-l, .af-leg-r {
+  top: 272px;
+  width: 32px; height: 56px;
+  background: linear-gradient(180deg, var(--skin) 0%, var(--skin-sh) 100%);
+  border-radius: 6px 6px 14px 14px;
+  transform: translateZ(1px);
+}
+.af-leg-l { left: 62px; }
+.af-leg-r { left: 106px; }
+
+/* Hidden under tier-2+ skirts but shown on tier-1 */
+.avatar-figure[data-tier="2"] .af-leg-l,
+.avatar-figure[data-tier="2"] .af-leg-r,
+.avatar-figure[data-tier="3"] .af-leg-l,
+.avatar-figure[data-tier="3"] .af-leg-r,
+.avatar-figure[data-tier="2"] .af-shoe-l,
+.avatar-figure[data-tier="2"] .af-shoe-r,
+.avatar-figure[data-tier="3"] .af-shoe-l,
+.avatar-figure[data-tier="3"] .af-shoe-r { visibility: hidden; }
+
+/* ────────────────── SHOES ────────────────── */
+.af-shoe-l, .af-shoe-r {
+  top: 322px;
+  width: 38px; height: 16px;
+  background: linear-gradient(160deg, var(--outfit-alt) 0%, var(--outfit-dk) 100%);
+  border-radius: 8px 12px 4px 6px;
+  transform: translateZ(2px);
+}
+.af-shoe-l { left: 56px; }
+.af-shoe-r { left: 100px; }
+/* Small heel */
+.af-shoe-l::after, .af-shoe-r::after {
+  content: '';
+  position: absolute;
+  bottom: -6px; right: 2px;
+  width: 6px; height: 6px;
+  background: var(--outfit-dk);
+  border-radius: 2px;
+}
+
+/* ────────────────── ACCESSORY (crown — tier 3 only) ────────────────── */
+.af-accessory {
+  display: none;
+  top: -22px; left: 58px;
+  width: 84px; height: 28px;
+  background: linear-gradient(135deg, var(--outfit-alt) 0%, var(--outfit) 60%, var(--outfit-dk) 100%);
+  clip-path: polygon(0% 100%, 0% 50%, 20% 0%, 32% 50%, 50% 0%, 68% 50%, 80% 0%, 100% 50%, 100% 100%);
+  transform: translateZ(20px);
+  filter: drop-shadow(0 0 6px var(--outfit-alt));
+}
+.avatar-figure[data-tier="3"] .af-accessory { display: block; }
+
+/* Halo variant (applied via JS deco class) */
+.avatar-figure .avatar-deco-layer.deco-halo::before {
+  content: '';
+  position: absolute;
+  top: -18px; left: 50%;
+  transform: translateX(-50%);
+  width: 56px; height: 14px;
+  border-radius: 50%;
+  border: 3px solid #ffe97a;
+  box-shadow: 0 0 14px #ffe97a, 0 0 28px rgba(255, 233, 122, 0.4);
+}
+
+/* ────────────────── DECO GLOW RING (tier 3) ────────────────── */
+.af-deco-glow {
+  top: 60px; left: 30px;
+  width: 140px; height: 200px;
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translateZ(-2px);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.avatar-figure[data-tier="3"] .af-deco-glow {
+  opacity: 1;
+  box-shadow: 0 0 40px 12px var(--outfit-alt, #ff69b0);
+}
+.avatar-figure .avatar-deco-layer.deco-glow .af-deco-glow {
+  opacity: 1;
+  box-shadow: 0 0 40px 12px var(--outfit-alt, #ff69b0);
+}
+
+/* ────────────────── MAIN-SCENE GLOW TREATMENT ────────────────── */
+.avatar-3d-body .avatar-figure {
   filter:
-    drop-shadow(0 0 20px var(--avatar-accent, #cc0174))
-    drop-shadow(7px 12px 5px rgba(0, 0, 0, 0.6))
-    drop-shadow(-3px 6px 3px rgba(0, 0, 0, 0.35));
+    drop-shadow(0 0 18px var(--outfit, #cc0174))
+    drop-shadow(6px 14px 6px rgba(0,0,0,0.55))
+    drop-shadow(-3px 6px 3px rgba(0,0,0,0.3));
   transition: filter 0.4s ease;
 }
 
-/* Decoration overlay */
+/* Decoration overlay (backwards-compat layer for JS applyDecorations) */
 .avatar-deco-layer {
   position: absolute;
   inset: 0;
   pointer-events: none;
 }
-.avatar-deco-layer.deco-crown::before {
-  content: '';
-  position: absolute;
-  top: -18px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 36px;
-  height: 20px;
-  background:
-    linear-gradient(var(--avatar-accent, #cc0174), transparent) center/4px 100% no-repeat,
-    linear-gradient(var(--avatar-accent, #cc0174), transparent) 0 0/4px 100% no-repeat,
-    linear-gradient(var(--avatar-accent, #cc0174), transparent) 100% 0/4px 100% no-repeat;
-  clip-path: polygon(0% 100%, 0% 30%, 25% 0%, 50% 30%, 75% 0%, 100% 30%, 100% 100%);
-  background-color: var(--avatar-accent, #cc0174);
-}
-.avatar-deco-layer.deco-glow {
-  border-radius: 50%;
-  box-shadow: 0 0 32px 8px var(--avatar-accent, #cc0174);
-}
-.avatar-deco-layer.deco-halo::before {
-  content: '';
-  position: absolute;
-  top: -14px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 52px;
-  height: 14px;
-  border-radius: 50%;
-  border: 3px solid #ffe97a;
-  box-shadow: 0 0 14px #ffe97a, 0 0 28px rgba(255, 233, 122, 0.4);
+.avatar-deco-layer.deco-crown .af-accessory,
+.avatar-figure .avatar-deco-layer.deco-crown ~ .af-accessory { display: block; }
+
+.avatar-deco-layer.deco-glow ~ .af-deco-glow {
+  opacity: 1;
+  box-shadow: 0 0 40px 12px var(--outfit-alt, #ff69b0);
 }
 
 /* Ellipse shadow on the "floor" */
@@ -242,10 +649,10 @@ header p   { margin: 0; color: var(--text-muted); }
 
 /* ── Hover / sway ── */
 @keyframes avatar-hover {
-  0%, 100% { transform: rotateY(-10deg) rotateX(6deg)  translateY(0px);  }
-  25%       { transform: rotateY(-1deg)  rotateX(3deg)  translateY(-10px); }
-  50%       { transform: rotateY(10deg)  rotateX(5deg)  translateY(-16px); }
-  75%       { transform: rotateY(1deg)   rotateX(3deg)  translateY(-10px); }
+  0%, 100% { transform: rotateY(-10deg) rotateX(5deg)  translateY(0px);  }
+  25%       { transform: rotateY(-1deg)  rotateX(3deg)  translateY(-8px); }
+  50%       { transform: rotateY(10deg)  rotateX(4deg)  translateY(-12px); }
+  75%       { transform: rotateY(1deg)   rotateX(3deg)  translateY(-8px); }
 }
 @keyframes floor-shadow {
   0%, 100% { opacity: 0.55; transform: translateX(-50%) scaleX(1)    scaleY(1);   }
@@ -543,12 +950,16 @@ button:hover { filter: brightness(1.08); transform: translateY(-1px); }
   margin-bottom: 14px;
 }
 .modal-avatar-wrap {
-  width: 72px;
-  height: 72px;
+  width: 96px;
+  height: 154px;
   flex-shrink: 0;
-  color: var(--avatar-accent, #cc0174);
+  overflow: hidden;
+  position: relative;
 }
-.modal-avatar-wrap img { width: 72px; height: 72px; display: block; }
+.modal-avatar-wrap .avatar-figure--modal {
+  transform: scale(0.48) translateX(-104px) translateY(-84px);
+  transform-origin: top left;
+}
 .reroll-btn {
   background: rgba(255, 255, 255, 0.07);
   border: 1px solid var(--border-light);
@@ -641,6 +1052,91 @@ footer {
 }
 
 /* ============================================================
+   AVATAR VARIANT HAIR STYLES
+   ============================================================ */
+
+/* b0 Rose — long flowing hair */
+.avatar-figure[data-variant="0"] .af-hair-back {
+  height: 200px;
+  width: 120px; left: 40px;
+  border-radius: 48% 48% 22% 22% / 52% 52% 20% 20%;
+}
+
+/* b1 Nova — high upswept bun */
+.avatar-figure[data-variant="1"] .af-hair-back {
+  height: 82px;
+  width: 104px; left: 48px;
+  border-radius: 50% 50% 50% 50% / 62% 62% 42% 42%;
+}
+.avatar-figure[data-variant="1"] .af-hair-front {
+  height: 30px;
+  clip-path: polygon(0% 0%, 100% 0%, 100% 48%, 88% 68%, 78% 45%, 62% 65%, 50% 42%, 38% 65%, 22% 45%, 12% 68%, 0% 48%);
+}
+
+/* b2 Pearl — medium wavy */
+.avatar-figure[data-variant="2"] .af-hair-back {
+  height: 128px;
+  width: 128px; left: 36px;
+  border-radius: 50% 50% 38% 38% / 55% 55% 36% 36%;
+}
+
+/* b3 Jade — medium, slightly asymmetric */
+.avatar-figure[data-variant="3"] .af-hair-back {
+  height: 114px;
+  width: 130px; left: 35px;
+  border-radius: 50% 50% 36% 36% / 55% 55% 34% 34%;
+}
+.avatar-figure[data-variant="3"] .af-hair-front {
+  clip-path: polygon(0% 0%, 100% 0%, 100% 40%, 85% 65%, 70% 42%, 55% 72%, 42% 50%, 28% 72%, 15% 42%, 0% 75%);
+}
+
+/* b4 Luna — very long straight dark hair */
+.avatar-figure[data-variant="4"] .af-hair-back {
+  height: 248px;
+  width: 116px; left: 42px;
+  border-radius: 44% 44% 16% 16% / 48% 48% 12% 12%;
+  background: linear-gradient(180deg,
+    var(--hair-hi) 0%, var(--hair) 12%, var(--hair-dk) 55%, var(--hair) 100%);
+}
+.avatar-figure[data-variant="4"] .af-hair-front {
+  height: 36px;
+  clip-path: polygon(0% 0%, 100% 0%, 100% 72%, 84% 72%, 74% 50%, 60% 72%, 50% 50%, 40% 72%, 26% 50%, 16% 72%, 0% 72%);
+}
+
+/* b5 Iris — medium-wide wavy */
+.avatar-figure[data-variant="5"] .af-hair-back {
+  height: 120px;
+  width: 134px; left: 33px;
+  border-radius: 50% 50% 40% 40% / 55% 55% 42% 42%;
+}
+
+/* ============================================================
+   MINI AVATAR BADGES  (messages & online panel)
+   ============================================================ */
+.msg-avatar-badge,
+.online-avatar-badge {
+  border-radius: 50%;
+  background: var(--avatar-accent, #cc0174);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  flex-shrink: 0;
+  text-transform: uppercase;
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.45);
+}
+.msg-avatar-badge    { width: 38px; height: 38px; font-size: 16px; }
+.online-avatar-badge { width: 32px; height: 32px; font-size: 13px; }
+
+/* Tier-3 gets an outer glow */
+.msg-avatar-badge[data-tier="3"],
+.online-avatar-badge[data-tier="3"] {
+  box-shadow: 0 0 14px 3px var(--avatar-accent, #cc0174), 0 0 4px rgba(0,0,0,0.5);
+}
+
+/* ============================================================
    RESPONSIVE
    ============================================================ */
 @media (max-width: 860px) {
@@ -658,10 +1154,9 @@ footer {
     align-items: flex-start;
   }
   .avatar-stage { flex-direction: row; align-items: center; gap: 16px; }
-  .avatar-3d-scene { width: 90px; height: 108px; perspective: 380px; }
-  .avatar-3d-body  { height: 90px; }
-  .avatar-3d-body .profile-avatar-wrap,
-  .avatar-3d-body .avatar-sprite { width: 80px; height: 80px; }
+  .avatar-3d-scene { width: 100px; height: 170px; perspective: 380px; }
+  .avatar-3d-body  { height: 160px; }
+  .avatar-3d-body .avatar-figure { transform: scale(0.5); transform-origin: top center; }
   .avatar-nameplate { text-align: left; align-items: flex-start; }
   .online-panel { margin-left: auto; max-width: 180px; }
 }
