@@ -129,6 +129,11 @@ body {
   border-color: var(--nav-alt);
   background: rgba(23, 219, 216, 0.08);
 }
+.site-nav__links a.active {
+  color: #fff;
+  border-color: var(--nav-alt);
+  background: rgba(23, 219, 216, 0.14);
+}
 
 @media (max-width: 860px) {
   .site-nav { height: auto; flex-wrap: wrap; padding: 8px 12px; gap: 8px; }

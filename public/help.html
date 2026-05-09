@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Help | BambiSleep Church</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Audiowide&display=swap" />
+  <link rel="stylesheet" href="/style.css" />
+  <style>
+    /* ── Help-page-specific layout ────────────────────────────────────────────── */
+    .help-wrap {
+      max-width: 860px;
+      margin: 40px auto 80px;
+      padding: 0 20px;
+    }
+
+    .help-hero {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    .help-hero h1 {
+      font-size: 2rem;
+      color: var(--nav-alt);
+      margin: 0 0 8px;
+    }
+    .help-hero p {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin: 0;
+    }
+
+    /* ── Section cards ────────────────────────────────────────────────────────── */
+    .help-section {
+      background: var(--surface-strong);
+      border: 1px solid var(--border-light);
+      border-radius: var(--border-radius-lg);
+      margin-bottom: 28px;
+      overflow: hidden;
+    }
+    .help-section__header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 22px;
+      background: rgba(21, 170, 181, 0.07);
+      border-bottom: 1px solid var(--border-light);
+      cursor: pointer;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    .help-section__header:hover { background: rgba(21, 170, 181, 0.13); }
+    .help-section__icon  { font-size: 1.4rem; line-height: 1; }
+    .help-section__title { font-size: 1rem; font-weight: 700; color: var(--nav-alt); flex: 1; }
+    .help-section__caret { font-size: 0.7rem; color: var(--text-muted); transition: transform 0.2s ease; }
+    .help-section.open .help-section__caret { transform: rotate(180deg); }
+    .help-section__body  {
+      padding: 0 22px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease, padding 0.2s ease;
+    }
+    .help-section.open .help-section__body {
+      padding: 20px 22px 24px;
+      max-height: 2000px;
+    }
+
+    /* ── Feature rows ─────────────────────────────────────────────────────────── */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 14px;
+    }
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid rgba(21, 170, 181, 0.14);
+      border-radius: var(--border-radius);
+      padding: 14px 16px;
+    }
+    .feature-card__title {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--secondary-alt);
+      margin: 0 0 6px;
+    }
+    .feature-card p {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin: 0;
+      line-height: 1.6;
+    }
+
+    /* ── Step list ────────────────────────────────────────────────────────────── */
+    .steps {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      counter-reset: step;
+    }
+    .steps li {
+      counter-increment: step;
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 10px;
+      align-items: start;
+      margin-bottom: 12px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+    .steps li::before {
+      content: counter(step);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--secondary-alt);
+      color: #fff;
+      font-size: 0.6rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .steps strong { color: var(--text-primary); }
+
+    /* ── XP table ─────────────────────────────────────────────────────────────── */
+    .xp-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.72rem;
+    }
+    .xp-table th, .xp-table td {
+      text-align: left;
+      padding: 8px 12px;
+      border-bottom: 1px solid rgba(21, 170, 181, 0.1);
+    }
+    .xp-table th {
+      color: var(--nav-alt);
+      font-size: 0.65rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .xp-table td { color: var(--text-muted); }
+    .xp-table tr:last-child td { border-bottom: none; }
+    .xp-table .accent { color: var(--secondary-alt); font-weight: 700; }
+
+    /* ── Level unlock table ───────────────────────────────────────────────────── */
+    .level-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.72rem;
+    }
+    .level-table th, .level-table td {
+      padding: 7px 10px;
+      border-bottom: 1px solid rgba(21, 170, 181, 0.1);
+    }
+    .level-table th {
+      color: var(--nav-alt);
+      font-size: 0.65rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      text-align: left;
+    }
+    .level-table td { color: var(--text-muted); text-align: left; }
+    .level-table tr:last-child td { border-bottom: none; }
+    .level-table .lv { color: var(--nav-alt); font-weight: 700; }
+    .level-table .title-col { color: var(--secondary-alt); }
+
+    /* ── Tip boxes ────────────────────────────────────────────────────────────── */
+    .tip {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      background: rgba(21, 170, 181, 0.07);
+      border-left: 3px solid var(--nav-alt);
+      border-radius: 0 6px 6px 0;
+      padding: 12px 14px;
+      margin-top: 14px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+    .tip .tip-icon { font-size: 1rem; flex-shrink: 0; }
+    .tip strong { color: var(--text-primary); }
+
+    /* ── Tier badges ──────────────────────────────────────────────────────────── */
+    .tier-badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+    .tier-free    { background: rgba(21,170,181,0.15); color: var(--nav-alt); border: 1px solid rgba(21,170,181,0.3); }
+    .tier-gg      { background: rgba(2,184,147,0.15);  color: #02b893; border: 1px solid rgba(2,184,147,0.3); }
+    .tier-poodle  { background: rgba(204,1,116,0.15);  color: var(--secondary-alt); border: 1px solid rgba(204,1,116,0.3); }
+    .tier-barbie  { background: rgba(124,58,237,0.15); color: #a78bfa; border: 1px solid rgba(124,58,237,0.4); }
+
+    /* ── kbd ──────────────────────────────────────────────────────────────────── */
+    kbd {
+      display: inline-block;
+      padding: 1px 6px;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 4px;
+      color: var(--text-primary);
+    }
+
+    /* Utility helpers used inline-free */
+    .help-intro-text  { font-size: 0.78rem; color: var(--text-muted); margin: 0 0 16px; }
+    .help-subheading  { font-size: 0.8rem; color: var(--nav-alt); margin: 22px 0 10px; }
+    .help-link        { color: var(--nav-alt); }
+    .help-grid-gap    { margin-top: 16px; }
+    .help-steps-gap   { margin-top: 18px; }
+    .feature-card p.tier-p { margin-top: 8px; }
+
+    /* ── ToC ──────────────────────────────────────────────────────────────────── */
+    .toc {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 32px;
+    }
+    .toc a {
+      font-size: 0.68rem;
+      color: var(--nav-alt);
+      text-decoration: none;
+      padding: 4px 12px;
+      border: 1px solid rgba(21,170,181,0.3);
+      border-radius: 20px;
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+    .toc a:hover {
+      background: rgba(21,170,181,0.12);
+      border-color: var(--nav-alt);
+    }
+
+    @media (max-width: 600px) {
+      .help-hero h1 { font-size: 1.4rem; }
+      .feature-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="site-nav">
+    <a class="site-nav__brand" href="/">BambiSleep Church</a>
+    <div class="site-nav__links">
+      <a href="https://bambisleep.chat" target="_blank" rel="noopener">Chat</a>
+      <a href="https://bambisleep.wiki" target="_blank" rel="noopener">Wiki</a>
+      <a href="https://bambicloud.com" target="_blank" rel="noopener">BambiCloud</a>
+      <a href="https://www.patreon.com/bambisleepchurch" target="_blank" rel="noopener">Patreon</a>
+      <a href="/help.html" class="active">Help</a>
+    </div>
+  </nav>
+
+  <div class="help-wrap">
+
+    <div class="help-hero">
+      <h1>&#128218; Help &amp; Features Guide</h1>
+      <p>Everything you need to know about BambiSleep Church — click a section to expand.</p>
+    </div>
+
+    <!-- Table of contents -->
+    <nav class="toc" aria-label="Jump to section">
+      <a href="#sec-chat">&#128172; Chat</a>
+      <a href="#sec-media">&#128247; Media</a>
+      <a href="#sec-avatar">&#128118; Avatar</a>
+      <a href="#sec-xp">&#11088; XP &amp; Levels</a>
+      <a href="#sec-audio">&#127925; Audio Player</a>
+      <a href="#sec-toy">&#128268; Toy Control</a>
+      <a href="#sec-patreon">&#128279; Patreon Tiers</a>
+      <a href="#sec-profile">&#9998; Profile</a>
+    </nav>
+
+    <!-- ── CHAT ────────────────────────────────────────────────────────────── -->
+    <div class="help-section open" id="sec-chat">
+      <div class="help-section__header" role="button" tabindex="0" aria-expanded="true">
+        <span class="help-section__icon">&#128172;</span>
+        <span class="help-section__title">Chat</span>
+        <span class="help-section__caret">&#9660;</span>
+      </div>
+      <div class="help-section__body">
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-card__title">Sending a message</div>
+            <p>Type in the message box and press <kbd>Enter</kbd> or click <strong>Send message</strong>. Use <kbd>Shift</kbd>&nbsp;+&nbsp;<kbd>Enter</kbd> for a line break.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card__title">@Mentions</div>
+            <p>Type <kbd>@</kbd> followed by a username to mention someone. A dropdown shows matching online users — pick with arrow keys and press <kbd>Enter</kbd> or <kbd>Tab</kbd>. They'll receive a notification and haptic pulse.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card__title">Emoji reactions</div>
+            <p>Hover over any message and click the <strong>+</strong> button to open the emoji picker. Click a reaction again to toggle it off.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card__title">BambiCloud playlists</div>
+            <p>Paste a <code>bambicloud.com/playlist/…</code> URL into chat. It becomes a clickable link with a <strong>▶ Load playlist</strong> button that queues it in the audio player.</p>
+          </div>
+        </div>
+        <div class="tip">
+          <span class="tip-icon">&#128161;</span>
+          <span>Messages are stored persistently — history is loaded when you open the page.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── MEDIA ───────────────────────────────────────────────────────────── -->
+    <div class="help-section" id="sec-media">
+      <div class="help-section__header" role="button" tabindex="0" aria-expanded="false">
+        <span class="help-section__icon">&#128247;</span>
+        <span class="help-section__title">Images &amp; Videos</span>
+        <span class="help-section__caret">&#9660;</span>
+      </div>
+      <div class="help-section__body">
+        <ol class="steps">
+          <li><span>Click the <strong>📷 camera button</strong> next to the message box to open the file picker.</span></li>
+          <li><span>Select an image (JPEG, PNG, GIF, WebP — max <strong>8 MB</strong>) or video (MP4, WebM, OGG — max <strong>64 MB</strong>).</span></li>
+          <li><span>A preview thumbnail appears above the input. Click <strong>×</strong> to remove it before sending.</span></li>
+          <li><span>Optionally type a message alongside the attachment, then click <strong>Send message</strong>.</span></li>
+          <li><span>The image or video appears inline in the chat. Videos include playback controls.</span></li>
+        </ol>
+        <div class="tip">
+          <span class="tip-icon">&#128274;</span>
+          <span>Only JPEG, PNG, GIF, WebP images and MP4, WebM, OGG videos are accepted. Other file types are rejected.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── AVATAR ──────────────────────────────────────────────────────────── -->
+    <div class="help-section" id="sec-avatar">
+      <div class="help-section__header" role="button" tabindex="0" aria-expanded="false">
+        <span class="help-section__icon">&#128118;</span>
+        <span class="help-section__title">Avatar System</span>
+        <span class="help-section__caret">&#9660;</span>
+      </div>
+      <div class="help-section__body">
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-card__title">3-D avatar viewer</div>
+            <p>Your avatar is rendered in Three.js on the left column. It evolves in appearance across 3 sprite tiers as you level up.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card__title">Colour palettes</div>
+            <p>Palettes unlock as you reach certain levels. Open <strong>Edit Profile</strong> and click a colour swatch to apply it. Locked palettes are greyed out.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card__title">Decorations</div>
+            <p>Some levels grant decorations — <strong>✦ Glow</strong> (level 5), <strong>♛ Crown</strong> (level 7), and <strong>&#9900; Halo</strong> (level 9) — applied automatically on the avatar.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card__title">Reroll</div>
+            <p>In <strong>Edit Profile</strong>, click <strong>Reroll avatar</strong> to randomise your base variant while keeping your current tier and palette.</p>
+          </div>
+        </div>
+        <div class="tip">
+          <span class="tip-icon">&#127775;</span>
+          <span>Your avatar snapshot is attached to every message you send so others always see your current look.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── XP & LEVELS ────────────────────────────────────────────────────── -->
+    <div class="help-section" id="sec-xp">
+      <div class="help-section__header" role="button" tabindex="0" aria-expanded="false">
+        <span class="help-section__icon">&#11088;</span>
+        <span class="help-section__title">XP &amp; Levels</span>
+        <span class="help-section__caret">&#9660;</span>
+      </div>
+      <div class="help-section__body">
+        <p class="help-intro-text">
+          Earn XP by participating in the community. XP is tracked in real time and your level badge updates live.
+        </p>
+
+        <table class="xp-table">
+          <thead>
+            <tr><th>Action</th><th>XP earned</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Send a message</td><td class="accent">+1 XP</td></tr>
+            <tr><td>Every 10 words typed</td><td class="accent">+1 XP</td></tr>
+            <tr><td>First activity of the day</td><td class="accent">+5 XP</td></tr>
+            <tr><td>Receive a reaction</td><td class="accent">+2 XP</td></tr>
+            <tr><td>Give a reaction</td><td class="accent">+1 XP</td></tr>
+            <tr><td>Every 5 minutes of session time</td><td class="accent">+1 XP</td></tr>
+          </tbody>
+        </table>
+
+        <h3 class="help-subheading">Level Progression</h3>
+        <table class="level-table">
+          <thead>
+            <tr><th>Level</th><th>XP needed</th><th>Title</th><th>Unlocks</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="lv">1</td><td>0</td>    <td class="title-col">Bambi Bud</td>    <td>Palette 1 (Pink)</td></tr>
+            <tr><td class="lv">2</td><td>50</td>   <td class="title-col">Bambi Babe</td>   <td>—</td></tr>
+            <tr><td class="lv">3</td><td>150</td>  <td class="title-col">Bambi Belle</td>  <td>Palette 2 (Violet)</td></tr>
+            <tr><td class="lv">4</td><td>300</td>  <td class="title-col">Bambi Bloom</td>  <td>—</td></tr>
+            <tr><td class="lv">5</td><td>500</td>  <td class="title-col">Bambi Bliss</td>  <td>Palette 3 (Blue) · ✦ Glow</td></tr>
+            <tr><td class="lv">6</td><td>750</td>  <td class="title-col">Bambi Bright</td> <td>—</td></tr>
+            <tr><td class="lv">7</td><td>1 050</td><td class="title-col">Bambi Star</td>   <td>Palette 4 (Amber) · ♛ Crown · Sprite Tier 2</td></tr>
+            <tr><td class="lv">8</td><td>1 400</td><td class="title-col">Bambi Diva</td>   <td>—</td></tr>
+            <tr><td class="lv">9</td><td>1 800</td><td class="title-col">Bambi Angel</td>  <td>&#9900; Halo</td></tr>
+            <tr><td class="lv">10</td><td>2 250</td><td class="title-col">Bambi Goddess</td><td>Palette 5 (Emerald) · Sprite Tier 3 · Prestige available</td></tr>
+          </tbody>
+        </table>
+
+        <div class="tip">
+          <span class="tip-icon">&#10026;</span>
+          <span><strong>Prestige</strong> — reaching level 10 lets you prestige. Your XP and level reset to 1, but you keep your decorations and earn a ✦ Prestige badge (up to ✦✦✦). A toast notification announces every level-up.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── AUDIO PLAYER ───────────────────────────────────────────────────── -->
+    <div class="help-section" id="sec-audio">
+      <div class="help-section__header" role="button" tabindex="0" aria-expanded="false">
+        <span class="help-section__icon">&#127925;</span>
+        <span class="help-section__title">Bambi Audio Player</span>
+        <span class="help-section__caret">&#9660;</span>
+      </div>
+      <div class="help-section__body">
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-card__title">Track list</div>
+            <p>The right panel shows a playlist loaded from BambiCloud. Click any track name to start playing it.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card__title">Transport controls</div>
+            <p><kbd>⏮</kbd> Previous &nbsp;·&nbsp; <kbd>▶</kbd> Play / Pause &nbsp;·&nbsp; <kbd>⏭</kbd> Next<br/>Use the progress bar to seek. Volume slider below the controls.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card__title">Visualiser</div>
+            <p>A waveform visualiser animates in the panel while audio is playing.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card__title">Toy sync</div>
+            <p>Enable <strong>🔌 Sync</strong> in the audio panel to synchronise toy vibration intensity to the audio volume in real time.</p>
+          </div>
+        </div>
+        <div class="tip">
+          <span class="tip-icon">&#128172;</span>
+          <span>Paste a <code>bambicloud.com/playlist/…</code> URL in chat and click <strong>▶ Load playlist</strong> to queue it in the player without leaving the page.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TOY CONTROL ────────────────────────────────────────────────────── -->
+    <div class="help-section" id="sec-toy">
+      <div class="help-section__header" role="button" tabindex="0" aria-expanded="false">
+        <span class="help-section__icon">&#128268;</span>
+        <span class="help-section__title">Toy Control (Intiface / Buttplug)</span>
+        <span class="help-section__caret">&#9660;</span>
+      </div>
+      <div class="help-section__body">
+        <ol class="steps">
+          <li><span>Download and install <strong>Intiface Central</strong> from <a href="https://intiface.com/central" target="_blank" rel="noopener" class="help-link">intiface.com/central</a> and start it.</span></li>
+          <li><span>In the <strong>Toy Control</strong> panel, confirm the address is <code>ws://localhost:12345</code> (default) and click <strong>Connect</strong>.</span></li>
+          <li><span>Click <strong>Scan</strong> — nearby Bluetooth devices appear in the list below.</span></li>
+          <li><span>Select a <strong>vibration pattern</strong> (Pulse, Wave, Surge, Tease, or Throb) and use the master intensity slider.</span></li>
+          <li><span>For multi-motor devices, individual per-motor sliders appear under each device.</span></li>
+          <li><span>Click <strong>All Vibrate</strong> to start all devices, or <strong>All Stop</strong> to stop. Per-device mini pattern buttons are also available.</span></li>
+        </ol>
+        <div class="feature-grid help-grid-gap">
+          <div class="feature-card">
+            <div class="feature-card__title">Patterns</div>
+            <p><strong>Pulse</strong> — steady on/off bursts<br/><strong>Wave</strong> — smooth sine ramp up/down<br/><strong>Surge</strong> — escalating ramp<br/><strong>Tease</strong> — irregular short pulses<br/><strong>Throb</strong> — slow deep beat</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card__title">Haptic @mentions</div>
+            <p>When another user <strong>@mentions you</strong> in chat, your connected toy delivers a short pulse notification (0.6 intensity, 400 ms) so you never miss a mention.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card__title">Audio sync</div>
+            <p>Toggle <strong>🔌 Sync: ON</strong> in the audio panel to tie vibration intensity to the currently playing audio track's volume in real time.</p>
+          </div>
+        </div>
+        <div class="tip">
+          <span class="tip-icon">&#128274;</span>
+          <span>Toy control runs entirely in your browser via WebSocket to Intiface Central on your local machine. No device data is sent to the server.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PATREON TIERS ──────────────────────────────────────────────────── -->
+    <div class="help-section" id="sec-patreon">
+      <div class="help-section__header" role="button" tabindex="0" aria-expanded="false">
+        <span class="help-section__icon">&#128279;</span>
+        <span class="help-section__title">Patreon Tiers</span>
+        <span class="help-section__caret">&#9660;</span>
+      </div>
+      <div class="help-section__body">
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-card__title"><span class="tier-badge tier-free">Free</span></div>
+            <p class="tier-p">Full access to chat, real-time avatar system, XP progression, audio player, and toy control.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card__title"><span class="tier-badge tier-gg">Good Girl</span></div>
+            <p class="tier-p">All free features plus supporter badge and early access to new features.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card__title"><span class="tier-badge tier-poodle">Pink Poodle</span></div>
+            <p class="tier-p">All Good Girl perks plus access to the exclusive <strong>Pink Poodle profile page</strong> with extended customisation.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card__title"><span class="tier-badge tier-barbie">Airhead Barbie</span></div>
+            <p class="tier-p">All Pink Poodle perks plus top-tier supporter recognition and priority access to every new feature.</p>
+          </div>
+        </div>
+        <ol class="steps help-steps-gap">
+          <li><span>Visit <a href="https://www.patreon.com/bambisleepchurch" target="_blank" rel="noopener" class="help-link">patreon.com/bambisleepchurch</a> and subscribe to your chosen tier.</span></li>
+          <li><span>Click the <strong>Patreon</strong> button in the top panel and follow the OAuth link to connect your Patreon account.</span></li>
+          <li><span>Your tier badge will appear in the Patreon panel and profile once linked.</span></li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- ── PROFILE ────────────────────────────────────────────────────────── -->
+    <div class="help-section" id="sec-profile">
+      <div class="help-section__header" role="button" tabindex="0" aria-expanded="false">
+        <span class="help-section__icon">&#9998;</span>
+        <span class="help-section__title">Profile &amp; Settings</span>
+        <span class="help-section__caret">&#9660;</span>
+      </div>
+      <div class="help-section__body">
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-card__title">Username</div>
+            <p>Set your display name in <strong>Edit Profile</strong>. It's saved in a cookie and persisted server-side linked to your anonymous token.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card__title">Status &amp; Role</div>
+            <p>Customise your status line and role label shown under your name on the left panel. Stored per-browser in a cookie.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card__title">Stats</div>
+            <p>Your left panel shows total messages sent, words typed, days active, and reactions given — all tracked automatically.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card__title">Profile page</div>
+            <p>Click a username in chat to view their public profile page. Pink Poodle+ supporters get an extended profile view.</p>
+          </div>
+        </div>
+        <div class="tip">
+          <span class="tip-icon">&#128273;</span>
+          <span><strong>Anonymous tokens</strong> — your identity is stored in <code>localStorage</code> as a random token. Clearing browser storage will create a new identity. Export / backup your token if you want to transfer between devices (not currently supported via UI).</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /.help-wrap -->
+
+  <script>
+    'use strict';
+    // Accordion toggle
+    document.querySelectorAll('.help-section__header').forEach((header) => {
+      header.addEventListener('click', () => toggle(header));
+      header.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(header); }
+      });
+    });
+
+    function toggle(header) {
+      const section   = header.closest('.help-section');
+      const isOpen    = section.classList.toggle('open');
+      header.setAttribute('aria-expanded', String(isOpen));
+    }
+
+    // Scroll-to anchor and auto-open the targeted section
+    function openFromHash() {
+      const id = location.hash.slice(1);
+      if (!id) return;
+      const el = document.getElementById(id);
+      if (el && el.classList.contains('help-section')) {
+        el.classList.add('open');
+        el.querySelector('.help-section__header').setAttribute('aria-expanded', 'true');
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+    openFromHash();
+    window.addEventListener('hashchange', openFromHash);
+  </script>
+</body>
+</html>
