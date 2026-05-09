@@ -135,10 +135,32 @@
       return;
     }
 
-    // Poll until the popup closes
+    function cleanup() {
+      clearInterval(poll);
+      window.removeEventListener('message', onMessage);
+    }
+
+    // Primary: listen for postMessage from the popup close page
+    function onMessage(evt) {
+      if (evt.source !== popup) return;
+      if (!evt.data || evt.data.type !== 'patreon:oauth') return;
+      cleanup();
+      const toastMessages = {
+        linked: '✓ Patreon account linked!',
+        denied: 'Patreon authorisation was cancelled.',
+        error:  'Something went wrong linking Patreon. Please try again.',
+      };
+      const result = evt.data.result;
+      const msg = toastMessages[result];
+      if (msg) showToast(msg, result === 'linked' ? 'success' : 'error');
+      refreshPanel();
+    }
+    window.addEventListener('message', onMessage);
+
+    // Fallback: if popup closes without sending a message (e.g. user closed it)
     const poll = setInterval(() => {
       if (popup.closed) {
-        clearInterval(poll);
+        cleanup();
         refreshPanel();
       }
     }, 500);

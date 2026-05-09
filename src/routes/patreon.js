@@ -128,13 +128,35 @@ router.get('/auth', (req, res) => {
   return res.redirect(`${PATREON_SITE}/oauth2/authorize?${params}`);
 });
 
+// ── Popup close helper ───────────────────────────────────────────────────────
+// Serves a minimal HTML page that posts a message to the opener and closes
+// itself.  Falls back to a full redirect when opened outside a popup.
+function sendPopupClose(res, result, appBase) {
+  const VALID = ['linked', 'denied', 'error'];
+  const safeResult = VALID.includes(result) ? result : 'error';
+  return res.type('html').send(
+    `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Patreon</title></head>` +
+    `<body><script>` +
+    `(function(){` +
+    `  var r=${JSON.stringify(safeResult)};` +
+    `  if(window.opener&&!window.opener.closed){` +
+    `    window.opener.postMessage({type:'patreon:oauth',result:r},location.origin);` +
+    `    window.close();` +
+    `  } else {` +
+    `    location.href=${JSON.stringify(appBase + '/?patreon=' + safeResult)};` +
+    `  }` +
+    `}())` +
+    `<\/script></body></html>`
+  );
+}
+
 // ── GET /api/patreon/callback ──────────────────────────────────────────────────
 router.get('/callback', async (req, res) => {
   const { code, state: sessionToken, error } = req.query;
-  const appBase = process.env.APP_BASE_URL || '';
+  const appBase = (process.env.APP_BASE_URL || '').replace(/\/+$/, '');
 
   if (error || !code || !sessionToken) {
-    return res.redirect(`${appBase}/?patreon=denied`);
+    return sendPopupClose(res, 'denied', appBase);
   }
 
   try {
@@ -149,7 +171,7 @@ router.get('/callback', async (req, res) => {
 
     if (!tokenData.access_token) {
       console.error('[patreon] token exchange failed:', tokenData);
-      return res.redirect(`${appBase}/?patreon=error`);
+      return sendPopupClose(res, 'error', appBase);
     }
 
     const { access_token, refresh_token, expires_in } = tokenData;
@@ -168,7 +190,7 @@ router.get('/callback', async (req, res) => {
 
     if (!patreonUserId) {
       console.error('[patreon] identity missing id:', identity);
-      return res.redirect(`${appBase}/?patreon=error`);
+      return sendPopupClose(res, 'error', appBase);
     }
 
     const attrs    = identity.data?.attributes || {};
@@ -208,14 +230,14 @@ router.get('/callback', async (req, res) => {
     );
 
     if (!updated) {
-      // Session not found — still redirect with a warning
+      // Session not found — still send success close so popup doesn't hang
       console.warn('[patreon] callback: no user found for sessionToken');
     }
 
-    return res.redirect(`${appBase}/?patreon=linked`);
+    return sendPopupClose(res, 'linked', appBase);
   } catch (err) {
     console.error('[patreon] callback error:', err.message);
-    return res.redirect(`${appBase}/?patreon=error`);
+    return sendPopupClose(res, 'error', appBase);
   }
 });
 
