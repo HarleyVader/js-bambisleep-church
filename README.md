@@ -1,16 +1,16 @@
 # BambiSleep Church
 
-A real-time community chat application for BambiSleep, built with Express.js, Socket.IO, and MongoDB. Features a progressive XP and levelling system, Patreon supporter integration, BambiCloud audio streaming, and a vibrance toy control panel.
+A real-time community chat application for BambiSleep, built with Express.js, Socket.IO, and SQLite. Features a progressive XP and levelling system, Patreon supporter integration, BambiCloud audio streaming, and a remote-capable Buttplug.io toy control panel.
 
 ## Features
 
-- **Real-time chat** — Socket.IO-powered messaging with emoji reactions
-- **XP & levelling system** — Earn XP for messages, session time, daily visits, and reactions received; level up through 10 tiers with prestige beyond level 10
-- **Procedural avatars** — Auto-generated sprite avatars that evolve with your level; unlockable palettes, decorations (glow, crown, halo), and titles
-- **Patreon integration** — OAuth 2.0 popup flow; active patrons unlock exclusive audio tracks
-- **BambiCloud audio** — Server-side playlist fetching and secure range-request proxy stream from `cdn.bambicloud.com`
-- **Buttplug.io panel** — In-browser toy control via the Buttplug.io WebSocket protocol
-- **User accounts** — Session-token-based identity stored in MongoDB; no passwords required
+- **Real-time chat** — Socket.IO-powered messaging with emoji reactions and image / video attachments
+- **XP & levelling system** — Earn XP for messages, session time, daily visits, and reactions; level up through 10 tiers with prestige beyond level 10
+- **Profile card** — Live left-column identity card showing username, level badge, XP bar, role, status, and a 2×2 stats grid; updates in real time
+- **Patreon integration** — OAuth 2.0 popup flow inside the profile card; linked patrons display avatar thumbnail, name, and tier badge
+- **BambiCloud audio** — Server-side playlist fetching and secure range-request proxy stream from `cdn.bambicloud.com`, with optional toy-vibration sync to playback
+- **Buttplug.io toy control** — Standalone "Toy Connection" panel for the local Intiface WebSocket, plus a username-hover modal of haptic patterns. Hovering **another user's** name routes pattern / All Vibrate / All Stop actions through the chat socket to **their** device
+- **Anonymous accounts** — Session-token-based identity stored in SQLite; no passwords required
 
 ## Tech Stack
 
@@ -19,9 +19,9 @@ A real-time community chat application for BambiSleep, built with Express.js, So
 | Runtime | Node.js |
 | Framework | Express 4 |
 | Real-time | Socket.IO 4 |
-| Database | MongoDB + Mongoose 9 |
+| Database | SQLite (`better-sqlite3`) |
 | Auth | Patreon OAuth 2.0 |
-| Frontend | Vanilla JS + CSS |
+| Frontend | Vanilla JS + modular CSS |
 
 ## Project Structure
 
@@ -31,34 +31,41 @@ js-bambisleep-church/
 │   ├── app.js                  # Express app, middleware, route mounting
 │   ├── server.js               # HTTP server entry point, Socket.IO init
 │   ├── config/
-│   │   ├── db.js               # MongoDB connection
+│   │   ├── sqlite.js           # SQLite connection + schema bootstrap
 │   │   └── xpConfig.js         # XP rates, level thresholds, unlock table
 │   ├── controllers/
 │   │   ├── chatController.js   # Message send/fetch logic
-│   │   └── userController.js   # User registration and lookup
+│   │   └── userController.js   # User registration, lookup, session XP
 │   ├── models/
-│   │   ├── Message.js          # Mongoose message schema
-│   │   └── User.js             # Mongoose user schema (XP, avatar, Patreon)
+│   │   ├── MessageSqlite.js    # Message rows + reactions
+│   │   └── UserSqlite.js       # User rows (XP, stats, Patreon)
 │   ├── routes/
 │   │   ├── audio.js            # BambiCloud playlist fetch + stream proxy
 │   │   ├── chat.js             # Chat REST endpoints
 │   │   ├── patreon.js          # Patreon OAuth, webhook, status, unlink
 │   │   ├── reactions.js        # Emoji reaction endpoints
-│   │   └── user.js             # User registration/session endpoints
+│   │   ├── upload.js           # Image / video attachment upload
+│   │   └── user.js             # User registration / session endpoints
 │   ├── sockets/
-│   │   └── chatSocket.js       # Socket.IO event handlers
+│   │   └── chatSocket.js       # Socket.IO handlers (chat, mention, bp:control)
 │   └── utils/
-│       ├── avatarGenerator.js  # Procedural sprite generation
-│       ├── logger.js           # Winston/console logger
+│       ├── logger.js           # Console logger
 │       └── xpService.js        # XP calculation, level-up, prestige logic
 ├── public/
-│   ├── index.html              # Single-page app shell
-│   ├── style.css               # Global styles
+│   ├── index.html              # Chat single-page app shell
+│   ├── profile.html            # Public profile page
+│   ├── help.html               # Features guide
+│   ├── disclaimer.html / terms.html / privacy.html
 │   ├── chat.js                 # Chat UI + Socket.IO client
 │   ├── audio-player.js         # BambiCloud audio player UI
-│   ├── buttplug-panel.js       # Buttplug.io toy control panel
+│   ├── buttplug-panel.js       # Buttplug.io toy control + remote dispatch
 │   ├── patreon.js              # Patreon status panel + OAuth popup
-│   └── avatars/                # Static avatar sprite assets
+│   ├── css/                    # Modular stylesheets (tokens, base, navbar, layout,
+│   │                           #   avatar, chat, panels, modals, audio-player,
+│   │                           #   buttplug, responsive, …)
+│   └── uploads/                # User-uploaded images / videos
+├── data/
+│   └── app.db                  # SQLite database (auto-created)
 ├── .env.example                # Environment variable template
 ├── package.json
 └── bambisleepchurch.service    # systemd service unit
@@ -69,7 +76,6 @@ js-bambisleep-church/
 ### Prerequisites
 
 - Node.js 18+
-- MongoDB 6+ (local or Atlas)
 - A Patreon developer app (optional — only needed for patron features)
 
 ### Steps
@@ -95,8 +101,7 @@ js-bambisleep-church/
 
    | Variable | Description |
    |---|---|
-   | `MONGODB_URI` | MongoDB connection string |
-   | `PORT` | HTTP port (default `3000`) |
+   | `PORT` | HTTP port (default `7070`) |
    | `SECRET_KEY` | Secret used for session signing |
    | `NODE_ENV` | `development` or `production` |
    | `PATREON_CLIENT_ID` | From the Patreon developer portal |
@@ -105,6 +110,8 @@ js-bambisleep-church/
    | `PATREON_CAMPAIGN_ID` | Your creator campaign ID |
    | `PATREON_WEBHOOK_SECRET` | Secret returned when creating a Patreon webhook |
    | `APP_BASE_URL` | Public base URL, e.g. `https://bambisleep.church` |
+
+   > The SQLite database file is created automatically at `data/app.db` on first run — no separate database server to install or configure.
 
 ## Usage
 
@@ -128,6 +135,15 @@ The server listens on `http://localhost:<PORT>`.
 2. Set the redirect URI to `https://<your-domain>/auth/patreon/callback`
 3. Fill in `PATREON_CLIENT_ID`, `PATREON_CLIENT_SECRET`, and `PATREON_REDIRECT_URI` in `.env`
 4. Create a webhook pointing to `https://<your-domain>/api/patreon/webhook` and set `PATREON_WEBHOOK_SECRET`
+
+## Toy Control
+
+Toy control runs entirely in the browser, talking WebSocket to a locally-running [Intiface Central](https://intiface.com/central) instance (`ws://localhost:12345` by default).
+
+- **Local control** — connect from the *Toy Connection* panel on the right; hover **your own** username to open the *Toy Patterns* modal with patterns, master intensity, and per-device sliders.
+- **Remote control** — hover **another user's** name (in chat or the Online list) to open the same modal targeting *their* device. Pattern, All Vibrate, and All Stop are forwarded over the chat socket as a sanitised `{action, name, intensity}` payload; the receiver's browser executes them on their own connected hardware. No raw device data ever leaves the receiver.
+- **Haptic @mentions** — being `@mentioned` triggers a short pulse on your connected toy.
+- **Audio sync** — the audio panel can tie vibration intensity to the playing track's volume.
 
 ## Deploying with systemd
 
@@ -153,7 +169,7 @@ sudo systemctl enable --now bambisleepchurch
 | 9 | Bambi Angel | 1 800 |
 | 10 | Bambi Goddess | 2 250 → Prestige |
 
-XP is earned by sending messages (+1 per message, +1 per 10 words), staying in session (+1 per 5 min, capped at 3 hours), first activity of the day (+5), and receiving reactions (+2 each).
+XP is earned by sending messages (+1 per message, +1 per 10 words), staying in session (+1 per 5 min, capped at 3 hours), first activity of the day (+5), receiving reactions (+2 each), and giving reactions (+1 each).
 
 ## Contributing
 
