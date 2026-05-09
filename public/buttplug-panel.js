@@ -31,6 +31,25 @@ class ButtplugPanel {
     this._connectBtn.addEventListener('click', () => this._toggleConnect());
     this._scanBtn.addEventListener('click',    () => this._toggleScan());
     this._panelToggle.addEventListener('click', () => this._togglePanel());
+
+    // Help modal
+    const helpBtn   = document.getElementById('bp-help-btn');
+    const modal     = document.getElementById('bp-help-modal');
+    const closeBtn  = document.getElementById('bp-modal-close');
+
+    if (helpBtn && modal && closeBtn) {
+      helpBtn.addEventListener('click', () => {
+        modal.hidden = false;
+        closeBtn.focus();
+      });
+      closeBtn.addEventListener('click', () => { modal.hidden = true; helpBtn.focus(); });
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) { modal.hidden = true; helpBtn.focus(); }
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !modal.hidden) { modal.hidden = true; helpBtn.focus(); }
+      });
+    }
   }
 
   // ── UI helpers ──────────────────────────────────────────────────────────────

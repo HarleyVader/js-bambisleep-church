@@ -82,8 +82,13 @@
       <div class="bp-panel">
         <div class="bp-panel-header">
           <span>&#128268; Toy Control</span>
-          <button class="bp-panel-toggle" id="bp-panel-toggle"
-                  type="button" aria-expanded="true" aria-controls="bp-panel-body">&#9660;</button>
+          <div class="bp-header-actions">
+            <button class="bp-help-btn" id="bp-help-btn"
+                    type="button" aria-label="Intiface setup help"
+                    title="How to connect your toy">?</button>
+            <button class="bp-panel-toggle" id="bp-panel-toggle"
+                    type="button" aria-expanded="true" aria-controls="bp-panel-body">&#9660;</button>
+          </div>
         </div>
         <div class="bp-panel-body" id="bp-panel-body">
           <p class="bp-hint">
@@ -221,6 +226,109 @@
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="/chat.js"></script>
+  <!-- Intiface / Buttplug help modal -->
+  <div class="bp-modal-overlay" id="bp-help-modal" role="dialog"
+       aria-modal="true" aria-labelledby="bp-modal-title" hidden>
+    <div class="bp-modal">
+      <div class="bp-modal-header">
+        <h2 id="bp-modal-title">&#128268; Connecting Your Toy</h2>
+        <button class="bp-modal-close" id="bp-modal-close"
+                type="button" aria-label="Close help">&times;</button>
+      </div>
+      <div class="bp-modal-body">
+
+        <section class="bp-help-section">
+          <h3>What is Intiface Central?</h3>
+          <p>
+            <a href="https://intiface.com/central" target="_blank" rel="noopener">Intiface&nbsp;Central</a>
+            is a free, open-source desktop app by
+            <a href="https://nonpolynomial.com" target="_blank" rel="noopener">Nonpolynomial Labs</a>
+            that acts as a local server between your browser and
+            Bluetooth/USB toys. It must be running on the same computer as
+            your browser before you click &ldquo;Connect&rdquo; here.
+          </p>
+        </section>
+
+        <section class="bp-help-section">
+          <h3>Quick-Start (3 steps)</h3>
+          <ol class="bp-help-steps">
+            <li>
+              <strong>Download &amp; install</strong> Intiface Central
+              from <a href="https://intiface.com/central" target="_blank" rel="noopener">intiface.com/central</a>
+              (Windows / macOS / Linux).
+            </li>
+            <li>
+              <strong>Start the server</strong> &mdash; open Intiface
+              Central and press the big green <em>Start Server</em> button.
+              The default address is <code>ws://localhost:12345</code>.
+            </li>
+            <li>
+              <strong>Connect here</strong> &mdash; leave the address as
+              <code>ws://localhost:12345</code> and click
+              <em>Connect</em>. Then click <em>Scan</em> to find your
+              paired Bluetooth toy.
+            </li>
+          </ol>
+        </section>
+
+        <section class="bp-help-section">
+          <h3>Pairing your toy first</h3>
+          <p>
+            Toys must be paired with your <strong>OS Bluetooth settings</strong>
+            before Intiface Central can see them. Open your system&rsquo;s
+            Bluetooth &amp; devices panel, put the toy in pairing mode
+            (usually hold the power button 3&ndash;5&nbsp;s until it flashes),
+            and pair it. You only need to do this once.
+          </p>
+        </section>
+
+        <section class="bp-help-section">
+          <h3>Supported toy brands</h3>
+          <p>
+            Lovense, We-Vibe, Kiiroo, Lelo, Vibease, OhMiBod, Satisfyer,
+            The Handy, and hundreds more &mdash; see the full list at
+            <a href="https://iostindex.com" target="_blank" rel="noopener">iostindex.com</a>.
+          </p>
+        </section>
+
+        <section class="bp-help-section">
+          <h3>Custom server address</h3>
+          <p>
+            If Intiface Central is running on a different machine or port,
+            change the address in the <em>Toy Control</em> panel before
+            connecting. Example: <code>ws://192.168.1.10:12345</code>.
+          </p>
+        </section>
+
+        <section class="bp-help-section">
+          <h3>Troubleshooting</h3>
+          <ul class="bp-help-list">
+            <li><strong>Won&rsquo;t connect</strong> &mdash; make sure Intiface
+              Central&rsquo;s server is <em>started</em> (green status), not
+              just open.</li>
+            <li><strong>Toy not found after scanning</strong> &mdash; confirm
+              the toy is charged, in range (&lt;&nbsp;5&nbsp;m), and paired
+              in your OS Bluetooth settings.</li>
+            <li><strong>Connection drops</strong> &mdash; keep the Intiface
+              Central window open; minimising is fine but closing it
+              disconnects all toys.</li>
+            <li><strong>Browser blocks WebSocket</strong> &mdash; some
+              browsers disallow plain <code>ws://</code> on HTTPS pages;
+              use the desktop app or run the site over plain HTTP.</li>
+          </ul>
+        </section>
+
+        <div class="bp-help-links">
+          <a href="https://intiface.com/central" target="_blank" rel="noopener">&#8599; Download Intiface Central</a>
+          <a href="https://iostindex.com" target="_blank" rel="noopener">&#8599; Device compatibility list</a>
+          <a href="https://github.com/intiface/intiface-central" target="_blank" rel="noopener">&#8599; Source &amp; release notes</a>
+          <a href="https://discord.buttplug.io" target="_blank" rel="noopener">&#8599; Buttplug Discord support</a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
   <!-- Buttplug v3 – browser UMD bundle (exposes window.Buttplug) -->
   <script src="https://cdn.jsdelivr.net/npm/buttplug@3.0.0/dist/web/buttplug.js"
           crossorigin="anonymous" referrerpolicy="no-referrer"></script>
