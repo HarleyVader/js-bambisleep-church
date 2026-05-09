@@ -40,22 +40,109 @@ const levelupToast      = document.getElementById('levelup-toast');
 // Emoji picker
 const emojiPicker       = document.getElementById('emoji-picker');
 
-// @mention autocomplete
-const mentionDropdown   = document.getElementById('mention-dropdown');
-
 // ── State ─────────────────────────────────────────────────────────────────────
 const TOKEN_KEY  = 'bimbot_token';
 let myToken      = localStorage.getItem(TOKEN_KEY) || null;
 let myUser       = null;
 const sessionStart = Date.now();
 
-const LEVEL_THRESHOLDS = [0, 0, 50, 150, 300, 500, 750, 1050, 1400, 1800, 2250];
-const MAX_LEVEL = 10;
+// @mention autocomplete
+let onlineUsernames = [];   // kept in sync from onlineUsers socket event
+const mentionDropdown = (() => {
+  const el = document.createElement('ul');
+  el.className  = 'mention-dropdown';
+  el.id         = 'mention-dropdown';
+  el.hidden     = true;
+  el.setAttribute('role', 'listbox');
+  document.body.appendChild(el);
+  return el;
+})();
+let mentionActiveIdx = -1;
 
-const PALETTES = {
-  1: '#cc0174',
-  2: '#7c3aed',
-  3: '#0369a1',
+function mentionClose() {
+  mentionDropdown.hidden = true;
+  mentionActiveIdx = -1;
+}
+
+function mentionOpen(matches, caretRect) {
+  mentionDropdown.innerHTML = '';
+  mentionActiveIdx = -1;
+  matches.forEach((name, i) => {
+    const li = document.createElement('li');
+    li.className = 'mention-item';
+    li.textContent = '@' + name;
+    li.setAttribute('role', 'option');
+    li.dataset.name = name;
+    li.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      insertMention(name);
+    });
+    mentionDropdown.appendChild(li);
+  });
+  const inputRect = messageInput.getBoundingClientRect();
+  mentionDropdown.style.left   = inputRect.left + 'px';
+  mentionDropdown.style.width  = inputRect.width + 'px';
+  mentionDropdown.style.bottom = (window.innerHeight - inputRect.top + 4) + 'px';
+  mentionDropdown.style.top    = '';
+  mentionDropdown.hidden       = false;
+}
+
+function insertMention(username) {
+  const val = messageInput.value;
+  const pos = messageInput.selectionStart;
+  const atIdx = val.lastIndexOf('@', pos - 1);
+  if (atIdx === -1) return;
+  const before  = val.slice(0, atIdx);
+  const after   = val.slice(pos);
+  const newVal  = before + '@' + username + ' ' + after;
+  messageInput.value = newVal;
+  const newPos = (before + '@' + username + ' ').length;
+  messageInput.setSelectionRange(newPos, newPos);
+  messageInput.focus();
+  mentionClose();
+}
+
+function getMentionQuery() {
+  const val = messageInput.value;
+  const pos = messageInput.selectionStart;
+  const before = val.slice(0, pos);
+  const m = before.match(/@([\w]*)$/);
+  return m ? m[1] : null;
+}
+
+messageInput.addEventListener('input', () => {
+  const query = getMentionQuery();
+  if (query === null) { mentionClose(); return; }
+  const matches = onlineUsernames
+    .filter((n) => n !== (myUser?.username) && n.toLowerCase().startsWith(query.toLowerCase()))
+    .slice(0, 6);
+  if (!matches.length) { mentionClose(); return; }
+  mentionOpen(matches);
+});
+
+messageInput.addEventListener('keydown', (e) => {
+  if (mentionDropdown.hidden) return;
+  const items = mentionDropdown.querySelectorAll('.mention-item');
+  if (!items.length) return;
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    mentionActiveIdx = (mentionActiveIdx + 1) % items.length;
+    items.forEach((el, i) => el.classList.toggle('active', i === mentionActiveIdx));
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    mentionActiveIdx = (mentionActiveIdx - 1 + items.length) % items.length;
+    items.forEach((el, i) => el.classList.toggle('active', i === mentionActiveIdx));
+  } else if ((e.key === 'Enter' || e.key === 'Tab') && mentionActiveIdx >= 0) {
+    e.preventDefault();
+    insertMention(items[mentionActiveIdx].dataset.name);
+  } else if (e.key === 'Escape') {
+    mentionClose();
+  }
+}, true);   // capture so Enter doesn't submit while dropdown is open
+
+document.addEventListener('click', (e) => {
+  if (!mentionDropdown.contains(e.target)) mentionClose();
+});
   4: '#b45309',
   5: '#065f46',
 };
@@ -325,9 +412,6 @@ socket.on('levelUp', ({ newLevel, unlocks, prestiged }) => {
     .catch(() => { /* no-op */ });
 });
 
-// Keep a cached list of online usernames for @mention autocomplete
-let onlineUsernames = [];
-
 socket.on('onlineUsers', (users) => {
   onlineUsernames = users.map((u) => u.username).filter(Boolean);
   onlineUsersList.innerHTML = '';
@@ -346,92 +430,11 @@ socket.on('onlineUsers', (users) => {
   });
 });
 
-// ── @mention notification ─────────────────────────────────────────────────────
-socket.on('mention', ({ from, content }) => {
-  showToast(`@mention from ${from}`);
-  // Flash the document title briefly
-  const orig = document.title;
-  document.title = `\uD83D\uDD14 ${from} mentioned you!`;
-  setTimeout(() => { document.title = orig; }, 4000);
-});
-
-// ── @mention autocomplete ─────────────────────────────────────────────────────
-const closeMentionDropdown = () => {
-  if (mentionDropdown) mentionDropdown.hidden = true;
-};
-
-const insertMention = (username) => {
-  const val = messageInput.value;
-  const atPos = val.lastIndexOf('@');
-  if (atPos === -1) { closeMentionDropdown(); return; }
-  messageInput.value = val.slice(0, atPos) + '@' + username + ' ';
-  closeMentionDropdown();
-  messageInput.focus();
-};
-
-messageInput.addEventListener('input', () => {
-  if (!mentionDropdown) return;
-  const val    = messageInput.value;
-  const cursor = messageInput.selectionStart;
-  // Find the last '@' before cursor with no space after it
-  const segment = val.slice(0, cursor);
-  const match   = segment.match(/@([A-Za-z0-9_\-]*)$/);
-
-  if (!match) { closeMentionDropdown(); return; }
-
-  const query    = match[1].toLowerCase();
-  const filtered = onlineUsernames.filter(
-    (name) => name.toLowerCase().startsWith(query) && name !== (myUser?.username),
-  );
-
-  if (!filtered.length) { closeMentionDropdown(); return; }
-
-  mentionDropdown.innerHTML = '';
-  filtered.slice(0, 8).forEach((name) => {
-    const btn = document.createElement('button');
-    btn.type        = 'button';
-    btn.className   = 'mention-item';
-    btn.textContent = `@${name}`;
-    btn.addEventListener('mousedown', (e) => {
-      e.preventDefault(); // keep textarea focused
-      insertMention(name);
-    });
-    mentionDropdown.appendChild(btn);
-  });
-  mentionDropdown.hidden = false;
-});
-
-messageInput.addEventListener('keydown', (e) => {
-  if (mentionDropdown && !mentionDropdown.hidden) {
-    const items = [...mentionDropdown.querySelectorAll('.mention-item')];
-    const active = mentionDropdown.querySelector('.mention-item.focused');
-    const idx    = items.indexOf(active);
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      items.forEach((i) => i.classList.remove('focused'));
-      const next = items[(idx + 1) % items.length];
-      next.classList.add('focused');
-      return;
-    }
-    if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      items.forEach((i) => i.classList.remove('focused'));
-      const prev = items[(idx - 1 + items.length) % items.length];
-      prev.classList.add('focused');
-      return;
-    }
-    if (e.key === 'Tab' || e.key === 'Enter') {
-      if (active) {
-        e.preventDefault();
-        insertMention(active.textContent.slice(1));
-        return;
-      }
-    }
-    if (e.key === 'Escape') {
-      closeMentionDropdown();
-      return;
-    }
-  }
+// Flash notification when someone @mentions me
+socket.on('mention', ({ sender }) => {
+  showToast(`🔔 ${sender} mentioned you!`);
+  // pulse haptic if a device is connected
+  if (window._bpPanel) window._bpPanel.pulse(0.6, 400);
 });
 
 // ── Messages ──────────────────────────────────────────────────────────────────
@@ -489,7 +492,6 @@ const reactToMessage = async (msgId, emoji) => {
 document.addEventListener('click', () => {
   emojiPicker.hidden = true;
   activePickerMsgId  = null;
-  closeMentionDropdown();
 });
 emojiPicker.addEventListener('click', (e) => {
   e.stopPropagation();
@@ -526,17 +528,23 @@ const linkifyPlaylistUrls = (text) => {
   );
 };
 
-/**
- * Wrap @username mentions in a styled span.
- * If the mention matches the current user, add the --self class.
- */
-const linkifyMentions = (text) => {
-  return text.replace(/@([A-Za-z0-9_\-]{1,32})/g, (full, name) => {
-    const cls = myUser && name.toLowerCase() === myUser.username.toLowerCase()
-      ? 'mention mention--self'
-      : 'mention';
-    return `<span class="${cls}">${full}</span>`;
-  });
+/** Escape HTML then highlight @mentions in rendered message content. */
+const renderContent = (rawText) => {
+  // Basic HTML escape first
+  const escaped = rawText
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+  // Highlight @username tokens
+  const mentioned = escaped.replace(
+    /@([\w]{1,32})/g,
+    (_, name) => {
+      const isSelf = myUser && myUser.username === name;
+      return `<span class="mention${isSelf ? ' mention--self' : ''}">@${name}</span>`;
+    },
+  );
+  // Then linkify BambiCloud URLs (operates on already-escaped text)
+  return linkifyPlaylistUrls(mentioned);
 };
 
 const appendMessage = (data) => {
@@ -551,8 +559,8 @@ const appendMessage = (data) => {
   const [variant, tier] = parseSprite(snap.sprite || 'b0-t1.svg');
   const initial   = (data.sender || '?').charAt(0).toUpperCase();
 
-  // Linkify BambiCloud URLs then @mentions in the content before rendering
-  const renderedContent = linkifyMentions(linkifyPlaylistUrls(data.content));
+  // Render content: escape HTML, highlight @mentions, linkify BambiCloud URLs
+  const renderedContent = renderContent(data.content);
 
   const item = document.createElement('div');
   item.className     = 'message';
@@ -607,7 +615,12 @@ form.addEventListener('submit', async (e) => {
   e.preventDefault();
   const content = messageInput.value.trim();
   if (!content) return;
+  mentionClose();
   const sender = senderInput.value.trim() || myUser?.username || getCookie('chat_username') || 'Anonymous';
+
+  // Extract @mentioned usernames so the server can notify them
+  const mentionedNames = [...new Set((content.match(/@([\w]{1,32})/g) || []).map((m) => m.slice(1)))];
+
   try {
     const res = await fetch('/api/chat/messages', {
       method:  'POST',
@@ -618,6 +631,9 @@ form.addEventListener('submit', async (e) => {
     const { message } = await res.json();
     messageInput.value = '';
     socket.emit('chatMessage', message);
+    if (mentionedNames.length) {
+      socket.emit('mention', { sender, mentionedNames });
+    }
     appendMessage(message);
     messagesList.scrollTop = messagesList.scrollHeight;
   } catch (_) {
