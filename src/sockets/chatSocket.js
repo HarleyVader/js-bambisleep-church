@@ -58,6 +58,37 @@ const setupSockets = (io) => {
       }
     });
 
+    // Remote toy control: forward a buttplug action to a target user's socket
+    socket.on('bp:control', ({ targetUsername, action, payload }) => {
+      const ALLOWED = new Set(['pattern', 'vibrate', 'stop']);
+      if (!targetUsername || typeof targetUsername !== 'string') return;
+      if (!ALLOWED.has(action)) return;
+      try {
+        const target = User.findOneLean({ username: targetUsername.slice(0, 64) });
+        if (!target) return;
+        const targetSocket = tokenToSocket.get(target.sessionToken);
+        if (!targetSocket) return;
+        let senderName = 'Anonymous';
+        try {
+          if (socket.data.token) {
+            const me = User.findOneLean({ sessionToken: socket.data.token });
+            if (me) senderName = me.username;
+          }
+        } catch (_) { /* ignore */ }
+        // Sanitize payload: only forward known primitive fields
+        const safePayload = {};
+        if (payload && typeof payload === 'object') {
+          if (typeof payload.name === 'string') safePayload.name = payload.name.slice(0, 32);
+          if (typeof payload.intensity === 'number') {
+            safePayload.intensity = Math.max(0, Math.min(1, payload.intensity));
+          }
+        }
+        targetSocket.emit('bp:remote', { from: senderName, action, payload: safePayload });
+      } catch (err) {
+        logger.error('bp:control dispatch error', err);
+      }
+    });
+
     // @mention: notify each tagged user via their own socket
     socket.on('mention', ({ sender, mentionedNames }) => {
       if (!Array.isArray(mentionedNames) || !mentionedNames.length) return;

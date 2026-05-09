@@ -207,6 +207,7 @@ mediaFileInput.addEventListener('change', async () => {
 
 // ── Socket ────────────────────────────────────────────────────────────────────
 const socket = io({ query: { token: myToken || '' } });
+window._chatSocket = socket;
 
 // ── Cookie helpers ────────────────────────────────────────────────────────────
 const getCookie = (name) => {
@@ -234,6 +235,7 @@ const updateXpBar = (xp, level) => {
 const updateProfileUI = (user) => {
   if (!user) return;
   myUser = user;
+  window._myUsername = user.username;
 
   profileNameEl.textContent   = user.username;
   profileTitleEl.textContent  = '';
@@ -372,6 +374,7 @@ socket.on('onlineUsers', (users) => {
     const initial = (u.username || '?').charAt(0).toUpperCase();
     const el = document.createElement('div');
     el.className = 'online-user';
+    el.dataset.username = u.username;
     el.innerHTML = `
       <span class="online-initial">${initial}</span>
       <span class="online-name">${u.username}</span>
@@ -386,6 +389,13 @@ socket.on('mention', ({ sender }) => {
   showToast(`🔔 ${sender} mentioned you!`);
   // pulse haptic if a device is connected
   if (window._bpPanel) window._bpPanel.pulse(0.6, 400);
+});
+
+// Remote toy control: another user has triggered an action on our device
+socket.on('bp:remote', ({ from, action, payload }) => {
+  if (!window._bpPanel || typeof window._bpPanel.executeRemote !== 'function') return;
+  window._bpPanel.executeRemote(action, payload || {});
+  showToast(`🔌 ${from || 'Someone'} → ${action}${payload && payload.name ? ` (${payload.name})` : ''}`);
 });
 
 // ── Messages ──────────────────────────────────────────────────────────────────

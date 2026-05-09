@@ -90,13 +90,52 @@ class ButtplugPanel {
 
     document.getElementById('bp-pattern-row').addEventListener('click', (e) => {
       const btn = e.target.closest('[data-pattern]');
-      if (btn) this._runPattern(btn.dataset.pattern, parseInt(masterSlider.value, 10) / 100);
+      if (btn) {
+        const intensity = parseInt(masterSlider.value, 10) / 100;
+        if (this._tryRemote('pattern', { name: btn.dataset.pattern, intensity })) return;
+        this._runPattern(btn.dataset.pattern, intensity);
+      }
     });
-    document.getElementById('bp-pattern-stop').addEventListener('click', () => this._stopPattern());
+    document.getElementById('bp-pattern-stop').addEventListener('click', () => {
+      if (this._tryRemote('stop', {})) return;
+      this._stopPattern();
+    });
     document.getElementById('bp-alldev-vibrate').addEventListener('click', () => {
-      this._allVibrate(parseInt(masterSlider.value, 10) / 100);
+      const intensity = parseInt(masterSlider.value, 10) / 100;
+      if (this._tryRemote('vibrate', { intensity })) return;
+      this._allVibrate(intensity);
     });
-    document.getElementById('bp-alldev-stop').addEventListener('click', () => this._allStop());
+    document.getElementById('bp-alldev-stop').addEventListener('click', () => {
+      if (this._tryRemote('stop', {})) return;
+      this._allStop();
+    });
+  }
+
+  // ── Remote dispatch ──────────────────────────────────────────────────────────
+
+  /** If the hover modal is targeting another user, send via socket and return true. */
+  _tryRemote(action, payload) {
+    const target = window._bpRemoteTarget;
+    if (!target) return false;
+    if (window._myUsername && target === window._myUsername) return false;
+    const sock = window._chatSocket;
+    if (!sock || !sock.emit) return false;
+    sock.emit('bp:control', { targetUsername: target, action, payload: payload || {} });
+    return true;
+  }
+
+  /** Execute a remote-issued action on the local devices. */
+  async executeRemote(action, payload = {}) {
+    if (!this._client || !this._devices.size) return;
+    if (action === 'pattern' && payload.name) {
+      const intensity = typeof payload.intensity === 'number' ? payload.intensity : 0.8;
+      await this._runPattern(payload.name, intensity);
+    } else if (action === 'vibrate') {
+      const intensity = typeof payload.intensity === 'number' ? payload.intensity : 0.6;
+      await this._allVibrate(intensity);
+    } else if (action === 'stop') {
+      await this._allStop();
+    }
   }
 
   _setAllDevBtns(enabled) {
@@ -425,6 +464,7 @@ function initBpHoverModal() {
     cancelHide();
     hideTimer = setTimeout(() => {
       modal.classList.remove('bp-hover-modal--visible');
+      window._bpRemoteTarget = null;
       // Wait for the transition before fully hiding
       setTimeout(() => {
         if (!modal.classList.contains('bp-hover-modal--visible')) modal.hidden = true;
@@ -437,6 +477,15 @@ function initBpHoverModal() {
     modal.hidden = false;
     // Force layout so transition runs
     void modal.offsetWidth;
+
+    // Capture which user this modal is targeting so pattern buttons can
+    // route through the chat socket instead of the local device.
+    const username = anchorEl.dataset.username
+      || (anchorEl.querySelector && anchorEl.querySelector('.online-name')?.textContent?.trim())
+      || anchorEl.textContent?.trim()
+      || '';
+    window._bpRemoteTarget = username || null;
+    modal.dataset.targetUsername = window._bpRemoteTarget || '';
 
     const rect = anchorEl.getBoundingClientRect();
     const mw   = modal.offsetWidth || 280;
