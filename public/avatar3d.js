@@ -22,7 +22,7 @@ const PALETTE_HEX = {
 };
 
 // All models are normalised to this height (world units) after loading
-const TARGET_H = 1.4;
+const TARGET_H = 1.8;
 
 // ── AvatarViewer ──────────────────────────────────────────────────────────────
 class AvatarViewer {
@@ -116,31 +116,27 @@ class AvatarViewer {
   }
 
   /**
-   * Head-focused portrait framing.
+   * Hip-centred full-body framing.
    *
-   * The camera looks at the upper quarter of the model (where the head is).
-   * A tighter FOV (30 °) and shorter visible span (30 % of modelH) zoom in
-   * on just the head+shoulders while keeping the target centred horizontally.
+   * Camera looks at the exact centre of the model (hips, modelH/2).
+   * FOV 50 ° fills the portrait container with the whole figure.
    *
-   *   focusY  = top of model minus a small offset     → head crown
-   *   span    = 0.30 * modelH                         → head+shoulders height
-   *   dist    = (span/2) / tan(fov/2)  * 1.1          → fills frame with 10 % pad
+   *   midY = modelH / 2                              → hip / centre target
+   *   dist = (modelH / 2) / tan(fov/2) * 1.15       → full body + 15 % pad
    */
   _placeCamera (modelH) {
-    const headFov  = 30;                                         // tight portrait FOV
-    this._camera.fov = headFov;
+    this._camera.fov = 50;
     this._camera.updateProjectionMatrix();
 
-    const span    = modelH * 0.32;                               // head+shoulders region
-    const focusY  = modelH - span * 0.38;                        // target: upper quarter
-    const fovRad  = (headFov * Math.PI) / 180;
-    const dist    = (span / 2) / Math.tan(fovRad / 2) * 1.1;    // 10 % breathing room
+    const midY   = modelH / 2;
+    const fovRad = (50 * Math.PI) / 180;
+    const dist   = (modelH / 2) / Math.tan(fovRad / 2) * 1.15;
 
-    this._camera.position.set(0, focusY, dist);
-    this._camera.lookAt(0, focusY, 0);
+    this._camera.position.set(0, midY, dist);
+    this._camera.lookAt(0, midY, 0);
     this._camera.updateProjectionMatrix();
 
-    this._controls.target.set(0, focusY, 0);
+    this._controls.target.set(0, midY, 0);
     this._controls.update();
   }
 
