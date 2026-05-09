@@ -86,18 +86,24 @@ const applyPalette = (paletteId, figureEl) => {
 const spriteTier = (level) => (level >= 10 ? 3 : level >= 7 ? 2 : 1);
 
 const applyFigure = (figureEl, baseVariant, tier, paletteId) => {
-  if (!figureEl) return;
-  figureEl.dataset.variant = baseVariant;
-  figureEl.dataset.tier    = tier;
-  applyPalette(paletteId, figureEl);
+  if (figureEl) {
+    figureEl.dataset.variant = baseVariant;
+    figureEl.dataset.tier    = tier;
+    applyPalette(paletteId, figureEl);
+    return;
+  }
+  // Main Three.js viewer (no DOM figure in sidebar)
+  if (window._avatarViewer) window._avatarViewer.loadModel(baseVariant, tier, paletteId);
 };
 
 const applyDecorations = (decorations) => {
-  if (!avatarDecoLayer) return;
+  if (!avatarDecoLayer) {
+    if (window._avatarViewer) window._avatarViewer.setDecorations(decorations);
+    return;
+  }
   avatarDecoLayer.innerHTML = '';
   avatarDecoLayer.className = 'avatar-deco-layer';
   (decorations || []).forEach((d) => avatarDecoLayer.classList.add(`deco-${d}`));
-  // also forward to the figure element for CSS selectors
   if (avatarFigureEl) {
     avatarFigureEl.classList.remove('deco-crown', 'deco-glow', 'deco-halo');
     (decorations || []).forEach((d) => avatarFigureEl.classList.add(`deco-${d}`));
@@ -185,6 +191,7 @@ const selectPalette = async (paletteId) => {
     myUser.avatar = avatar;
     applyPalette(avatar.colorPaletteId, avatarFigureEl);
     applyPalette(avatar.colorPaletteId, modalAvatarFigureEl);
+    if (window._avatarViewer) window._avatarViewer.setPalette(avatar.colorPaletteId);
     renderPalettePicker(avatar.unlockedPalettes, avatar.colorPaletteId);
   } catch (_) { /* no-op */ }
 };

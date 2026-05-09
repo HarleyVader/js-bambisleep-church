@@ -7,6 +7,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Audiowide&display=swap" />
   <link rel="stylesheet" href="/style.css" />
+  <script type="importmap">
+  {
+    "imports": {
+      "three":           "https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js",
+      "three/addons/":   "https://cdn.jsdelivr.net/npm/three@0.160.1/examples/jsm/"
+    }
+  }
+  </script>
 </head>
 <body>
   <nav class="site-nav">
@@ -25,44 +33,8 @@
     <aside class="avatar-column" id="avatar-column">
 
       <div class="avatar-stage">
-        <!-- 3-D scene -->
-        <div class="avatar-3d-scene" id="avatar-3d-scene">
-          <div class="avatar-3d-body" id="avatar-3d-body">
-            <div class="avatar-figure" id="avatar-figure" data-variant="0" data-tier="1">
-              <div class="af-hair-back"></div>
-              <div class="af-head">
-                <div class="af-hair-front"></div>
-                <div class="af-face">
-                  <div class="af-brow-l"></div>
-                  <div class="af-brow-r"></div>
-                  <div class="af-eye-l"><div class="af-eye-pupil"></div></div>
-                  <div class="af-eye-r"><div class="af-eye-pupil"></div></div>
-                  <div class="af-nose"></div>
-                  <div class="af-mouth"></div>
-                  <div class="af-blush-l"></div>
-                  <div class="af-blush-r"></div>
-                </div>
-              </div>
-              <div class="af-neck"></div>
-              <div class="af-upper-body"></div>
-              <div class="af-arm-l"></div>
-              <div class="af-arm-r"></div>
-              <div class="af-outfit-top"></div>
-              <div class="af-bust"></div>
-              <div class="af-waist"></div>
-              <div class="af-hips"></div>
-              <div class="af-outfit-bottom"></div>
-              <div class="af-leg-l"></div>
-              <div class="af-leg-r"></div>
-              <div class="af-shoe-l"></div>
-              <div class="af-shoe-r"></div>
-              <div class="af-accessory"></div>
-              <div class="af-deco-glow"></div>
-              <div class="avatar-deco-layer" id="avatar-deco-layer"></div>
-            </div>
-          </div>
-          <div class="avatar-shadow-floor"></div>
-        </div>
+        <!-- Three.js avatar canvas (injected by avatar3d.js) -->
+        <div class="avatar-3d-scene" id="avatar-3d-scene"></div>
 
         <!-- Profile card -->
         <div class="profile-card">
@@ -329,6 +301,7 @@
     <button data-emoji="&#127800;">&#127800;</button>
   </div>
 
+  <script type="module" src="/avatar3d.js"></script>
   <script src="/socket.io/socket.io.js"></script>
   <script src="/chat.js"></script>
   <!-- Intiface / Buttplug help modal -->
