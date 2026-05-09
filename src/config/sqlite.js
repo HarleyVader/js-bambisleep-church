@@ -63,6 +63,7 @@ const initSqlite = () => {
       id              TEXT    PRIMARY KEY,
       username        TEXT    NOT NULL,
       session_token   TEXT    NOT NULL UNIQUE,
+      role            TEXT    NOT NULL DEFAULT 'user',
       avatar          TEXT    NOT NULL DEFAULT '{}',
       progress        TEXT    NOT NULL DEFAULT '{}',
       stats           TEXT    NOT NULL DEFAULT '{}',
@@ -84,6 +85,12 @@ const initSqlite = () => {
   if (!cols.includes('attachment')) {
     _db.exec('ALTER TABLE messages ADD COLUMN attachment TEXT DEFAULT NULL');
     logger.info('SQLite migration: added attachment column');
+  }
+
+  const userCols = _db.pragma('table_info(users)').map((c) => c.name);
+  if (!userCols.includes('role')) {
+    _db.exec("ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'user'");
+    logger.info('SQLite migration: added role column to users');
   }
 
   logger.info(`SQLite ready: ${DB_PATH}`);

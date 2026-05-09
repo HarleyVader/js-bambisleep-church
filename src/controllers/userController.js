@@ -155,6 +155,7 @@ class UserController {
       // Return public-safe fields only — no tokens, no Patreon auth data
       return res.json({
         username:  target.username,
+        role:      target.role || 'user',
         avatar:    target.avatar,
         progress:  target.progress,
         lastSeen:  target.lastSeen,

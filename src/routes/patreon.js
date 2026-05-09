@@ -257,6 +257,14 @@ router.get('/callback', async (req, res) => {
       logger.warn('[patreon] callback: no user found for sessionToken');
     }
 
+    // 5. Auto-elevate creator account to role=creator
+    const creatorPatreonId = (process.env.PATREON_CREATOR_USER_ID || '').trim();
+    if (creatorPatreonId && patreonUserId === creatorPatreonId && updated) {
+      updated.role = 'creator';
+      await updated.save();
+      logger.info(`[patreon] creator role assigned to: ${fullName} (${patreonUserId})`);
+    }
+
     return sendPopupClose(res, 'linked', appBase);
   } catch (err) {
     logger.error(`[patreon] callback error: ${err.message}`);
@@ -276,6 +284,7 @@ router.get('/status', async (req, res) => {
     const p = user.patreon || {};
     return res.json({
       linked:         !!p.userId,
+      role:           user.role || 'user',
       patronStatus:   p.patronStatus  || null,
       amountCents:    p.currentlyEntitledAmountCents || 0,
       tierId:         p.tierId        || null,

@@ -64,9 +64,9 @@ function stmts() {
   _stmts = {
     insert: db.prepare(`
       INSERT INTO users
-        (id, username, session_token, avatar, progress, stats, patreon, last_seen, created_at, updated_at)
+        (id, username, session_token, role, avatar, progress, stats, patreon, last_seen, created_at, updated_at)
       VALUES
-        (@id, @username, @session_token, @avatar, @progress, @stats, @patreon, @last_seen, @created_at, @updated_at)
+        (@id, @username, @session_token, @role, @avatar, @progress, @stats, @patreon, @last_seen, @created_at, @updated_at)
     `),
     findByToken: db.prepare(`
       SELECT * FROM users WHERE session_token = ? LIMIT 1
@@ -83,6 +83,7 @@ function stmts() {
     updateAll: db.prepare(`
       UPDATE users
       SET username = @username,
+          role     = @role,
           avatar   = @avatar,
           progress = @progress,
           stats    = @stats,
@@ -115,6 +116,7 @@ function rowToUser(row) {
     _id:          row.id,
     username:     row.username,
     sessionToken: row.session_token,
+    role:         row.role || 'user',
     avatar:       JSON.parse(row.avatar   || '{}'),
     progress:     JSON.parse(row.progress || '{}'),
     stats:        JSON.parse(row.stats    || '{}'),
@@ -136,6 +138,7 @@ function makeUser(row) {
     const now = Date.now();
     stmts().updateAll.run({
       username:      this.username,
+      role:          this.role || 'user',
       avatar:        JSON.stringify(this.avatar),
       progress:      JSON.stringify(this.progress),
       stats:         JSON.stringify(this.stats),
@@ -155,7 +158,7 @@ const UserSqlite = {
   /**
    * Create a new user row and return a saveable user object.
    */
-  create({ username, sessionToken, avatar, progress, stats, patreon } = {}) {
+  create({ username, sessionToken, role, avatar, progress, stats, patreon } = {}) {
     const s   = stmts();
     const id  = randomUUID();
     const now = Date.now();
@@ -163,6 +166,7 @@ const UserSqlite = {
       id,
       username,
       session_token: sessionToken,
+      role: role || 'user',
       avatar:   JSON.stringify({ ...defaultAvatar(),   ...(avatar   || {}) }),
       progress: JSON.stringify({ ...defaultProgress(), ...(progress || {}) }),
       stats:    JSON.stringify({ ...defaultStats(),    ...(stats    || {}) }),
