@@ -1,0 +1,271 @@
+/* ============================================================
+   MESSAGES
+   ============================================================ */
+.messages {
+  display: grid;
+  gap: 8px;
+  max-height: 560px;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(21, 170, 181, 0.3) transparent;
+}
+.messages::-webkit-scrollbar { width: 4px; }
+.messages::-webkit-scrollbar-track { background: transparent; }
+.messages::-webkit-scrollbar-thumb { background-color: rgba(21, 170, 181, 0.3); border-radius: 4px; }
+.message {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(18, 65, 65, 0.18);
+  border: 1px solid rgba(21, 170, 181, 0.12);
+}
+.msg-avatar-wrap {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  color: var(--avatar-accent, #cc0174);
+  filter: drop-shadow(2px 4px 3px rgba(0, 0, 0, 0.4));
+}
+.msg-avatar-wrap img { width: 40px; height: 40px; display: block; }
+.avatar-sprite.small { width: 40px; height: 40px; }
+
+.msg-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.msg-header {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.msg-header strong { color: var(--text-primary); font-size: 0.88rem; }
+.msg-title   { font-size: 0.67rem; color: var(--secondary-alt); opacity: 0.85; }
+.msg-prestige{ font-size: 0.65rem; color: #db2777; }
+.msg-header time { font-size: 0.72rem; color: var(--text-muted); margin-left: auto; }
+.msg-content { font-size: 0.9rem; color: var(--text-primary); word-break: break-word; }
+
+/* Reactions */
+.reaction-bar { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.reaction-btn {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+.reaction-btn.active {
+  background: rgba(204, 1, 116, 0.22);
+  border-color: rgba(204, 1, 116, 0.45);
+}
+.reaction-btn:hover { background: rgba(255, 255, 255, 0.11); }
+.reaction-add-btn {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: transparent;
+  border: 1px dashed rgba(255, 255, 255, 0.18);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+/* ============================================================
+   FORM
+   ============================================================ */
+.form-row { display: grid; gap: 8px; }
+.form-row textarea {
+  width: 100%;
+  min-height: 70px;
+  background: rgba(10, 18, 20, 0.9);
+  color: var(--text-primary);
+  border: 1px solid rgba(21, 170, 181, 0.18);
+  border-radius: 14px;
+  padding: 10px 12px;
+  resize: vertical;
+  font-size: 1rem;
+  font-family: var(--font-primary);
+}
+.form-row .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.form-row input {
+  flex: 1 1 180px;
+  min-width: 140px;
+  border-radius: 14px;
+  border: 1px solid rgba(21, 170, 181, 0.18);
+  background: rgba(10, 18, 20, 0.9);
+  color: var(--text-primary);
+  padding: 10px 12px;
+  font-family: var(--font-primary);
+}
+
+/* ============================================================
+   @MENTION AUTOCOMPLETE DROPDOWN
+   ============================================================ */
+.mention-dropdown {
+  position: fixed;
+  z-index: 2000;
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  background: var(--bg-card);
+  border: 1px solid rgba(204, 1, 116, 0.4);
+  border-radius: var(--border-radius-sm);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.55);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.mention-item {
+  padding: 7px 14px;
+  font-size: 0.82rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+.mention-item:hover,
+.mention-item.active {
+  background: rgba(204, 1, 116, 0.18);
+  color: var(--primary-alt);
+}
+
+/* Highlighted @mention tokens inside messages */
+.mention {
+  display: inline-block;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: rgba(204, 1, 116, 0.15);
+  color: var(--primary-alt);
+  font-weight: 600;
+  font-size: 0.88em;
+  transition: background var(--transition-fast);
+}
+.mention--self {
+  background: rgba(204, 1, 116, 0.35);
+  color: #fff;
+  animation: mention-flash 0.6s ease-out;
+}
+@keyframes mention-flash {
+  0%   { background: rgba(204, 1, 116, 0.8); }
+  100% { background: rgba(204, 1, 116, 0.35); }
+}
+
+/* Clickable sender name in chat messages — links to profile page */
+.msg-sender-link {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px dotted rgba(204, 1, 116, 0.5);
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+.msg-sender-link:hover {
+  color: var(--primary-alt);
+  border-bottom-color: var(--primary-alt);
+}
+
+/* ============================================================
+   MEDIA ATTACH — input row, preview strip, message attachment
+   ============================================================ */
+
+/* Wrap textarea + attach button in a flex row */
+.input-row {
+  display: flex;
+  gap: 6px;
+  align-items: flex-end;
+}
+.input-row textarea {
+  flex: 1 1 auto;
+}
+
+/* The 📷 attach button */
+#media-attach-btn {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  font-size: 1.1rem;
+  line-height: 1;
+  border-radius: 50%;
+  background: rgba(21, 170, 181, 0.12);
+  border: 1px solid rgba(21, 170, 181, 0.3);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+#media-attach-btn:hover {
+  background: rgba(21, 170, 181, 0.25);
+  border-color: rgba(21, 170, 181, 0.6);
+  transform: none;
+  filter: none;
+}
+
+/* Preview strip shown above the controls row */
+.media-preview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0 2px;
+}
+.media-preview-thumb {
+  max-height: 80px;
+  max-width: 120px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid rgba(21, 170, 181, 0.3);
+}
+.media-preview-remove {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1;
+  border-radius: 50%;
+  background: rgba(255, 80, 80, 0.18);
+  border: 1px solid rgba(255, 80, 80, 0.4);
+  color: #ff6b6b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.media-preview-remove:hover {
+  background: rgba(255, 80, 80, 0.35);
+  transform: none;
+  filter: none;
+}
+.media-preview-loading {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+.media-preview-error {
+  font-size: 0.8rem;
+  color: #ff6b6b;
+}
+
+/* Attached image/video inside a chat message */
+.msg-attachment {
+  margin-top: 6px;
+}
+.msg-attachment img {
+  display: block;
+  max-width: min(100%, 420px);
+  max-height: 320px;
+  border-radius: 10px;
+  object-fit: contain;
+  cursor: zoom-in;
+  border: 1px solid rgba(21, 170, 181, 0.2);
+}
+.msg-attachment video {
+  display: block;
+  max-width: min(100%, 420px);
+  max-height: 320px;
+  border-radius: 10px;
+  border: 1px solid rgba(21, 170, 181, 0.2);
+  background: #000;
+}

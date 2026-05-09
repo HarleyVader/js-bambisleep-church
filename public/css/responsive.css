@@ -1,0 +1,54 @@
+/* ============================================================
+   RESPONSIVE — layout breakpoints
+   ============================================================ */
+@media (max-width: 860px) {
+  .app-layout { flex-direction: column; }
+  .avatar-column {
+    width: 100%;
+    height: auto;
+    position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 12px 16px;
+    border-right: none;
+    border-bottom: 1px solid rgba(204, 1, 116, 0.22);
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .avatar-stage { flex-direction: row; align-items: flex-start; gap: 16px; }
+  .avatar-3d-scene { width: 100px; height: 170px; flex-shrink: 0; }
+  .profile-card { flex: 1; min-width: 0; align-items: flex-start; padding: 8px 10px; }
+  .profile-badges-row { justify-content: flex-start; }
+  .profile-meta { justify-content: flex-start; }
+  .profile-stats { grid-template-columns: repeat(4, 1fr); }
+  .online-panel { margin-left: auto; max-width: 180px; }
+  .right-column {
+    width: 100%;
+    height: auto;
+    position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 12px 16px;
+    border-left: none;
+    border-top: 1px solid rgba(204, 1, 116, 0.22);
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .right-column .ap-panel,
+  .right-column .bp-panel { flex: 1; min-width: 220px; }
+}
+
+@media (max-width: 540px) {
+  .avatar-column { flex-direction: column; align-items: center; }
+  .avatar-stage  { flex-direction: column; align-items: center; }
+  .profile-card  { align-items: center; }
+  .profile-badges-row { justify-content: center; }
+  .profile-meta  { justify-content: center; }
+  .profile-stats { grid-template-columns: 1fr 1fr; }
+  .online-panel { margin-left: 0; max-width: 100%; }
+  .right-column { flex-direction: column; }
+  .right-column .ap-panel,
+  .right-column .bp-panel { min-width: 0; width: 100%; }
+  .card { padding: 12px; }
+  header { flex-direction: column; align-items: flex-start; }
+}

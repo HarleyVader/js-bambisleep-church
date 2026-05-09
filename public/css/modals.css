@@ -1,0 +1,134 @@
+/* ============================================================
+   PROFILE MODAL
+   ============================================================ */
+.profile-modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.62);
+  z-index: var(--z-modals);
+  padding: 16px;
+}
+.profile-modal.visible { display: grid; }
+.profile-modal-panel {
+  width: min(440px, 100%);
+  background: var(--surface-strong);
+  border: 1px solid var(--border-light);
+  border-radius: 20px;
+  box-shadow: var(--shadow-lg);
+  padding: 22px;
+}
+.profile-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.profile-modal-header h3 { margin: 0; font-size: 1rem; }
+.profile-modal-close {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+.modal-avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+.modal-avatar-wrap {
+  width: 96px;
+  height: 154px;
+  flex-shrink: 0;
+  overflow: hidden;
+  position: relative;
+}
+.modal-avatar-wrap .avatar-figure--modal {
+  transform: scale(0.48) translateX(-104px) translateY(-84px);
+  transform-origin: top left;
+}
+.reroll-btn {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--border-light);
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  padding: 8px 12px;
+}
+.palette-picker-label { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px; }
+.palette-picker { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.palette-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  padding: 0;
+  transition: transform var(--transition-fast), border-color var(--transition-fast);
+}
+.palette-swatch.active  { border-color: #fff; transform: scale(1.2); }
+.palette-swatch.locked  { opacity: 0.32; cursor: not-allowed; }
+.palette-swatch:hover:not(.locked):not(.active) { transform: scale(1.1); }
+.profile-modal-field { display: grid; gap: 6px; margin-bottom: 12px; }
+.profile-modal-field label { font-size: 0.78rem; color: var(--text-muted); }
+.profile-modal-field input {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid rgba(21, 170, 181, 0.18);
+  background: rgba(10, 18, 20, 0.9);
+  color: var(--text-primary);
+  padding: 10px 12px;
+  font-family: var(--font-primary);
+}
+.profile-modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px; }
+.profile-modal-actions button { width: auto; }
+
+/* ============================================================
+   LEVEL-UP TOAST
+   ============================================================ */
+.levelup-toast {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-80px);
+  background: linear-gradient(135deg, var(--secondary-alt), var(--button-color));
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 12px 26px;
+  border-radius: 999px;
+  box-shadow: var(--shadow-md);
+  z-index: var(--z-overlays);
+  pointer-events: none;
+  opacity: 0;
+  transition: transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.38s ease;
+}
+.levelup-toast.visible { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+/* ============================================================
+   EMOJI PICKER
+   ============================================================ */
+.emoji-picker {
+  position: fixed;
+  z-index: var(--z-dropdowns);
+  display: flex;
+  gap: 4px;
+  padding: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border-light);
+  border-radius: 14px;
+  box-shadow: var(--shadow-md);
+}
+.emoji-picker[hidden] { display: none; }
+.emoji-picker button {
+  background: transparent;
+  padding: 4px 6px;
+  font-size: 1.2rem;
+  border-radius: 8px;
+  color: inherit;
+}
+.emoji-picker button:hover { background: rgba(255, 255, 255, 0.1); }

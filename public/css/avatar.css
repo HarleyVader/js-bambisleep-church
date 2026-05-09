@@ -1,0 +1,275 @@
+/* ============================================================
+   3-D AVATAR STAGE
+   ============================================================ */
+.avatar-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Three.js canvas container */
+.avatar-3d-scene {
+  position: relative;
+  width: 200px;
+  height: 360px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(10, 0, 20, 0.45);
+}
+.avatar-3d-scene canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* ============================================================
+   PROFILE CARD
+   ============================================================ */
+.profile-card {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 12px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(204, 1, 116, 0.18);
+  border-radius: var(--border-radius-lg);
+}
+
+.profile-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-align: center;
+  line-height: 1.2;
+}
+.profile-title {
+  font-size: 0.62rem;
+  color: var(--avatar-accent, #cc0174);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+/* Level + prestige badges on one row */
+.profile-badges-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+}
+.level-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--secondary-alt), var(--button-color));
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.prestige-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.prestige-badge {
+  font-size: 0.6rem;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #7c3aed, #db2777);
+  color: #fff;
+}
+
+/* XP bar */
+.xp-bar-wrap {
+  position: relative;
+  width: 100%;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 999px;
+  border: 1px solid rgba(204, 1, 116, 0.22);
+  overflow: hidden;
+}
+.xp-bar-fill {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, var(--secondary-alt), var(--primary-alt));
+  border-radius: 999px;
+  transition: width 0.5s ease;
+}
+.xp-bar-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.56rem;
+  color: rgba(255, 255, 255, 0.8);
+  pointer-events: none;
+}
+
+/* Role pill + status text */
+.profile-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+}
+.profile-detail {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+  font-size: 0.64rem;
+  white-space: nowrap;
+}
+.profile-status {
+  font-size: 0.64rem;
+  color: var(--text-muted);
+  font-style: italic;
+  text-align: center;
+  word-break: break-word;
+}
+
+/* Stats 2×2 grid */
+.profile-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+  width: 100%;
+  margin-top: 2px;
+}
+.pstat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 6px 4px 5px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: var(--border-radius);
+}
+.pstat-val {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--primary-alt);
+  line-height: 1;
+}
+.pstat-label {
+  font-size: 0.52rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-align: center;
+}
+
+#edit-profile {
+  width: 100%;
+  margin-top: 2px;
+  background: var(--secondary-alt);
+  color: #fff;
+  border: none;
+  border-radius: var(--border-radius);
+  padding: 7px 12px;
+  font-size: 0.72rem;
+  font-family: var(--font-primary);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+#edit-profile:hover { background: var(--button-color); }
+
+/* ============================================================
+   AVATAR VARIANT HAIR STYLES
+   ============================================================ */
+
+/* b0 Rose — long flowing hair */
+.avatar-figure[data-variant="0"] .af-hair-back {
+  height: 200px;
+  width: 120px; left: 40px;
+  border-radius: 48% 48% 22% 22% / 52% 52% 20% 20%;
+}
+
+/* b1 Nova — high upswept bun */
+.avatar-figure[data-variant="1"] .af-hair-back {
+  height: 82px;
+  width: 104px; left: 48px;
+  border-radius: 50% 50% 50% 50% / 62% 62% 42% 42%;
+}
+.avatar-figure[data-variant="1"] .af-hair-front {
+  height: 30px;
+  clip-path: polygon(0% 0%, 100% 0%, 100% 48%, 88% 68%, 78% 45%, 62% 65%, 50% 42%, 38% 65%, 22% 45%, 12% 68%, 0% 48%);
+}
+
+/* b2 Pearl — medium wavy */
+.avatar-figure[data-variant="2"] .af-hair-back {
+  height: 128px;
+  width: 128px; left: 36px;
+  border-radius: 50% 50% 38% 38% / 55% 55% 36% 36%;
+}
+
+/* b3 Jade — medium, slightly asymmetric */
+.avatar-figure[data-variant="3"] .af-hair-back {
+  height: 114px;
+  width: 130px; left: 35px;
+  border-radius: 50% 50% 36% 36% / 55% 55% 34% 34%;
+}
+.avatar-figure[data-variant="3"] .af-hair-front {
+  clip-path: polygon(0% 0%, 100% 0%, 100% 40%, 85% 65%, 70% 42%, 55% 72%, 42% 50%, 28% 72%, 15% 42%, 0% 75%);
+}
+
+/* b4 Luna — very long straight dark hair */
+.avatar-figure[data-variant="4"] .af-hair-back {
+  height: 248px;
+  width: 116px; left: 42px;
+  border-radius: 44% 44% 16% 16% / 48% 48% 12% 12%;
+  background: linear-gradient(180deg,
+    var(--hair-hi) 0%, var(--hair) 12%, var(--hair-dk) 55%, var(--hair) 100%);
+}
+.avatar-figure[data-variant="4"] .af-hair-front {
+  height: 36px;
+  clip-path: polygon(0% 0%, 100% 0%, 100% 72%, 84% 72%, 74% 50%, 60% 72%, 50% 50%, 40% 72%, 26% 50%, 16% 72%, 0% 72%);
+}
+
+/* b5 Iris — medium-wide wavy */
+.avatar-figure[data-variant="5"] .af-hair-back {
+  height: 120px;
+  width: 134px; left: 33px;
+  border-radius: 50% 50% 40% 40% / 55% 55% 42% 42%;
+}
+
+/* ============================================================
+   MINI AVATAR BADGES  (messages & online panel)
+   ============================================================ */
+.msg-avatar-badge,
+.online-avatar-badge {
+  border-radius: 50%;
+  background: var(--avatar-accent, #cc0174);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  flex-shrink: 0;
+  text-transform: uppercase;
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.45);
+}
+.msg-avatar-badge    { width: 38px; height: 38px; font-size: 16px; }
+.online-avatar-badge { width: 32px; height: 32px; font-size: 13px; }
+
+/* Tier-3 gets an outer glow */
+.msg-avatar-badge[data-tier="3"],
+.online-avatar-badge[data-tier="3"] {
+  box-shadow: 0 0 14px 3px var(--avatar-accent, #cc0174), 0 0 4px rgba(0,0,0,0.5);
+}

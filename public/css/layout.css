@@ -1,0 +1,66 @@
+/* ============================================================
+   APP LAYOUT  —  avatar left  |  chat right
+   ============================================================ */
+.app-layout {
+  display: flex;
+  align-items: flex-start;
+  min-height: calc(100vh - 44px);
+}
+
+/* ── Left: sticky 3-D avatar column ── */
+.avatar-column {
+  width: 230px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 44px;
+  height: calc(100vh - 44px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 22px 14px 22px 16px;
+  background: linear-gradient(
+    180deg,
+    rgba(8, 14, 18, 0.97) 0%,
+    rgba(4, 8, 12, 0.98) 100%
+  );
+  border-right: 1px solid rgba(204, 1, 116, 0.25);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(204, 1, 116, 0.3) transparent;
+}
+.left-panel::-webkit-scrollbar { width: 4px; }
+.left-panel::-webkit-scrollbar-track { background: transparent; }
+.left-panel::-webkit-scrollbar-thumb { background-color: rgba(204, 1, 116, 0.3); border-radius: 4px; }
+
+/* ── Centre: chat scrolls normally ── */
+.chat-area {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Right: audio + toy-control column ── */
+.right-column {
+  width: 240px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 22px 16px 22px 14px;
+  background: linear-gradient(
+    180deg,
+    rgba(8, 14, 18, 0.97) 0%,
+    rgba(4, 8, 12, 0.98) 100%
+  );
+  border-left: 1px solid rgba(204, 1, 116, 0.25);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(204, 1, 116, 0.3) transparent;
+}
+.right-column::-webkit-scrollbar { width: 4px; }
+.right-column::-webkit-scrollbar-track { background: transparent; }
+.right-column::-webkit-scrollbar-thumb { background-color: rgba(204, 1, 116, 0.3); border-radius: 4px; }

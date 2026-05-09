@@ -1,0 +1,65 @@
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: var(--font-primary);
+  background:
+    radial-gradient(circle at top left, rgba(21, 170, 181, 0.18), transparent 40%),
+    radial-gradient(circle at bottom right, rgba(204, 1, 116, 0.15), transparent 30%),
+    var(--page-bg);
+  color: var(--text-primary);
+  min-height: 100vh;
+}
+
+.container {
+  padding: var(--spacing-md);
+}
+
+/* ── Card ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border-light);
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: var(--shadow-md);
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+header h1  { font-size: 1.95rem; margin: 0; }
+header p   { margin: 0; color: var(--text-muted); }
+
+.main-panel { display: grid; gap: var(--spacing-md); }
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 14px;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, var(--button-color), var(--secondary-alt));
+  color: #ffffff;
+  font-weight: 700;
+  font-family: var(--font-primary);
+  transition: transform var(--transition-fast), filter var(--transition-fast);
+}
+button:hover { filter: brightness(1.08); transform: translateY(-1px); }
+
+/* ============================================================
+   MISC
+   ============================================================ */
+.status { font-size: 0.88rem; color: var(--text-muted); }
+footer {
+  margin-top: var(--spacing-md);
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  padding: 8px 0;
+}
