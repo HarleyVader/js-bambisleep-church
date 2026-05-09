@@ -284,6 +284,27 @@ socket.on('xpGained', ({ newTotal, level }) => {
   levelBadgeEl.textContent = `Lv ${level}`;
 });
 
+socket.on('profile:update', ({ stats, progress }) => {
+  if (!myUser) return;
+  if (stats) {
+    myUser.stats = { ...myUser.stats, ...stats };
+    const fmt = (n) => n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n || 0);
+    const statMessages  = document.getElementById('stat-messages');
+    const statWords     = document.getElementById('stat-words');
+    const statDays      = document.getElementById('stat-days');
+    const statReactions = document.getElementById('stat-reactions');
+    if (statMessages)  statMessages.textContent  = fmt(stats.messagesCount  ?? myUser.stats.messagesCount);
+    if (statWords)     statWords.textContent     = fmt(stats.wordsCount     ?? myUser.stats.wordsCount);
+    if (statDays)      statDays.textContent      = String(stats.daysActive  ?? (myUser.stats.uniqueDaysActive || []).length);
+    if (statReactions) statReactions.textContent = fmt(stats.reactionsReceived ?? myUser.stats.reactionsReceived);
+  }
+  if (progress) {
+    myUser.progress = { ...myUser.progress, ...progress };
+    updateXpBar(myUser.progress.xp, myUser.progress.level);
+    levelBadgeEl.textContent = `Lv ${myUser.progress.level}`;
+  }
+});
+
 socket.on('levelUp', ({ newLevel, unlocks, prestiged }) => {
   if (!myUser) return;
   myUser.progress.level    = newLevel;

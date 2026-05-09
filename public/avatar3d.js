@@ -55,9 +55,9 @@ class AvatarViewer {
     /* Scene */
     this._scene = new THREE.Scene();
 
-    /* Camera – eye-level, pulled back so the full 1.8-unit model fits with headroom */
+    /* Camera – waist-level, pulled back so full 1.8-unit model fits with headroom */
     this._camera = new THREE.PerspectiveCamera(42, w / h, 0.1, 50);
-    this._camera.position.set(0, 0.9, 4.5);
+    this._camera.position.set(0, 0.7, 4.8);
 
     /* Renderer – transparent background so CSS shows through */
     this._renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -106,7 +106,7 @@ class AvatarViewer {
     this._controls.enableRotate     = false;
     this._controls.autoRotate       = true;
     this._controls.autoRotateSpeed  = 0.8;
-    this._controls.target.set(0, 0.9, 0);  // mid-torso of a 1.8-unit model
+    this._controls.target.set(0, 0.85, 0);  // mid-torso of a 1.8-unit model standing on y=0
     this._controls.update();
 
     /* Resize observer */
@@ -222,14 +222,16 @@ class AvatarViewer {
       (gltf) => {
         const m = gltf.scene;
 
-        /* Normalise: scale to ≈ 1.8 units tall, sit on y=0 */
+        /* Normalise: scale so longest axis = 1.8 units, stand feet on y=0 */
         const box  = new THREE.Box3().setFromObject(m);
         const size = box.getSize(new THREE.Vector3());
         const ctr  = box.getCenter(new THREE.Vector3());
         const s    = 1.8 / Math.max(size.x, size.y, size.z);
         m.scale.setScalar(s);
-        m.position.sub(ctr.multiplyScalar(s));
-        m.position.y = 0;
+        // Centre horizontally, lift so bottom (feet) sit at y=0
+        m.position.x = -ctr.x * s;
+        m.position.z = -ctr.z * s;
+        m.position.y = -box.min.y * s;
 
         m.traverse((n) => {
           if (n.isMesh) { n.castShadow = true; n.receiveShadow = true; }

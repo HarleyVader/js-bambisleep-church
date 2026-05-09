@@ -9,6 +9,50 @@ const logger = require('../utils/logger');
 
 const router = express.Router();
 
+/** Award XP to author and emit socket events so their stats update live. */
+const rewardAuthor = async (authorToken, xpAmount) => {
+  const author = await User.findOne({ sessionToken: authorToken });
+  if (!author) return;
+
+  const xpResult = awardXp(author, xpAmount);
+  author.stats.reactionsReceived += 1;
+  await author.save();
+
+  try {
+    const { emitToToken } = require('../sockets/chatSocket');
+    emitToToken(authorToken, 'xpGained', {
+      amount:   xpAmount,
+      reason:   'reaction',
+      newTotal: author.progress.xp,
+      level:    author.progress.level,
+    });
+    if (xpResult && xpResult.leveledUp) {
+      emitToToken(authorToken, 'levelUp', {
+        newLevel:      xpResult.newLevel,
+        unlocks:       xpResult.unlocks,
+        prestiged:     xpResult.prestiged,
+        prestigeCount: xpResult.prestigeCount,
+      });
+    }
+    // Push updated stats so author's sidebar counter refreshes immediately
+    emitToToken(authorToken, 'profile:update', {
+      stats: {
+        messagesCount:     author.stats.messagesCount,
+        wordsCount:        author.stats.wordsCount,
+        daysActive:        author.stats.daysActive,
+        reactionsReceived: author.stats.reactionsReceived,
+      },
+      progress: {
+        xp:       author.progress.xp,
+        level:    author.progress.level,
+        prestige: author.progress.prestige,
+      },
+    });
+  } catch (e) {
+    logger.error('reaction socket emit error', e);
+  }
+};
+
 // POST /api/messages/:id/react  — toggle a reaction; awards XP to the message author
 router.post('/:id/react', async (req, res) => {
   try {
@@ -28,33 +72,14 @@ router.post('/:id/react', async (req, res) => {
     let reaction = message.reactions.find((r) => r.emoji === emoji);
     if (!reaction) {
       message.reactions.push({ emoji, userTokens: [token] });
-
-      // Award XP to message author
-      if (message.authorToken) {
-        const author = await User.findOne({ sessionToken: message.authorToken });
-        if (author) {
-          awardXp(author, XP_RATES.REACTION_RECEIVED);
-          author.stats.reactionsReceived += 1;
-          await author.save();
-        }
-      }
+      if (message.authorToken) await rewardAuthor(message.authorToken, XP_RATES.REACTION_RECEIVED);
     } else {
       const idx = reaction.userTokens.indexOf(token);
       if (idx === -1) {
-        // Add reaction
         reaction.userTokens.push(token);
-
-        // Award XP to message author
-        if (message.authorToken) {
-          const author = await User.findOne({ sessionToken: message.authorToken });
-          if (author) {
-            awardXp(author, XP_RATES.REACTION_RECEIVED);
-            author.stats.reactionsReceived += 1;
-            await author.save();
-          }
-        }
+        if (message.authorToken) await rewardAuthor(message.authorToken, XP_RATES.REACTION_RECEIVED);
       } else {
-        // Remove reaction (toggle off)
+        // Remove reaction (toggle off) — no XP deducted
         reaction.userTokens.splice(idx, 1);
         if (reaction.userTokens.length === 0) {
           message.reactions = message.reactions.filter((r) => r.emoji !== emoji);
