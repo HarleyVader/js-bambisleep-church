@@ -133,16 +133,15 @@ class AvatarViewer {
   }
 
   /**
-   * Reposition camera so the given world-space bounding box is fully visible
-   * with 15% padding on all sides.
+   * Reposition camera so the model's HEIGHT is fully visible with 20% padding.
+   * Ignores arm span – portrait container should show the body, not T-pose width.
    */
   _frameCamera (box) {
     const size   = box.getSize(new THREE.Vector3());
     const center = box.getCenter(new THREE.Vector3());
-    const maxDim = Math.max(size.x, size.y, size.z);
     const fovRad = (this._camera.fov * Math.PI) / 180;
-    // Distance needed so maxDim fills the vertical FOV, plus 15% headroom
-    const dist   = (maxDim / 2 / Math.tan(fovRad / 2)) * 1.15;
+    // Distance so the full height fits the vertical FOV, plus 20% padding
+    const dist   = (size.y / 2 / Math.tan(fovRad / 2)) * 1.2;
 
     this._camera.position.set(center.x, center.y, center.z + dist);
     this._camera.lookAt(center);
@@ -240,10 +239,10 @@ class AvatarViewer {
       (gltf) => {
         const m = gltf.scene;
 
-        /* Step 1 – rough scale so tallest axis ≈ 1.8 units */
+        /* Step 1 – scale so HEIGHT = 1.8 units (ignore arm span) */
         const box0  = new THREE.Box3().setFromObject(m);
         const size0 = box0.getSize(new THREE.Vector3());
-        const s     = 1.8 / Math.max(size0.x, size0.y, size0.z, 0.001);
+        const s     = 1.8 / Math.max(size0.y, 0.001);
         m.scale.setScalar(s);
 
         /* Step 2 – add to scene, then recompute world-space bounds */
