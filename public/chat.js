@@ -140,6 +140,18 @@ const updateProfileUI = (user) => {
     span.textContent = b;
     prestigeBadgesEl.appendChild(span);
   });
+
+  // Stats
+  const s = user.stats || {};
+  const fmt = (n) => n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n || 0);
+  const statMessages  = document.getElementById('stat-messages');
+  const statWords     = document.getElementById('stat-words');
+  const statDays      = document.getElementById('stat-days');
+  const statReactions = document.getElementById('stat-reactions');
+  if (statMessages)  statMessages.textContent  = fmt(s.messagesCount);
+  if (statWords)     statWords.textContent     = fmt(s.wordsCount);
+  if (statDays)      statDays.textContent      = String((s.uniqueDaysActive || []).length);
+  if (statReactions) statReactions.textContent = fmt(s.reactionsReceived);
 };
 
 // ── Palette picker ────────────────────────────────────────────────────────────

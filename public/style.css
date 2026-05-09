@@ -876,61 +876,77 @@ header p   { margin: 0; color: var(--text-muted); }
 }
 
 /* ============================================================
-   AVATAR NAMEPLATE
+   PROFILE CARD
    ============================================================ */
-.avatar-nameplate {
+.profile-card {
   width: 100%;
-  text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
+  gap: 7px;
+  padding: 10px 12px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(204, 1, 116, 0.18);
+  border-radius: var(--border-radius-lg);
 }
-.profile-name   { font-size: 1rem;  font-weight: 700; color: var(--text-primary); }
-.profile-title  {
-  font-size: 0.68rem;
-  color: var(--avatar-accent, #cc0174);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-.profile-status { font-size: 0.72rem; color: var(--text-muted); }
 
-.profile-details {
+.profile-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-align: center;
+  line-height: 1.2;
+}
+.profile-title {
+  font-size: 0.62rem;
+  color: var(--avatar-accent, #cc0174);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+/* Level + prestige badges on one row */
+.profile-badges-row {
   display: flex;
-  gap: 6px;
+  align-items: center;
+  gap: 5px;
   flex-wrap: wrap;
   justify-content: center;
-  margin-top: 4px;
-}
-.profile-detail {
-  display: inline-flex;
-  align-items: center;
-  padding: 3px 8px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--text-muted);
-  font-size: 0.68rem;
+  width: 100%;
 }
 .level-badge {
   display: inline-flex;
   align-items: center;
-  padding: 3px 9px;
+  padding: 2px 9px;
   border-radius: 999px;
   background: linear-gradient(135deg, var(--secondary-alt), var(--button-color));
   color: #fff;
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 700;
+  white-space: nowrap;
 }
+.prestige-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.prestige-badge {
+  font-size: 0.6rem;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #7c3aed, #db2777);
+  color: #fff;
+}
+
+/* XP bar */
 .xp-bar-wrap {
   position: relative;
   width: 100%;
-  height: 11px;
+  height: 12px;
   background: rgba(255, 255, 255, 0.07);
   border-radius: 999px;
-  border: 1px solid rgba(204, 1, 116, 0.2);
+  border: 1px solid rgba(204, 1, 116, 0.22);
   overflow: hidden;
-  margin-top: 2px;
 }
 .xp-bar-fill {
   width: 0%;
@@ -945,34 +961,85 @@ header p   { margin: 0; color: var(--text-muted); }
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.58rem;
-  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.56rem;
+  color: rgba(255, 255, 255, 0.8);
   pointer-events: none;
 }
-.prestige-badges {
+
+/* Role pill + status text */
+.profile-meta {
   display: flex;
+  align-items: center;
+  gap: 6px;
   flex-wrap: wrap;
-  gap: 4px;
   justify-content: center;
+  width: 100%;
+}
+.profile-detail {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+  font-size: 0.64rem;
+  white-space: nowrap;
+}
+.profile-status {
+  font-size: 0.64rem;
+  color: var(--text-muted);
+  font-style: italic;
+  text-align: center;
+  word-break: break-word;
+}
+
+/* Stats 2×2 grid */
+.profile-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+  width: 100%;
   margin-top: 2px;
 }
-.prestige-badge {
-  font-size: 0.62rem;
-  padding: 2px 6px;
-  border-radius: 999px;
-  background: linear-gradient(135deg, #7c3aed, #db2777);
-  color: #fff;
+.pstat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 6px 4px 5px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: var(--border-radius);
 }
+.pstat-val {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--primary-alt);
+  line-height: 1;
+}
+.pstat-label {
+  font-size: 0.52rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-align: center;
+}
+
 #edit-profile {
-  margin-top: 6px;
+  width: 100%;
+  margin-top: 2px;
   background: var(--secondary-alt);
   color: #fff;
   border: none;
-  border-radius: 12px;
-  padding: 7px 16px;
-  font-size: 0.78rem;
+  border-radius: var(--border-radius);
+  padding: 7px 12px;
+  font-size: 0.72rem;
+  font-family: var(--font-primary);
   cursor: pointer;
+  transition: background var(--transition-fast);
 }
+#edit-profile:hover { background: var(--button-color); }
 
 /* ============================================================
    ONLINE PANEL
@@ -1975,11 +2042,14 @@ footer {
     gap: 16px;
     align-items: flex-start;
   }
-  .avatar-stage { flex-direction: row; align-items: center; gap: 16px; }
-  .avatar-3d-scene { width: 100px; height: 170px; perspective: 380px; }
+  .avatar-stage { flex-direction: row; align-items: flex-start; gap: 16px; }
+  .avatar-3d-scene { width: 100px; height: 170px; perspective: 380px; flex-shrink: 0; }
   .avatar-3d-body  { height: 160px; }
   .avatar-3d-body .avatar-figure { transform: scale(0.5); transform-origin: top center; }
-  .avatar-nameplate { text-align: left; align-items: flex-start; }
+  .profile-card { flex: 1; min-width: 0; align-items: flex-start; padding: 8px 10px; }
+  .profile-badges-row { justify-content: flex-start; }
+  .profile-meta { justify-content: flex-start; }
+  .profile-stats { grid-template-columns: repeat(4, 1fr); }
   .online-panel { margin-left: auto; max-width: 180px; }
   .right-column {
     width: 100%;
@@ -2000,7 +2070,10 @@ footer {
 @media (max-width: 540px) {
   .avatar-column { flex-direction: column; align-items: center; }
   .avatar-stage  { flex-direction: column; align-items: center; }
-  .avatar-nameplate { text-align: center; align-items: center; }
+  .profile-card  { align-items: center; }
+  .profile-badges-row { justify-content: center; }
+  .profile-meta  { justify-content: center; }
+  .profile-stats { grid-template-columns: 1fr 1fr; }
   .online-panel { margin-left: 0; max-width: 100%; }
   .right-column { flex-direction: column; }
   .right-column .ap-panel,
