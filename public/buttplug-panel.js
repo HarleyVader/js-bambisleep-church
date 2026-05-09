@@ -239,7 +239,7 @@ function initButtplugPanel() {
     if (s) s.textContent = 'Library unavailable';
     return;
   }
-  new ButtplugPanel();
+  window._bpPanel = new ButtplugPanel();
 }
 
 if (document.readyState === 'loading') {

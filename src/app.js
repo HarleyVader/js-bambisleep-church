@@ -3,6 +3,7 @@ const express = require('express');
 const chatRoutes = require('./routes/chat');
 const userRoutes = require('./routes/user');
 const reactionRoutes = require('./routes/reactions');
+const audioRoutes = require('./routes/audio');
 
 const app = express();
 
@@ -15,5 +16,6 @@ app.use(express.static(path.join(__dirname, '../public')));
 app.use('/api/chat', chatRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/messages', reactionRoutes);
+app.use('/api/audio', audioRoutes);
 
 module.exports = app;

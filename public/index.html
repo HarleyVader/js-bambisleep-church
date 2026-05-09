@@ -110,6 +110,60 @@
         </div>
       </div>
 
+      <!-- Audio player panel -->
+      <div class="ap-panel" id="ap-panel">
+        <div class="ap-panel-header">
+          <span>&#127925; Bambi Audio</span>
+          <button class="ap-panel-toggle" id="ap-panel-toggle"
+                  type="button" aria-expanded="true" aria-controls="ap-panel-body">&#9660;</button>
+        </div>
+        <div class="ap-panel-body" id="ap-panel-body">
+
+          <!-- Now playing -->
+          <div class="ap-now-playing">
+            <div class="ap-now-title"  id="ap-now-title">Select a track</div>
+            <div class="ap-now-author" id="ap-now-author"></div>
+          </div>
+
+          <!-- Visualizer canvas -->
+          <canvas class="ap-visualizer" id="ap-visualizer"
+                  width="240" height="48" aria-hidden="true"></canvas>
+
+          <!-- Transport -->
+          <div class="ap-progress-row">
+            <span class="ap-time" id="ap-elapsed">0:00</span>
+            <input class="ap-progress" id="ap-progress" type="range"
+                   min="0" max="1000" value="0" aria-label="Playback position" />
+            <span class="ap-time" id="ap-remaining">--:--</span>
+          </div>
+
+          <div class="ap-controls">
+            <button class="ap-ctrl-btn" id="ap-prev-btn" type="button" aria-label="Previous">&#9664;&#9664;</button>
+            <button class="ap-ctrl-btn ap-play-btn" id="ap-play-btn" type="button" aria-label="Play">&#9654;</button>
+            <button class="ap-ctrl-btn" id="ap-next-btn" type="button" aria-label="Next">&#9654;&#9654;</button>
+          </div>
+
+          <!-- Volume -->
+          <div class="ap-volume-row">
+            <span class="ap-vol-icon">&#128266;</span>
+            <input class="ap-volume" id="ap-volume" type="range"
+                   min="0" max="100" value="80" aria-label="Volume" />
+          </div>
+
+          <!-- Buttplug sync -->
+          <div class="ap-bp-row">
+            <button class="ap-bp-toggle" id="ap-bp-toggle" type="button">&#128268; Sync: OFF</button>
+            <span class="ap-bp-status" id="ap-bp-status">Vibration sync disabled</span>
+          </div>
+
+          <!-- Track list -->
+          <div class="ap-track-list" id="ap-track-list">
+            <div class="ap-loading">Loading playlist…</div>
+          </div>
+
+        </div>
+      </div>
+
     </aside><!-- /.avatar-column -->
 
     <!-- RIGHT: chat -->
@@ -333,5 +387,6 @@
   <script src="https://cdn.jsdelivr.net/npm/buttplug@3.0.0/dist/web/buttplug.js"
           crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="/buttplug-panel.js"></script>
+  <script src="/audio-player.js"></script>
 </body>
 </html>

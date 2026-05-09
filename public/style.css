@@ -1406,6 +1406,267 @@ footer {
 }
 .bp-btn--connected:hover { background: rgba(2, 184, 147, 0.3); }
 
+/* ═══════════════════════════════════════════════════════════════════
+   AUDIO PLAYER PANEL
+   ═══════════════════════════════════════════════════════════════════ */
+
+.ap-panel {
+  background: var(--surface-1);
+  border: 1px solid var(--border-muted);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 12px;
+}
+
+.ap-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(255, 105, 180, 0.08);
+  border-bottom: 1px solid var(--border-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.ap-panel-toggle {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.7rem;
+  padding: 2px 4px;
+}
+
+.ap-panel-body {
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ap-panel-body.ap-collapsed { display: none; }
+
+/* Now playing */
+.ap-now-playing {
+  text-align: center;
+}
+.ap-now-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ap-now-author {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Visualizer */
+.ap-visualizer {
+  width: 100%;
+  height: 48px;
+  border-radius: 6px;
+  background: rgba(15, 5, 20, 0.85);
+  display: block;
+}
+
+/* Progress */
+.ap-progress-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ap-time {
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  min-width: 30px;
+  text-align: center;
+}
+.ap-progress {
+  flex: 1;
+  height: 3px;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+/* Controls */
+.ap-controls {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+.ap-ctrl-btn {
+  background: rgba(204, 1, 116, 0.12);
+  border: 1px solid rgba(204, 1, 116, 0.3);
+  border-radius: 50%;
+  color: var(--primary);
+  cursor: pointer;
+  font-size: 0.75rem;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition-fast);
+}
+.ap-ctrl-btn:hover:not(:disabled) { background: rgba(204, 1, 116, 0.28); }
+.ap-ctrl-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.ap-play-btn {
+  width: 40px;
+  height: 40px;
+  font-size: 1rem;
+  background: rgba(204, 1, 116, 0.22);
+}
+
+/* Volume */
+.ap-volume-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ap-vol-icon { font-size: 0.75rem; }
+.ap-volume {
+  flex: 1;
+  height: 3px;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+/* Buttplug sync */
+.ap-bp-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.ap-bp-toggle {
+  background: rgba(204, 1, 116, 0.1);
+  border: 1px solid rgba(204, 1, 116, 0.3);
+  border-radius: 6px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.65rem;
+  padding: 4px 8px;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+.ap-bp-toggle.ap-bp-active {
+  background: rgba(204, 1, 116, 0.3);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.ap-bp-status {
+  font-size: 0.6rem;
+  color: var(--text-muted);
+}
+
+/* Track list */
+.ap-track-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 220px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(204, 1, 116, 0.3) transparent;
+}
+.ap-playlist-header {
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  padding: 4px 6px;
+  font-style: italic;
+  border-bottom: 1px solid var(--border-muted);
+  margin-bottom: 2px;
+}
+.ap-track-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 6px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  color: var(--text-primary);
+  transition: background var(--transition-fast);
+  width: 100%;
+}
+.ap-track-item:hover { background: rgba(204, 1, 116, 0.1); }
+.ap-track-active {
+  background: rgba(204, 1, 116, 0.18) !important;
+  border-left: 2px solid var(--primary);
+}
+.ap-track-num {
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  min-width: 16px;
+  text-align: right;
+}
+.ap-track-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.ap-track-title {
+  font-size: 0.7rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ap-track-meta {
+  font-size: 0.58rem;
+  color: var(--text-muted);
+}
+.ap-track-dur {
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.ap-loading, .ap-error {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  padding: 8px;
+  text-align: center;
+}
+.ap-error { color: #f87171; }
+.ap-idle {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  padding: 8px;
+  text-align: center;
+  line-height: 1.5;
+}
+.ap-idle strong { color: var(--primary); }
+
+/* ── BambiCloud inline playlist links in chat messages ── */
+.bambi-playlist-link {
+  color: var(--primary);
+  word-break: break-all;
+  font-size: 0.78rem;
+}
+.bambi-load-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 6px;
+  background: rgba(204, 1, 116, 0.15);
+  border: 1px solid rgba(204, 1, 116, 0.4);
+  border-radius: 5px;
+  color: var(--primary);
+  cursor: pointer;
+  font-size: 0.65rem;
+  padding: 2px 7px;
+  vertical-align: middle;
+  transition: background var(--transition-fast);
+}
+.bambi-load-btn:hover { background: rgba(204, 1, 116, 0.3); }
+
 .bp-status {
   font-size: 0.62rem;
   color: var(--text-muted);

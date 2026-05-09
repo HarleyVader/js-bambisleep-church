@@ -364,6 +364,32 @@ emojiPicker.addEventListener('click', (e) => {
   activePickerMsgId = null;
 });
 
+// ── BambiCloud playlist URL detection ────────────────────────────────────────
+const BAMBICLOUD_PLAYLIST_RE = /https?:\/\/(?:www\.)?bambicloud\.com\/playlist\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/gi;
+
+/**
+ * Scan message text for BambiCloud playlist URLs.
+ * Returns the first URL found, or null.
+ */
+const extractPlaylistUrl = (text) => {
+  BAMBICLOUD_PLAYLIST_RE.lastIndex = 0;
+  const m = BAMBICLOUD_PLAYLIST_RE.exec(text);
+  return m ? m[0] : null;
+};
+
+/**
+ * Replace BambiCloud playlist URLs in text with a linkified span
+ * that also shows a small "▶ Load" badge.
+ */
+const linkifyPlaylistUrls = (text) => {
+  return text.replace(
+    /https?:\/\/(?:www\.)?bambicloud\.com\/playlist\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi,
+    (url) =>
+      `<a class="bambi-playlist-link" href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>` +
+      `<button class="bambi-load-btn" data-playlist-url="${url}" type="button" aria-label="Load playlist in player">▶ Load playlist</button>`,
+  );
+};
+
 const appendMessage = (data) => {
   const existing = document.querySelector(`[data-msg-id="${data._id}"]`);
   if (existing) {
@@ -375,6 +401,9 @@ const appendMessage = (data) => {
   const accent    = PALETTES[paletteId] || PALETTES[1];
   const [variant, tier] = parseSprite(snap.sprite || 'b0-t1.svg');
   const initial   = (data.sender || '?').charAt(0).toUpperCase();
+
+  // Linkify BambiCloud URLs in the content before rendering
+  const renderedContent = linkifyPlaylistUrls(data.content);
 
   const item = document.createElement('div');
   item.className     = 'message';
@@ -388,12 +417,27 @@ const appendMessage = (data) => {
         ${snap.prestige ? `<span class="msg-prestige">${'\u2726'.repeat(Math.min(snap.prestige, 3))}</span>` : ''}
         <time>${formatDate(data.timestamp)}</time>
       </div>
-      <div class="msg-content">${data.content}</div>
+      <div class="msg-content">${renderedContent}</div>
     </div>
   `;
   renderReactions(item, data.reactions, data._id);
   messagesList.appendChild(item);
   messagesList.scrollTop = messagesList.scrollHeight;
+
+  // Auto-load the first playlist URL found in the message
+  const playlistUrl = extractPlaylistUrl(data.content);
+  if (playlistUrl && window._audioPlayer) {
+    window._audioPlayer.loadPlaylist(playlistUrl);
+  }
+
+  // Wire any "▶ Load playlist" buttons in this message
+  item.querySelectorAll('.bambi-load-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      if (window._audioPlayer) {
+        window._audioPlayer.loadPlaylist(btn.dataset.playlistUrl);
+      }
+    });
+  });
 };
 
 const loadMessages = async () => {
