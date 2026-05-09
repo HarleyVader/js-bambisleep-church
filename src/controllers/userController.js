@@ -139,7 +139,7 @@ class UserController {
   /**
    * GET /api/user/profile/:username?session=<viewerToken>
    * Returns a sanitised public profile for the given username.
-   * Access is restricted to active Pink Poodle or Airhead Barbie patrons.
+   * Access requires an active Patreon patron (any tier) or creator role.
    */
   async getPublicProfile(req, res) {
     try {
@@ -148,6 +148,16 @@ class UserController {
 
       const viewer = User.findOneLean({ sessionToken: viewerToken });
       if (!viewer) return res.status(401).json({ error: 'Invalid session' });
+
+      // Creator always has access; everyone else needs at least Good Girl tier
+      const ALLOWED_TIERS = ['Good Girl', 'Pink Poodle', 'Airhead Barbie'];
+      const isCreator = viewer.role === 'creator';
+      const isPatron  = viewer.patreon?.patronStatus === 'active_patron'
+                        && ALLOWED_TIERS.includes(viewer.patreon?.tierName);
+
+      if (!isCreator && !isPatron) {
+        return res.status(403).json({ error: 'Good Girl Patreon tier required', gated: true });
+      }
 
       const target = User.findOneLean({ username: req.params.username });
       if (!target) return res.status(404).json({ error: 'User not found' });
