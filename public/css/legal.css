@@ -1,0 +1,137 @@
+/* ============================================================
+   LEGAL PAGES  (terms.html, privacy.html)
+   Shared stylesheet — also used alongside disclaimer.css pattern
+   ============================================================ */
+
+.legal-wrap {
+  max-width: 820px;
+  margin: 40px auto 80px;
+  padding: 0 20px;
+}
+
+/* ── Hero ─────────────────────────────────────────────────────────────────── */
+.legal-hero {
+  text-align: center;
+  margin-bottom: 36px;
+}
+.legal-hero__icon {
+  font-size: 3rem;
+  line-height: 1;
+  margin-bottom: 12px;
+  color: var(--nav-alt);
+}
+.legal-hero h1 {
+  font-size: 2rem;
+  color: var(--nav-alt);
+  margin: 0 0 8px;
+}
+.legal-hero__sub {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  margin: 0;
+}
+
+/* ── Intro blurb ──────────────────────────────────────────────────────────── */
+.legal-intro {
+  background: rgba(21, 170, 181, 0.07);
+  border: 1px solid rgba(21, 170, 181, 0.22);
+  border-radius: var(--border-radius-lg);
+  padding: 18px 24px;
+  margin-bottom: 28px;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  line-height: 1.65;
+}
+
+/* ── Content sections ─────────────────────────────────────────────────────── */
+.legal-section {
+  background: var(--surface-strong);
+  border: 1px solid var(--border-light);
+  border-radius: var(--border-radius-lg);
+  padding: 24px 28px;
+  margin-bottom: 18px;
+}
+.legal-section h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 1rem;
+  color: var(--nav-alt);
+  margin: 0 0 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-light);
+}
+.legal-num {
+  color: var(--primary-alt);
+  font-size: 0.85rem;
+  font-weight: 700;
+  min-width: 22px;
+}
+.legal-section h3 {
+  font-size: 0.85rem;
+  color: var(--nav-alt);
+  margin: 14px 0 6px;
+  font-weight: 600;
+}
+.legal-section p {
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  line-height: 1.65;
+  margin: 0 0 10px;
+}
+.legal-section p:last-child { margin-bottom: 0; }
+.legal-section ul {
+  margin: 6px 0 10px 20px;
+  padding: 0;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  line-height: 1.65;
+}
+.legal-section ul li { margin-bottom: 5px; }
+.legal-section a {
+  color: var(--nav-alt);
+  text-decoration: underline;
+}
+.legal-section a:hover { color: var(--primary-alt); }
+
+/* ── Footer row ───────────────────────────────────────────────────────────── */
+.legal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 36px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-light);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.legal-footer p {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  margin: 0;
+}
+.legal-footer__links {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.legal-footer__links a {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  text-decoration: underline;
+  font-family: var(--font-primary);
+}
+.legal-footer__links a:hover { color: var(--nav-alt); }
+.btn-back {
+  display: inline-block;
+  padding: 9px 20px;
+  background: var(--button-color);
+  color: var(--text-primary);
+  border-radius: var(--border-radius);
+  font-size: 0.85rem;
+  text-decoration: none !important;
+  font-family: var(--font-primary);
+  transition: background var(--transition-fast);
+}
+.btn-back:hover { background: var(--secondary-alt); color: var(--text-primary) !important; }
