@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "A chat application using Express.js, Socket.IO, and MongoDB.",
   "main": "src/server.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/HarleyVader/js-bambisleep-church.git"
+  },
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js"
