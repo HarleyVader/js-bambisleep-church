@@ -40,6 +40,9 @@ const levelupToast      = document.getElementById('levelup-toast');
 // Emoji picker
 const emojiPicker       = document.getElementById('emoji-picker');
 
+// @mention autocomplete
+const mentionDropdown   = document.getElementById('mention-dropdown');
+
 // ── State ─────────────────────────────────────────────────────────────────────
 const TOKEN_KEY  = 'bimbot_token';
 let myToken      = localStorage.getItem(TOKEN_KEY) || null;
@@ -322,7 +325,11 @@ socket.on('levelUp', ({ newLevel, unlocks, prestiged }) => {
     .catch(() => { /* no-op */ });
 });
 
+// Keep a cached list of online usernames for @mention autocomplete
+let onlineUsernames = [];
+
 socket.on('onlineUsers', (users) => {
+  onlineUsernames = users.map((u) => u.username).filter(Boolean);
   onlineUsersList.innerHTML = '';
   users.forEach((u) => {
     const [variant, tier] = parseSprite(u.sprite || 'b0-t1.svg');
@@ -337,6 +344,94 @@ socket.on('onlineUsers', (users) => {
     `;
     onlineUsersList.appendChild(el);
   });
+});
+
+// ── @mention notification ─────────────────────────────────────────────────────
+socket.on('mention', ({ from, content }) => {
+  showToast(`@mention from ${from}`);
+  // Flash the document title briefly
+  const orig = document.title;
+  document.title = `\uD83D\uDD14 ${from} mentioned you!`;
+  setTimeout(() => { document.title = orig; }, 4000);
+});
+
+// ── @mention autocomplete ─────────────────────────────────────────────────────
+const closeMentionDropdown = () => {
+  if (mentionDropdown) mentionDropdown.hidden = true;
+};
+
+const insertMention = (username) => {
+  const val = messageInput.value;
+  const atPos = val.lastIndexOf('@');
+  if (atPos === -1) { closeMentionDropdown(); return; }
+  messageInput.value = val.slice(0, atPos) + '@' + username + ' ';
+  closeMentionDropdown();
+  messageInput.focus();
+};
+
+messageInput.addEventListener('input', () => {
+  if (!mentionDropdown) return;
+  const val    = messageInput.value;
+  const cursor = messageInput.selectionStart;
+  // Find the last '@' before cursor with no space after it
+  const segment = val.slice(0, cursor);
+  const match   = segment.match(/@([A-Za-z0-9_\-]*)$/);
+
+  if (!match) { closeMentionDropdown(); return; }
+
+  const query    = match[1].toLowerCase();
+  const filtered = onlineUsernames.filter(
+    (name) => name.toLowerCase().startsWith(query) && name !== (myUser?.username),
+  );
+
+  if (!filtered.length) { closeMentionDropdown(); return; }
+
+  mentionDropdown.innerHTML = '';
+  filtered.slice(0, 8).forEach((name) => {
+    const btn = document.createElement('button');
+    btn.type        = 'button';
+    btn.className   = 'mention-item';
+    btn.textContent = `@${name}`;
+    btn.addEventListener('mousedown', (e) => {
+      e.preventDefault(); // keep textarea focused
+      insertMention(name);
+    });
+    mentionDropdown.appendChild(btn);
+  });
+  mentionDropdown.hidden = false;
+});
+
+messageInput.addEventListener('keydown', (e) => {
+  if (mentionDropdown && !mentionDropdown.hidden) {
+    const items = [...mentionDropdown.querySelectorAll('.mention-item')];
+    const active = mentionDropdown.querySelector('.mention-item.focused');
+    const idx    = items.indexOf(active);
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      items.forEach((i) => i.classList.remove('focused'));
+      const next = items[(idx + 1) % items.length];
+      next.classList.add('focused');
+      return;
+    }
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      items.forEach((i) => i.classList.remove('focused'));
+      const prev = items[(idx - 1 + items.length) % items.length];
+      prev.classList.add('focused');
+      return;
+    }
+    if (e.key === 'Tab' || e.key === 'Enter') {
+      if (active) {
+        e.preventDefault();
+        insertMention(active.textContent.slice(1));
+        return;
+      }
+    }
+    if (e.key === 'Escape') {
+      closeMentionDropdown();
+      return;
+    }
+  }
 });
 
 // ── Messages ──────────────────────────────────────────────────────────────────
@@ -394,6 +489,7 @@ const reactToMessage = async (msgId, emoji) => {
 document.addEventListener('click', () => {
   emojiPicker.hidden = true;
   activePickerMsgId  = null;
+  closeMentionDropdown();
 });
 emojiPicker.addEventListener('click', (e) => {
   e.stopPropagation();
@@ -430,6 +526,19 @@ const linkifyPlaylistUrls = (text) => {
   );
 };
 
+/**
+ * Wrap @username mentions in a styled span.
+ * If the mention matches the current user, add the --self class.
+ */
+const linkifyMentions = (text) => {
+  return text.replace(/@([A-Za-z0-9_\-]{1,32})/g, (full, name) => {
+    const cls = myUser && name.toLowerCase() === myUser.username.toLowerCase()
+      ? 'mention mention--self'
+      : 'mention';
+    return `<span class="${cls}">${full}</span>`;
+  });
+};
+
 const appendMessage = (data) => {
   const existing = document.querySelector(`[data-msg-id="${data._id}"]`);
   if (existing) {
@@ -442,8 +551,8 @@ const appendMessage = (data) => {
   const [variant, tier] = parseSprite(snap.sprite || 'b0-t1.svg');
   const initial   = (data.sender || '?').charAt(0).toUpperCase();
 
-  // Linkify BambiCloud URLs in the content before rendering
-  const renderedContent = linkifyPlaylistUrls(data.content);
+  // Linkify BambiCloud URLs then @mentions in the content before rendering
+  const renderedContent = linkifyMentions(linkifyPlaylistUrls(data.content));
 
   const item = document.createElement('div');
   item.className     = 'message';
@@ -452,7 +561,7 @@ const appendMessage = (data) => {
     <div class="msg-avatar-badge" data-variant="${variant}" data-tier="${tier}" style="--avatar-accent:${accent}">${initial}</div>
     <div class="msg-body">
       <div class="msg-header">
-        <strong>${data.sender}</strong>
+        <strong><a class="msg-sender-link" href="/profile.html?user=${encodeURIComponent(data.sender)}">${data.sender}</a></strong>
         ${snap.title    ? `<span class="msg-title">${snap.title}</span>`                                            : ''}
         ${snap.prestige ? `<span class="msg-prestige">${'\u2726'.repeat(Math.min(snap.prestige, 3))}</span>` : ''}
         <time>${formatDate(data.timestamp)}</time>

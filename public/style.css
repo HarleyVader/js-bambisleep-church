@@ -1584,3 +1584,272 @@ footer {
   .card { padding: 12px; }
   header { flex-direction: column; align-items: flex-start; }
 }
+
+/* ============================================================
+   PROFILE PAGE  (profile.html)
+   ============================================================ */
+body.profile-page {
+  min-height: 100vh;
+  background: var(--bg-primary);
+}
+
+/* ── Gate overlay ────────────────────────────────────────────── */
+.profile-gate {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 60px);
+  padding: 40px 16px;
+}
+
+.profile-gate-card {
+  background: var(--bg-card);
+  border: 1px solid rgba(204, 1, 116, 0.3);
+  border-radius: var(--border-radius);
+  padding: 48px 40px;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 4px 40px rgba(0, 0, 0, 0.5);
+}
+
+.profile-gate-icon  { font-size: 3rem; }
+.profile-gate-title { font-size: 1.4rem; color: var(--text-primary); margin: 0; }
+.profile-gate-msg   { font-size: 0.85rem; color: var(--text-muted); margin: 0; line-height: 1.5; }
+
+.profile-gate-btn {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 10px 24px;
+  border-radius: var(--border-radius-sm);
+  background: linear-gradient(135deg, #cc0174, #7c3aed);
+  color: #fff;
+  font-family: var(--font-primary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  transition: opacity var(--transition-fast);
+}
+.profile-gate-btn:hover { opacity: 0.85; }
+
+/* ── Profile hero ────────────────────────────────────────────── */
+.profile-content {
+  max-width: 900px;
+  margin: 32px auto;
+  padding: 0 20px 60px;
+}
+
+.profile-hero {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.profile-avatar-scene {
+  width: 220px !important;
+  height: 380px !important;
+  flex-shrink: 0;
+  border: 1px solid rgba(204, 1, 116, 0.25);
+}
+
+.profile-hero-info {
+  flex: 1;
+  min-width: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 8px;
+}
+
+.profile-hero-name {
+  font-family: var(--font-primary);
+  font-size: 2rem;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.1;
+}
+
+.profile-hero-title {
+  font-size: 0.85rem;
+  color: var(--primary-alt);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Tier badge */
+.profile-tier-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 12px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: rgba(204, 1, 116, 0.2);
+  border: 1px solid rgba(204, 1, 116, 0.45);
+  color: var(--primary-alt);
+  width: fit-content;
+}
+.profile-tier-badge[data-tier="pink-poodle"] {
+  background: rgba(236, 72, 153, 0.18);
+  border-color: rgba(236, 72, 153, 0.5);
+  color: #f472b6;
+}
+.profile-tier-badge[data-tier="airhead-barbie"] {
+  background: rgba(124, 58, 237, 0.18);
+  border-color: rgba(124, 58, 237, 0.5);
+  color: #a78bfa;
+}
+
+/* Stats grid */
+.profile-stats--hero {
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  margin-top: 4px;
+}
+
+/* Last seen */
+.profile-last-seen {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* Clickable sender name in chat messages */
+.msg-sender-link {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px dotted rgba(204, 1, 116, 0.5);
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+.msg-sender-link:hover {
+  color: var(--primary-alt);
+  border-bottom-color: var(--primary-alt);
+}
+
+/* ── @mention chip ───────────────────────────────────────────── */
+.mention {
+  display: inline-block;
+  padding: 0 5px;
+  border-radius: 4px;
+  background: rgba(124, 58, 237, 0.18);
+  color: #a78bfa;
+  font-weight: 600;
+  font-size: 0.88em;
+}
+.mention--self {
+  background: rgba(204, 1, 116, 0.22);
+  color: var(--primary-alt);
+  animation: mention-pulse 1.2s ease-out;
+}
+@keyframes mention-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(204, 1, 116, 0.6); }
+  70%  { box-shadow: 0 0 0 8px rgba(204, 1, 116, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(204, 1, 116, 0); }
+}
+
+/* ── Message textarea wrapper (positions the dropdown) ───────── */
+.message-input-wrap {
+  position: relative;
+  flex: 1;
+}
+.message-input-wrap textarea {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ── @mention autocomplete dropdown ──────────────────────────── */
+.mention-dropdown {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 0;
+  min-width: 180px;
+  max-width: 280px;
+  background: var(--bg-card);
+  border: 1px solid rgba(124, 58, 237, 0.45);
+  border-radius: var(--border-radius-sm);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  z-index: 200;
+  overflow: hidden;
+}
+.mention-item {
+  display: block;
+  width: 100%;
+  padding: 7px 12px;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+.mention-item:hover,
+.mention-item.focused {
+  background: rgba(124, 58, 237, 0.25);
+  color: #a78bfa;
+}
+
+/* ── Buttplug section label ──────────────────────────────────── */
+.bp-section-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--primary-alt);
+  margin: 8px 0 4px;
+  border-bottom: 1px solid rgba(204, 1, 116, 0.2);
+  padding-bottom: 3px;
+}
+
+/* ── Pattern buttons ─────────────────────────────────────────── */
+.bp-pattern-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+.bp-pattern-btn {
+  padding: 2px 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(204, 1, 116, 0.4);
+  background: rgba(204, 1, 116, 0.1);
+  color: var(--primary-alt);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+.bp-pattern-btn:hover {
+  background: rgba(204, 1, 116, 0.3);
+  border-color: rgba(204, 1, 116, 0.7);
+}
+
+/* ── Direction toggle button ─────────────────────────────────── */
+.bp-dir-btn {
+  padding: 2px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(3, 105, 161, 0.4);
+  background: rgba(3, 105, 161, 0.12);
+  color: #38bdf8;
+  font-size: 0.6rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+.bp-dir-btn:hover { background: rgba(3, 105, 161, 0.3); }
+
+@media (max-width: 620px) {
+  .profile-hero { flex-direction: column; align-items: center; }
+  .profile-avatar-scene { width: 160px !important; height: 280px !important; }
+  .profile-hero-info { align-items: center; text-align: center; }
+}

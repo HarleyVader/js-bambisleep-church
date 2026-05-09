@@ -135,6 +135,55 @@ class UserController {
       res.status(500).json({ error: 'Failed to end session' });
     }
   }
+
+  /**
+   * GET /api/user/profile/:username?session=<viewerToken>
+   * Returns a sanitised public profile for the given username.
+   * Access is restricted to active Pink Poodle or Airhead Barbie patrons.
+   */
+  async getPublicProfile(req, res) {
+    try {
+      const viewerToken = (req.query.session || '').trim();
+      if (!viewerToken) return res.status(401).json({ error: 'Session token required' });
+
+      const GATED_TIERS = ['Pink Poodle', 'Airhead Barbie'];
+
+      const viewer = await User.findOne({ sessionToken: viewerToken }).lean();
+      const hasAccess = viewer &&
+        viewer.patreon?.patronStatus === 'active_patron' &&
+        GATED_TIERS.includes(viewer.patreon?.tierName);
+
+      if (!hasAccess) {
+        return res.status(403).json({ error: 'Pink Poodle Patreon tier required', gated: true });
+      }
+
+      const target = await User.findOne({ username: req.params.username }).lean();
+      if (!target) return res.status(404).json({ error: 'User not found' });
+
+      // Return public-safe fields only — no tokens, no Patreon auth data
+      return res.json({
+        username:  target.username,
+        avatar:    target.avatar,
+        progress:  target.progress,
+        lastSeen:  target.lastSeen,
+        stats: {
+          messagesCount:     target.stats.messagesCount     || 0,
+          wordsCount:        target.stats.wordsCount        || 0,
+          uniqueDaysActive:  target.stats.uniqueDaysActive?.length || 0,
+          reactionsReceived: target.stats.reactionsReceived || 0,
+          reactionsGiven:    target.stats.reactionsGiven    || 0,
+        },
+        patreon: {
+          patronStatus: target.patreon?.patronStatus || null,
+          tierName:     target.patreon?.tierName     || null,
+          thumbUrl:     target.patreon?.thumbUrl     || null,
+        },
+      });
+    } catch (error) {
+      logger.error('getPublicProfile error', error);
+      res.status(500).json({ error: 'Failed to load profile' });
+    }
+  }
 }
 
 module.exports = UserController;

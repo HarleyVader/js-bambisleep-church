@@ -36,8 +36,13 @@ const setupSockets = (io) => {
 
     if (token) {
       tokenToSocket.set(token, socket);
-      socket.data.token = token;
+      socket.data.token        = token;
       socket.data.sessionStart = Date.now();
+      // Resolve username for @mention routing
+      try {
+        const u = await User.findOne({ sessionToken: token }).select('username').lean();
+        if (u) socket.data.username = u.username;
+      } catch (_) { /* non-fatal */ }
     }
 
     logger.info(`Socket connected: ${socket.id}`);
@@ -52,6 +57,21 @@ const setupSockets = (io) => {
 
     socket.on('chatMessage', (msg) => {
       io.emit('chatMessage', msg);
+
+      // Notify any @mentioned users via a private socket event
+      if (msg && typeof msg.content === 'string') {
+        const mentioned = [...msg.content.matchAll(/@([A-Za-z0-9_\-]{1,32})/g)]
+          .map((m) => m[1].toLowerCase());
+        if (mentioned.length > 0) {
+          for (const [token, sock] of tokenToSocket.entries()) {
+            if (sock.data && sock.data.username) {
+              if (mentioned.includes(sock.data.username.toLowerCase())) {
+                sock.emit('mention', { from: msg.sender, content: msg.content });
+              }
+            }
+          }
+        }
+      }
     });
 
     socket.on('disconnect', async () => {

@@ -103,7 +103,10 @@
             <div id="messages" class="messages"></div>
 
             <form id="chat-form" class="form-row">
-              <textarea id="message" placeholder="Write a message..." aria-label="Message"></textarea>
+              <div class="message-input-wrap">
+                <textarea id="message" placeholder="Write a message… use @ to mention someone" aria-label="Message"></textarea>
+                <div class="mention-dropdown" id="mention-dropdown" hidden></div>
+              </div>
               <div class="controls">
                 <input id="sender" type="text" placeholder="Your name (optional)" aria-label="Sender name" />
                 <button type="submit">Send message</button>
