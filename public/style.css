@@ -1642,6 +1642,7 @@ body.profile-page {
 }
 .profile-gate-btn[hidden] { display: none; }
 .profile-gate-btn:hover { opacity: 0.85; }
+.profile-gate[hidden]    { display: none; }
 
 /* ── Profile hero ────────────────────────────────────────────── */
 .profile-content {
