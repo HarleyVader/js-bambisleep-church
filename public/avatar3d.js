@@ -55,9 +55,9 @@ class AvatarViewer {
     /* Scene */
     this._scene = new THREE.Scene();
 
-    /* Camera – waist-level, pulled back so full 1.8-unit model fits with headroom */
-    this._camera = new THREE.PerspectiveCamera(42, w / h, 0.1, 50);
-    this._camera.position.set(0, 0.7, 4.8);
+    /* Camera – start at a neutral position; _frameCamera() repositions after each load */
+    this._camera = new THREE.PerspectiveCamera(55, w / h, 0.1, 50);
+    this._camera.position.set(0, 1.0, 4.0);
 
     /* Renderer – transparent background so CSS shows through */
     this._renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -106,7 +106,7 @@ class AvatarViewer {
     this._controls.enableRotate     = false;
     this._controls.autoRotate       = true;
     this._controls.autoRotateSpeed  = 0.8;
-    this._controls.target.set(0, 0.85, 0);  // mid-torso of a 1.8-unit model standing on y=0
+    this._controls.target.set(0, 0.9, 0);
     this._controls.update();
 
     /* Resize observer */
@@ -130,6 +130,24 @@ class AvatarViewer {
     this._camera.aspect = w / h;
     this._camera.updateProjectionMatrix();
     this._renderer.setSize(w, h);
+  }
+
+  /**
+   * Reposition camera so the given world-space bounding box is fully visible
+   * with 15% padding on all sides.
+   */
+  _frameCamera (box) {
+    const size   = box.getSize(new THREE.Vector3());
+    const center = box.getCenter(new THREE.Vector3());
+    const maxDim = Math.max(size.x, size.y, size.z);
+    const fovRad = (this._camera.fov * Math.PI) / 180;
+    // Distance needed so maxDim fills the vertical FOV, plus 15% headroom
+    const dist   = (maxDim / 2 / Math.tan(fovRad / 2)) * 1.15;
+
+    this._camera.position.set(center.x, center.y, center.z + dist);
+    this._camera.lookAt(center);
+    this._controls.target.copy(center);
+    this._controls.update();
   }
 
   /** Procedural fallback when a GLB fails to load */
@@ -222,23 +240,30 @@ class AvatarViewer {
       (gltf) => {
         const m = gltf.scene;
 
-        /* Normalise: scale so longest axis = 1.8 units, stand feet on y=0 */
-        const box  = new THREE.Box3().setFromObject(m);
-        const size = box.getSize(new THREE.Vector3());
-        const ctr  = box.getCenter(new THREE.Vector3());
-        const s    = 1.8 / Math.max(size.x, size.y, size.z);
+        /* Step 1 – rough scale so tallest axis ≈ 1.8 units */
+        const box0  = new THREE.Box3().setFromObject(m);
+        const size0 = box0.getSize(new THREE.Vector3());
+        const s     = 1.8 / Math.max(size0.x, size0.y, size0.z, 0.001);
         m.scale.setScalar(s);
-        // Centre horizontally, lift so bottom (feet) sit at y=0
-        m.position.x = -ctr.x * s;
-        m.position.z = -ctr.z * s;
-        m.position.y = -box.min.y * s;
 
+        /* Step 2 – add to scene, then recompute world-space bounds */
         m.traverse((n) => {
           if (n.isMesh) { n.castShadow = true; n.receiveShadow = true; }
         });
-
         this._model = m;
         this._scene.add(m);
+
+        /* Step 3 – recompute bounds in world space after scaling */
+        const box1 = new THREE.Box3().setFromObject(m);
+        const ctr1 = box1.getCenter(new THREE.Vector3());
+        /* Centre horizontally; lift so feet (min.y) sit exactly on y=0 */
+        m.position.x -= ctr1.x;
+        m.position.z -= ctr1.z;
+        m.position.y -= box1.min.y;
+
+        /* Step 4 – recompute final world-space box and frame camera */
+        const boxFinal = new THREE.Box3().setFromObject(m);
+        this._frameCamera(boxFinal);
 
         /* Play idle animation (prefer clip named 'Idle', else first clip) */
         if (gltf.animations && gltf.animations.length > 0) {
@@ -253,6 +278,8 @@ class AvatarViewer {
         /* On load error → procedural fallback */
         this._model = this._buildFallback(this._tier, this._palette);
         this._scene.add(this._model);
+        const box = new THREE.Box3().setFromObject(this._model);
+        this._frameCamera(box);
       }
     );
   }
