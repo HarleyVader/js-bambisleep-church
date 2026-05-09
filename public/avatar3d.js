@@ -22,7 +22,7 @@ const PALETTE_HEX = {
 };
 
 // All models are normalised to this height (world units) after loading
-const TARGET_H = 1.8;
+const TARGET_H = 1.4;
 
 // ── AvatarViewer ──────────────────────────────────────────────────────────────
 class AvatarViewer {

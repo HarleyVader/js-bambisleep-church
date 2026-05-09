@@ -368,8 +368,8 @@ header p   { margin: 0; color: var(--text-muted); }
 /* Three.js canvas container */
 .avatar-3d-scene {
   position: relative;
-  width: 200px;
-  height: 360px;
+  width: 150px;
+  height: 270px;
   border-radius: 12px;
   overflow: hidden;
   background: rgba(10, 0, 20, 0.45);
@@ -1548,7 +1548,7 @@ footer {
     align-items: flex-start;
   }
   .avatar-stage { flex-direction: row; align-items: flex-start; gap: 16px; }
-  .avatar-3d-scene { width: 100px; height: 170px; flex-shrink: 0; }
+  .avatar-3d-scene { width: 80px; height: 140px; flex-shrink: 0; }
   .profile-card { flex: 1; min-width: 0; align-items: flex-start; padding: 8px 10px; }
   .profile-badges-row { justify-content: flex-start; }
   .profile-meta { justify-content: flex-start; }
