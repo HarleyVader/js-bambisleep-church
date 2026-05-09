@@ -103,7 +103,12 @@
             <div id="messages" class="messages"></div>
 
             <form id="chat-form" class="form-row">
-              <textarea id="message" placeholder="Write a message..." aria-label="Message"></textarea>
+              <div class="input-row">
+                <textarea id="message" placeholder="Write a message..." aria-label="Message"></textarea>
+                <button type="button" id="media-attach-btn" title="Attach image or video" aria-label="Attach image or video">&#128247;</button>
+                <input type="file" id="media-file-input" accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,video/ogg" hidden />
+              </div>
+              <div id="media-preview" class="media-preview" hidden></div>
               <div class="controls">
                 <input id="sender" type="text" placeholder="Your name (optional)" aria-label="Sender name" />
                 <button type="submit">Send message</button>

@@ -40,11 +40,17 @@ const levelupToast      = document.getElementById('levelup-toast');
 // Emoji picker
 const emojiPicker       = document.getElementById('emoji-picker');
 
+// Media attach
+const mediaAttachBtn  = document.getElementById('media-attach-btn');
+const mediaFileInput  = document.getElementById('media-file-input');
+const mediaPreview    = document.getElementById('media-preview');
+
 // ── State ─────────────────────────────────────────────────────────────────────
 const TOKEN_KEY  = 'bimbot_token';
 let myToken      = localStorage.getItem(TOKEN_KEY) || null;
 let myUser       = null;
 const sessionStart = Date.now();
+let pendingAttachment = null;  // { url, type, kind, name, size } set after successful upload
 
 // @mention autocomplete
 let onlineUsernames = [];   // kept in sync from onlineUsers socket event
@@ -143,9 +149,71 @@ messageInput.addEventListener('keydown', (e) => {
 document.addEventListener('click', (e) => {
   if (!mentionDropdown.contains(e.target)) mentionClose();
 });
+
+const PALETTES = {
+  1: '#cc0174',
+  2: '#7c3aed',
+  3: '#0369a1',
   4: '#b45309',
   5: '#065f46',
 };
+
+// ── Media attach ─────────────────────────────────────────────────────────────
+mediaAttachBtn.addEventListener('click', () => mediaFileInput.click());
+
+mediaFileInput.addEventListener('change', async () => {
+  const file = mediaFileInput.files[0];
+  if (!file) return;
+
+  mediaPreview.hidden = false;
+  mediaPreview.innerHTML = '<span class="media-preview-loading">Uploading\u2026</span>';
+
+  try {
+    const fd = new FormData();
+    fd.append('file', file);
+    const res = await fetch('/api/upload', { method: 'POST', body: fd });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: 'Upload failed' }));
+      mediaPreview.innerHTML = `<span class="media-preview-error">${err.error || 'Upload failed'}</span>`;
+      mediaFileInput.value = '';
+      return;
+    }
+    pendingAttachment = await res.json();
+
+    mediaPreview.innerHTML = '';
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type      = 'button';
+    removeBtn.className = 'media-preview-remove';
+    removeBtn.title     = 'Remove attachment';
+    removeBtn.setAttribute('aria-label', 'Remove attachment');
+    removeBtn.textContent = '\u00d7';
+    removeBtn.addEventListener('click', () => {
+      pendingAttachment  = null;
+      mediaFileInput.value = '';
+      mediaPreview.hidden  = true;
+      mediaPreview.innerHTML = '';
+    });
+
+    if (pendingAttachment.kind === 'image') {
+      const img   = document.createElement('img');
+      img.src     = pendingAttachment.url;
+      img.alt     = pendingAttachment.name;
+      img.className = 'media-preview-thumb';
+      mediaPreview.appendChild(img);
+    } else {
+      const vid   = document.createElement('video');
+      vid.src     = pendingAttachment.url;
+      vid.className = 'media-preview-thumb';
+      vid.muted   = true;
+      mediaPreview.appendChild(vid);
+    }
+    mediaPreview.appendChild(removeBtn);
+  } catch (_) {
+    mediaPreview.innerHTML = '<span class="media-preview-error">Upload error. Try again.</span>';
+    mediaFileInput.value = '';
+  }
+});
 
 // ── Socket ────────────────────────────────────────────────────────────────────
 const socket = io({ query: { token: myToken || '' } });
@@ -562,6 +630,19 @@ const appendMessage = (data) => {
   // Render content: escape HTML, highlight @mentions, linkify BambiCloud URLs
   const renderedContent = renderContent(data.content);
 
+  // Render attachment (image or video) if present
+  let attachmentHtml = '';
+  if (data.attachment && data.attachment.url) {
+    const att = data.attachment;
+    const safeUrl  = att.url.replace(/"/g, '%22');
+    const safeName = (att.name || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    if (att.kind === 'image') {
+      attachmentHtml = `<div class="msg-attachment"><img src="${safeUrl}" alt="${safeName}" loading="lazy" /></div>`;
+    } else if (att.kind === 'video') {
+      attachmentHtml = `<div class="msg-attachment"><video src="${safeUrl}" controls preload="metadata"></video></div>`;
+    }
+  }
+
   const item = document.createElement('div');
   item.className     = 'message';
   item.dataset.msgId = data._id;
@@ -575,6 +656,7 @@ const appendMessage = (data) => {
         <time>${formatDate(data.timestamp)}</time>
       </div>
       <div class="msg-content">${renderedContent}</div>
+      ${attachmentHtml}
     </div>
   `;
   renderReactions(item, data.reactions, data._id);
@@ -614,7 +696,7 @@ messageInput.addEventListener('keydown', (e) => {
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   const content = messageInput.value.trim();
-  if (!content) return;
+  if (!content && !pendingAttachment) return;
   mentionClose();
   const sender = senderInput.value.trim() || myUser?.username || getCookie('chat_username') || 'Anonymous';
 
@@ -625,11 +707,22 @@ form.addEventListener('submit', async (e) => {
     const res = await fetch('/api/chat/messages', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ sender, content, token: myToken }),
+      body:    JSON.stringify({
+        sender,
+        content,
+        token:      myToken,
+        attachment: pendingAttachment || undefined,
+      }),
     });
     if (!res.ok) throw new Error('send failed');
     const { message } = await res.json();
     messageInput.value = '';
+    // Clear pending attachment
+    pendingAttachment  = null;
+    mediaFileInput.value = '';
+    mediaPreview.hidden  = true;
+    mediaPreview.innerHTML = '';
+
     socket.emit('chatMessage', message);
     if (mentionedNames.length) {
       socket.emit('mention', { sender, mentionedNames });

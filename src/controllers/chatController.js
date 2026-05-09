@@ -1,21 +1,21 @@
 'use strict';
 
-const User = require('../models/User');
+const User           = require('../models/User');
+const MessageSqlite  = require('../models/MessageSqlite');
 const { awardXp, xpFromWords } = require('../utils/xpService');
-const { XP_RATES } = require('../config/xpConfig');
-const logger = require('../utils/logger');
+const { XP_RATES }   = require('../config/xpConfig');
+const logger         = require('../utils/logger');
 
 class ChatController {
-  constructor(messageModel, io) {
-    this.messageModel = messageModel;
+  constructor(io) {
     this.io = io; // optional: used to emit XP events
   }
 
   async sendMessage(req, res) {
     try {
-      const { sender, content, token } = req.body;
-      if (!content || !content.trim()) {
-        return res.status(400).json({ error: 'Content is required' });
+      const { sender, content, token, attachment } = req.body;
+      if (!content && !attachment) {
+        return res.status(400).json({ error: 'Content or attachment is required' });
       }
 
       let resolvedSender = (sender || 'Anonymous').trim().substring(0, 32);
@@ -79,19 +79,29 @@ class ChatController {
         }
       }
 
-      const message = new this.messageModel({
+      // Validate attachment shape if present
+      let safeAttachment = null;
+      if (attachment && typeof attachment === 'object' && attachment.url) {
+        const allowedKinds = new Set(['image', 'video']);
+        safeAttachment = {
+          url:  String(attachment.url).slice(0, 300),
+          type: String(attachment.type || '').slice(0, 50),
+          kind: allowedKinds.has(attachment.kind) ? attachment.kind : 'image',
+          name: String(attachment.name || '').slice(0, 200),
+          size: Number(attachment.size) || 0,
+        };
+      }
+
+      const message = MessageSqlite.create({
         sender:         resolvedSender,
-        content:        content.trim(),
-        timestamp:      new Date(),
+        content:        (content || '').trim(),
         authorToken:    token || '',
         avatarSnapshot,
+        attachment:     safeAttachment,
       });
-      await message.save();
 
-      const responseMessage = message.toObject();
-      delete responseMessage.authorToken; // never expose token to client
-
-      res.status(201).json({ message: responseMessage, xpResult });
+      // authorToken is never in the returned object — no need to delete it
+      res.status(201).json({ message, xpResult });
     } catch (error) {
       logger.error('sendMessage error', error);
       res.status(500).json({ error: 'Failed to send message' });
@@ -100,10 +110,7 @@ class ChatController {
 
   async getMessages(req, res) {
     try {
-      const messages = await this.messageModel
-        .find()
-        .sort({ timestamp: 1 })
-        .select('-authorToken');
+      const messages = MessageSqlite.findAll();
       res.status(200).json(messages);
     } catch (error) {
       logger.error('getMessages error', error);

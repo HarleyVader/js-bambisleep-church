@@ -5,6 +5,7 @@ const app = require('./app');
 const { connectDB } = require('./config/db');
 const { setupSockets } = require('./sockets/chatSocket');
 const chatRoute = require('./routes/chat');
+const logger    = require('./utils/logger');
 
 const PORT = process.env.PORT;
 
@@ -23,5 +24,5 @@ chatRoute.setIo(io);
 
 // Start the server
 server.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+    logger.info(`Server is running on http://localhost:${PORT}`);
 });

@@ -33,6 +33,7 @@ const https   = require('https');
 const crypto  = require('crypto');
 const { URL, URLSearchParams } = require('url');
 const User    = require('../models/User');
+const logger  = require('../utils/logger');
 
 const router = express.Router();
 
@@ -179,7 +180,7 @@ router.get('/callback', async (req, res) => {
     });
 
     if (!tokenData.access_token) {
-      console.error('[patreon] token exchange failed:', tokenData);
+      logger.error(`[patreon] token exchange failed: ${JSON.stringify(tokenData)}`);
       return sendPopupClose(res, 'error', appBase);
     }
 
@@ -199,7 +200,7 @@ router.get('/callback', async (req, res) => {
     const patreonUserId = identity.data?.id;
 
     if (!patreonUserId) {
-      console.error('[patreon] identity missing id:', identity);
+      logger.error(`[patreon] identity missing id: ${JSON.stringify(identity)}`);
       return sendPopupClose(res, 'error', appBase);
     }
 
@@ -253,12 +254,12 @@ router.get('/callback', async (req, res) => {
 
     if (!updated) {
       // Session not found — still send success close so popup doesn't hang
-      console.warn('[patreon] callback: no user found for sessionToken');
+      logger.warn('[patreon] callback: no user found for sessionToken');
     }
 
     return sendPopupClose(res, 'linked', appBase);
   } catch (err) {
-    console.error('[patreon] callback error:', err.message);
+    logger.error(`[patreon] callback error: ${err.message}`);
     return sendPopupClose(res, 'error', appBase);
   }
 });
@@ -284,7 +285,7 @@ router.get('/status', async (req, res) => {
       isActivePatron: p.patronStatus  === 'active_patron',
     });
   } catch (err) {
-    console.error('[patreon] status error:', err.message);
+    logger.error(`[patreon] status error: ${err.message}`);
     return res.status(500).json({ error: 'Internal error' });
   }
 });
@@ -314,7 +315,7 @@ router.post('/unlink', async (req, res) => {
     );
     return res.json({ ok: true });
   } catch (err) {
-    console.error('[patreon] unlink error:', err.message);
+    logger.error(`[patreon] unlink error: ${err.message}`);
     return res.status(500).json({ error: 'Internal error' });
   }
 });
@@ -346,7 +347,7 @@ router.post(
         : sigHeader === expected;
 
       if (!valid) {
-        console.warn('[patreon] webhook: bad signature');
+        logger.warn('[patreon] webhook: bad signature');
         return res.status(401).send('Bad signature');
       }
     }
@@ -393,7 +394,7 @@ router.post(
         );
       } catch (err) {
         // Log but don't leak error to Patreon's retry logic
-        console.error('[patreon] webhook DB error:', err.message);
+        logger.error(`[patreon] webhook DB error: ${err.message}`);
       }
     }
 

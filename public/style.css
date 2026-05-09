@@ -1882,3 +1882,108 @@ body.profile-page {
   padding: 5px 8px;
 }
 .bp-alldev-btn:disabled { opacity: 0.35; cursor: default; }
+
+/* ============================================================
+   MEDIA ATTACH — input row, preview strip, message attachment
+   ============================================================ */
+
+/* Wrap textarea + attach button in a flex row */
+.input-row {
+  display: flex;
+  gap: 6px;
+  align-items: flex-end;
+}
+.input-row textarea {
+  flex: 1 1 auto;
+}
+
+/* The 📷 attach button */
+#media-attach-btn {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  font-size: 1.1rem;
+  line-height: 1;
+  border-radius: 50%;
+  background: rgba(21, 170, 181, 0.12);
+  border: 1px solid rgba(21, 170, 181, 0.3);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+#media-attach-btn:hover {
+  background: rgba(21, 170, 181, 0.25);
+  border-color: rgba(21, 170, 181, 0.6);
+  transform: none;
+  filter: none;
+}
+
+/* Preview strip shown above the controls row */
+.media-preview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0 2px;
+}
+.media-preview-thumb {
+  max-height: 80px;
+  max-width: 120px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid rgba(21, 170, 181, 0.3);
+}
+.media-preview-remove {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1;
+  border-radius: 50%;
+  background: rgba(255, 80, 80, 0.18);
+  border: 1px solid rgba(255, 80, 80, 0.4);
+  color: #ff6b6b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.media-preview-remove:hover {
+  background: rgba(255, 80, 80, 0.35);
+  transform: none;
+  filter: none;
+}
+.media-preview-loading {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+.media-preview-error {
+  font-size: 0.8rem;
+  color: #ff6b6b;
+}
+
+/* Attached image/video inside a chat message */
+.msg-attachment {
+  margin-top: 6px;
+}
+.msg-attachment img {
+  display: block;
+  max-width: min(100%, 420px);
+  max-height: 320px;
+  border-radius: 10px;
+  object-fit: contain;
+  cursor: zoom-in;
+  border: 1px solid rgba(21, 170, 181, 0.2);
+}
+.msg-attachment video {
+  display: block;
+  max-width: min(100%, 420px);
+  max-height: 320px;
+  border-radius: 10px;
+  border: 1px solid rgba(21, 170, 181, 0.2);
+  background: #000;
+}

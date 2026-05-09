@@ -1,11 +1,11 @@
 'use strict';
 
-const express = require('express');
-const Message = require('../models/Message');
-const User = require('../models/User');
-const { awardXp } = require('../utils/xpService');
-const { XP_RATES } = require('../config/xpConfig');
-const logger = require('../utils/logger');
+const express        = require('express');
+const MessageSqlite  = require('../models/MessageSqlite');
+const User           = require('../models/User');
+const { awardXp }   = require('../utils/xpService');
+const { XP_RATES }  = require('../config/xpConfig');
+const logger        = require('../utils/logger');
 
 const router = express.Router();
 
@@ -104,7 +104,7 @@ router.post('/:id/react', async (req, res) => {
       return res.status(400).json({ error: 'emoji and token are required' });
     }
 
-    const message = await Message.findById(req.params.id).select('+authorToken');
+    const message = MessageSqlite.findById(req.params.id, { includeToken: true });
     if (!message) return res.status(404).json({ error: 'Message not found' });
 
     // Prevent reacting to your own message
@@ -116,7 +116,6 @@ router.post('/:id/react', async (req, res) => {
     if (!reaction) {
       message.reactions.push({ emoji, userTokens: [token] });
       if (message.authorToken) await rewardAuthor(message.authorToken, XP_RATES.REACTION_RECEIVED);
-      // Track reactor's given count
       await trackReactorGiven(token);
     } else {
       const idx = reaction.userTokens.indexOf(token);
@@ -133,7 +132,7 @@ router.post('/:id/react', async (req, res) => {
       }
     }
 
-    await message.save();
+    MessageSqlite.updateReactions(req.params.id, message.reactions);
     res.status(200).json({ reactions: message.reactions });
   } catch (error) {
     logger.error('react error', error);

@@ -1,6 +1,5 @@
-const express = require('express');
+const express        = require('express');
 const ChatController = require('../controllers/chatController');
-const Message = require('../models/Message');
 
 const router = express.Router();
 
@@ -8,7 +7,7 @@ const router = express.Router();
 let _io = null;
 const setIo = (io) => { _io = io; };
 
-const getController = () => new ChatController(Message, _io);
+const getController = () => new ChatController(_io);
 
 // Route to send a message
 router.post('/messages', (req, res) => getController().sendMessage(req, res));
