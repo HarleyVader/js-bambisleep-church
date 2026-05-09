@@ -13,6 +13,11 @@ initSqlite();
 
 const app = express();
 
+// Patreon webhook MUST receive the raw body so the HMAC-MD5 signature can be
+// verified. Mount it BEFORE express.json() consumes the stream.
+app.use('/api/patreon/webhook', express.raw({ type: '*/*' }));
+app.use('/auth/patreon/webhook', express.raw({ type: '*/*' }));
+
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -24,7 +29,7 @@ app.use('/api/user', userRoutes);
 app.use('/api/messages', reactionRoutes);
 app.use('/api/audio', audioRoutes);
 app.use('/api/upload', uploadRoutes);
-// Patreon OAuth + webhook — webhook endpoint uses express.raw() internally
+// Patreon OAuth + webhook
 app.use('/api/patreon', patreonRoutes);
 // Legacy / portal-registered callback path
 app.use('/auth/patreon', patreonRoutes);

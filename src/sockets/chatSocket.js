@@ -1,6 +1,7 @@
 'use strict';
 
 const User = require('../models/UserSqlite');
+const MessageSqlite = require('../models/MessageSqlite');
 const { processSessionEnd } = require('../controllers/userController');
 const logger = require('../utils/logger');
 
@@ -44,8 +45,17 @@ const setupSockets = (io) => {
       logger.error('onlineUsers build error', err);
     }
 
+    // Re-lookup the message from the DB before broadcasting so clients can't
+    // spoof sender/content/_id. Only the trusted persisted row is rebroadcast.
     socket.on('chatMessage', (msg) => {
-      io.emit('chatMessage', msg);
+      try {
+        const id = msg && msg._id;
+        if (!id || typeof id !== 'string') return;
+        const trusted = MessageSqlite.findById(id);
+        if (trusted) io.emit('chatMessage', trusted);
+      } catch (err) {
+        logger.error('chatMessage rebroadcast error', err);
+      }
     });
 
     // @mention: notify each tagged user via their own socket

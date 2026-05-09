@@ -199,30 +199,11 @@ const UserSqlite = {
    * @param {{ $set: object }} update  — only $set is supported
    */
   findOneAndUpdate({ sessionToken }, { $set }) {
-    const user = this.findOne({ sessionToken });
-    if (!user) return null;
-    // Apply $set — supports dot-notation keys like 'patreon.userId'
-    for (const [dotKey, val] of Object.entries($set)) {
-      const parts = dotKey.split('.');
-      let obj = user;
-      for (let i = 0; i < parts.length - 1; i++) {
-        if (obj[parts[i]] == null) obj[parts[i]] = {};
-        obj = obj[parts[i]];
-      }
-      obj[parts[parts.length - 1]] = val;
-    }
-    user.save();
-    return user;
-  },
-
-  /**
-   * updateMany — update patreon sub-object for all users with a given patreonUserId.
-   * Mirrors Mongoose updateMany used in patreon webhook handler.
-   */
-  updateManyByPatreonUserId(patreonUserId, { $set }) {
-    const rows = stmts().findByPatreonUserId.all(patreonUserId);
-    rows.forEach((row) => {
-      const user = makeUser(row);
+    const db = getDb();
+    return db.transaction(() => {
+      const user = this.findOne({ sessionToken });
+      if (!user) return null;
+      // Apply $set — supports dot-notation keys like 'patreon.userId'
       for (const [dotKey, val] of Object.entries($set)) {
         const parts = dotKey.split('.');
         let obj = user;
@@ -233,7 +214,32 @@ const UserSqlite = {
         obj[parts[parts.length - 1]] = val;
       }
       user.save();
-    });
+      return user;
+    })();
+  },
+
+  /**
+   * updateMany — update patreon sub-object for all users with a given patreonUserId.
+   * Mirrors Mongoose updateMany used in patreon webhook handler.
+   */
+  updateManyByPatreonUserId(patreonUserId, { $set }) {
+    const db = getDb();
+    db.transaction(() => {
+      const rows = stmts().findByPatreonUserId.all(patreonUserId);
+      rows.forEach((row) => {
+        const user = makeUser(row);
+        for (const [dotKey, val] of Object.entries($set)) {
+          const parts = dotKey.split('.');
+          let obj = user;
+          for (let i = 0; i < parts.length - 1; i++) {
+            if (obj[parts[i]] == null) obj[parts[i]] = {};
+            obj = obj[parts[i]];
+          }
+          obj[parts[parts.length - 1]] = val;
+        }
+        user.save();
+      });
+    })();
   },
 
   /** Default progress/stats/patreon factories (for controllers). */

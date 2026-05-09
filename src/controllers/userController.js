@@ -58,13 +58,15 @@ class UserController {
       // Award unique-day XP on first activity of each calendar day
       const today = todayKey();
       let xpResult = {};
+      let xpAwarded = 0;
       if (!user.stats.uniqueDaysActive.includes(today)) {
         user.stats.uniqueDaysActive.push(today);
         xpResult = awardXp(user, XP_RATES.UNIQUE_DAY);
+        xpAwarded = XP_RATES.UNIQUE_DAY;
       }
 
       await user.save();
-      res.status(200).json({ user, token: newToken, xpGained: xpResult.leveledUp ? XP_RATES.UNIQUE_DAY : 0, ...xpResult });
+      res.status(200).json({ user, token: newToken, xpGained: xpAwarded, ...xpResult });
     } catch (error) {
       logger.error('upsertUser error', error);
       res.status(500).json({ error: 'Failed to authenticate user' });

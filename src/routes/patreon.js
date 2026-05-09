@@ -374,13 +374,12 @@ router.post(
         .update(req.body)
         .digest('hex');
 
-      const sigBuf  = Buffer.from(sigHeader.padEnd(expected.length, ' '));
-      const expBuf  = Buffer.from(expected);
-
-      // Use timingSafeEqual only when lengths match
-      const valid = sigBuf.length === expBuf.length
-        ? crypto.timingSafeEqual(sigBuf, expBuf)
-        : sigHeader === expected;
+      // Both must be valid hex of the same length before timingSafeEqual
+      const sigOk = /^[0-9a-f]+$/.test(sigHeader) && sigHeader.length === expected.length;
+      const valid = sigOk && crypto.timingSafeEqual(
+        Buffer.from(sigHeader, 'hex'),
+        Buffer.from(expected, 'hex'),
+      );
 
       if (!valid) {
         logger.warn('[patreon] webhook: bad signature');

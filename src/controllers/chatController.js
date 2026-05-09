@@ -18,6 +18,7 @@ class ChatController {
         return res.status(400).json({ error: 'Content or attachment is required' });
       }
 
+      const safeContent = (content || '').trim();
       let resolvedSender = (sender || 'Anonymous').trim().substring(0, 32);
       let xpResult = null;
 
@@ -26,7 +27,7 @@ class ChatController {
         if (user) {
           resolvedSender = user.username;
 
-          const wordCount = content.trim().split(/\s+/).filter(Boolean).length;
+          const wordCount = safeContent ? safeContent.split(/\s+/).filter(Boolean).length : 0;
           const xpAmount = XP_RATES.MESSAGE_SENT + xpFromWords(wordCount);
           xpResult = awardXp(user, xpAmount);
 
@@ -85,7 +86,7 @@ class ChatController {
 
       const message = MessageSqlite.create({
         sender:         resolvedSender,
-        content:        (content || '').trim(),
+        content:        safeContent,
         authorToken:    token || '',
         attachment:     safeAttachment,
       });
