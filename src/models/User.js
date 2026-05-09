@@ -35,6 +35,8 @@ const patreonSchema = new mongoose.Schema({
   tokenExpiry:                  { type: Date,   default: null },
   patronStatus:                 { type: String, default: null }, // active_patron | declined_patron | former_patron | null
   currentlyEntitledAmountCents: { type: Number, default: 0 },
+  tierId:                       { type: String, default: null }, // Patreon tier ID
+  tierName:                     { type: String, default: null }, // Resolved tier label
   fullName:                     { type: String, default: null },
   thumbUrl:                     { type: String, default: null },
   linkedAt:                     { type: Date,   default: null },

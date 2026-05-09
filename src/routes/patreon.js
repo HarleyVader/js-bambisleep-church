@@ -39,6 +39,15 @@ const router = express.Router();
 const PATREON_SITE = 'https://www.patreon.com';
 const PATREON_API  = 'https://www.patreon.com/api/oauth2/v2';
 
+// Tier ID → display name map (populated from env at startup)
+function getTierNames() {
+  return {
+    [process.env.PATREON_TIER_GOOD_GIRL]:      'Good Girl',
+    [process.env.PATREON_TIER_PINK_POODLE]:    'Pink Poodle',
+    [process.env.PATREON_TIER_AIRHEAD_BARBIE]: 'Airhead Barbie',
+  };
+}
+
 // ── Low-level helpers ─────────────────────────────────────────────────────────
 
 /** GET a Patreon API v2 path using an OAuth access token. */
@@ -177,13 +186,14 @@ router.get('/callback', async (req, res) => {
     const { access_token, refresh_token, expires_in } = tokenData;
     const tokenExpiry = new Date(Date.now() + (expires_in || 3600) * 1000);
 
-    // 2. Fetch user identity + memberships from Patreon API v2
+    // 2. Fetch user identity + memberships + entitled tiers from Patreon API v2
     //    All fields must be explicitly requested.
     const identityPath =
       '/identity' +
-      '?include=memberships' +
+      '?include=memberships%2Cmemberships.currently_entitled_tiers' +
       '&fields%5Buser%5D=full_name%2Cemail%2Cthumb_url' +
-      '&fields%5Bmember%5D=patron_status%2Ccurrently_entitled_amount_cents%2Clast_charge_status';
+      '&fields%5Bmember%5D=patron_status%2Ccurrently_entitled_amount_cents%2Clast_charge_status' +
+      '&fields%5Btier%5D=title%2Camount_cents';
 
     const identity = await patreonGet(identityPath, access_token);
     const patreonUserId = identity.data?.id;
@@ -197,10 +207,12 @@ router.get('/callback', async (req, res) => {
     const fullName = attrs.full_name || '';
     const thumbUrl = attrs.thumb_url || '';
 
-    // 3. Extract membership status (patron to any campaign this user is member of)
+    // 3. Extract membership status and tier
     const memberships = (identity.included || []).filter((r) => r.type === 'member');
     let patronStatus  = null;
     let amountCents   = 0;
+    let tierId        = null;
+    let tierName      = null;
 
     if (memberships.length > 0) {
       const best = memberships.find(
@@ -208,6 +220,14 @@ router.get('/callback', async (req, res) => {
       ) || memberships[0];
       patronStatus = best.attributes?.patron_status || null;
       amountCents  = best.attributes?.currently_entitled_amount_cents || 0;
+
+      // Resolve tier from the included resources
+      const entitledTierIds = (best.relationships?.currently_entitled_tiers?.data || [])
+        .map((t) => t.id);
+      if (entitledTierIds.length > 0) {
+        tierId = entitledTierIds[0];
+        tierName = getTierNames()[tierId] || null;
+      }
     }
 
     // 4. Persist to the User document that matches the chat session token
@@ -221,6 +241,8 @@ router.get('/callback', async (req, res) => {
           'patreon.tokenExpiry':                  tokenExpiry,
           'patreon.patronStatus':                 patronStatus,
           'patreon.currentlyEntitledAmountCents': amountCents,
+          'patreon.tierId':                       tierId,
+          'patreon.tierName':                     tierName,
           'patreon.fullName':                     fullName,
           'patreon.thumbUrl':                     thumbUrl,
           'patreon.linkedAt':                     new Date(),
@@ -255,6 +277,8 @@ router.get('/status', async (req, res) => {
       linked:         !!p.userId,
       patronStatus:   p.patronStatus  || null,
       amountCents:    p.currentlyEntitledAmountCents || 0,
+      tierId:         p.tierId        || null,
+      tierName:       p.tierName      || null,
       fullName:       p.fullName      || null,
       thumbUrl:       p.thumbUrl      || null,
       isActivePatron: p.patronStatus  === 'active_patron',
@@ -344,8 +368,15 @@ router.post(
     const amountCents   = member.attributes?.currently_entitled_amount_cents ?? 0;
     const eventType     = req.headers['x-patreon-event'] || '';
 
-    // On delete events, clear patron status
-    const finalStatus = eventType === 'members:delete' ? 'former_patron' : patronStatus;
+    // Resolve tier from the webhook's included resources
+    const entitledTierData = (member.relationships?.currently_entitled_tiers?.data || []);
+    const webhookTierId    = entitledTierData.length > 0 ? entitledTierData[0].id : null;
+    const webhookTierName  = webhookTierId ? (getTierNames()[webhookTierId] || null) : null;
+
+    // On delete events, clear patron status and tier
+    const finalStatus   = eventType === 'members:delete' ? 'former_patron' : patronStatus;
+    const finalTierId   = eventType === 'members:delete' ? null : webhookTierId;
+    const finalTierName = eventType === 'members:delete' ? null : webhookTierName;
 
     if (patreonUserId) {
       try {
@@ -355,6 +386,8 @@ router.post(
             $set: {
               'patreon.patronStatus':                 finalStatus,
               'patreon.currentlyEntitledAmountCents': amountCents,
+              'patreon.tierId':                       finalTierId,
+              'patreon.tierName':                     finalTierName,
             },
           },
         );

@@ -48,16 +48,20 @@
   }
 
   function renderActive(data) {
-    const cents  = data.amountCents || 0;
+    const cents   = data.amountCents || 0;
     const dollars = (cents / 100).toFixed(2);
-    const name   = data.fullName ? esc(data.fullName) : 'Patron';
-    const thumb  = data.thumbUrl
+    const name    = data.fullName ? esc(data.fullName) : 'Patron';
+    const thumb   = data.thumbUrl
       ? `<img class="patreon-avatar" src="${esc(data.thumbUrl)}" alt="${name}" />`
+      : '';
+    const tier    = data.tierName
+      ? `<div class="patreon-tier">${esc(data.tierName)}</div>`
       : '';
     area.innerHTML = `
       ${thumb}
       <div class="patreon-name">${name}</div>
       <div class="patreon-badge active">&#10003; Active Patron</div>
+      ${tier}
       <div class="patreon-amount">$${dollars}/month</div>
       <button class="patreon-unlink-btn" id="patreon-unlink-btn" type="button">Unlink</button>
     `;
