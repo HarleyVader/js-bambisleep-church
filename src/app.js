@@ -20,5 +20,7 @@ app.use('/api/messages', reactionRoutes);
 app.use('/api/audio', audioRoutes);
 // Patreon OAuth + webhook — webhook endpoint uses express.raw() internally
 app.use('/api/patreon', patreonRoutes);
+// Legacy / portal-registered callback path
+app.use('/auth/patreon', patreonRoutes);
 
 module.exports = app;
