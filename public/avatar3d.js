@@ -1,19 +1,18 @@
-/* avatar3d.js – Three.js WebGL avatar viewer
- * Replaces the old CSS-div avatar figure in the sidebar.
- * Uses ES-module imports resolved via the importmap in index.html.
+/* avatar3d.js – Three.js WebGL avatar viewer (rebuilt)
+ * Clean, reliable full-body framing for skinned GLB models.
+ * ES-module; resolved via importmap in index.html.
  */
 import * as THREE from 'three';
 import { GLTFLoader }    from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-// ── Model roster (3 free CC0 female / humanoid GLBs) ─────────────────────────
+// ── Config ────────────────────────────────────────────────────────────────────
 const MODEL_FILES = [
-  '/models/avatar_0.glb',   // Michelle – animated female (Three.js sample)
+  '/models/avatar_0.glb',   // Michelle – animated female
   '/models/avatar_1.glb',   // Soldier  – rigged humanoid
   '/models/avatar_2.glb',   // Xbot     – rigged humanoid
 ];
 
-// Palette id → hex accent colour (mirrors PALETTES in chat.js)
 const PALETTE_HEX = {
   1: 0xcc0174,
   2: 0x7c3aed,
@@ -22,7 +21,10 @@ const PALETTE_HEX = {
   5: 0x065f46,
 };
 
-// ── AvatarViewer class ────────────────────────────────────────────────────────
+// All models are normalised to this height (world units) after loading
+const TARGET_H = 1.8;
+
+// ── AvatarViewer ──────────────────────────────────────────────────────────────
 class AvatarViewer {
   constructor (containerId) {
     this._container = document.getElementById(containerId);
@@ -36,8 +38,7 @@ class AvatarViewer {
     this._mixer    = null;
     this._clock    = new THREE.Clock();
     this._raf      = null;
-    this._rim      = null;          // palette-tinted rim light
-
+    this._rim      = null;
     this._variant  = 0;
     this._tier     = 1;
     this._palette  = 1;
@@ -45,80 +46,99 @@ class AvatarViewer {
     this._init();
   }
 
-  /* ── Private ────────────────────────────────────────────────────────────── */
+  // ── Private ─────────────────────────────────────────────────────────────────
 
   _init () {
     const c = this._container;
     const w = c.clientWidth  || 200;
-    const h = c.clientHeight || 340;
+    const h = c.clientHeight || 360;
 
-    /* Scene */
+    // Scene
     this._scene = new THREE.Scene();
 
-    /* Camera – start at a neutral position; _frameCamera() repositions after each load */
-    this._camera = new THREE.PerspectiveCamera(55, w / h, 0.1, 50);
-    this._camera.position.set(0, 1.0, 4.0);
+    // Camera: vertical FOV sized for portrait container
+    this._camera = new THREE.PerspectiveCamera(50, w / h, 0.05, 100);
 
-    /* Renderer – transparent background so CSS shows through */
+    // Renderer
     this._renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     this._renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this._renderer.setSize(w, h);
-    this._renderer.shadowMap.enabled = true;
-    this._renderer.shadowMap.type    = THREE.PCFSoftShadowMap;
-    this._renderer.outputColorSpace  = THREE.SRGBColorSpace;
-    this._renderer.toneMapping       = THREE.ACESFilmicToneMapping;
+    this._renderer.outputColorSpace    = THREE.SRGBColorSpace;
+    this._renderer.toneMapping         = THREE.ACESFilmicToneMapping;
     this._renderer.toneMappingExposure = 1.2;
+    this._renderer.shadowMap.enabled   = true;
+    this._renderer.shadowMap.type      = THREE.PCFSoftShadowMap;
     c.appendChild(this._renderer.domElement);
 
-    /* Lights */
-    this._scene.add(new THREE.AmbientLight(0xffeeff, 0.65));
+    // Lights
+    this._scene.add(new THREE.AmbientLight(0xfff0f8, 1.0));
 
-    const key = new THREE.DirectionalLight(0xffffff, 1.3);
-    key.position.set(2, 7, 4);
+    const key = new THREE.DirectionalLight(0xffffff, 1.5);
+    key.position.set(1.5, 4, 3);
     key.castShadow = true;
     key.shadow.mapSize.setScalar(512);
-    key.shadow.camera.top = key.shadow.camera.right =  2.5;
-    key.shadow.camera.bottom = key.shadow.camera.left = -2.5;
-    key.shadow.camera.near = 0.1;
-    key.shadow.camera.far  = 20;
+    key.shadow.camera.near   = 0.1;
+    key.shadow.camera.far    = 20;
+    key.shadow.camera.top    = key.shadow.camera.right  =  3;
+    key.shadow.camera.bottom = key.shadow.camera.left   = -3;
     this._scene.add(key);
 
-    /* Palette-tinted rim / accent light */
-    this._rim = new THREE.PointLight(PALETTE_HEX[1], 1.8, 7);
-    this._rim.position.set(-2, 1.8, -1.8);
+    this._rim = new THREE.PointLight(PALETTE_HEX[1], 2.0, 8);
+    this._rim.position.set(-2, TARGET_H * 0.8, -2);
     this._scene.add(this._rim);
 
-    /* Ground disc */
+    // Ground disc
     const ground = new THREE.Mesh(
-      new THREE.CircleGeometry(1.6, 48),
-      new THREE.MeshStandardMaterial({ color: 0x110015, roughness: 1, metalness: 0 })
+      new THREE.CircleGeometry(1.5, 48),
+      new THREE.MeshStandardMaterial({ color: 0x110015, roughness: 1, metalness: 0 }),
     );
-    ground.rotation.x = -Math.PI / 2;
+    ground.rotation.x    = -Math.PI / 2;
     ground.receiveShadow = true;
     this._scene.add(ground);
 
-    /* Orbit controls – auto-rotate only, no user dragging */
+    // Controls – auto-rotate only, no user interaction
     this._controls = new OrbitControls(this._camera, this._renderer.domElement);
-    this._controls.enableDamping    = true;
-    this._controls.dampingFactor    = 0.08;
-    this._controls.enableZoom       = false;
-    this._controls.enablePan        = false;
-    this._controls.enableRotate     = false;
-    this._controls.autoRotate       = true;
-    this._controls.autoRotateSpeed  = 0.8;
-    this._controls.target.set(0, 0.9, 0);
-    this._controls.update();
+    this._controls.enableDamping   = true;
+    this._controls.dampingFactor   = 0.08;
+    this._controls.enableZoom      = false;
+    this._controls.enablePan       = false;
+    this._controls.enableRotate    = false;
+    this._controls.autoRotate      = true;
+    this._controls.autoRotateSpeed = 0.8;
 
-    /* Resize observer */
+    // Place camera for TARGET_H model (visible placeholder before first model loads)
+    this._placeCamera(TARGET_H);
+
+    // Resize observer
     new ResizeObserver(() => this._onResize()).observe(c);
 
     this._loop();
   }
 
+  /**
+   * Position the camera so a model that is `modelH` units tall
+   * (feet at y=0, head at y=modelH) is fully framed with 20 % padding.
+   *
+   *   dist = (modelH / 2) / tan(fov/2)  →  fills frame exactly
+   *   × 1.2                              →  adds 20 % breathing room
+   */
+  _placeCamera (modelH) {
+    const midY   = modelH / 2;
+    const fovRad = (this._camera.fov * Math.PI) / 180;
+    const dist   = (modelH / 2) / Math.tan(fovRad / 2) * 1.2;
+
+    this._camera.position.set(0, midY, dist);
+    this._camera.lookAt(0, midY, 0);
+    this._camera.updateProjectionMatrix();
+
+    this._controls.target.set(0, midY, 0);
+    this._controls.update();
+  }
+
   _loop () {
     this._raf = requestAnimationFrame(() => this._loop());
-    const dt = this._clock.getDelta();
-    if (this._mixer)   this._mixer.update(dt);
+    const dt  = this._clock.getDelta();
+    if (this._mixer) this._mixer.update(dt);
     this._controls.update();
     this._renderer.render(this._scene, this._camera);
   }
@@ -132,165 +152,122 @@ class AvatarViewer {
     this._renderer.setSize(w, h);
   }
 
-  /**
-   * Reposition camera so the model's HEIGHT is fully visible with 20% padding.
-   * Ignores arm span – portrait container should show the body, not T-pose width.
-   */
-  _frameCamera (box) {
-    const size   = box.getSize(new THREE.Vector3());
-    const center = box.getCenter(new THREE.Vector3());
-    const fovRad = (this._camera.fov * Math.PI) / 180;
-    // Distance so the full height fits the vertical FOV, plus 20% padding
-    const dist   = (size.y / 2 / Math.tan(fovRad / 2)) * 1.2;
-
-    this._camera.position.set(center.x, center.y, center.z + dist);
-    this._camera.lookAt(center);
-    this._controls.target.copy(center);
-    this._controls.update();
-  }
-
-  /** Procedural fallback when a GLB fails to load */
+  // Procedural fallback – simple female silhouette (used when GLB fails)
   _buildFallback (tier, paletteId) {
-    const group = new THREE.Group();
-    const col   = PALETTE_HEX[paletteId] || 0xcc0174;
+    const group   = new THREE.Group();
+    const col     = PALETTE_HEX[paletteId] || 0xcc0174;
+    const skinMat = new THREE.MeshStandardMaterial({ color: 0xffcba4, roughness: 0.85 });
+    const bodyMat = new THREE.MeshStandardMaterial({ color: col,      roughness: 0.65 });
 
-    const skinMat  = new THREE.MeshStandardMaterial({ color: 0xffcba4, roughness: 0.85 });
-    const bodyMat  = new THREE.MeshStandardMaterial({ color: col,      roughness: 0.65 });
+    const add = (geo, mat, x, y, z) => {
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.position.set(x, y, z);
+      mesh.castShadow = true;
+      group.add(mesh);
+    };
 
-    /* Head */
-    const head = new THREE.Mesh(new THREE.SphereGeometry(0.22, 20, 20), skinMat);
-    head.position.y = 1.65; head.castShadow = true;
-    group.add(head);
+    add(new THREE.SphereGeometry(0.22, 20, 20),       skinMat,  0,     1.65, 0); // head
+    add(new THREE.SphereGeometry(0.16, 12, 12),
+      new THREE.MeshStandardMaterial({ color: 0xd4365e, roughness: 0.7 }),
+      0, 1.88, -0.06);                                                            // hair
+    add(new THREE.CapsuleGeometry(0.18, 0.5, 8, 16),  bodyMat,  0,     1.10, 0); // torso
+    add(new THREE.ConeGeometry(0.30, 0.58, 18),       bodyMat,  0,     0.57, 0); // skirt
+    add(new THREE.CapsuleGeometry(0.065, 0.38, 6, 10), skinMat, -0.10, 0.20, 0); // leg L
+    add(new THREE.CapsuleGeometry(0.065, 0.38, 6, 10), skinMat,  0.10, 0.20, 0); // leg R
 
-    /* Hair bun */
-    const hair = new THREE.Mesh(
-      new THREE.SphereGeometry(0.16, 12, 12),
-      new THREE.MeshStandardMaterial({ color: 0xd4365e, roughness: 0.7 })
-    );
-    hair.position.set(0, 1.88, -0.06); hair.castShadow = true;
-    group.add(hair);
-
-    /* Torso */
-    const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.18, 0.5, 8, 16), bodyMat);
-    torso.position.y = 1.1; torso.castShadow = true;
-    group.add(torso);
-
-    /* Skirt / dress */
-    const skirt = new THREE.Mesh(
-      new THREE.ConeGeometry(0.30, 0.58, 18),
-      bodyMat
-    );
-    skirt.position.y = 0.57; skirt.castShadow = true;
-    group.add(skirt);
-
-    /* Legs */
-    const legGeo = new THREE.CapsuleGeometry(0.065, 0.38, 6, 10);
-    for (const xOff of [-0.1, 0.1]) {
-      const leg = new THREE.Mesh(legGeo, skinMat.clone());
-      leg.position.set(xOff, 0.2, 0); leg.castShadow = true;
-      group.add(leg);
-    }
-
-    /* Tier accessory */
     if (tier >= 2) {
-      const crownCol = tier >= 3 ? 0xffd700 : 0xff69b4;
+      const cc = tier >= 3 ? 0xffd700 : 0xff69b4;
       const crown = new THREE.Mesh(
         new THREE.TorusGeometry(0.14, 0.025, 6, 24),
         new THREE.MeshStandardMaterial({
-          color: crownCol, metalness: 0.9, roughness: 0.1,
-          emissive: crownCol, emissiveIntensity: 0.4,
-        })
+          color: cc, metalness: 0.9, roughness: 0.1,
+          emissive: cc, emissiveIntensity: 0.4,
+        }),
       );
-      crown.position.y = 1.96; crown.rotation.x = 0.4;
+      crown.position.y = 1.96;
+      crown.rotation.x = 0.4;
       group.add(crown);
     }
-
     return group;
   }
 
-  /* ── Public API ─────────────────────────────────────────────────────────── */
+  // ── Public API ───────────────────────────────────────────────────────────────
 
-  /**
-   * Load (or reload) the model for a given variant / tier / palette.
-   * @param {number} baseVariant  0-5  → maps to MODEL_FILES index via modulo
-   * @param {number} tier         1-3  → cosmetic tier level
-   * @param {number} paletteId    1-5  → palette accent colour
-   */
   loadModel (baseVariant, tier, paletteId) {
     this._variant = baseVariant || 0;
-    this._tier    = tier    || 1;
-    this._palette = paletteId || 1;
+    this._tier    = tier        || 1;
+    this._palette = paletteId   || 1;
 
-    /* Update accent light */
     if (this._rim) this._rim.color.setHex(PALETTE_HEX[this._palette] || 0xff69b4);
 
-    /* Remove previous model */
+    // Remove previous model
     if (this._model) {
       this._scene.remove(this._model);
       if (this._mixer) { this._mixer.stopAllAction(); this._mixer = null; }
       this._model = null;
     }
 
-    const idx = this._variant % MODEL_FILES.length;
+    const url    = MODEL_FILES[this._variant % MODEL_FILES.length];
     const loader = new GLTFLoader();
 
     loader.load(
-      MODEL_FILES[idx],
+      url,
       (gltf) => {
-        const m = gltf.scene;
+        const root = gltf.scene;
 
-        /* Step 1 – scale so HEIGHT = 1.8 units (ignore arm span) */
-        const box0  = new THREE.Box3().setFromObject(m);
-        const size0 = box0.getSize(new THREE.Vector3());
-        const s     = 1.8 / Math.max(size0.y, 0.001);
-        m.scale.setScalar(s);
-
-        /* Step 2 – add to scene, then recompute world-space bounds */
-        m.traverse((n) => {
+        // STEP 1 – add to scene so world matrices are valid for Box3
+        root.traverse((n) => {
           if (n.isMesh) { n.castShadow = true; n.receiveShadow = true; }
         });
-        this._model = m;
-        this._scene.add(m);
+        this._scene.add(root);
+        root.updateWorldMatrix(true, true);
 
-        /* Step 3 – recompute bounds in world space after scaling */
-        const box1 = new THREE.Box3().setFromObject(m);
-        const ctr1 = box1.getCenter(new THREE.Vector3());
-        /* Centre horizontally; lift so feet (min.y) sit exactly on y=0 */
-        m.position.x -= ctr1.x;
-        m.position.z -= ctr1.z;
-        m.position.y -= box1.min.y;
+        // STEP 2 – measure native height (y-axis only; ignores T-pose arm span)
+        const bbox0   = new THREE.Box3().setFromObject(root);
+        const nativeH = Math.max(bbox0.max.y - bbox0.min.y, 0.0001);
 
-        /* Step 4 – recompute final world-space box and frame camera */
-        const boxFinal = new THREE.Box3().setFromObject(m);
-        this._frameCamera(boxFinal);
+        // STEP 3 – scale uniformly so height = TARGET_H
+        const s = TARGET_H / nativeH;
+        root.scale.setScalar(s);
+        root.updateWorldMatrix(true, true);
 
-        /* Play idle animation (prefer clip named 'Idle', else first clip) */
+        // STEP 4 – translate: feet at y=0, centred on X and Z
+        const bbox1 = new THREE.Box3().setFromObject(root);
+        root.position.set(
+          root.position.x - (bbox1.min.x + bbox1.max.x) / 2,  // centre X
+          root.position.y - bbox1.min.y,                        // feet at y=0
+          root.position.z - (bbox1.min.z + bbox1.max.z) / 2,  // centre Z
+        );
+
+        this._model = root;
+
+        // STEP 5 – position camera for exact TARGET_H model
+        this._placeCamera(TARGET_H);
+
+        // STEP 6 – start animation (prefer 'Idle', else first clip)
         if (gltf.animations && gltf.animations.length > 0) {
-          this._mixer = new THREE.AnimationMixer(m);
-          const clip  = THREE.AnimationClip.findByName(gltf.animations, 'Idle') ||
-                        gltf.animations[0];
+          this._mixer = new THREE.AnimationMixer(root);
+          const clip  = THREE.AnimationClip.findByName(gltf.animations, 'Idle')
+                     || gltf.animations[0];
           this._mixer.clipAction(clip).play();
         }
       },
       undefined,
       () => {
-        /* On load error → procedural fallback */
+        // Load error – use procedural fallback
         this._model = this._buildFallback(this._tier, this._palette);
         this._scene.add(this._model);
-        const box = new THREE.Box3().setFromObject(this._model);
-        this._frameCamera(box);
-      }
+        this._placeCamera(TARGET_H);
+      },
     );
   }
 
-  /** Update the rim-light colour when the user switches palette */
   setPalette (paletteId) {
     this._palette = paletteId || 1;
     if (this._rim) this._rim.color.setHex(PALETTE_HEX[this._palette] || 0xff69b4);
   }
 
-  /** Reserved for future 3-D decoration overlays */
-  setDecorations (_decorations) { /* noop – extend as needed */ }
+  setDecorations (_decorations) { /* reserved for future decoration overlays */ }
 
   dispose () {
     if (this._raf) cancelAnimationFrame(this._raf);
@@ -301,6 +278,6 @@ class AvatarViewer {
   }
 }
 
-/* Instantiate and expose globally so non-module chat.js can access it */
+// Expose globally so non-module chat.js can call loadModel / setPalette
 window._AvatarViewer = AvatarViewer;
 window._avatarViewer = new AvatarViewer('avatar-3d-scene');
