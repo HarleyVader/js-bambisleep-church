@@ -1,9 +1,10 @@
 const path = require('path');
 const express = require('express');
-const chatRoutes = require('./routes/chat');
-const userRoutes = require('./routes/user');
+const chatRoutes    = require('./routes/chat');
+const userRoutes    = require('./routes/user');
 const reactionRoutes = require('./routes/reactions');
-const audioRoutes = require('./routes/audio');
+const audioRoutes   = require('./routes/audio');
+const patreonRoutes = require('./routes/patreon');
 
 const app = express();
 
@@ -17,5 +18,7 @@ app.use('/api/chat', chatRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/messages', reactionRoutes);
 app.use('/api/audio', audioRoutes);
+// Patreon OAuth + webhook — webhook endpoint uses express.raw() internally
+app.use('/api/patreon', patreonRoutes);
 
 module.exports = app;

@@ -143,6 +143,134 @@ body {
 .right-column::-webkit-scrollbar-track { background: transparent; }
 .right-column::-webkit-scrollbar-thumb { background-color: rgba(204, 1, 116, 0.3); border-radius: 4px; }
 
+/* ── Patreon panel ── */
+.patreon-panel {
+  background: rgba(255,66,0,0.07);
+  border: 1px solid rgba(255,66,0,0.3);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.patreon-panel-header {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(255,66,0,0.12);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #f96854;
+  letter-spacing: 0.04em;
+}
+.patreon-panel-body {
+  padding: 10px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.patreon-loading,
+.patreon-info {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.45);
+  text-align: center;
+}
+.patreon-blurb {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.55);
+  text-align: center;
+  margin: 0;
+}
+.patreon-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid rgba(249,104,84,0.5);
+  object-fit: cover;
+}
+.patreon-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.85);
+  text-align: center;
+}
+.patreon-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.03em;
+}
+.patreon-badge.active {
+  background: rgba(41,200,130,0.18);
+  color: #4be3a0;
+  border: 1px solid rgba(41,200,130,0.4);
+}
+.patreon-badge.inactive {
+  background: rgba(255,180,0,0.12);
+  color: #f5b942;
+  border: 1px solid rgba(255,180,0,0.3);
+}
+.patreon-amount {
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.5);
+}
+.patreon-connect-btn {
+  width: 100%;
+  padding: 8px 0;
+  background: #f96854;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: background 0.15s, opacity 0.15s;
+}
+.patreon-connect-btn:hover { background: #e85542; }
+.patreon-connect-btn:active { opacity: 0.8; }
+.patreon-unlink-btn {
+  background: none;
+  border: 1px solid rgba(255,255,255,0.18);
+  color: rgba(255,255,255,0.4);
+  font-size: 0.72rem;
+  padding: 3px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.patreon-unlink-btn:hover {
+  color: rgba(255,255,255,0.7);
+  border-color: rgba(255,255,255,0.4);
+}
+
+/* ── Patreon toast notification ── */
+.patreon-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  padding: 10px 22px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.patreon-toast--visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+.patreon-toast--success {
+  background: rgba(41,200,130,0.95);
+  color: #0a1a0f;
+}
+.patreon-toast--error {
+  background: rgba(220,50,50,0.93);
+  color: #fff;
+}
+
 .container {
   padding: var(--spacing-md);
 }

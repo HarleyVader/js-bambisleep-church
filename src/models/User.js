@@ -28,12 +28,25 @@ const statsSchema = new mongoose.Schema({
   reactionsReceived:   { type: Number, default: 0 },
 }, { _id: false });
 
+const patreonSchema = new mongoose.Schema({
+  userId:                       { type: String, default: null },
+  accessToken:                  { type: String, default: null },
+  refreshToken:                 { type: String, default: null },
+  tokenExpiry:                  { type: Date,   default: null },
+  patronStatus:                 { type: String, default: null }, // active_patron | declined_patron | former_patron | null
+  currentlyEntitledAmountCents: { type: Number, default: 0 },
+  fullName:                     { type: String, default: null },
+  thumbUrl:                     { type: String, default: null },
+  linkedAt:                     { type: Date,   default: null },
+}, { _id: false });
+
 const userSchema = new mongoose.Schema({
   username:     { type: String, required: true },
   sessionToken: { type: String, required: true, unique: true, index: true },
   avatar:       { type: avatarSchema, default: () => ({}) },
   progress:     { type: progressSchema, default: () => ({}) },
   stats:        { type: statsSchema, default: () => ({}) },
+  patreon:      { type: patreonSchema, default: () => ({}) },
   lastSeen:     { type: Date, default: Date.now },
 }, { timestamps: true });
 
