@@ -157,7 +157,7 @@ const updateProfileUI = (user) => {
   if (statMessages)  statMessages.textContent  = fmt(s.messagesCount);
   if (statWords)     statWords.textContent     = fmt(s.wordsCount);
   if (statDays)      statDays.textContent      = String((s.uniqueDaysActive || []).length);
-  if (statReactions) statReactions.textContent = fmt(s.reactionsReceived);
+  if (statReactions) statReactions.textContent = fmt(s.reactionsGiven || 0);
 };
 
 // ── Palette picker ────────────────────────────────────────────────────────────
@@ -296,7 +296,7 @@ socket.on('profile:update', ({ stats, progress }) => {
     if (statMessages)  statMessages.textContent  = fmt(stats.messagesCount  ?? myUser.stats.messagesCount);
     if (statWords)     statWords.textContent     = fmt(stats.wordsCount     ?? myUser.stats.wordsCount);
     if (statDays)      statDays.textContent      = String(stats.daysActive  ?? (myUser.stats.uniqueDaysActive || []).length);
-    if (statReactions) statReactions.textContent = fmt(stats.reactionsReceived ?? myUser.stats.reactionsReceived);
+    if (statReactions) statReactions.textContent = fmt(stats.reactionsGiven ?? myUser.stats.reactionsGiven ?? 0);
   }
   if (progress) {
     myUser.progress = { ...myUser.progress, ...progress };

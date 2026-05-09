@@ -60,6 +60,21 @@ class ChatController {
                 prestigeCount: xpResult.prestigeCount,
               });
             }
+            // Push updated stats so sidebar counters refresh immediately
+            emitToToken(token, 'profile:update', {
+              stats: {
+                messagesCount:     user.stats.messagesCount,
+                wordsCount:        user.stats.wordsCount,
+                daysActive:        (user.stats.uniqueDaysActive || []).length,
+                reactionsGiven:    user.stats.reactionsGiven || 0,
+                reactionsReceived: user.stats.reactionsReceived,
+              },
+              progress: {
+                xp:       user.progress.xp,
+                level:    user.progress.level,
+                prestige: user.progress.prestige,
+              },
+            });
           }
         }
       }

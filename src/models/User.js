@@ -26,6 +26,7 @@ const statsSchema = new mongoose.Schema({
   totalSessionSeconds: { type: Number, default: 0 },
   uniqueDaysActive:    { type: [String], default: [] }, // 'YYYY-MM-DD' strings
   reactionsReceived:   { type: Number, default: 0 },
+  reactionsGiven:      { type: Number, default: 0 },
 }, { _id: false });
 
 const patreonSchema = new mongoose.Schema({

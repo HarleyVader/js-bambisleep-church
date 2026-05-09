@@ -39,7 +39,8 @@ const rewardAuthor = async (authorToken, xpAmount) => {
       stats: {
         messagesCount:     author.stats.messagesCount,
         wordsCount:        author.stats.wordsCount,
-        daysActive:        author.stats.daysActive,
+        daysActive:        (author.stats.uniqueDaysActive || []).length,
+        reactionsGiven:    author.stats.reactionsGiven || 0,
         reactionsReceived: author.stats.reactionsReceived,
       },
       progress: {
@@ -50,6 +51,28 @@ const rewardAuthor = async (authorToken, xpAmount) => {
     });
   } catch (e) {
     logger.error('reaction socket emit error', e);
+  }
+};
+
+/** Increment reactor's reactionsGiven and push their updated stats to their socket. */
+const trackReactorGiven = async (reactorToken) => {
+  const reactor = await User.findOne({ sessionToken: reactorToken });
+  if (!reactor) return;
+  reactor.stats.reactionsGiven = (reactor.stats.reactionsGiven || 0) + 1;
+  await reactor.save();
+  try {
+    const { emitToToken } = require('../sockets/chatSocket');
+    emitToToken(reactorToken, 'profile:update', {
+      stats: {
+        messagesCount:     reactor.stats.messagesCount,
+        wordsCount:        reactor.stats.wordsCount,
+        daysActive:        (reactor.stats.uniqueDaysActive || []).length,
+        reactionsGiven:    reactor.stats.reactionsGiven,
+        reactionsReceived: reactor.stats.reactionsReceived,
+      },
+    });
+  } catch (e) {
+    logger.error('reactor socket emit error', e);
   }
 };
 
@@ -73,11 +96,14 @@ router.post('/:id/react', async (req, res) => {
     if (!reaction) {
       message.reactions.push({ emoji, userTokens: [token] });
       if (message.authorToken) await rewardAuthor(message.authorToken, XP_RATES.REACTION_RECEIVED);
+      // Track reactor's given count
+      await trackReactorGiven(token);
     } else {
       const idx = reaction.userTokens.indexOf(token);
       if (idx === -1) {
         reaction.userTokens.push(token);
         if (message.authorToken) await rewardAuthor(message.authorToken, XP_RATES.REACTION_RECEIVED);
+        await trackReactorGiven(token);
       } else {
         // Remove reaction (toggle off) — no XP deducted
         reaction.userTokens.splice(idx, 1);
