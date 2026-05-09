@@ -1415,7 +1415,6 @@ footer {
   border: 1px solid var(--border-muted);
   border-radius: 10px;
   overflow: hidden;
-  margin-top: 12px;
 }
 
 .ap-panel-header {
@@ -1444,6 +1443,11 @@ footer {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  max-height: 480px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(204, 1, 116, 0.3) transparent;
 }
 .ap-panel-body.ap-collapsed { display: none; }
 
