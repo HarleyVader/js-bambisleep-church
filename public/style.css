@@ -111,11 +111,37 @@ body {
 .left-panel::-webkit-scrollbar-track { background: transparent; }
 .left-panel::-webkit-scrollbar-thumb { background-color: rgba(204, 1, 116, 0.3); border-radius: 4px; }
 
-/* ── Right: chat scrolls normally ── */
+/* ── Centre: chat scrolls normally ── */
 .chat-area {
   flex: 1;
   min-width: 0;
 }
+
+/* ── Right: audio + toy-control column ── */
+.right-column {
+  width: 240px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 22px 16px 22px 14px;
+  background: linear-gradient(
+    180deg,
+    rgba(8, 14, 18, 0.97) 0%,
+    rgba(4, 8, 12, 0.98) 100%
+  );
+  border-left: 1px solid rgba(204, 1, 116, 0.25);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(204, 1, 116, 0.3) transparent;
+}
+.right-column::-webkit-scrollbar { width: 4px; }
+.right-column::-webkit-scrollbar-track { background: transparent; }
+.right-column::-webkit-scrollbar-thumb { background-color: rgba(204, 1, 116, 0.3); border-radius: 4px; }
 
 .container {
   padding: var(--spacing-md);
@@ -1768,6 +1794,20 @@ footer {
   .avatar-3d-body .avatar-figure { transform: scale(0.5); transform-origin: top center; }
   .avatar-nameplate { text-align: left; align-items: flex-start; }
   .online-panel { margin-left: auto; max-width: 180px; }
+  .right-column {
+    width: 100%;
+    height: auto;
+    position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 12px 16px;
+    border-left: none;
+    border-top: 1px solid rgba(204, 1, 116, 0.22);
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .right-column .ap-panel,
+  .right-column .bp-panel { flex: 1; min-width: 220px; }
 }
 
 @media (max-width: 540px) {
@@ -1775,6 +1815,9 @@ footer {
   .avatar-stage  { flex-direction: column; align-items: center; }
   .avatar-nameplate { text-align: center; align-items: center; }
   .online-panel { margin-left: 0; max-width: 100%; }
+  .right-column { flex-direction: column; }
+  .right-column .ap-panel,
+  .right-column .bp-panel { min-width: 0; width: 100%; }
   .card { padding: 12px; }
   header { flex-direction: column; align-items: flex-start; }
 }

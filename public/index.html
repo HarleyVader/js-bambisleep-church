@@ -78,6 +78,42 @@
         <div class="online-users-list" id="online-users-list"></div>
       </div>
 
+    </aside><!-- /.avatar-column -->
+
+    <!-- RIGHT: chat -->
+    <div class="chat-area">
+      <div class="container">
+        <div class="card">
+          <header>
+            <div>
+              <h1>BambiSleep Church</h1>
+              <p>Real-time chat with evolving bimbot avatars.</p>
+            </div>
+            <div class="status" id="status">Connecting&hellip;</div>
+          </header>
+
+          <div class="main-panel">
+            <div id="messages" class="messages"></div>
+
+            <form id="chat-form" class="form-row">
+              <textarea id="message" placeholder="Write a message..." aria-label="Message"></textarea>
+              <div class="controls">
+                <input id="sender" type="text" placeholder="Your name (optional)" aria-label="Sender name" />
+                <button type="submit">Send message</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <footer>
+          <p>Avatars evolve as you chat. Messages persist in MongoDB.</p>
+        </footer>
+      </div>
+    </div><!-- /.chat-area -->
+
+    <!-- RIGHT: audio + toy control column -->
+    <aside class="right-column" id="right-column">
+
       <!-- Audio player panel -->
       <div class="ap-panel" id="ap-panel">
         <div class="ap-panel-header">
@@ -164,38 +200,7 @@
         </div>
       </div>
 
-    </aside><!-- /.avatar-column -->
-
-    <!-- RIGHT: chat -->
-    <div class="chat-area">
-      <div class="container">
-        <div class="card">
-          <header>
-            <div>
-              <h1>BambiSleep Church</h1>
-              <p>Real-time chat with evolving bimbot avatars.</p>
-            </div>
-            <div class="status" id="status">Connecting&hellip;</div>
-          </header>
-
-          <div class="main-panel">
-            <div id="messages" class="messages"></div>
-
-            <form id="chat-form" class="form-row">
-              <textarea id="message" placeholder="Write a message..." aria-label="Message"></textarea>
-              <div class="controls">
-                <input id="sender" type="text" placeholder="Your name (optional)" aria-label="Sender name" />
-                <button type="submit">Send message</button>
-              </div>
-            </form>
-          </div>
-        </div>
-
-        <footer>
-          <p>Avatars evolve as you chat. Messages persist in MongoDB.</p>
-        </footer>
-      </div>
-    </div><!-- /.chat-area -->
+    </aside><!-- /.right-column -->
 
   </div><!-- /.app-layout -->
 
