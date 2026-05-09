@@ -1,8 +1,8 @@
 'use strict';
 
-// Buttplug v4 browser integration
+// Buttplug v3 browser integration
 // Requires Intiface Central running locally: https://intiface.com/central
-// Library loaded from CDN: buttplug@4.x UMD bundle (global: window.buttplug)
+// Library loaded from CDN: buttplug@3.x UMD bundle (global: window.Buttplug)
 
 const BP_ADDR_KEY = 'bp_ws_address';
 const BP_DEFAULT  = 'ws://localhost:12345';
@@ -63,14 +63,14 @@ class ButtplugPanel {
     this._connectBtn.disabled = true;
 
     try {
-      this._client = new window.buttplug.ButtplugClient('BambiSleep Church');
+      this._client = new window.Buttplug.ButtplugClient('BambiSleep Church');
 
       this._client.addListener('deviceadded',    (d) => this._onDeviceAdded(d));
       this._client.addListener('deviceremoved',  (d) => this._onDeviceRemoved(d));
       this._client.addListener('scanningfinished',   () => this._onScanningFinished());
       this._client.addListener('disconnect',         () => this._onServerDisconnect());
 
-      const connector = new window.buttplug.ButtplugBrowserWebsocketClientConnector(address);
+      const connector = new window.Buttplug.ButtplugBrowserWebsocketClientConnector(address);
       await this._client.connect(connector);
 
       this._setStatus('Connected');
@@ -147,9 +147,9 @@ class ButtplugPanel {
   _renderDevice(device) {
     if (document.getElementById(`bp-dev-${device.index}`)) return;
 
-    const canVibrate = device.hasOutput(window.buttplug.OutputType.Vibrate);
-    const canRotate  = device.hasOutput(window.buttplug.OutputType.Rotate);
-    const canOscillate = device.hasOutput(window.buttplug.OutputType.Oscillate);
+    const canVibrate   = device.vibrateAttributes.length > 0;
+    const canRotate    = device.rotateAttributes.length > 0;
+    const canOscillate = device.oscillateAttributes.length > 0;
 
     const card = document.createElement('div');
     card.className = 'bp-device-card';
@@ -186,9 +186,7 @@ class ButtplugPanel {
         const pct = parseInt(slider.value, 10) / 100;
         valEl.textContent = `${Math.round(pct * 100)}%`;
         try {
-          await device.runOutput(
-            window.buttplug.DeviceOutput.Vibrate.percent(pct)
-          );
+          await device.vibrate(pct);
         } catch (_) { /* device may have disconnected */ }
       });
     }
@@ -216,7 +214,7 @@ class ButtplugPanel {
 
 // Initialise after DOM and buttplug library are both ready
 function initButtplugPanel() {
-  if (typeof window.buttplug === 'undefined') {
+  if (typeof window.Buttplug === 'undefined') {
     // Library failed to load – show a static error in the panel status
     const s = document.getElementById('bp-status');
     if (s) s.textContent = 'Library unavailable';
