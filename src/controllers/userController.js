@@ -61,6 +61,13 @@ class UserController {
         user.lastSeen = new Date();
       }
 
+      // Auto-elevate creator role whenever they log in with a linked Patreon account
+      const creatorPatreonId = (process.env.PATREON_CREATOR_USER_ID || '').trim();
+      if (creatorPatreonId && user.patreon?.userId === creatorPatreonId && user.role !== 'creator') {
+        user.role = 'creator';
+        logger.info(`[upsertUser] creator role auto-assigned to: ${user.username}`);
+      }
+
       // Award unique-day XP on first activity of each calendar day
       const today = todayKey();
       let xpResult = {};
@@ -151,7 +158,9 @@ class UserController {
 
       // Creator always has access; everyone else needs at least Good Girl tier
       const ALLOWED_TIERS = ['Good Girl', 'Pink Poodle', 'Airhead Barbie'];
-      const isCreator = viewer.role === 'creator';
+      const creatorPatreonId = (process.env.PATREON_CREATOR_USER_ID || '').trim();
+      const isCreator = viewer.role === 'creator'
+                        || (creatorPatreonId && viewer.patreon?.userId === creatorPatreonId);
       const isPatron  = viewer.patreon?.patronStatus === 'active_patron'
                         && ALLOWED_TIERS.includes(viewer.patreon?.tierName);
 
