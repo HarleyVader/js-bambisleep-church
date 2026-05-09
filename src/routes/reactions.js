@@ -54,14 +54,29 @@ const rewardAuthor = async (authorToken, xpAmount) => {
   }
 };
 
-/** Increment reactor's reactionsGiven and push their updated stats to their socket. */
+/** Increment reactor's reactionsGiven, award XP, and push their updated stats to their socket. */
 const trackReactorGiven = async (reactorToken) => {
   const reactor = await User.findOne({ sessionToken: reactorToken });
   if (!reactor) return;
   reactor.stats.reactionsGiven = (reactor.stats.reactionsGiven || 0) + 1;
+  const xpResult = awardXp(reactor, XP_RATES.REACTION_GIVEN);
   await reactor.save();
   try {
     const { emitToToken } = require('../sockets/chatSocket');
+    emitToToken(reactorToken, 'xpGained', {
+      amount:   XP_RATES.REACTION_GIVEN,
+      reason:   'reaction_given',
+      newTotal: reactor.progress.xp,
+      level:    reactor.progress.level,
+    });
+    if (xpResult && xpResult.leveledUp) {
+      emitToToken(reactorToken, 'levelUp', {
+        newLevel:      xpResult.newLevel,
+        unlocks:       xpResult.unlocks,
+        prestiged:     xpResult.prestiged,
+        prestigeCount: xpResult.prestigeCount,
+      });
+    }
     emitToToken(reactorToken, 'profile:update', {
       stats: {
         messagesCount:     reactor.stats.messagesCount,
@@ -69,6 +84,11 @@ const trackReactorGiven = async (reactorToken) => {
         daysActive:        (reactor.stats.uniqueDaysActive || []).length,
         reactionsGiven:    reactor.stats.reactionsGiven,
         reactionsReceived: reactor.stats.reactionsReceived,
+      },
+      progress: {
+        xp:       reactor.progress.xp,
+        level:    reactor.progress.level,
+        prestige: reactor.progress.prestige,
       },
     });
   } catch (e) {

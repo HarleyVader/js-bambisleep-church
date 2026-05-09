@@ -7,6 +7,7 @@ const XP_RATES = {
   SESSION_PER_FIVE_MIN: 1, // +1 XP per 5 minutes of session
   UNIQUE_DAY: 5,           // +5 XP first activity each calendar day
   REACTION_RECEIVED: 2,    // +2 XP per reaction received
+  REACTION_GIVEN: 1,       // +1 XP per reaction given
 };
 
 // Maximum session seconds counted for XP (cap at 3 hours to prevent abuse)
