@@ -6,7 +6,7 @@ const { setupSockets } = require('./sockets/chatSocket');
 const chatRoute = require('./routes/chat');
 const logger    = require('./utils/logger');
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT;
 
 // Create HTTP server
 const server = http.createServer(app);

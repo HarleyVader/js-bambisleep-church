@@ -1,0 +1,203 @@
+/* ============================================================
+   AVATAR STAGE  (left sidebar profile widget)
+   ============================================================ */
+.avatar-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
+/* ============================================================
+   PROFILE CARD
+   ============================================================ */
+.profile-card {
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 12px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(204, 1, 116, 0.18);
+  border-radius: var(--border-radius-lg);
+}
+
+.profile-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-align: center;
+  line-height: 1.2;
+}
+.profile-title {
+  font-size: 0.62rem;
+  color: var(--avatar-accent, #cc0174);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+/* Level + prestige badges on one row */
+.profile-badges-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+}
+.level-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--secondary-alt), var(--button-color));
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.prestige-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.prestige-badge {
+  font-size: 0.6rem;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #7c3aed, #db2777);
+  color: #fff;
+}
+
+/* XP bar */
+.xp-bar-wrap {
+  position: relative;
+  width: 100%;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 999px;
+  border: 1px solid rgba(204, 1, 116, 0.22);
+  overflow: hidden;
+}
+.xp-bar-fill {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, var(--secondary-alt), var(--primary-alt));
+  border-radius: 999px;
+  transition: width 0.5s ease;
+}
+.xp-bar-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.56rem;
+  color: rgba(255, 255, 255, 0.8);
+  pointer-events: none;
+}
+
+/* Role pill + status text */
+.profile-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+}
+.profile-detail {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+  font-size: 0.64rem;
+  white-space: nowrap;
+}
+.profile-status {
+  font-size: 0.64rem;
+  color: var(--text-muted);
+  font-style: italic;
+  text-align: center;
+  word-break: break-word;
+}
+
+/* Stats 2×2 grid */
+.profile-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+  width: 100%;
+  margin-top: 2px;
+}
+.pstat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 6px 4px 5px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: var(--border-radius);
+}
+.pstat-val {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--primary-alt);
+  line-height: 1;
+}
+.pstat-label {
+  font-size: 0.52rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-align: center;
+}
+
+#edit-profile {
+  width: 100%;
+  margin-top: 2px;
+  background: var(--secondary-alt);
+  color: #fff;
+  border: none;
+  border-radius: var(--border-radius);
+  padding: 7px 12px;
+  font-size: 0.72rem;
+  font-family: var(--font-primary);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+#edit-profile:hover { background: var(--button-color); }
+
+/* ============================================================
+   MINI AVATAR BADGES  (messages & online panel)
+   ============================================================ */
+.msg-avatar-badge,
+.online-avatar-badge {
+  border-radius: 50%;
+  background: var(--avatar-accent, #cc0174);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  flex-shrink: 0;
+  text-transform: uppercase;
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.45);
+}
+.msg-avatar-badge    { width: 38px; height: 38px; font-size: 16px; }
+.online-avatar-badge { width: 32px; height: 32px; font-size: 13px; }
+
+/* Tier-3 gets an outer glow */
+.msg-avatar-badge[data-tier="3"],
+.online-avatar-badge[data-tier="3"] {
+  box-shadow: 0 0 14px 3px var(--avatar-accent, #cc0174), 0 0 4px rgba(0,0,0,0.5);
+}

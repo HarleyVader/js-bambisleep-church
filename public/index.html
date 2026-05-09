@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="/css/base.css" />
   <link rel="stylesheet" href="/css/navbar.css" />
   <link rel="stylesheet" href="/css/layout.css" />
+  <link rel="stylesheet" href="/css/avatar.css" />
   <link rel="stylesheet" href="/css/chat.css" />
   <link rel="stylesheet" href="/css/panels.css" />
   <link rel="stylesheet" href="/css/modals.css" />
@@ -78,6 +79,17 @@
           </div>
 
           <button id="edit-profile" type="button">Edit Profile</button>
+
+          <!-- Patreon panel (moved from right column) -->
+          <div class="patreon-panel" id="patreon-panel">
+            <div class="patreon-panel-header">
+              <span>&#128279; Patreon</span>
+            </div>
+            <div class="patreon-panel-body" id="patreon-panel-body">
+              <!-- Populated by patreon.js -->
+              <div class="patreon-loading" id="patreon-status-area">Checking…</div>
+            </div>
+          </div>
         </div>
 
         <!-- avatar removed -->
@@ -129,17 +141,6 @@
 
     <!-- RIGHT: audio + toy control column -->
     <aside class="right-column" id="right-column">
-
-      <!-- Patreon panel -->
-      <div class="patreon-panel" id="patreon-panel">
-        <div class="patreon-panel-header">
-          <span>&#128279; Patreon</span>
-        </div>
-        <div class="patreon-panel-body" id="patreon-panel-body">
-          <!-- Populated by patreon.js -->
-          <div class="patreon-loading" id="patreon-status-area">Checking…</div>
-        </div>
-      </div>
 
       <!-- Audio player panel -->
       <div class="ap-panel" id="ap-panel">
