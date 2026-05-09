@@ -196,19 +196,18 @@
         </div>
       </div>
 
-      <!-- Buttplug / Intiface device panel -->
-      <div class="bp-panel">
+      <!-- Toy connection panel (Intiface Central WebSocket connection only).
+           Pattern picker + device list live in the hover modal at end of body. -->
+      <div class="bp-panel" id="bp-connection-panel">
         <div class="bp-panel-header">
-          <span>&#128268; Toy Control</span>
+          <span>&#128268; Toy Connection</span>
           <div class="bp-header-actions">
             <button class="bp-help-btn" id="bp-help-btn"
                     type="button" aria-label="Intiface setup help"
                     title="How to connect your toy">?</button>
-            <button class="bp-panel-toggle" id="bp-panel-toggle"
-                    type="button" aria-expanded="true" aria-controls="bp-panel-body">&#9660;</button>
           </div>
         </div>
-        <div class="bp-panel-body" id="bp-panel-body">
+        <div class="bp-panel-body bp-connection-body">
           <p class="bp-hint">
             Requires <a href="https://intiface.com/central" target="_blank" rel="noopener">Intiface&nbsp;Central</a>
             running locally.
@@ -224,13 +223,31 @@
             <button class="bp-btn" id="bp-scan-btn"    type="button" disabled>Scan</button>
           </div>
           <div class="bp-status" id="bp-status">Not connected</div>
-          <div class="bp-device-list" id="bp-device-list"></div>
         </div>
       </div>
 
     </aside><!-- /.right-column -->
 
   </div><!-- /.app-layout -->
+
+  <!-- Toy Control hover modal (patterns + devices). Anchored to usernames.
+       Connection lives in the right-column panel above; this modal hosts
+       the pattern picker (injected by buttplug-panel.js into #bp-panel-body)
+       and the per-device cards (#bp-device-list). -->
+  <div class="bp-hover-modal" id="bp-hover-modal" hidden>
+    <div class="bp-panel">
+      <div class="bp-panel-header">
+        <span>&#128268; Toy Patterns</span>
+        <div class="bp-header-actions">
+          <button class="bp-panel-toggle" id="bp-panel-toggle"
+                  type="button" aria-expanded="true" aria-controls="bp-panel-body">&#9660;</button>
+        </div>
+      </div>
+      <div class="bp-panel-body" id="bp-panel-body">
+        <div class="bp-device-list" id="bp-device-list"></div>
+      </div>
+    </div>
+  </div>
 
   <!-- Profile modal -->
   <div class="profile-modal" id="profile-modal" aria-hidden="true">

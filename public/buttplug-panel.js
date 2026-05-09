@@ -402,6 +402,79 @@ function initButtplugPanel() {
     return;
   }
   window._bpPanel = new ButtplugPanel();
+  initBpHoverModal();
+}
+
+// ── Username hover modal ──────────────────────────────────────────────────────
+// Shows the Toy Control panel as a floating modal anchored next to a username
+// when the user hovers over a `.msg-sender-link` (chat) or `.online-user`
+// (sidebar). Hides on mouseleave with a small grace delay so the user can
+// move the cursor into the modal itself.
+function initBpHoverModal() {
+  const modal = document.getElementById('bp-hover-modal');
+  if (!modal) return;
+
+  let hideTimer = null;
+  const HIDE_DELAY = 220;
+
+  const cancelHide = () => {
+    if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
+  };
+
+  const scheduleHide = () => {
+    cancelHide();
+    hideTimer = setTimeout(() => {
+      modal.classList.remove('bp-hover-modal--visible');
+      // Wait for the transition before fully hiding
+      setTimeout(() => {
+        if (!modal.classList.contains('bp-hover-modal--visible')) modal.hidden = true;
+      }, 140);
+    }, HIDE_DELAY);
+  };
+
+  const showAt = (anchorEl) => {
+    cancelHide();
+    modal.hidden = false;
+    // Force layout so transition runs
+    void modal.offsetWidth;
+
+    const rect = anchorEl.getBoundingClientRect();
+    const mw   = modal.offsetWidth || 280;
+    const mh   = modal.offsetHeight || 320;
+    const vw   = window.innerWidth;
+    const vh   = window.innerHeight;
+
+    // Prefer to the right of the anchor; fall back to left if off-screen
+    let left = rect.right + 8;
+    if (left + mw > vw - 8) left = Math.max(8, rect.left - mw - 8);
+
+    let top = rect.top;
+    if (top + mh > vh - 8) top = Math.max(8, vh - mh - 8);
+
+    modal.style.left = `${left}px`;
+    modal.style.top  = `${top}px`;
+    modal.classList.add('bp-hover-modal--visible');
+  };
+
+  // Delegate hover from the document so dynamically-added messages and
+  // online-user entries are covered automatically.
+  document.addEventListener('mouseover', (e) => {
+    const anchor = e.target.closest('.msg-sender-link, .online-user');
+    if (!anchor) return;
+    showAt(anchor);
+  });
+
+  document.addEventListener('mouseout', (e) => {
+    const anchor = e.target.closest('.msg-sender-link, .online-user');
+    if (!anchor) return;
+    // If we're moving into the modal itself, don't hide
+    const next = e.relatedTarget;
+    if (next && (next === modal || (next.closest && next.closest('#bp-hover-modal')))) return;
+    scheduleHide();
+  });
+
+  modal.addEventListener('mouseenter', cancelHide);
+  modal.addEventListener('mouseleave', scheduleHide);
 }
 
 if (document.readyState === 'loading') {

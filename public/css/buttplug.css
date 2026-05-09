@@ -389,6 +389,37 @@
   color: #ff6b6b;
   background: rgba(255, 80, 80, 0.08);
 }
+
+/* ============================================================
+   TOY-CONTROL HOVER MODAL  (anchored to usernames)
+   ============================================================ */
+.bp-hover-modal {
+  position: fixed;
+  width: 280px;
+  max-height: 80vh;
+  overflow-y: auto;
+  z-index: 9000;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.12s ease, transform 0.12s ease;
+  pointer-events: none;
+  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.55));
+}
+.bp-hover-modal[hidden] { display: none; }
+.bp-hover-modal.bp-hover-modal--visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.bp-hover-modal .bp-panel {
+  background: rgba(8, 12, 16, 0.97);
+  border: 1px solid rgba(204, 1, 116, 0.45);
+}
+/* Username links / online users get a subtle hover hint */
+.msg-sender-link,
+.online-user {
+  cursor: pointer;
+}
 .bp-pattern-stop:hover:not(:disabled) {
   background: rgba(255, 80, 80, 0.22);
   border-color: #ff6b6b;

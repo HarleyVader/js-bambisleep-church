@@ -417,7 +417,7 @@ const renderReactions = (container, reactions, msgId) => {
     e.stopPropagation();
     activePickerMsgId = msgId;
     const rect = addBtn.getBoundingClientRect();
-    emojiPicker.style.top   = `${rect.bottom + window.scrollY + 4}px`;
+    emojiPicker.style.top   = `${rect.bottom + 4}px`;
     emojiPicker.style.left  = '';
     emojiPicker.style.right = `${window.innerWidth - rect.right}px`;
     emojiPicker.hidden = false;
