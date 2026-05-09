@@ -38,13 +38,12 @@ const initSqlite = () => {
   // ── Schema ──────────────────────────────────────────────────────────────────
   _db.exec(`
     -- Chat messages
-    -- avatar_snapshot, reactions, and attachment are stored as JSON text columns
+    -- reactions and attachment are stored as JSON text columns
     CREATE TABLE IF NOT EXISTS messages (
       id              TEXT    PRIMARY KEY,
       sender          TEXT    NOT NULL,
       content         TEXT    NOT NULL DEFAULT '',
       author_token    TEXT    NOT NULL DEFAULT '',
-      avatar_snapshot TEXT    NOT NULL DEFAULT '{}',
       reactions       TEXT    NOT NULL DEFAULT '[]',
       attachment      TEXT             DEFAULT NULL,
       created_at      INTEGER NOT NULL
@@ -58,13 +57,12 @@ const initSqlite = () => {
       WHERE author_token != '';
 
     -- Users
-    -- All nested objects (avatar, progress, stats, patreon) stored as JSON
+    -- All nested objects (progress, stats, patreon) stored as JSON
     CREATE TABLE IF NOT EXISTS users (
       id              TEXT    PRIMARY KEY,
       username        TEXT    NOT NULL,
       session_token   TEXT    NOT NULL UNIQUE,
       role            TEXT    NOT NULL DEFAULT 'user',
-      avatar          TEXT    NOT NULL DEFAULT '{}',
       progress        TEXT    NOT NULL DEFAULT '{}',
       stats           TEXT    NOT NULL DEFAULT '{}',
       patreon         TEXT    NOT NULL DEFAULT '{}',

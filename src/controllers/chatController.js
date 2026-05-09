@@ -19,7 +19,6 @@ class ChatController {
       }
 
       let resolvedSender = (sender || 'Anonymous').trim().substring(0, 32);
-      let avatarSnapshot = {};
       let xpResult = null;
 
       if (token) {
@@ -34,14 +33,6 @@ class ChatController {
           user.stats.messagesCount += 1;
           user.stats.wordsCount += wordCount;
           await user.save();
-
-          avatarSnapshot = {
-            sprite:      user.avatar.currentSprite,
-            paletteId:   user.avatar.colorPaletteId,
-            decorations: [...user.avatar.decorations],
-            title:       user.avatar.title,
-            prestige:    user.progress.prestige,
-          };
 
           // Emit XP events to that user's socket (if socket layer is wired)
           if (this.io && xpResult) {
@@ -96,7 +87,6 @@ class ChatController {
         sender:         resolvedSender,
         content:        (content || '').trim(),
         authorToken:    token || '',
-        avatarSnapshot,
         attachment:     safeAttachment,
       });
 

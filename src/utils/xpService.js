@@ -6,42 +6,16 @@ const {
   LEVEL_THRESHOLDS,
   MAX_LEVEL,
   PRESTIGE_THRESHOLD,
-  LEVEL_UNLOCKS,
   PRESTIGE_TITLES,
 } = require('../config/xpConfig');
-const { getSpriteForLevel } = require('./avatarGenerator');
 
 /**
  * Apply rewards for reaching newLevel onto user document (mutates in-memory).
  * Returns array of unlock description strings for client notification.
  */
 const applyLevelRewards = (user, newLevel) => {
-  const unlock = LEVEL_UNLOCKS[newLevel];
-  if (!unlock) return [];
-
-  const notifications = [];
   user.progress.level = newLevel;
-  user.avatar.title = unlock.title;
-  notifications.push(`title:${unlock.title}`);
-
-  if (unlock.palette != null && !user.avatar.unlockedPalettes.includes(unlock.palette)) {
-    user.avatar.unlockedPalettes.push(unlock.palette);
-    notifications.push(`palette:${unlock.palette}`);
-  }
-
-  for (const deco of unlock.decorations) {
-    if (!user.avatar.decorations.includes(deco)) {
-      user.avatar.decorations.push(deco);
-      notifications.push(`decoration:${deco}`);
-    }
-  }
-
-  if (unlock.spriteEvolution) {
-    user.avatar.currentSprite = getSpriteForLevel(user.avatar.baseVariant, newLevel);
-    notifications.push(`sprite:${user.avatar.currentSprite}`);
-  }
-
-  return notifications;
+  return [];
 };
 
 /**
@@ -55,13 +29,9 @@ const prestigeUser = (user) => {
 
   const badgeIdx = Math.min(user.progress.prestige - 1, PRESTIGE_TITLES.length - 1);
   const badge = PRESTIGE_TITLES[badgeIdx];
-  if (!user.avatar.prestigeBadges.includes(badge)) {
-    user.avatar.prestigeBadges.push(badge);
-  }
 
-  // Re-apply level 1 rewards and reset sprite to tier 1
+  // Re-apply level 1 rewards
   applyLevelRewards(user, 1);
-  user.avatar.currentSprite = getSpriteForLevel(user.avatar.baseVariant, 1);
 
   return user.progress.prestige;
 };

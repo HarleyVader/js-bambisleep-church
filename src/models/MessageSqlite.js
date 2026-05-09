@@ -5,7 +5,7 @@
  *
  * Every message document is stored as a row with key scalar columns
  * (id, sender, content, author_token, created_at) plus two JSON text
- * columns (avatar_snapshot, reactions) that hold the richer nested data.
+ * columns (reactions, attachment) that hold the richer nested data.
  *
  * The public API intentionally mirrors the shape that chatController and
  * reactions.js previously used via Mongoose, so that callers need only
@@ -25,17 +25,17 @@ function stmts() {
   _stmts = {
     insert: db.prepare(`
       INSERT INTO messages
-        (id, sender, content, author_token, avatar_snapshot, reactions, attachment, created_at)
+        (id, sender, content, author_token, reactions, attachment, created_at)
       VALUES
-        (@id, @sender, @content, @author_token, @avatar_snapshot, '[]', @attachment, @created_at)
+        (@id, @sender, @content, @author_token, '[]', @attachment, @created_at)
     `),
     findAll: db.prepare(`
-      SELECT id, sender, content, avatar_snapshot, reactions, attachment, created_at
+      SELECT id, sender, content, reactions, attachment, created_at
       FROM   messages
       ORDER  BY created_at ASC
     `),
     findById: db.prepare(`
-      SELECT id, sender, content, author_token, avatar_snapshot, reactions, attachment, created_at
+      SELECT id, sender, content, author_token, reactions, attachment, created_at
       FROM   messages
       WHERE  id = ?
     `),
@@ -61,7 +61,6 @@ function rowToMessage(row, { includeToken = false } = {}) {
     sender:         row.sender,
     content:        row.content,
     timestamp:      new Date(row.created_at),
-    avatarSnapshot: JSON.parse(row.avatar_snapshot || '{}'),
     reactions:      JSON.parse(row.reactions       || '[]'),
     attachment:     row.attachment ? JSON.parse(row.attachment) : null,
   };
@@ -75,10 +74,10 @@ const MessageSqlite = {
   /**
    * Insert a new message and return the saved document object.
    *
-   * @param {{ sender: string, content: string, authorToken?: string, avatarSnapshot?: object, attachment?: object|null }} params
+   * @param {{ sender: string, content: string, authorToken?: string, attachment?: object|null }} params
    * @returns {object} Saved message (without authorToken)
    */
-  create({ sender, content, authorToken = '', avatarSnapshot = {}, attachment = null }) {
+  create({ sender, content, authorToken = '', attachment = null }) {
     const s   = stmts();
     const id  = randomUUID();
     const now = Date.now();
@@ -87,7 +86,6 @@ const MessageSqlite = {
       sender,
       content,
       author_token:     authorToken,
-      avatar_snapshot:  JSON.stringify(avatarSnapshot),
       attachment:       attachment ? JSON.stringify(attachment) : null,
       created_at:       now,
     });

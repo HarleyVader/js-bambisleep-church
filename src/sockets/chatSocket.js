@@ -20,11 +20,6 @@ const buildOnlineUsers = () => {
   const users = User.findByTokens(tokens);
   return users.map((u) => ({
     username:       u.username,
-    sprite:         u.avatar.currentSprite,
-    paletteId:      u.avatar.colorPaletteId,
-    decorations:    u.avatar.decorations,
-    title:          u.avatar.title,
-    prestigeBadges: u.avatar.prestigeBadges,
     level:          u.progress.level,
   }));
 };

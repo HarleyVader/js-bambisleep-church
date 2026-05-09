@@ -10,21 +10,12 @@
   <link rel="stylesheet" href="/css/base.css" />
   <link rel="stylesheet" href="/css/navbar.css" />
   <link rel="stylesheet" href="/css/layout.css" />
-  <link rel="stylesheet" href="/css/avatar.css" />
   <link rel="stylesheet" href="/css/chat.css" />
   <link rel="stylesheet" href="/css/panels.css" />
   <link rel="stylesheet" href="/css/modals.css" />
   <link rel="stylesheet" href="/css/audio-player.css" />
   <link rel="stylesheet" href="/css/buttplug.css" />
   <link rel="stylesheet" href="/css/responsive.css" />
-  <script type="importmap">
-  {
-    "imports": {
-      "three":           "https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js",
-      "three/addons/":   "https://cdn.jsdelivr.net/npm/three@0.160.1/examples/jsm/"
-    }
-  }
-  </script>
 </head>
 <body>
   <nav class="site-nav">
@@ -89,8 +80,7 @@
           <button id="edit-profile" type="button">Edit Profile</button>
         </div>
 
-        <!-- Three.js avatar canvas (injected by avatar3d.js) -->
-        <div class="avatar-3d-scene" id="avatar-3d-scene"></div>
+        <!-- avatar removed -->
       </div>
 
       <!-- Online users -->
@@ -108,7 +98,7 @@
           <header>
             <div>
               <h1>BambiSleep Church</h1>
-              <p>Real-time chat with evolving bimbot avatars.</p>
+              <p>Real-time chat with your community.</p>
             </div>
             <div class="status" id="status">Connecting&hellip;</div>
           </header>
@@ -132,7 +122,7 @@
         </div>
 
         <footer>
-          <p>Avatars evolve as you chat. Messages persist in MongoDB.</p>
+          <p>Messages persist in MongoDB.</p>
         </footer>
       </div>
     </div><!-- /.chat-area -->
@@ -248,44 +238,6 @@
         <h3 id="profile-modal-title">Edit Profile</h3>
         <button class="profile-modal-close" id="profile-modal-close" type="button">&times;</button>
       </div>
-      <div class="modal-avatar-row">
-        <div class="modal-avatar-wrap" id="modal-avatar-wrap">
-          <div class="avatar-figure avatar-figure--modal" id="modal-avatar-figure" data-variant="0" data-tier="1">
-            <div class="af-hair-back"></div>
-            <div class="af-head">
-              <div class="af-hair-front"></div>
-              <div class="af-face">
-                <div class="af-brow-l"></div>
-                <div class="af-brow-r"></div>
-                <div class="af-eye-l"><div class="af-eye-pupil"></div></div>
-                <div class="af-eye-r"><div class="af-eye-pupil"></div></div>
-                <div class="af-nose"></div>
-                <div class="af-mouth"></div>
-                <div class="af-blush-l"></div>
-                <div class="af-blush-r"></div>
-              </div>
-            </div>
-            <div class="af-neck"></div>
-            <div class="af-upper-body"></div>
-            <div class="af-arm-l"></div>
-            <div class="af-arm-r"></div>
-            <div class="af-outfit-top"></div>
-            <div class="af-bust"></div>
-            <div class="af-waist"></div>
-            <div class="af-hips"></div>
-            <div class="af-outfit-bottom"></div>
-            <div class="af-leg-l"></div>
-            <div class="af-leg-r"></div>
-            <div class="af-shoe-l"></div>
-            <div class="af-shoe-r"></div>
-            <div class="af-accessory"></div>
-            <div class="af-deco-glow"></div>
-          </div>
-        </div>
-        <button type="button" id="reroll-btn" class="reroll-btn">&#127922; Re-roll avatar</button>
-      </div>
-      <div class="palette-picker-label">Color palette</div>
-      <div class="palette-picker" id="palette-picker"></div>
       <form id="profile-form">
         <div class="profile-modal-field">
           <label for="modal-name">Name</label>
@@ -320,7 +272,6 @@
     <button data-emoji="&#127800;">&#127800;</button>
   </div>
 
-  <script type="module" src="/avatar3d.js"></script>
   <script src="/socket.io/socket.io.js"></script>
   <script src="/chat.js"></script>
   <!-- Intiface / Buttplug help modal -->

@@ -12,8 +12,6 @@ const profileNameEl     = document.getElementById('profile-name');
 const profileTitleEl    = document.getElementById('profile-title');
 const profileStatusEl   = document.getElementById('profile-status');
 const profileRoleEl     = document.getElementById('profile-role');
-const avatarFigureEl    = document.getElementById('avatar-figure');
-const avatarDecoLayer   = document.getElementById('avatar-deco-layer');
 const levelBadgeEl      = document.getElementById('level-badge');
 const xpBarFill         = document.getElementById('xp-bar-fill');
 const xpBarLabel        = document.getElementById('xp-bar-label');
@@ -28,10 +26,6 @@ const profileForm       = document.getElementById('profile-form');
 const modalNameInput    = document.getElementById('modal-name');
 const modalStatusInput  = document.getElementById('modal-status');
 const modalRoleInput    = document.getElementById('modal-role');
-const modalAvatarFigureEl = document.getElementById('modal-avatar-figure');
-const modalAvatarWrap   = document.getElementById('modal-avatar-wrap');
-const rerollBtn         = document.getElementById('reroll-btn');
-const palettePicker     = document.getElementById('palette-picker');
 
 // Online panel & toasts
 const onlineUsersList   = document.getElementById('online-users-list');
@@ -154,14 +148,6 @@ document.addEventListener('click', (e) => {
   if (!mentionDropdown.contains(e.target)) mentionClose();
 });
 
-const PALETTES = {
-  1: '#cc0174',
-  2: '#7c3aed',
-  3: '#0369a1',
-  4: '#b45309',
-  5: '#065f46',
-};
-
 // ── Media attach ─────────────────────────────────────────────────────────────
 mediaAttachBtn.addEventListener('click', () => mediaFileInput.click());
 
@@ -233,45 +219,7 @@ const setCookie = (name, value, days = 30) => {
   document.cookie = `${name}=${encodeURIComponent(value)}; path=/; expires=${expires}`;
 };
 
-// ── Avatar helpers ────────────────────────────────────────────────────────────
-/** Parse a sprite filename like "b3-t2.svg" → [variant, tier] */
-const parseSprite = (sprite) => {
-  const m = (sprite || '').match(/^b(\d)-t(\d)\.svg$/);
-  return m ? [parseInt(m[1]), parseInt(m[2])] : [0, 1];
-};
-
-const applyPalette = (paletteId, figureEl) => {
-  if (!figureEl) return;
-  figureEl.style.setProperty('--avatar-accent', PALETTES[paletteId] || PALETTES[1]);
-};
-
-const spriteTier = (level) => (level >= 10 ? 3 : level >= 7 ? 2 : 1);
-
-const applyFigure = (figureEl, baseVariant, tier, paletteId) => {
-  if (figureEl) {
-    figureEl.dataset.variant = baseVariant;
-    figureEl.dataset.tier    = tier;
-    applyPalette(paletteId, figureEl);
-    return;
-  }
-  // Main Three.js viewer (no DOM figure in sidebar)
-  if (window._avatarViewer) window._avatarViewer.loadModel(baseVariant, tier, paletteId);
-};
-
-const applyDecorations = (decorations) => {
-  if (!avatarDecoLayer) {
-    if (window._avatarViewer) window._avatarViewer.setDecorations(decorations);
-    return;
-  }
-  avatarDecoLayer.innerHTML = '';
-  avatarDecoLayer.className = 'avatar-deco-layer';
-  (decorations || []).forEach((d) => avatarDecoLayer.classList.add(`deco-${d}`));
-  if (avatarFigureEl) {
-    avatarFigureEl.classList.remove('deco-crown', 'deco-glow', 'deco-halo');
-    (decorations || []).forEach((d) => avatarFigureEl.classList.add(`deco-${d}`));
-  }
-};
-
+// ── XP bar & profile UI ───────────────────────────────────────────────────────
 const updateXpBar = (xp, level) => {
   const lo  = LEVEL_THRESHOLDS[Math.min(level, MAX_LEVEL)] || 0;
   const hi  = LEVEL_THRESHOLDS[Math.min(level + 1, MAX_LEVEL + 1)] || lo + 1;
@@ -288,26 +236,15 @@ const updateProfileUI = (user) => {
   myUser = user;
 
   profileNameEl.textContent   = user.username;
-  profileTitleEl.textContent  = user.avatar.title || '';
+  profileTitleEl.textContent  = '';
   profileStatusEl.textContent = getCookie('chat_status') || 'Ready to chat';
   profileRoleEl.textContent   = getCookie('chat_role') || 'Visitor';
   senderInput.value           = user.username;
-
-  const tier = spriteTier(user.progress.level);
-  applyFigure(avatarFigureEl, user.avatar.baseVariant, tier, user.avatar.colorPaletteId);
-  applyFigure(modalAvatarFigureEl, user.avatar.baseVariant, tier, user.avatar.colorPaletteId);
-  applyDecorations(user.avatar.decorations);
 
   levelBadgeEl.textContent = `Lv ${user.progress.level}`;
   updateXpBar(user.progress.xp, user.progress.level);
 
   prestigeBadgesEl.innerHTML = '';
-  (user.avatar.prestigeBadges || []).forEach((b) => {
-    const span = document.createElement('span');
-    span.className   = 'prestige-badge';
-    span.textContent = b;
-    prestigeBadgesEl.appendChild(span);
-  });
 
   // Stats
   const s = user.stats || {};
@@ -320,42 +257,6 @@ const updateProfileUI = (user) => {
   if (statWords)     statWords.textContent     = fmt(s.wordsCount);
   if (statDays)      statDays.textContent      = String((s.uniqueDaysActive || []).length);
   if (statReactions) statReactions.textContent = fmt(s.reactionsGiven || 0);
-};
-
-// ── Palette picker ────────────────────────────────────────────────────────────
-const renderPalettePicker = (unlockedPalettes, activePaletteId) => {
-  palettePicker.innerHTML = '';
-  Object.entries(PALETTES).forEach(([id, colour]) => {
-    const btn = document.createElement('button');
-    btn.type             = 'button';
-    btn.className        = 'palette-swatch' + (parseInt(id) === activePaletteId ? ' active' : '');
-    btn.style.background = colour;
-    btn.title            = `Palette ${id}`;
-    if (!unlockedPalettes.includes(parseInt(id))) {
-      btn.disabled = true;
-      btn.classList.add('locked');
-    }
-    btn.addEventListener('click', () => selectPalette(parseInt(id)));
-    palettePicker.appendChild(btn);
-  });
-};
-
-const selectPalette = async (paletteId) => {
-  if (!myToken) return;
-  try {
-    const res = await fetch(`/api/user/${myToken}/palette`, {
-      method:  'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ paletteId }),
-    });
-    if (!res.ok) return;
-    const { avatar } = await res.json();
-    myUser.avatar = avatar;
-    applyPalette(avatar.colorPaletteId, avatarFigureEl);
-    applyPalette(avatar.colorPaletteId, modalAvatarFigureEl);
-    if (window._avatarViewer) window._avatarViewer.setPalette(avatar.colorPaletteId);
-    renderPalettePicker(avatar.unlockedPalettes, avatar.colorPaletteId);
-  } catch (_) { /* no-op */ }
 };
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
@@ -371,7 +272,7 @@ const upsertUser = async (username) => {
   localStorage.setItem(TOKEN_KEY, myToken);
   socket.io.opts.query = { token: myToken };
   updateProfileUI(data.user);
-  renderPalettePicker(data.user.avatar.unlockedPalettes, data.user.avatar.colorPaletteId);
+  return data.user;
   return data.user;
 };
 
@@ -380,7 +281,6 @@ const openProfileModal = (autoOpen = false) => {
   modalNameInput.value   = myUser ? myUser.username : (getCookie('chat_username') || '');
   modalStatusInput.value = getCookie('chat_status') || 'Ready to chat';
   modalRoleInput.value   = getCookie('chat_role') || 'Visitor';
-  if (myUser) renderPalettePicker(myUser.avatar.unlockedPalettes, myUser.avatar.colorPaletteId);
   profileModal.classList.add('visible');
   profileModal.setAttribute('aria-hidden', 'false');
   if (autoOpen) modalNameInput.focus();
@@ -401,22 +301,6 @@ const saveProfile = async () => {
   try { await upsertUser(newName); } catch (_) { /* no-op */ }
   closeProfileModal();
 };
-
-rerollBtn.addEventListener('click', async () => {
-  if (!myToken) return;
-  try {
-    const res = await fetch(`/api/user/${myToken}/reroll`, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-    });
-    if (!res.ok) return;
-    const { avatar } = await res.json();
-    myUser.avatar = avatar;
-    const tier = spriteTier(myUser.progress.level);
-    applyFigure(avatarFigureEl, avatar.baseVariant, tier, avatar.colorPaletteId);
-    applyFigure(modalAvatarFigureEl, avatar.baseVariant, tier, avatar.colorPaletteId);
-  } catch (_) { /* no-op */ }
-});
 
 editProfileBtn.addEventListener('click', () => openProfileModal());
 profileModalClose.addEventListener('click', closeProfileModal);
@@ -477,10 +361,7 @@ socket.on('levelUp', ({ newLevel, unlocks, prestiged }) => {
   showToast(msg);
   fetch(`/api/user/${myToken}`)
     .then((r) => r.json())
-    .then((u) => {
-      updateProfileUI(u);
-      renderPalettePicker(u.avatar.unlockedPalettes, u.avatar.colorPaletteId);
-    })
+    .then((u) => { updateProfileUI(u); })
     .catch(() => { /* no-op */ });
 });
 
@@ -488,13 +369,11 @@ socket.on('onlineUsers', (users) => {
   onlineUsernames = users.map((u) => u.username).filter(Boolean);
   onlineUsersList.innerHTML = '';
   users.forEach((u) => {
-    const [variant, tier] = parseSprite(u.sprite || 'b0-t1.svg');
-    const accent  = PALETTES[u.paletteId] || PALETTES[1];
     const initial = (u.username || '?').charAt(0).toUpperCase();
     const el = document.createElement('div');
     el.className = 'online-user';
     el.innerHTML = `
-      <div class="online-avatar-badge" data-variant="${variant}" data-tier="${tier}" style="--avatar-accent:${accent}">${initial}</div>
+      <span class="online-initial">${initial}</span>
       <span class="online-name">${u.username}</span>
       <span class="online-level">Lv ${u.level}</span>
     `;
@@ -625,11 +504,7 @@ const appendMessage = (data) => {
     renderReactions(existing, data.reactions, data._id);
     return;
   }
-  const snap      = data.avatarSnapshot || {};
-  const paletteId = snap.paletteId || 1;
-  const accent    = PALETTES[paletteId] || PALETTES[1];
-  const [variant, tier] = parseSprite(snap.sprite || 'b0-t1.svg');
-  const initial   = (data.sender || '?').charAt(0).toUpperCase();
+  const initial = (data.sender || '?').charAt(0).toUpperCase();
 
   // Render content: escape HTML, highlight @mentions, linkify BambiCloud URLs
   const renderedContent = renderContent(data.content);
@@ -651,12 +526,10 @@ const appendMessage = (data) => {
   item.className     = 'message';
   item.dataset.msgId = data._id;
   item.innerHTML = `
-    <div class="msg-avatar-badge" data-variant="${variant}" data-tier="${tier}" style="--avatar-accent:${accent}">${initial}</div>
+    <div class="msg-initial">${initial}</div>
     <div class="msg-body">
       <div class="msg-header">
         <strong><a class="msg-sender-link" href="/profile.html?user=${encodeURIComponent(data.sender)}">${data.sender}</a></strong>
-        ${snap.title    ? `<span class="msg-title">${snap.title}</span>`                                            : ''}
-        ${snap.prestige ? `<span class="msg-prestige">${'\u2726'.repeat(Math.min(snap.prestige, 3))}</span>` : ''}
         <time>${formatDate(data.timestamp)}</time>
       </div>
       <div class="msg-content">${renderedContent}</div>

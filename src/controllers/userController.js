@@ -2,9 +2,8 @@
 
 const crypto = require('crypto');
 const User = require('../models/UserSqlite');
-const { generateFromUsername, reroll, getSpriteForLevel } = require('../utils/avatarGenerator');
 const { awardXp, xpFromSession } = require('../utils/xpService');
-const { XP_RATES, LEVEL_UNLOCKS, SESSION_MAX_SECONDS } = require('../config/xpConfig');
+const { XP_RATES, SESSION_MAX_SECONDS } = require('../config/xpConfig');
 const logger = require('../utils/logger');
 
 const todayKey = () => new Date().toISOString().slice(0, 10); // 'YYYY-MM-DD'
@@ -38,23 +37,11 @@ class UserController {
       let newToken = token;
 
       if (!user) {
-        // New user — generate avatar deterministically from username
+        // New user
         newToken = crypto.randomUUID();
-        const { seed, baseVariant, colorPaletteId } = generateFromUsername(name);
-        const sprite = getSpriteForLevel(baseVariant, 1);
         user = User.create({
           username: name,
           sessionToken: newToken,
-          avatar: {
-            seed,
-            baseVariant,
-            currentSprite: sprite,
-            colorPaletteId,
-            unlockedPalettes: [1],
-            decorations: [],
-            title: LEVEL_UNLOCKS[1].title,
-            prestigeBadges: [],
-          },
         });
       } else {
         user.username = name;
@@ -92,43 +79,6 @@ class UserController {
     } catch (error) {
       logger.error('getUser error', error);
       res.status(500).json({ error: 'Failed to retrieve user' });
-    }
-  }
-
-  async rerollAvatar(req, res) {
-    try {
-      const user = User.findOne({ sessionToken: req.params.token });
-      if (!user) return res.status(404).json({ error: 'User not found' });
-
-      const { seed, baseVariant } = reroll();
-      user.avatar.seed = seed;
-      user.avatar.baseVariant = baseVariant;
-      user.avatar.currentSprite = getSpriteForLevel(baseVariant, user.progress.level);
-
-      await user.save();
-      res.status(200).json({ avatar: user.avatar });
-    } catch (error) {
-      logger.error('rerollAvatar error', error);
-      res.status(500).json({ error: 'Failed to reroll avatar' });
-    }
-  }
-
-  async updatePalette(req, res) {
-    try {
-      const user = User.findOne({ sessionToken: req.params.token });
-      if (!user) return res.status(404).json({ error: 'User not found' });
-
-      const paletteId = parseInt(req.body.paletteId, 10);
-      if (!user.avatar.unlockedPalettes.includes(paletteId)) {
-        return res.status(403).json({ error: 'Palette not unlocked' });
-      }
-
-      user.avatar.colorPaletteId = paletteId;
-      await user.save();
-      res.status(200).json({ avatar: user.avatar });
-    } catch (error) {
-      logger.error('updatePalette error', error);
-      res.status(500).json({ error: 'Failed to update palette' });
     }
   }
 
@@ -174,7 +124,6 @@ class UserController {
       return res.json({
         username:  target.username,
         role:      target.role || 'user',
-        avatar:    target.avatar,
         progress:  target.progress,
         lastSeen:  target.lastSeen,
         stats: {

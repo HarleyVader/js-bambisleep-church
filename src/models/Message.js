@@ -1,13 +1,5 @@
 const mongoose = require('mongoose');
 
-const avatarSnapshotSchema = new mongoose.Schema({
-  sprite:      { type: String, default: '' },
-  paletteId:   { type: Number, default: 1 },
-  decorations: { type: [String], default: [] },
-  title:       { type: String, default: '' },
-  prestige:    { type: Number, default: 0 },
-}, { _id: false });
-
 const reactionSchema = new mongoose.Schema({
   emoji:      { type: String, required: true },
   userTokens: { type: [String], default: [] },
@@ -18,7 +10,6 @@ const messageSchema = new mongoose.Schema({
   content:        { type: String, required: true },
   timestamp:      { type: Date, default: Date.now },
   authorToken:    { type: String, default: '', select: false }, // server-side only
-  avatarSnapshot: { type: avatarSnapshotSchema, default: () => ({}) },
   reactions:      { type: [reactionSchema], default: [] },
 });
 
