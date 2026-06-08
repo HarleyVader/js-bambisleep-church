@@ -43,6 +43,19 @@ const defaultPatreon = () => ({
   linkedAt:                     null,
 });
 
+// Good Girl timer challenge.
+// status: 'none' | 'active' | 'completed' | 'failed'
+// tasks: [{ id, playlistId, playlistUrl, title, totalSeconds,
+//           listenedSeconds, complete, assignedBy, assignedAt }]
+const defaultChallenge = () => ({
+  status:          'none',
+  requestedAt:     null,
+  deadlineAt:      null,
+  durationSeconds: 0,
+  completedAt:     null,
+  tasks:           [],
+});
+
 // ── Prepared statements (lazy) ────────────────────────────────────────────────
 
 let _stmts = null;
@@ -53,9 +66,9 @@ function stmts() {
   _stmts = {
     insert: db.prepare(`
       INSERT INTO users
-        (id, username, session_token, role, progress, stats, patreon, last_seen, created_at, updated_at)
+        (id, username, session_token, role, progress, stats, patreon, challenge, last_seen, created_at, updated_at)
       VALUES
-        (@id, @username, @session_token, @role, @progress, @stats, @patreon, @last_seen, @created_at, @updated_at)
+        (@id, @username, @session_token, @role, @progress, @stats, @patreon, @challenge, @last_seen, @created_at, @updated_at)
     `),
     findByToken: db.prepare(`
       SELECT * FROM users WHERE session_token = ? LIMIT 1
@@ -76,6 +89,7 @@ function stmts() {
           progress = @progress,
           stats    = @stats,
           patreon  = @patreon,
+          challenge = @challenge,
           last_seen  = @last_seen,
           updated_at = @updated_at
       WHERE session_token = @session_token
@@ -108,6 +122,7 @@ function rowToUser(row) {
     progress:     JSON.parse(row.progress || '{}'),
     stats:        JSON.parse(row.stats    || '{}'),
     patreon:      JSON.parse(row.patreon  || '{}'),
+    challenge:    { ...defaultChallenge(), ...JSON.parse(row.challenge || '{}') },
     lastSeen:     new Date(row.last_seen),
     createdAt:    new Date(row.created_at),
     updatedAt:    new Date(row.updated_at),
@@ -130,6 +145,7 @@ function makeUser(row) {
       progress:      JSON.stringify(this.progress),
       stats:         JSON.stringify(this.stats),
       patreon:       JSON.stringify(this.patreon),
+      challenge:     JSON.stringify(this.challenge || defaultChallenge()),
       last_seen:     this.lastSeen instanceof Date ? this.lastSeen.getTime() : Date.now(),
       updated_at:    now,
       session_token: this.sessionToken,
@@ -157,6 +173,7 @@ const UserSqlite = {
       progress: JSON.stringify({ ...defaultProgress(), ...(progress || {}) }),
       stats:    JSON.stringify({ ...defaultStats(),    ...(stats    || {}) }),
       patreon:  JSON.stringify({ ...defaultPatreon(),  ...(patreon  || {}) }),
+      challenge: JSON.stringify(defaultChallenge()),
       last_seen:  now,
       created_at: now,
       updated_at: now,
@@ -246,6 +263,7 @@ const UserSqlite = {
   defaultProgress,
   defaultStats,
   defaultPatreon,
+  defaultChallenge,
 };
 
 module.exports = UserSqlite;

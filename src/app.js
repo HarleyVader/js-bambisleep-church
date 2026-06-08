@@ -7,6 +7,7 @@ const reactionRoutes = require('./routes/reactions');
 const audioRoutes   = require('./routes/audio');
 const patreonRoutes = require('./routes/patreon');
 const uploadRoutes  = require('./routes/upload');
+const challengeRoutes = require('./routes/challenge');
 
 // Initialise SQLite (creates data/app.db and runs schema migrations)
 initSqlite();
@@ -29,6 +30,7 @@ app.use('/api/user', userRoutes);
 app.use('/api/messages', reactionRoutes);
 app.use('/api/audio', audioRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/challenge', challengeRoutes);
 // Patreon OAuth + webhook
 app.use('/api/patreon', patreonRoutes);
 // Legacy / portal-registered callback path

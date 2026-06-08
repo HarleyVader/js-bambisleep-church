@@ -8,6 +8,7 @@ const XP_RATES = {
   UNIQUE_DAY: 5,           // +5 XP first activity each calendar day
   REACTION_RECEIVED: 2,    // +2 XP per reaction received
   REACTION_GIVEN: 1,       // +1 XP per reaction given
+  CHALLENGE_COMPLETED: 100, // +100 XP for completing a Good Girl timer challenge
 };
 
 // Maximum session seconds counted for XP (cap at 3 hours to prevent abuse)

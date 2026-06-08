@@ -66,6 +66,7 @@ const initSqlite = () => {
       progress        TEXT    NOT NULL DEFAULT '{}',
       stats           TEXT    NOT NULL DEFAULT '{}',
       patreon         TEXT    NOT NULL DEFAULT '{}',
+      challenge       TEXT    NOT NULL DEFAULT '{}',
       last_seen       INTEGER NOT NULL DEFAULT 0,
       created_at      INTEGER NOT NULL DEFAULT 0,
       updated_at      INTEGER NOT NULL DEFAULT 0
@@ -89,6 +90,10 @@ const initSqlite = () => {
   if (!userCols.includes('role')) {
     _db.exec("ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'user'");
     logger.info('SQLite migration: added role column to users');
+  }
+  if (!userCols.includes('challenge')) {
+    _db.exec("ALTER TABLE users ADD COLUMN challenge TEXT NOT NULL DEFAULT '{}'");
+    logger.info('SQLite migration: added challenge column to users');
   }
 
   logger.info(`SQLite ready: ${DB_PATH}`);

@@ -557,6 +557,32 @@ const appendMessage = (data) => {
         window._audioPlayer.loadPlaylist(btn.dataset.playlistUrl);
       }
     });
+
+    // Patrons can assign this playlist to the message sender's timer challenge.
+    const api = window.bambiChallenge;
+    const target = data.sender;
+    if (api && api.canAssign() && target && target !== 'Anonymous' && target !== api.ownUsername()) {
+      const assignBtn = document.createElement('button');
+      assignBtn.type = 'button';
+      assignBtn.className = 'bambi-assign-btn';
+      assignBtn.textContent = `📌 Assign to ${target}`;
+      assignBtn.setAttribute('aria-label', `Assign playlist to ${target}'s timer challenge`);
+      assignBtn.addEventListener('click', async () => {
+        assignBtn.disabled = true;
+        const original = assignBtn.textContent;
+        assignBtn.textContent = 'Assigning…';
+        try {
+          await api.assign(target, btn.dataset.playlistUrl);
+          assignBtn.textContent = '📌 Assigned ✓';
+        } catch (err) {
+          assignBtn.textContent = err && err.status === 409
+            ? '📌 No active challenge'
+            : '📌 Failed';
+          setTimeout(() => { assignBtn.textContent = original; assignBtn.disabled = false; }, 2500);
+        }
+      });
+      btn.insertAdjacentElement('afterend', assignBtn);
+    }
   });
 };
 

@@ -45,6 +45,8 @@ class AudioPlayer {
     this._bpEnabled  = false;
     this._animFrame  = null;
     this._loadingUrl = null;   // guard: ignore duplicate concurrent loads
+    this._playlistId = null;   // BambiCloud playlist UUID of the loaded playlist
+    this._lastPlayTime = null; // currentTime at previous timeupdate (real-playback tracking)
 
     // ── Audio pipeline ────────────────────────────────────────────────────────
     this._audio             = new Audio();
@@ -117,6 +119,7 @@ class AudioPlayer {
 
       this._playlist   = data.tracks || [];
       this._currentIdx = -1;
+      this._playlistId = data.id || null;
 
       if (this._title)  this._title.textContent  = data.title;
       if (this._author) this._author.textContent = `by ${data.author} · ${this._playlist.length} tracks`;
@@ -190,6 +193,7 @@ class AudioPlayer {
     const proxyUrl = `/api/audio/stream?url=${encodeURIComponent(track.url)}`;
 
     this._audio.pause();
+    this._lastPlayTime = null;   // reset real-playback tracker for the new track
     this._audio.src = proxyUrl;
     if (this._playBtn) this._playBtn.disabled = true;
     this._audio.load();
@@ -256,6 +260,21 @@ class AudioPlayer {
     if (this._progress && dur) this._progress.value = (cur / dur) * 1000;
     if (this._elapsed)   this._elapsed.textContent  = this._fmtTime(cur);
     if (this._remaining) this._remaining.textContent = dur ? `-${this._fmtTime(dur - cur)}` : '--:--';
+
+    // Real-playback tracking: only count forward deltas that match natural
+    // playback (<=1.5s). Seeks/jumps are ignored so progress can't be cheated.
+    if (!this._audio.paused && this._playlistId) {
+      const prev = this._lastPlayTime;
+      if (prev != null) {
+        const delta = cur - prev;
+        if (delta > 0 && delta <= 1.5) {
+          document.dispatchEvent(new CustomEvent('ap:playback', {
+            detail: { playlistId: this._playlistId, deltaSeconds: delta },
+          }));
+        }
+      }
+      this._lastPlayTime = cur;
+    }
   }
 
   _onError() {

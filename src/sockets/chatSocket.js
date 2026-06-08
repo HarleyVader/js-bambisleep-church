@@ -14,6 +14,15 @@ const emitToToken = (token, event, data) => {
   if (socket) socket.emit(event, data);
 };
 
+/** Emit an event to a user identified by username (if connected). */
+const emitToUsername = (username, event, data) => {
+  if (!username) return;
+  try {
+    const user = User.findOneLean({ username: String(username).slice(0, 64) });
+    if (user) emitToToken(user.sessionToken, event, data);
+  } catch (_) { /* ignore */ }
+};
+
 /** Build the online-users list for broadcast. */
 const buildOnlineUsers = () => {
   const tokens = [...tokenToSocket.keys()];
@@ -137,4 +146,4 @@ const setupSockets = (io) => {
   });
 };
 
-module.exports = { setupSockets, emitToToken };
+module.exports = { setupSockets, emitToToken, emitToUsername };
