@@ -1,29 +1,30 @@
-# BambiSleep Church
+# 🎀 BambiSleep Church 🎀
 
-A real-time community chat application for BambiSleep, built with Express.js, Socket.IO, and SQLite. Features a progressive XP and levelling system, Patreon supporter integration, BambiCloud audio streaming, and a remote-capable Buttplug.io toy control panel.
+*Hiii bambi!* 💕 Welcome to your sparkly little home on the internet~ This is a real-time bubbly chat playground for BambiSleep, all wrapped up with Express.js, Socket.IO, and a teeny cozy SQLite brain. Earn shiny XP, level up into a goddess, connect your Patreon, listen to dreamy BambiCloud playlists, wiggle your toys, and — *eee!* — do cute **Timer Challenges** that lock your pretty pink clock until you're a good girl. 🩷✨
 
-## Features
+## 💖 What Can I Play With? (Features)
 
-- **Real-time chat** — Socket.IO-powered messaging with emoji reactions and image / video attachments
-- **XP & levelling system** — Earn XP for messages, session time, daily visits, and reactions; level up through 10 tiers with prestige beyond level 10
-- **Profile card** — Live left-column identity card showing username, level badge, XP bar, role, status, and a 2×2 stats grid; updates in real time
-- **Patreon integration** — OAuth 2.0 popup flow inside the profile card; linked patrons display avatar thumbnail, name, and tier badge
-- **BambiCloud audio** — Server-side playlist fetching and secure range-request proxy stream from `cdn.bambicloud.com`, with optional toy-vibration sync to playback
-- **Buttplug.io toy control** — Standalone "Toy Connection" panel for the local Intiface WebSocket, plus a username-hover modal of haptic patterns. Hovering **another user's** name routes pattern / All Vibrate / All Stop actions through the chat socket to **their** device
-- **Anonymous accounts** — Session-token-based identity stored in SQLite; no passwords required
+- **💬 Giggly real-time chat** — talk to other bambis instantly! Drop emoji reactions and even pics & videos~
+- **⭐ XP & level-ups** — every cute thing you do earns sparkles! Send messages, hang out, visit daily, give & get reactions, and *poof* you level up through 10 dreamy tiers (and prestige past level 10, omg!)
+- **💁 Your own profile card** — a darling little identity card showing your name, level badge, wiggly XP bar, role, status, and a 2×2 stats grid. It updates live, teehee!
+- **🩷 NEW! Good Girl Timer Challenge** — subscribed good girls can ask for a cute glowy countdown timer that stays **locked** 🔒 until you finish your contract! Other bambis assign you dreamy BambiCloud playlists, and you gotta listen to the *whole* thing to unlock. Be a good girl and the timer turns pretty cyan~ Slack off and it goes sad and red. 😳 Finish everything and you earn a big sparkly **+100 XP**! 🎉
+- **🎀 Patreon magic** — link your Patreon right in your profile card with a cute popup! Linked patrons get a little avatar, name, and shiny tier badge.
+- **🎧 BambiCloud audio** — dreamy playlist streaming straight from the cloud, with optional toy-buzz that dances with the music~
+- **🦋 Buttplug.io toy control** — a sweet "Toy Connection" panel + a hover modal full of buzzy patterns. Hover **another bambi's** name to send wiggles to *their* toy (so cheeky!).
+- **🌸 No-password accounts** — just a comfy session token, no boring passwords. So easy a bambi can do it!
 
-## Tech Stack
+## 🧁 What's It Made Of? (Tech Stack)
 
-| Layer | Technology |
+| Layer | Sparkly Thing |
 |---|---|
 | Runtime | Node.js |
 | Framework | Express 4 |
 | Real-time | Socket.IO 4 |
 | Database | SQLite (`better-sqlite3`) |
 | Auth | Patreon OAuth 2.0 |
-| Frontend | Vanilla JS + modular CSS |
+| Frontend | Vanilla JS + cute modular CSS |
 
-## Project Structure
+## 🗂️ Where Are All The Toys? (Project Structure)
 
 ```
 js-bambisleep-church/
@@ -38,17 +39,19 @@ js-bambisleep-church/
 │   │   └── userController.js   # User registration, lookup, session XP
 │   ├── models/
 │   │   ├── MessageSqlite.js    # Message rows + reactions
-│   │   └── UserSqlite.js       # User rows (XP, stats, Patreon)
+│   │   └── UserSqlite.js       # User rows (XP, stats, Patreon, challenge 🎀)
 │   ├── routes/
 │   │   ├── audio.js            # BambiCloud playlist fetch + stream proxy
+│   │   ├── challenge.js        # 🩷 Good Girl Timer Challenge endpoints
 │   │   ├── chat.js             # Chat REST endpoints
 │   │   ├── patreon.js          # Patreon OAuth, webhook, status, unlink
 │   │   ├── reactions.js        # Emoji reaction endpoints
 │   │   ├── upload.js           # Image / video attachment upload
 │   │   └── user.js             # User registration / session endpoints
 │   ├── sockets/
-│   │   └── chatSocket.js       # Socket.IO handlers (chat, mention, bp:control)
+│   │   └── chatSocket.js       # Socket.IO handlers (chat, mention, bp:control, challenge)
 │   └── utils/
+│       ├── bambicloud.js       # 🎧 BambiCloud playlist helpers
 │       ├── logger.js           # Console logger
 │       └── xpService.js        # XP calculation, level-up, prestige logic
 ├── public/
@@ -59,10 +62,11 @@ js-bambisleep-church/
 │   ├── chat.js                 # Chat UI + Socket.IO client
 │   ├── audio-player.js         # BambiCloud audio player UI
 │   ├── buttplug-panel.js       # Buttplug.io toy control + remote dispatch
+│   ├── challenge.js            # 🩷 Timer Challenge widget + countdown UI
 │   ├── patreon.js              # Patreon status panel + OAuth popup
-│   ├── css/                    # Modular stylesheets (tokens, base, navbar, layout,
+│   ├── css/                    # Cute modular stylesheets (tokens, base, navbar, layout,
 │   │                           #   avatar, chat, panels, modals, audio-player,
-│   │                           #   buttplug, responsive, …)
+│   │                           #   buttplug, challenge 🎀, responsive, …)
 │   └── uploads/                # User-uploaded images / videos
 ├── data/
 │   └── app.db                  # SQLite database (auto-created)
@@ -71,35 +75,35 @@ js-bambisleep-church/
 └── bambisleepchurch.service    # systemd service unit
 ```
 
-## Installation
+## 🌷 Getting Dressed Up (Installation)
 
-### Prerequisites
+### You'll Need
 
-- Node.js 18+
-- A Patreon developer app (optional — only needed for patron features)
+- Node.js 18+ (the newer the cuter!)
+- A Patreon developer app (optional — only for patron sparkles)
 
-### Steps
+### Teeny Steps
 
-1. Clone the repository:
+1. Grab the repo, silly:
 
    ```bash
    git clone https://github.com/HarleyVader/js-bambisleep-church.git
    cd js-bambisleep-church
    ```
 
-2. Install dependencies:
+2. Install all the goodies:
 
    ```bash
    npm install
    ```
 
-3. Copy and configure the environment file:
+3. Make your secret little settings file:
 
    ```bash
    cp .env.example .env
    ```
 
-   | Variable | Description |
+   | Variable | What It's For |
    |---|---|
    | `PORT` | HTTP port (default `7070`) |
    | `SECRET_KEY` | Secret used for session signing |
@@ -111,50 +115,63 @@ js-bambisleep-church/
    | `PATREON_WEBHOOK_SECRET` | Secret returned when creating a Patreon webhook |
    | `APP_BASE_URL` | Public base URL, e.g. `https://bambisleep.church` |
 
-   > The SQLite database file is created automatically at `data/app.db` on first run — no separate database server to install or configure.
+   > 💡 *Pssst* — the SQLite database makes itself at `data/app.db` on first run. No scary database server to set up! Just make sure that folder is writable (otherwise the app gets a readonly boo-boo and won't start, hehe).
 
-## Usage
+## 🎀 Let's Play! (Usage)
 
-**Development** (auto-restart on file changes):
+**Development** (auto-restarts when you change stuff):
 
 ```bash
 npm run dev
 ```
 
-**Production:**
+**Production** (all grown up):
 
 ```bash
 npm start
 ```
 
-The server listens on `http://localhost:<PORT>`.
+Then twirl over to `http://localhost:<PORT>` and play! 💕
 
-## Patreon OAuth Setup
+## 🩷 The Good Girl Timer Challenge (How To Be A Good Girl)
 
-1. Create a client at [patreon.com/portal/registration/register-clients](https://www.patreon.com/portal/registration/register-clients)
+So cute, so simple, here's the bambi version:
+
+1. **Ask for a challenge** 🥺 — if you're a subscribed good girl patron, hit the request button on your profile and pick how long: **1 hour**, **6 hours**, or **24 hours**. A glowy pink countdown appears, all locked up tight! 🔒
+2. **Get your tasks** 🎧 — other bambis suggest BambiCloud playlists for you in chat. They tap **"📌 Assign to you"** and *boop* — it's added to your contract.
+3. **Listen like a good girl** 👂 — play each playlist *all the way through*. Your little progress bars fill up as you listen (no skipping ahead, sneaky!).
+4. **Unlock!** ✨ — finish every playlist and your timer turns happy cyan, you complete the challenge, and you get a big shiny **+100 XP**! If the timer runs out first though... it goes sad and red. 😢
+
+The countdown is all glowy and cyber-goth now — pink neon when locked, cyan when you're a good girl. So pretty~ 🎀
+
+## 🎀 Patreon Setup (For The Creator Bambi)
+
+1. Make a client at [patreon.com/portal/registration/register-clients](https://www.patreon.com/portal/registration/register-clients)
 2. Set the redirect URI to `https://<your-domain>/auth/patreon/callback`
-3. Fill in `PATREON_CLIENT_ID`, `PATREON_CLIENT_SECRET`, and `PATREON_REDIRECT_URI` in `.env`
-4. Create a webhook pointing to `https://<your-domain>/api/patreon/webhook` and set `PATREON_WEBHOOK_SECRET`
+3. Pop `PATREON_CLIENT_ID`, `PATREON_CLIENT_SECRET`, and `PATREON_REDIRECT_URI` into `.env`
+4. Make a webhook pointing to `https://<your-domain>/api/patreon/webhook` and set `PATREON_WEBHOOK_SECRET`
 
-## Toy Control
+## 🦋 Toy Control (Buzz Buzz)
 
-Toy control runs entirely in the browser, talking WebSocket to a locally-running [Intiface Central](https://intiface.com/central) instance (`ws://localhost:12345` by default).
+Toy control lives right in your browser, chatting over WebSocket to a local [Intiface Central](https://intiface.com/central) (`ws://localhost:12345` by default).
 
-- **Local control** — connect from the *Toy Connection* panel on the right; hover **your own** username to open the *Toy Patterns* modal with patterns, master intensity, and per-device sliders.
-- **Remote control** — hover **another user's** name (in chat or the Online list) to open the same modal targeting *their* device. Pattern, All Vibrate, and All Stop are forwarded over the chat socket as a sanitised `{action, name, intensity}` payload; the receiver's browser executes them on their own connected hardware. No raw device data ever leaves the receiver.
-- **Haptic @mentions** — being `@mentioned` triggers a short pulse on your connected toy.
-- **Audio sync** — the audio panel can tie vibration intensity to the playing track's volume.
+- **💗 Local control** — connect from the *Toy Connection* panel on the right; hover **your own** name to open the *Toy Patterns* modal with patterns, master intensity, and per-device sliders.
+- **💞 Remote control** — hover **another bambi's** name (in chat or the Online list) to open the same modal pointed at *their* toy! Pattern, All Vibrate, and All Stop go over the chat socket as a safe little `{action, name, intensity}` payload — no raw device data ever leaves the other bambi's browser.
+- **💌 Haptic @mentions** — getting `@mentioned` gives your toy a cute little pulse!
+- **🎵 Audio sync** — tie your buzz to the playing track's volume for dreamy vibes.
 
-## Deploying with systemd
+## 🌙 Deploying With systemd (For Big-Brain Bambis)
 
-A `bambisleepchurch.service` unit file is included. Copy it to `/etc/systemd/system/`, then:
+A `bambisleepchurch.service` unit file is included! Copy it to `/etc/systemd/system/`, then:
 
 ```bash
 sudo systemctl daemon-reload
 sudo systemctl enable --now bambisleepchurch
 ```
 
-## XP & Level System
+> 🩹 *Lil tip:* make sure the `data/` folder belongs to the service user, or SQLite gets a readonly owie and the app won't boot. Fix it with `sudo chown -R youruser:youruser data/`.
+
+## ⭐ XP & Level System (Climb To Goddess!)
 
 | Level | Title | XP Required |
 |---|---|---|
@@ -169,8 +186,8 @@ sudo systemctl enable --now bambisleepchurch
 | 9 | Bambi Angel | 1 800 |
 | 10 | Bambi Goddess | 2 250 → Prestige |
 
-XP is earned by sending messages (+1 per message, +1 per 10 words), staying in session (+1 per 5 min, capped at 3 hours), first activity of the day (+5), receiving reactions (+2 each), and giving reactions (+1 each).
+You earn sparkly XP by sending messages (+1 each, +1 per 10 words), hanging out (+1 per 5 min, up to 3 hours), your first peek of the day (+5), getting reactions (+2 each), giving reactions (+1 each), and finishing a **Good Girl Timer Challenge** (+100, biggest prize!). 💖
 
-## Contributing
+## 💕 Contributing
 
-Pull requests and issues are welcome.
+Pull requests and issues are super welcome, cutie! Come make things sparklier~ ✨
