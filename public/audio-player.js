@@ -58,6 +58,8 @@ class AudioPlayer {
     this._sourceNode = null;
     this._gainNode   = null;
     this._dataArr    = null;
+    this._speechLo   = 0;   // lower speech-band bin index (set in _ensureAudioContext)
+    this._speechHi   = 127; // upper speech-band bin index
 
     // ── Volume ────────────────────────────────────────────────────────────────
     this._volume = parseFloat(localStorage.getItem('ap_volume') ?? '0.8');
@@ -292,8 +294,15 @@ class AudioPlayer {
 
     this._audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     this._analyser = this._audioCtx.createAnalyser();
-    this._analyser.fftSize = 256;
+    // Larger FFT = finer frequency resolution; good for distinguishing speech bands
+    this._analyser.fftSize        = 2048;
+    this._analyser.smoothingTimeConstant = 0.75; // smooth jitter without losing word transients
     this._dataArr  = new Uint8Array(this._analyser.frequencyBinCount);
+
+    // Pre-compute the speech band (100 Hz – 4 kHz) bin range
+    const binHz = this._audioCtx.sampleRate / this._analyser.fftSize;
+    this._speechLo = Math.max(1, Math.floor(100  / binHz));
+    this._speechHi = Math.min(this._dataArr.length - 1, Math.ceil(4000 / binHz));
 
     this._gainNode = this._audioCtx.createGain();
     this._gainNode.gain.value = this._volume;
@@ -318,8 +327,14 @@ class AudioPlayer {
 
       this._analyser.getByteFrequencyData(this._dataArr);
 
-      const sumSq = this._dataArr.reduce((s, v) => s + v * v, 0);
-      const rms   = Math.sqrt(sumSq / this._dataArr.length) / 255;
+      // RMS computed over the speech band only (100 Hz – 4 kHz)
+      // This makes the response word-driven rather than bass/beat-driven
+      let sumSq = 0;
+      for (let i = this._speechLo; i <= this._speechHi; i++) {
+        sumSq += this._dataArr[i] * this._dataArr[i];
+      }
+      const bandCount = this._speechHi - this._speechLo + 1;
+      const rms = Math.sqrt(sumSq / bandCount) / 255;
 
       if (ctx2d && canvas) this._drawVisualizer(ctx2d, canvas);
       if (this._bpEnabled)  this._driveVibration(rms);
@@ -349,10 +364,13 @@ class AudioPlayer {
   _driveVibration(rms) {
     const bp = window._bpPanel;
     if (!bp?._client?.connected) return;
-    const intensity = Math.min(1, Math.pow(rms * 2.5, 0.7));
+    // Subtle: lower cap (0.6), sharper curve — only registers clear speech energy
+    const intensity = Math.min(0.6, Math.pow(rms * 2.0, 1.1));
     bp._devices.forEach((device) => {
-      if (device.vibrateAttributes.length > 0) {
-        device.vibrate(intensity).catch(() => {});
+      const numV = device.vibrateAttributes.length;
+      if (numV > 0) {
+        const speeds = numV > 1 ? Array(numV).fill(intensity) : intensity;
+        device.vibrate(speeds).catch(() => {});
       }
     });
   }

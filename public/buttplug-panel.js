@@ -382,7 +382,9 @@ class ButtplugPanel {
     if (!numV) return;
     for (const step of steps) {
       const intensity = Math.min(1, step.i * (masterIntensity / 0.8));
-      try { await device.vibrate(intensity); } catch (_) { /* ignore */ }
+      try {
+        await device.vibrate(numV > 1 ? Array(numV).fill(intensity) : intensity);
+      } catch (_) { /* ignore */ }
       await this._sleep(step.d);
     }
     try { await device.stop(); } catch (_) { /* ignore */ }
@@ -400,8 +402,11 @@ class ButtplugPanel {
 
   async _allVibrate(intensity) {
     for (const device of this._devices.values()) {
-      if (device.vibrateAttributes.length > 0) {
-        try { await device.vibrate(intensity); } catch (_) { /* ignore */ }
+      const numV = device.vibrateAttributes.length;
+      if (numV > 0) {
+        try {
+          await device.vibrate(numV > 1 ? Array(numV).fill(intensity) : intensity);
+        } catch (_) { /* ignore */ }
       }
     }
   }
