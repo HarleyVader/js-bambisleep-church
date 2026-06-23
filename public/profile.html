@@ -263,9 +263,14 @@
         </div>`;
 
       const cb  = document.getElementById('contract-read-cb');
-      const btn = document.getElementById('contract-sign-btn');
-      cb.addEventListener('change', () => { btn.disabled = !cb.checked; });
+      // Wire AFTER wireSignButton so the handler targets the live (replaced) button
       wireSignButton(p);
+      if (cb) {
+        cb.addEventListener('change', () => {
+          const signBtn = document.getElementById('contract-sign-btn');
+          if (signBtn) signBtn.disabled = !cb.checked;
+        });
+      }
     }
 
     function wireSignButton(p) {
