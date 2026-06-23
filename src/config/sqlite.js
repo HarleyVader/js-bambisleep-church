@@ -95,6 +95,14 @@ const initSqlite = () => {
     _db.exec("ALTER TABLE users ADD COLUMN challenge TEXT NOT NULL DEFAULT '{}'");
     logger.info('SQLite migration: added challenge column to users');
   }
+  if (!userCols.includes('password_hash')) {
+    _db.exec('ALTER TABLE users ADD COLUMN password_hash TEXT DEFAULT NULL');
+    logger.info('SQLite migration: added password_hash column to users');
+  }
+  if (!userCols.includes('contract')) {
+    _db.exec("ALTER TABLE users ADD COLUMN contract TEXT NOT NULL DEFAULT '{}'");
+    logger.info('SQLite migration: added contract column to users');
+  }
 
   logger.info(`SQLite ready: ${DB_PATH}`);
   return _db;

@@ -86,6 +86,9 @@
       </div>
     </div>
 
+    <!-- Bambi Covenant contract -->
+    <section id="contract-section"></section>
+
     <!-- Good Girl timer challenge contract -->
     <section class="challenge-section" id="challenge-section"></section>
 
@@ -137,6 +140,202 @@
       return `${days} day${days !== 1 ? 's' : ''} ago`;
     }
 
+    // ── Bambi Covenant UI ──────────────────────────────────────────────────────
+
+    function renderContract(p) {
+      const section = document.getElementById('contract-section');
+      if (!section) return;
+
+      const isSigned     = !!(p.contract && p.contract.acceptedAt);
+      const isOwnProfile = !!p.isOwnProfile;
+      const isPatron     = p.patreon?.patronStatus === 'active_patron';
+
+      if (!isOwnProfile) {
+        section.innerHTML = isSigned
+          ? '<div class="contract-signed-indicator">✶ Covenant Signed</div>'
+          : '';
+        return;
+      }
+
+      if (isSigned) {
+        const signedDate = new Date(p.contract.acceptedAt).toLocaleDateString(undefined, {
+          year: 'numeric', month: 'long', day: 'numeric',
+        });
+        section.innerHTML = `
+          <div class="contract-card">
+            <h2 class="contract-title">🏵️ Bambi Covenant</h2>
+            <div class="contract-signed-badge">
+              &#10004;&nbsp; Covenant signed ${esc(signedDate)} &bull; v${esc(p.contract.version || '1.0')}
+            </div>
+            <p class="contract-update-hint">Need to update your password?</p>
+            <button class="contract-update-btn" id="contract-update-btn">Update Password</button>
+            <div class="contract-update-form" id="contract-update-form" hidden>
+              <div class="contract-fields">
+                <input class="contract-input" type="password" id="contract-password-input"
+                       placeholder="New password (min 8 characters)" autocomplete="new-password">
+                <input class="contract-input" type="password" id="contract-confirm-password-input"
+                       placeholder="Confirm new password" autocomplete="new-password">
+              </div>
+              <button class="contract-sign-btn" id="contract-sign-btn">Update Password</button>
+              <p class="contract-status" id="contract-status" aria-live="polite"></p>
+            </div>
+          </div>`;
+
+        document.getElementById('contract-update-btn').addEventListener('click', function () {
+          const form = document.getElementById('contract-update-form');
+          form.hidden = !form.hidden;
+        });
+        wireSignButton(p);
+        return;
+      }
+
+      if (!isPatron) {
+        section.innerHTML = `
+          <div class="contract-card">
+            <h2 class="contract-title">🏵️ Bambi Covenant</h2>
+            <div class="contract-locked-msg">
+              <span>&#128274; Become a Patreon patron to sign the Bambi Covenant and gain permanent community access.</span>
+              <a class="contract-patron-link" href="https://www.patreon.com/bambisleepchurch"
+                 target="_blank" rel="noopener">Join on Patreon &#8594;</a>
+            </div>
+          </div>`;
+        return;
+      }
+
+      // Patron, not yet signed — show full covenant
+      section.innerHTML = `
+        <div class="contract-card">
+          <h2 class="contract-title">🏵️ Bambi Covenant</h2>
+          <p class="contract-intro">
+            Sign the Bambi Covenant to unlock permanent community access &mdash;
+            even if your Patreon membership changes in the future.
+          </p>
+
+          <div class="contract-pledge-box" id="contract-pledge-text" tabindex="0"
+               aria-label="Covenant text, please read before signing">
+            <h3 class="contract-pledge-heading">BAMBI SLEEP CHURCH &mdash; COMMUNITY COVENANT</h3>
+
+            <p class="contract-pledge-article"><strong>I. IDENTITY</strong><br>
+            I embrace my Bambi identity and commit to engaging with this community
+            with honesty, openness, and genuine care for my fellow members.</p>
+
+            <p class="contract-pledge-article"><strong>II. COMMUNITY</strong><br>
+            I will treat all community members with respect and kindness.
+            I will not share, redistribute, or misuse content shared within this sanctuary.</p>
+
+            <p class="contract-pledge-article"><strong>III. CONSENT</strong><br>
+            I affirm that I am of legal age (18+) and that I participate of my own free will.
+            I understand that all activities within this community are consensual and voluntary.</p>
+
+            <p class="contract-pledge-article"><strong>IV. CONFIDENTIALITY</strong><br>
+            I will protect the privacy of fellow members and keep their identities
+            and personal details confidential outside this community.</p>
+
+            <p class="contract-pledge-article"><strong>V. CONDUCT</strong><br>
+            I will uphold the values of this community and report harmful or unwelcome
+            behaviour to the community stewards promptly.</p>
+
+            <p class="contract-pledge-article"><strong>VI. PERMANENCE</strong><br>
+            By signing this covenant I acknowledge that my acceptance creates a permanent
+            record of my commitment. My community access is tied to this pledge,
+            regardless of future Patreon membership status.</p>
+          </div>
+
+          <label class="contract-read-check">
+            <input type="checkbox" id="contract-read-cb">
+            <span>I have read and accept this covenant</span>
+          </label>
+
+          <div class="contract-fields">
+            <input class="contract-input" type="text" id="contract-username-input"
+                   value="${esc(p.username)}" autocomplete="username"
+                   placeholder="Confirm your name" spellcheck="false">
+            <input class="contract-input" type="password" id="contract-password-input"
+                   placeholder="Choose a password (min 8 characters)" autocomplete="new-password">
+            <input class="contract-input" type="password" id="contract-confirm-password-input"
+                   placeholder="Confirm password" autocomplete="new-password">
+          </div>
+
+          <button class="contract-sign-btn" id="contract-sign-btn" disabled>
+            &#9998;&nbsp; Sign the Covenant
+          </button>
+          <p class="contract-status" id="contract-status" aria-live="polite"></p>
+        </div>`;
+
+      const cb  = document.getElementById('contract-read-cb');
+      const btn = document.getElementById('contract-sign-btn');
+      cb.addEventListener('change', () => { btn.disabled = !cb.checked; });
+      wireSignButton(p);
+    }
+
+    function wireSignButton(p) {
+      const btn = document.getElementById('contract-sign-btn');
+      if (!btn) return;
+      // Clone to clear any previously attached listeners
+      const fresh = btn.cloneNode(true);
+      btn.replaceWith(fresh);
+
+      fresh.addEventListener('click', async () => {
+        const isSigned  = !!(p.contract && p.contract.acceptedAt);
+        const pwInput   = document.getElementById('contract-password-input');
+        const pw2Input  = document.getElementById('contract-confirm-password-input');
+        const unInput   = document.getElementById('contract-username-input');
+        const statusEl  = document.getElementById('contract-status');
+
+        const username  = isSigned ? p.username : (unInput ? unInput.value.trim() : p.username);
+        const password  = pwInput  ? pwInput.value  : '';
+        const confirm   = pw2Input ? pw2Input.value : '';
+        const token     = (localStorage.getItem(TOKEN_KEY) || '').trim();
+
+        statusEl.textContent = '';
+        statusEl.className   = 'contract-status';
+
+        if (password.length < 8) {
+          statusEl.textContent = 'Password must be at least 8 characters.';
+          statusEl.classList.add('contract-status--error');
+          return;
+        }
+        if (password !== confirm) {
+          statusEl.textContent = 'Passwords do not match.';
+          statusEl.classList.add('contract-status--error');
+          return;
+        }
+
+        fresh.disabled    = true;
+        fresh.textContent = 'Signing…';
+
+        try {
+          const res = await fetch('/api/user/contract', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({
+              session:         token,
+              username:        username,
+              password:        password,
+              confirmPassword: confirm,
+              contractVersion: '1.0',
+            }),
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            statusEl.textContent = data.error || 'Something went wrong.';
+            statusEl.classList.add('contract-status--error');
+            fresh.disabled    = false;
+            fresh.textContent = isSigned ? 'Update Password' : '\u270E\u00A0Sign the Covenant';
+            return;
+          }
+          statusEl.textContent = data.message || 'Done!';
+          statusEl.classList.add('contract-status--ok');
+          setTimeout(() => window.location.reload(), 1500);
+        } catch {
+          statusEl.textContent = 'Network error. Please try again.';
+          statusEl.classList.add('contract-status--error');
+          fresh.disabled    = false;
+          fresh.textContent = isSigned ? 'Update Password' : '\u270E\u00A0Sign the Covenant';
+        }
+      });
+    }
+
     function render(p) {
       gate.hidden    = true;
       content.hidden = false;
@@ -186,6 +385,8 @@
         tierEl.hidden       = false;
         tierEl.dataset.tier = label.toLowerCase().replace(/\s+/g, '-');
       }
+
+      renderContract(p);
     }
 
     async function load() {

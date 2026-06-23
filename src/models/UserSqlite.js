@@ -8,7 +8,7 @@
  * used via Mongoose, so callers need minimal changes.
  */
 
-const { randomUUID } = require('crypto');
+const { randomUUID, scryptSync, randomBytes, timingSafeEqual } = require('crypto');
 const { getDb }      = require('../config/sqlite');
 
 // ── Defaults ──────────────────────────────────────────────────────────────────
@@ -56,6 +56,13 @@ const defaultChallenge = () => ({
   tasks:           [],
 });
 
+// Bambi Covenant — signed contract record
+const defaultContract = () => ({
+  acceptedAt: null,
+  version:    null,
+  username:   null,
+});
+
 // ── Prepared statements (lazy) ────────────────────────────────────────────────
 
 let _stmts = null;
@@ -66,9 +73,9 @@ function stmts() {
   _stmts = {
     insert: db.prepare(`
       INSERT INTO users
-        (id, username, session_token, role, progress, stats, patreon, challenge, last_seen, created_at, updated_at)
+        (id, username, session_token, role, progress, stats, patreon, challenge, password_hash, contract, last_seen, created_at, updated_at)
       VALUES
-        (@id, @username, @session_token, @role, @progress, @stats, @patreon, @challenge, @last_seen, @created_at, @updated_at)
+        (@id, @username, @session_token, @role, @progress, @stats, @patreon, @challenge, @password_hash, @contract, @last_seen, @created_at, @updated_at)
     `),
     findByToken: db.prepare(`
       SELECT * FROM users WHERE session_token = ? LIMIT 1
@@ -84,15 +91,24 @@ function stmts() {
     `),
     updateAll: db.prepare(`
       UPDATE users
-      SET username = @username,
-          role     = @role,
-          progress = @progress,
-          stats    = @stats,
-          patreon  = @patreon,
-          challenge = @challenge,
-          last_seen  = @last_seen,
-          updated_at = @updated_at
+      SET username      = @username,
+          role          = @role,
+          progress      = @progress,
+          stats         = @stats,
+          patreon       = @patreon,
+          challenge     = @challenge,
+          password_hash = @password_hash,
+          contract      = @contract,
+          last_seen     = @last_seen,
+          updated_at    = @updated_at
       WHERE session_token = @session_token
+    `),
+    setPasswordAndContract: db.prepare(`
+      UPDATE users
+      SET password_hash = @password_hash,
+          contract      = @contract,
+          updated_at    = @updated_at
+      WHERE id = @id
     `),
     updatePatreonByUserId: db.prepare(`
       UPDATE users
@@ -123,6 +139,8 @@ function rowToUser(row) {
     stats:        JSON.parse(row.stats    || '{}'),
     patreon:      JSON.parse(row.patreon  || '{}'),
     challenge:    { ...defaultChallenge(), ...JSON.parse(row.challenge || '{}') },
+    password_hash: row.password_hash || null,
+    contract:      { ...defaultContract(), ...JSON.parse(row.contract || '{}') },
     lastSeen:     new Date(row.last_seen),
     createdAt:    new Date(row.created_at),
     updatedAt:    new Date(row.updated_at),
@@ -146,6 +164,8 @@ function makeUser(row) {
       stats:         JSON.stringify(this.stats),
       patreon:       JSON.stringify(this.patreon),
       challenge:     JSON.stringify(this.challenge || defaultChallenge()),
+      password_hash: this.password_hash || null,
+      contract:      JSON.stringify(this.contract || defaultContract()),
       last_seen:     this.lastSeen instanceof Date ? this.lastSeen.getTime() : Date.now(),
       updated_at:    now,
       session_token: this.sessionToken,
@@ -153,6 +173,35 @@ function makeUser(row) {
     this.updatedAt = new Date(now);
   };
   return u;
+}
+
+// ── Password helpers ─────────────────────────────────────────────────────────
+
+/**
+ * Hash a plain-text password using scrypt (Node.js built-in crypto).
+ * Returns a 'salt:hash' string safe to persist in the database.
+ */
+function hashPassword(plain) {
+  const salt   = randomBytes(16).toString('hex');
+  const keyBuf = scryptSync(plain, salt, 64);
+  return `${salt}:${keyBuf.toString('hex')}`;
+}
+
+/**
+ * Verify a plain-text password against a stored 'salt:hash' string.
+ * Uses timingSafeEqual to prevent timing-based side-channel attacks.
+ */
+function verifyPassword(plain, stored) {
+  if (!stored) return false;
+  const [salt, hashHex] = stored.split(':');
+  if (!salt || !hashHex) return false;
+  try {
+    const hashBuf    = Buffer.from(hashHex, 'hex');
+    const derivedBuf = scryptSync(plain, salt, 64);
+    return timingSafeEqual(hashBuf, derivedBuf);
+  } catch {
+    return false;
+  }
 }
 
 // ── Public API ────────────────────────────────────────────────────────────────
@@ -173,7 +222,9 @@ const UserSqlite = {
       progress: JSON.stringify({ ...defaultProgress(), ...(progress || {}) }),
       stats:    JSON.stringify({ ...defaultStats(),    ...(stats    || {}) }),
       patreon:  JSON.stringify({ ...defaultPatreon(),  ...(patreon  || {}) }),
-      challenge: JSON.stringify(defaultChallenge()),
+      challenge:     JSON.stringify(defaultChallenge()),
+      password_hash: null,
+      contract:      JSON.stringify(defaultContract()),
       last_seen:  now,
       created_at: now,
       updated_at: now,
@@ -259,11 +310,29 @@ const UserSqlite = {
     })();
   },
 
+  /**
+   * Save a new password hash and contract record for a user by internal ID.
+   * Faster than a full save() — only touches those two columns.
+   */
+  setPasswordAndContract(userId, passwordHash, contractObj) {
+    stmts().setPasswordAndContract.run({
+      id:            userId,
+      password_hash: passwordHash,
+      contract:      JSON.stringify(contractObj),
+      updated_at:    Date.now(),
+    });
+  },
+
   /** Default progress/stats/patreon factories (for controllers). */
   defaultProgress,
   defaultStats,
   defaultPatreon,
   defaultChallenge,
+  defaultContract,
+  /** Hash a plain-text password (scrypt). */
+  hashPassword,
+  /** Verify a plain-text password against a stored hash. */
+  verifyPassword,
 };
 
 module.exports = UserSqlite;

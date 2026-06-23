@@ -110,12 +110,13 @@ class UserController {
 
       // Creator always has access; any active patron (any amount > 0) can also view
       const creatorPatreonId = (process.env.PATREON_CREATOR_USER_ID || '').trim();
-      const isCreator = viewer.role === 'creator'
-                        || (creatorPatreonId && viewer.patreon?.userId === creatorPatreonId);
-      const isPatron  = viewer.patreon?.patronStatus === 'active_patron'
-                        && (viewer.patreon?.currentlyEntitledAmountCents || 0) >= 200;
+      const isCreator         = viewer.role === 'creator'
+                                || (creatorPatreonId && viewer.patreon?.userId === creatorPatreonId);
+      const isPatron          = viewer.patreon?.patronStatus === 'active_patron'
+                                && (viewer.patreon?.currentlyEntitledAmountCents || 0) >= 200;
+      const hasSignedContract = !!(viewer.contract?.acceptedAt);
 
-      if (!isCreator && !isPatron) {
+      if (!isCreator && !isPatron && !hasSignedContract) {
         return res.status(403).json({ error: 'Good Girl Patreon tier required', gated: true });
       }
 
@@ -124,10 +125,15 @@ class UserController {
 
       // Return public-safe fields only — no tokens, no Patreon auth data
       return res.json({
-        username:  target.username,
-        role:      target.role || 'user',
-        progress:  target.progress,
-        lastSeen:  target.lastSeen,
+        username:     target.username,
+        role:         target.role || 'user',
+        progress:     target.progress,
+        lastSeen:     target.lastSeen,
+        isOwnProfile: target.username === viewer.username,
+        contract: {
+          acceptedAt: target.contract?.acceptedAt || null,
+          version:    target.contract?.version    || null,
+        },
         stats: {
           messagesCount:     target.stats.messagesCount     || 0,
           wordsCount:        target.stats.wordsCount        || 0,
@@ -144,6 +150,104 @@ class UserController {
     } catch (error) {
       logger.error('getPublicProfile error', error);
       res.status(500).json({ error: 'Failed to load profile' });
+    }
+  }
+
+  /**
+   * POST /api/user/contract
+   * Sign the Bambi Covenant — saves a hashed password and a contract record.
+   * Requires active Patreon status OR an already-signed contract (re-sign to update password).
+   */
+  async signContract(req, res) {
+    try {
+      const {
+        session, username, password, confirmPassword, contractVersion = '1.0',
+      } = req.body;
+
+      if (!session || !username || !password || !confirmPassword) {
+        return res.status(400).json({ error: 'Missing required fields' });
+      }
+
+      const user = User.findOne({ sessionToken: session.trim() });
+      if (!user) return res.status(401).json({ error: 'Invalid session' });
+
+      // Username must match exactly (confirmation step)
+      if (user.username !== username.trim()) {
+        return res.status(400).json({ error: 'Username does not match your account' });
+      }
+
+      const creatorPatreonId = (process.env.PATREON_CREATOR_USER_ID || '').trim();
+      const isCreator        = user.role === 'creator'
+                               || (creatorPatreonId && user.patreon?.userId === creatorPatreonId);
+      const isPatron         = user.patreon?.patronStatus === 'active_patron'
+                               && (user.patreon?.currentlyEntitledAmountCents || 0) >= 200;
+      const alreadySigned    = !!(user.contract?.acceptedAt);
+
+      if (!isCreator && !isPatron && !alreadySigned) {
+        return res.status(403).json({
+          error: 'Active Patreon patron status required to sign the covenant',
+        });
+      }
+
+      if (password.length < 8) {
+        return res.status(400).json({ error: 'Password must be at least 8 characters' });
+      }
+      if (password !== confirmPassword) {
+        return res.status(400).json({ error: 'Passwords do not match' });
+      }
+
+      const passwordHash = User.hashPassword(password);
+      const contractObj  = {
+        acceptedAt: alreadySigned ? user.contract.acceptedAt : new Date().toISOString(),
+        version:    contractVersion,
+        username:   user.username,
+      };
+
+      User.setPasswordAndContract(user._id, passwordHash, contractObj);
+
+      logger.info(`[signContract] ${user.username} signed covenant v${contractVersion}`);
+      return res.status(200).json({
+        success:  true,
+        contract: contractObj,
+        message:  alreadySigned
+          ? 'Password updated successfully.'
+          : 'Covenant signed. Welcome to the sisterhood.',
+      });
+    } catch (error) {
+      logger.error('signContract error', error);
+      return res.status(500).json({ error: 'Failed to process covenant' });
+    }
+  }
+
+  /**
+   * POST /api/user/login
+   * Authenticate with username + password and return the existing session token.
+   * Supplements the token-based auth — does not replace it.
+   */
+  async loginWithPassword(req, res) {
+    try {
+      const { username, password } = req.body;
+
+      if (!username || !password) {
+        return res.status(400).json({ error: 'Username and password required' });
+      }
+
+      const user = User.findOne({ username: username.trim() });
+      // Always run the verify step to avoid timing-based user enumeration
+      const valid = user && User.verifyPassword(password, user.password_hash);
+
+      if (!user || !user.password_hash || !valid) {
+        return res.status(401).json({ error: 'Invalid username or password' });
+      }
+
+      logger.info(`[loginWithPassword] ${user.username} authenticated`);
+      return res.status(200).json({
+        token:    user.sessionToken,
+        username: user.username,
+      });
+    } catch (error) {
+      logger.error('loginWithPassword error', error);
+      return res.status(500).json({ error: 'Login failed' });
     }
   }
 }
