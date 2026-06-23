@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Church Chat | BambiSleep Church</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Audiowide&family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" />
+  <link rel="stylesheet" href="/css/tokens.css" />
+  <link rel="stylesheet" href="/css/base.css" />
+  <link rel="stylesheet" href="/css/navbar.css" />
+  <link rel="stylesheet" href="/css/layout.css" />
+  <link rel="stylesheet" href="/css/avatar.css" />
+  <link rel="stylesheet" href="/css/chat.css" />
+  <link rel="stylesheet" href="/css/panels.css" />
+  <link rel="stylesheet" href="/css/modals.css" />
+  <link rel="stylesheet" href="/css/audio-player.css" />
+  <link rel="stylesheet" href="/css/buttplug.css" />
+  <link rel="stylesheet" href="/css/challenge.css" />
+  <link rel="stylesheet" href="/css/responsive.css" />
+</head>
+<body>
+  <nav class="site-nav">
+    <a class="site-nav__brand" href="/">BambiSleep Church</a>
+    <div class="site-nav__links">
+      <a href="/chat.html" class="active">Church Chat</a>
+      <a href="https://bambisleep.chat" target="_blank" rel="noopener">bambisleep.chat</a>
+      <a href="https://bambisleep.wiki" target="_blank" rel="noopener">Wiki</a>
+      <a href="https://bambicloud.com" target="_blank" rel="noopener">BambiCloud</a>
+      <a href="https://www.patreon.com/bambisleepchurch" target="_blank" rel="noopener">Patreon</a>
+      <a href="/help.html">Help</a>
+      <a href="/disclaimer.html">Disclaimer</a>
+      <a href="/terms.html">Terms</a>
+      <a href="/privacy.html">Privacy</a>
+    </div>
+  </nav>
+
+  <div class="app-layout">
+
+    <!-- LEFT: 3-D avatar column (outside the chat card) -->
+    <aside class="avatar-column" id="avatar-column">
+
+      <div class="avatar-stage">
+        <!-- Profile card -->
+        <div class="profile-card">
+          <div class="profile-name" id="profile-name">Anonymous</div>
+          <div class="profile-title" id="profile-title">Bambi Bud</div>
+
+          <div class="profile-badges-row">
+            <span class="level-badge" id="level-badge">Lv 1</span>
+            <div class="prestige-badges" id="prestige-badges"></div>
+          </div>
+
+          <div class="xp-bar-wrap" id="xp-bar-wrap">
+            <div class="xp-bar-fill" id="xp-bar-fill"></div>
+            <span class="xp-bar-label" id="xp-bar-label">0 / 50 XP</span>
+          </div>
+
+          <div class="profile-meta">
+            <span class="profile-detail" id="profile-role">Visitor</span>
+            <span class="profile-status" id="profile-status">Ready to chat</span>
+          </div>
+
+          <div class="profile-stats">
+            <div class="pstat">
+              <span class="pstat-val" id="stat-messages">0</span>
+              <span class="pstat-label">Messages</span>
+            </div>
+            <div class="pstat">
+              <span class="pstat-val" id="stat-words">0</span>
+              <span class="pstat-label">Words</span>
+            </div>
+            <div class="pstat">
+              <span class="pstat-val" id="stat-days">0</span>
+              <span class="pstat-label">Days Active</span>
+            </div>
+            <div class="pstat">
+              <span class="pstat-val" id="stat-reactions">0</span>
+              <span class="pstat-label">Reactions Given</span>
+            </div>
+          </div>
+
+          <button id="edit-profile" type="button">Edit Profile</button>
+
+          <!-- Patreon panel (moved from right column) -->
+          <div class="patreon-panel" id="patreon-panel">
+            <div class="patreon-panel-header">
+              <span>&#128279; Patreon</span>
+            </div>
+            <div class="patreon-panel-body" id="patreon-panel-body">
+              <!-- Populated by patreon.js -->
+              <div class="patreon-loading" id="patreon-status-area">Checking…</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- avatar removed -->
+      </div>
+
+      <!-- Good Girl timer challenge (compact) -->
+      <div class="challenge-widget" id="challenge-widget"></div>
+
+      <!-- Online users -->
+      <div class="online-panel">
+        <div class="online-panel-header">Online</div>
+        <div class="online-users-list" id="online-users-list"></div>
+      </div>
+
+    </aside><!-- /.avatar-column -->
+
+    <!-- RIGHT: chat -->
+    <div class="chat-area">
+      <div class="container">
+        <div class="card">
+          <header>
+            <div>
+              <h1>BambiSleep Church</h1>
+              <p>Real-time chat with your community.</p>
+            </div>
+            <div class="status" id="status">Connecting&hellip;</div>
+          </header>
+
+          <div class="main-panel">
+            <div id="messages" class="messages"></div>
+
+            <form id="chat-form" class="form-row">
+              <div class="input-row">
+                <textarea id="message" placeholder="Write a message..." aria-label="Message"></textarea>
+                <button type="button" id="media-attach-btn" title="Attach image or video" aria-label="Attach image or video">&#128247;</button>
+                <input type="file" id="media-file-input" accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,video/ogg" hidden />
+              </div>
+              <div id="media-preview" class="media-preview" hidden></div>
+              <div class="controls">
+                <input id="sender" type="text" placeholder="Your name (optional)" aria-label="Sender name" />
+                <button type="submit">Send message</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <footer>
+          <p>Messages persist in SQLite.</p>
+        </footer>
+      </div>
+    </div><!-- /.chat-area -->
+
+    <!-- RIGHT: audio + toy control column -->
+    <aside class="right-column" id="right-column">
+
+      <!-- Audio player panel -->
+      <div class="ap-panel" id="ap-panel">
+        <div class="ap-panel-header">
+          <span>&#127925; Bambi Audio</span>
+          <button class="ap-panel-toggle" id="ap-panel-toggle"
+                  type="button" aria-expanded="true" aria-controls="ap-panel-body">&#9660;</button>
+        </div>
+        <div class="ap-panel-body" id="ap-panel-body">
+
+          <!-- Now playing -->
+          <div class="ap-now-playing">
+            <div class="ap-now-title"  id="ap-now-title">Select a track</div>
+            <div class="ap-now-author" id="ap-now-author"></div>
+          </div>
+
+          <!-- Visualizer canvas -->
+          <canvas class="ap-visualizer" id="ap-visualizer"
+                  width="240" height="48" aria-hidden="true"></canvas>
+
+          <!-- Transport -->
+          <div class="ap-progress-row">
+            <span class="ap-time" id="ap-elapsed">0:00</span>
+            <input class="ap-progress" id="ap-progress" type="range"
+                   min="0" max="1000" value="0" aria-label="Playback position" />
+            <span class="ap-time" id="ap-remaining">--:--</span>
+          </div>
+
+          <div class="ap-controls">
+            <button class="ap-ctrl-btn" id="ap-prev-btn" type="button" aria-label="Previous">&#9664;&#9664;</button>
+            <button class="ap-ctrl-btn ap-play-btn" id="ap-play-btn" type="button" aria-label="Play">&#9654;</button>
+            <button class="ap-ctrl-btn" id="ap-next-btn" type="button" aria-label="Next">&#9654;&#9654;</button>
+          </div>
+
+          <!-- Volume -->
+          <div class="ap-volume-row">
+            <span class="ap-vol-icon">&#128266;</span>
+            <input class="ap-volume" id="ap-volume" type="range"
+                   min="0" max="100" value="80" aria-label="Volume" />
+          </div>
+
+          <!-- Buttplug sync -->
+          <div class="ap-bp-row">
+            <button class="ap-bp-toggle" id="ap-bp-toggle" type="button">&#128268; Sync: OFF</button>
+            <span class="ap-bp-status" id="ap-bp-status">Vibration sync disabled</span>
+          </div>
+
+          <!-- Track list -->
+          <div class="ap-track-list" id="ap-track-list">
+            <div class="ap-loading">Loading playlist…</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Toy connection panel -->
+      <div class="bp-panel" id="bp-connection-panel">
+        <div class="bp-panel-header">
+          <span>&#128268; Toy Connection</span>
+          <div class="bp-header-actions">
+            <button class="bp-help-btn" id="bp-help-btn"
+                    type="button" aria-label="Intiface setup help"
+                    title="How to connect your toy">?</button>
+          </div>
+        </div>
+        <div class="bp-panel-body bp-connection-body">
+          <p class="bp-hint">
+            Requires <a href="https://intiface.com/central" target="_blank" rel="noopener">Intiface&nbsp;Central</a>
+            running locally.
+          </p>
+          <div class="bp-address-row">
+            <input  class="bp-address" id="bp-address" type="text"
+                    value="ws://localhost:12345"
+                    placeholder="ws://localhost:12345"
+                    aria-label="Intiface Central WebSocket address" />
+          </div>
+          <div class="bp-action-row">
+            <button class="bp-btn" id="bp-connect-btn" type="button">Connect</button>
+            <button class="bp-btn" id="bp-scan-btn"    type="button" disabled>Scan</button>
+          </div>
+          <div class="bp-status" id="bp-status">Not connected</div>
+        </div>
+      </div>
+
+    </aside><!-- /.right-column -->
+
+  </div><!-- /.app-layout -->
+
+  <!-- Toy Control hover modal -->
+  <div class="bp-hover-modal" id="bp-hover-modal" hidden>
+    <div class="bp-panel">
+      <div class="bp-panel-header">
+        <span>&#128268; Toy Patterns</span>
+        <div class="bp-header-actions">
+          <button class="bp-panel-toggle" id="bp-panel-toggle"
+                  type="button" aria-expanded="true" aria-controls="bp-panel-body">&#9660;</button>
+        </div>
+      </div>
+      <div class="bp-panel-body" id="bp-panel-body">
+        <div class="bp-device-list" id="bp-device-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile modal -->
+  <div class="profile-modal" id="profile-modal" aria-hidden="true">
+    <div class="profile-modal-panel" role="dialog" aria-modal="true" aria-labelledby="profile-modal-title">
+      <div class="profile-modal-header">
+        <h3 id="profile-modal-title">Edit Profile</h3>
+        <button class="profile-modal-close" id="profile-modal-close" type="button">&times;</button>
+      </div>
+      <form id="profile-form">
+        <div class="profile-modal-field">
+          <label for="modal-name">Name</label>
+          <input id="modal-name" name="name" type="text" placeholder="Your display name" />
+        </div>
+        <div class="profile-modal-field">
+          <label for="modal-status">Status</label>
+          <input id="modal-status" name="status" type="text" placeholder="Ready to chat" />
+        </div>
+        <div class="profile-modal-field">
+          <label for="modal-role">Role</label>
+          <input id="modal-role" name="role" type="text" placeholder="Visitor" />
+        </div>
+        <div class="profile-modal-actions">
+          <button type="button" id="profile-cancel">Cancel</button>
+          <button type="submit">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Level-up toast -->
+  <div class="levelup-toast" id="levelup-toast" aria-live="polite"></div>
+
+  <!-- Emoji picker -->
+  <div class="emoji-picker" id="emoji-picker" hidden>
+    <button data-emoji="&#128139;">&#128139;</button>
+    <button data-emoji="&#128149;">&#128149;</button>
+    <button data-emoji="&#127872;">&#127872;</button>
+    <button data-emoji="&#10024;">&#10024;</button>
+    <button data-emoji="&#127769;">&#127769;</button>
+    <button data-emoji="&#127800;">&#127800;</button>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/chat.js"></script>
+
+  <!-- Intiface / Buttplug help modal -->
+  <div class="bp-modal-overlay" id="bp-help-modal" role="dialog"
+       aria-modal="true" aria-labelledby="bp-modal-title" hidden>
+    <div class="bp-modal">
+      <div class="bp-modal-header">
+        <h2 id="bp-modal-title">&#128268; Connecting Your Toy</h2>
+        <button class="bp-modal-close" id="bp-modal-close"
+                type="button" aria-label="Close help">&times;</button>
+      </div>
+      <div class="bp-modal-body">
+
+        <section class="bp-help-section">
+          <h3>What is Intiface Central?</h3>
+          <p>
+            <a href="https://intiface.com/central" target="_blank" rel="noopener">Intiface&nbsp;Central</a>
+            is a free, open-source desktop app by
+            <a href="https://nonpolynomial.com" target="_blank" rel="noopener">Nonpolynomial Labs</a>
+            that acts as a local server between your browser and
+            Bluetooth/USB toys. It must be running on the same computer as
+            your browser before you click &ldquo;Connect&rdquo; here.
+          </p>
+        </section>
+
+        <section class="bp-help-section">
+          <h3>Quick-Start (3 steps)</h3>
+          <ol class="bp-help-steps">
+            <li>
+              <strong>Download &amp; install</strong> Intiface Central
+              from <a href="https://intiface.com/central" target="_blank" rel="noopener">intiface.com/central</a>
+              (Windows / macOS / Linux).
+            </li>
+            <li>
+              <strong>Start the server</strong> &mdash; open Intiface
+              Central and press the big green <em>Start Server</em> button.
+              The default address is <code>ws://localhost:12345</code>.
+            </li>
+            <li>
+              <strong>Connect here</strong> &mdash; leave the address as
+              <code>ws://localhost:12345</code> and click
+              <em>Connect</em>. Then click <em>Scan</em> to find your
+              paired Bluetooth toy.
+            </li>
+          </ol>
+        </section>
+
+        <section class="bp-help-section">
+          <h3>Pairing your toy first</h3>
+          <p>
+            Toys must be paired with your <strong>OS Bluetooth settings</strong>
+            before Intiface Central can see them. Open your system&rsquo;s
+            Bluetooth &amp; devices panel, put the toy in pairing mode
+            (usually hold the power button 3&ndash;5&nbsp;s until it flashes),
+            and pair it. You only need to do this once.
+          </p>
+        </section>
+
+        <section class="bp-help-section">
+          <h3>Supported toy brands</h3>
+          <p>
+            Lovense, We-Vibe, Kiiroo, Lelo, Vibease, OhMiBod, Satisfyer,
+            The Handy, and hundreds more &mdash; see the full list at
+            <a href="https://iostindex.com" target="_blank" rel="noopener">iostindex.com</a>.
+          </p>
+        </section>
+
+        <section class="bp-help-section">
+          <h3>Custom server address</h3>
+          <p>
+            If Intiface Central is running on a different machine or port,
+            change the address in the <em>Toy Control</em> panel before
+            connecting. Example: <code>ws://192.168.1.10:12345</code>.
+          </p>
+        </section>
+
+        <section class="bp-help-section">
+          <h3>Troubleshooting</h3>
+          <ul class="bp-help-list">
+            <li><strong>Won&rsquo;t connect</strong> &mdash; make sure Intiface
+              Central&rsquo;s server is <em>started</em> (green status), not
+              just open.</li>
+            <li><strong>Toy not found after scanning</strong> &mdash; confirm
+              the toy is charged, in range (&lt;&nbsp;5&nbsp;m), and paired
+              in your OS Bluetooth settings.</li>
+            <li><strong>Connection drops</strong> &mdash; keep the Intiface
+              Central window open; minimising is fine but closing it
+              disconnects all toys.</li>
+            <li><strong>Browser blocks WebSocket</strong> &mdash; some
+              browsers disallow plain <code>ws://</code> on HTTPS pages;
+              use the desktop app or run the site over plain HTTP.</li>
+          </ul>
+        </section>
+
+        <div class="bp-help-links">
+          <a href="https://intiface.com/central" target="_blank" rel="noopener">&#8599; Download Intiface Central</a>
+          <a href="https://iostindex.com" target="_blank" rel="noopener">&#8599; Device compatibility list</a>
+          <a href="https://github.com/intiface/intiface-central" target="_blank" rel="noopener">&#8599; Source &amp; release notes</a>
+          <a href="https://discord.buttplug.io" target="_blank" rel="noopener">&#8599; Buttplug Discord support</a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Buttplug v3 – browser UMD bundle (exposes window.Buttplug) -->
+  <script src="https://cdn.jsdelivr.net/npm/buttplug@3.0.0/dist/web/buttplug.js"
+          crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="/buttplug-panel.js"></script>
+  <script src="/audio-player.js"></script>
+  <script src="/patreon.js"></script>
+  <script src="/challenge.js"></script>
+</body>
+</html>

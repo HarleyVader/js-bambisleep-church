@@ -3,27 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Chat | BambiSleep Church</title>
+  <title>BambiSleep Church — Welcome</title>
+  <meta name="description" content="BambiSleep Church is a warm, adult community built around the BambiSleep hypnosis audio series. Real-time chat, audio streaming, XP progression, and consensual toy integration." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Audiowide&family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Audiowide&family=Orbitron:wght@500;700;900&display=swap" />
   <link rel="stylesheet" href="/css/tokens.css" />
   <link rel="stylesheet" href="/css/base.css" />
   <link rel="stylesheet" href="/css/navbar.css" />
-  <link rel="stylesheet" href="/css/layout.css" />
-  <link rel="stylesheet" href="/css/avatar.css" />
-  <link rel="stylesheet" href="/css/chat.css" />
-  <link rel="stylesheet" href="/css/panels.css" />
-  <link rel="stylesheet" href="/css/modals.css" />
-  <link rel="stylesheet" href="/css/audio-player.css" />
-  <link rel="stylesheet" href="/css/buttplug.css" />
-  <link rel="stylesheet" href="/css/challenge.css" />
+  <link rel="stylesheet" href="/css/home.css" />
   <link rel="stylesheet" href="/css/responsive.css" />
 </head>
 <body>
   <nav class="site-nav">
     <a class="site-nav__brand" href="/">BambiSleep Church</a>
     <div class="site-nav__links">
-      <a href="https://bambisleep.chat" target="_blank" rel="noopener">Chat</a>
+      <a href="/chat.html">Church Chat</a>
+      <a href="https://bambisleep.chat" target="_blank" rel="noopener">bambisleep.chat</a>
       <a href="https://bambisleep.wiki" target="_blank" rel="noopener">Wiki</a>
       <a href="https://bambicloud.com" target="_blank" rel="noopener">BambiCloud</a>
       <a href="https://www.patreon.com/bambisleepchurch" target="_blank" rel="noopener">Patreon</a>
@@ -34,377 +29,168 @@
     </div>
   </nav>
 
-  <div class="app-layout">
-
-    <!-- LEFT: 3-D avatar column (outside the chat card) -->
-    <aside class="avatar-column" id="avatar-column">
-
-      <div class="avatar-stage">
-        <!-- Profile card -->
-        <div class="profile-card">
-          <div class="profile-name" id="profile-name">Anonymous</div>
-          <div class="profile-title" id="profile-title">Bambi Bud</div>
-
-          <div class="profile-badges-row">
-            <span class="level-badge" id="level-badge">Lv 1</span>
-            <div class="prestige-badges" id="prestige-badges"></div>
-          </div>
-
-          <div class="xp-bar-wrap" id="xp-bar-wrap">
-            <div class="xp-bar-fill" id="xp-bar-fill"></div>
-            <span class="xp-bar-label" id="xp-bar-label">0 / 50 XP</span>
-          </div>
-
-          <div class="profile-meta">
-            <span class="profile-detail" id="profile-role">Visitor</span>
-            <span class="profile-status" id="profile-status">Ready to chat</span>
-          </div>
-
-          <div class="profile-stats">
-            <div class="pstat">
-              <span class="pstat-val" id="stat-messages">0</span>
-              <span class="pstat-label">Messages</span>
-            </div>
-            <div class="pstat">
-              <span class="pstat-val" id="stat-words">0</span>
-              <span class="pstat-label">Words</span>
-            </div>
-            <div class="pstat">
-              <span class="pstat-val" id="stat-days">0</span>
-              <span class="pstat-label">Days Active</span>
-            </div>
-            <div class="pstat">
-              <span class="pstat-val" id="stat-reactions">0</span>
-              <span class="pstat-label">Reactions Given</span>
-            </div>
-          </div>
-
-          <button id="edit-profile" type="button">Edit Profile</button>
-
-          <!-- Patreon panel (moved from right column) -->
-          <div class="patreon-panel" id="patreon-panel">
-            <div class="patreon-panel-header">
-              <span>&#128279; Patreon</span>
-            </div>
-            <div class="patreon-panel-body" id="patreon-panel-body">
-              <!-- Populated by patreon.js -->
-              <div class="patreon-loading" id="patreon-status-area">Checking…</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- avatar removed -->
-      </div>
-
-      <!-- Good Girl timer challenge (compact) -->
-      <div class="challenge-widget" id="challenge-widget"></div>
-
-      <!-- Online users -->
-      <div class="online-panel">
-        <div class="online-panel-header">Online</div>
-        <div class="online-users-list" id="online-users-list"></div>
-      </div>
-
-    </aside><!-- /.avatar-column -->
-
-    <!-- RIGHT: chat -->
-    <div class="chat-area">
-      <div class="container">
-        <div class="card">
-          <header>
-            <div>
-              <h1>BambiSleep Church</h1>
-              <p>Real-time chat with your community.</p>
-            </div>
-            <div class="status" id="status">Connecting&hellip;</div>
-          </header>
-
-          <div class="main-panel">
-            <div id="messages" class="messages"></div>
-
-            <form id="chat-form" class="form-row">
-              <div class="input-row">
-                <textarea id="message" placeholder="Write a message..." aria-label="Message"></textarea>
-                <button type="button" id="media-attach-btn" title="Attach image or video" aria-label="Attach image or video">&#128247;</button>
-                <input type="file" id="media-file-input" accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,video/ogg" hidden />
-              </div>
-              <div id="media-preview" class="media-preview" hidden></div>
-              <div class="controls">
-                <input id="sender" type="text" placeholder="Your name (optional)" aria-label="Sender name" />
-                <button type="submit">Send message</button>
-              </div>
-            </form>
-          </div>
-        </div>
-
-        <footer>
-          <p>Messages persist in MongoDB.</p>
-        </footer>
-      </div>
-    </div><!-- /.chat-area -->
-
-    <!-- RIGHT: audio + toy control column -->
-    <aside class="right-column" id="right-column">
-
-      <!-- Audio player panel -->
-      <div class="ap-panel" id="ap-panel">
-        <div class="ap-panel-header">
-          <span>&#127925; Bambi Audio</span>
-          <button class="ap-panel-toggle" id="ap-panel-toggle"
-                  type="button" aria-expanded="true" aria-controls="ap-panel-body">&#9660;</button>
-        </div>
-        <div class="ap-panel-body" id="ap-panel-body">
-
-          <!-- Now playing -->
-          <div class="ap-now-playing">
-            <div class="ap-now-title"  id="ap-now-title">Select a track</div>
-            <div class="ap-now-author" id="ap-now-author"></div>
-          </div>
-
-          <!-- Visualizer canvas -->
-          <canvas class="ap-visualizer" id="ap-visualizer"
-                  width="240" height="48" aria-hidden="true"></canvas>
-
-          <!-- Transport -->
-          <div class="ap-progress-row">
-            <span class="ap-time" id="ap-elapsed">0:00</span>
-            <input class="ap-progress" id="ap-progress" type="range"
-                   min="0" max="1000" value="0" aria-label="Playback position" />
-            <span class="ap-time" id="ap-remaining">--:--</span>
-          </div>
-
-          <div class="ap-controls">
-            <button class="ap-ctrl-btn" id="ap-prev-btn" type="button" aria-label="Previous">&#9664;&#9664;</button>
-            <button class="ap-ctrl-btn ap-play-btn" id="ap-play-btn" type="button" aria-label="Play">&#9654;</button>
-            <button class="ap-ctrl-btn" id="ap-next-btn" type="button" aria-label="Next">&#9654;&#9654;</button>
-          </div>
-
-          <!-- Volume -->
-          <div class="ap-volume-row">
-            <span class="ap-vol-icon">&#128266;</span>
-            <input class="ap-volume" id="ap-volume" type="range"
-                   min="0" max="100" value="80" aria-label="Volume" />
-          </div>
-
-          <!-- Buttplug sync -->
-          <div class="ap-bp-row">
-            <button class="ap-bp-toggle" id="ap-bp-toggle" type="button">&#128268; Sync: OFF</button>
-            <span class="ap-bp-status" id="ap-bp-status">Vibration sync disabled</span>
-          </div>
-
-          <!-- Track list -->
-          <div class="ap-track-list" id="ap-track-list">
-            <div class="ap-loading">Loading playlist…</div>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- Toy connection panel (Intiface Central WebSocket connection only).
-           Pattern picker + device list live in the hover modal at end of body. -->
-      <div class="bp-panel" id="bp-connection-panel">
-        <div class="bp-panel-header">
-          <span>&#128268; Toy Connection</span>
-          <div class="bp-header-actions">
-            <button class="bp-help-btn" id="bp-help-btn"
-                    type="button" aria-label="Intiface setup help"
-                    title="How to connect your toy">?</button>
-          </div>
-        </div>
-        <div class="bp-panel-body bp-connection-body">
-          <p class="bp-hint">
-            Requires <a href="https://intiface.com/central" target="_blank" rel="noopener">Intiface&nbsp;Central</a>
-            running locally.
-          </p>
-          <div class="bp-address-row">
-            <input  class="bp-address" id="bp-address" type="text"
-                    value="ws://localhost:12345"
-                    placeholder="ws://localhost:12345"
-                    aria-label="Intiface Central WebSocket address" />
-          </div>
-          <div class="bp-action-row">
-            <button class="bp-btn" id="bp-connect-btn" type="button">Connect</button>
-            <button class="bp-btn" id="bp-scan-btn"    type="button" disabled>Scan</button>
-          </div>
-          <div class="bp-status" id="bp-status">Not connected</div>
-        </div>
-      </div>
-
-    </aside><!-- /.right-column -->
-
-  </div><!-- /.app-layout -->
-
-  <!-- Toy Control hover modal (patterns + devices). Anchored to usernames.
-       Connection lives in the right-column panel above; this modal hosts
-       the pattern picker (injected by buttplug-panel.js into #bp-panel-body)
-       and the per-device cards (#bp-device-list). -->
-  <div class="bp-hover-modal" id="bp-hover-modal" hidden>
-    <div class="bp-panel">
-      <div class="bp-panel-header">
-        <span>&#128268; Toy Patterns</span>
-        <div class="bp-header-actions">
-          <button class="bp-panel-toggle" id="bp-panel-toggle"
-                  type="button" aria-expanded="true" aria-controls="bp-panel-body">&#9660;</button>
-        </div>
-      </div>
-      <div class="bp-panel-body" id="bp-panel-body">
-        <div class="bp-device-list" id="bp-device-list"></div>
-      </div>
+  <!-- ── HERO ──────────────────────────────────────────────────────────────── -->
+  <section class="home-hero">
+    <p class="home-hero__eyebrow">&#10024; Welcome to</p>
+    <h1 class="home-hero__title">BambiSleep Church</h1>
+    <p class="home-hero__sub">
+      A warm, adult community built around the BambiSleep hypnosis audio series.
+      Chat live with other Bambis, stream audio together, earn XP, and connect
+      your toys for a fully immersive experience.
+    </p>
+    <div class="home-hero__cta">
+      <a class="home-cta-btn home-cta-btn--primary" href="/chat.html">
+        &#128172; Enter the Church Chat
+      </a>
+      <a class="home-cta-btn home-cta-btn--secondary" href="/disclaimer.html">
+        &#9888; Read the Disclaimer
+      </a>
     </div>
+  </section>
+
+  <!-- ── AGE / CONSENT RIBBON ──────────────────────────────────────────────── -->
+  <div class="home-disclaimer-ribbon">
+    <span class="home-disclaimer-ribbon__icon">&#9888;</span>
+    <span>
+      <strong>Adults only &mdash; 18+.</strong>
+      This community contains hypnosis audio, adult themes, and community-generated content.
+      By entering you confirm you are of legal age and have read our
+      <a href="/disclaimer.html">disclaimer</a>.
+      All participation is entirely voluntary and consensual.
+    </span>
   </div>
 
-  <!-- Profile modal -->
-  <div class="profile-modal" id="profile-modal" aria-hidden="true">
-    <div class="profile-modal-panel" role="dialog" aria-modal="true" aria-labelledby="profile-modal-title">
-      <div class="profile-modal-header">
-        <h3 id="profile-modal-title">Edit Profile</h3>
-        <button class="profile-modal-close" id="profile-modal-close" type="button">&times;</button>
-      </div>
-      <form id="profile-form">
-        <div class="profile-modal-field">
-          <label for="modal-name">Name</label>
-          <input id="modal-name" name="name" type="text" placeholder="Your display name" />
-        </div>
-        <div class="profile-modal-field">
-          <label for="modal-status">Status</label>
-          <input id="modal-status" name="status" type="text" placeholder="Ready to chat" />
-        </div>
-        <div class="profile-modal-field">
-          <label for="modal-role">Role</label>
-          <input id="modal-role" name="role" type="text" placeholder="Visitor" />
-        </div>
-        <div class="profile-modal-actions">
-          <button type="button" id="profile-cancel">Cancel</button>
-          <button type="submit">Save</button>
-        </div>
-      </form>
+  <!-- ── WHAT IS BAMBISLEEP ─────────────────────────────────────────────────── -->
+  <section class="home-about">
+    <h2 class="home-about__heading">&#127769; What is BambiSleep?</h2>
+    <div class="home-about__body">
+      <p>
+        BambiSleep is a long-running series of erotic hypnosis audio files designed to guide
+        willing listeners into a deeply relaxed, playful alter-ego &mdash; "Bambi". The files
+        blend binaural beats, layered affirmations, and guided visualisation to create a
+        uniquely immersive trance experience enjoyed by a global community.
+      </p>
+      <p>
+        BambiSleep Church is the community hub built <em>around</em> that experience:
+        a place to share playlists, talk with fellow listeners, celebrate your
+        sessions, and explore the lighter, caring side of hypnokink together.
+        Everyone here was a newcomer once &mdash; curiosity is always welcome.
+      </p>
     </div>
-  </div>
+  </section>
 
-  <!-- Level-up toast -->
-  <div class="levelup-toast" id="levelup-toast" aria-live="polite"></div>
+  <!-- ── FEATURE CARDS ─────────────────────────────────────────────────────── -->
+  <section class="home-features">
+    <h2 class="home-features__heading">What you can do here</h2>
+    <div class="home-cards">
 
-  <!-- Emoji picker -->
-  <div class="emoji-picker" id="emoji-picker" hidden>
-    <button data-emoji="&#128139;">&#128139;</button>
-    <button data-emoji="&#128149;">&#128149;</button>
-    <button data-emoji="&#127872;">&#127872;</button>
-    <button data-emoji="&#10024;">&#10024;</button>
-    <button data-emoji="&#127769;">&#127769;</button>
-    <button data-emoji="&#127800;">&#127800;</button>
-  </div>
-
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="/chat.js"></script>
-  <!-- Intiface / Buttplug help modal -->
-  <div class="bp-modal-overlay" id="bp-help-modal" role="dialog"
-       aria-modal="true" aria-labelledby="bp-modal-title" hidden>
-    <div class="bp-modal">
-      <div class="bp-modal-header">
-        <h2 id="bp-modal-title">&#128268; Connecting Your Toy</h2>
-        <button class="bp-modal-close" id="bp-modal-close"
-                type="button" aria-label="Close help">&times;</button>
-      </div>
-      <div class="bp-modal-body">
-
-        <section class="bp-help-section">
-          <h3>What is Intiface Central?</h3>
-          <p>
-            <a href="https://intiface.com/central" target="_blank" rel="noopener">Intiface&nbsp;Central</a>
-            is a free, open-source desktop app by
-            <a href="https://nonpolynomial.com" target="_blank" rel="noopener">Nonpolynomial Labs</a>
-            that acts as a local server between your browser and
-            Bluetooth/USB toys. It must be running on the same computer as
-            your browser before you click &ldquo;Connect&rdquo; here.
-          </p>
-        </section>
-
-        <section class="bp-help-section">
-          <h3>Quick-Start (3 steps)</h3>
-          <ol class="bp-help-steps">
-            <li>
-              <strong>Download &amp; install</strong> Intiface Central
-              from <a href="https://intiface.com/central" target="_blank" rel="noopener">intiface.com/central</a>
-              (Windows / macOS / Linux).
-            </li>
-            <li>
-              <strong>Start the server</strong> &mdash; open Intiface
-              Central and press the big green <em>Start Server</em> button.
-              The default address is <code>ws://localhost:12345</code>.
-            </li>
-            <li>
-              <strong>Connect here</strong> &mdash; leave the address as
-              <code>ws://localhost:12345</code> and click
-              <em>Connect</em>. Then click <em>Scan</em> to find your
-              paired Bluetooth toy.
-            </li>
-          </ol>
-        </section>
-
-        <section class="bp-help-section">
-          <h3>Pairing your toy first</h3>
-          <p>
-            Toys must be paired with your <strong>OS Bluetooth settings</strong>
-            before Intiface Central can see them. Open your system&rsquo;s
-            Bluetooth &amp; devices panel, put the toy in pairing mode
-            (usually hold the power button 3&ndash;5&nbsp;s until it flashes),
-            and pair it. You only need to do this once.
-          </p>
-        </section>
-
-        <section class="bp-help-section">
-          <h3>Supported toy brands</h3>
-          <p>
-            Lovense, We-Vibe, Kiiroo, Lelo, Vibease, OhMiBod, Satisfyer,
-            The Handy, and hundreds more &mdash; see the full list at
-            <a href="https://iostindex.com" target="_blank" rel="noopener">iostindex.com</a>.
-          </p>
-        </section>
-
-        <section class="bp-help-section">
-          <h3>Custom server address</h3>
-          <p>
-            If Intiface Central is running on a different machine or port,
-            change the address in the <em>Toy Control</em> panel before
-            connecting. Example: <code>ws://192.168.1.10:12345</code>.
-          </p>
-        </section>
-
-        <section class="bp-help-section">
-          <h3>Troubleshooting</h3>
-          <ul class="bp-help-list">
-            <li><strong>Won&rsquo;t connect</strong> &mdash; make sure Intiface
-              Central&rsquo;s server is <em>started</em> (green status), not
-              just open.</li>
-            <li><strong>Toy not found after scanning</strong> &mdash; confirm
-              the toy is charged, in range (&lt;&nbsp;5&nbsp;m), and paired
-              in your OS Bluetooth settings.</li>
-            <li><strong>Connection drops</strong> &mdash; keep the Intiface
-              Central window open; minimising is fine but closing it
-              disconnects all toys.</li>
-            <li><strong>Browser blocks WebSocket</strong> &mdash; some
-              browsers disallow plain <code>ws://</code> on HTTPS pages;
-              use the desktop app or run the site over plain HTTP.</li>
-          </ul>
-        </section>
-
-        <div class="bp-help-links">
-          <a href="https://intiface.com/central" target="_blank" rel="noopener">&#8599; Download Intiface Central</a>
-          <a href="https://iostindex.com" target="_blank" rel="noopener">&#8599; Device compatibility list</a>
-          <a href="https://github.com/intiface/intiface-central" target="_blank" rel="noopener">&#8599; Source &amp; release notes</a>
-          <a href="https://discord.buttplug.io" target="_blank" rel="noopener">&#8599; Buttplug Discord support</a>
+      <div class="home-card">
+        <div class="home-card__icon">&#128172;</div>
+        <div class="home-card__title">Live Community Chat</div>
+        <div class="home-card__body">
+          Real-time messaging with everyone currently online. Share your
+          session thoughts, post reactions, attach images or short videos,
+          and @mention friends. Messages are threaded with emoji reactions
+          so conversations stay lively even when the room is buzzing.
         </div>
-
+        <a class="home-card__link" href="/chat.html">Open the chat &rarr;</a>
       </div>
-    </div>
-  </div>
 
-  <!-- Buttplug v3 – browser UMD bundle (exposes window.Buttplug) -->
-  <script src="https://cdn.jsdelivr.net/npm/buttplug@3.0.0/dist/web/buttplug.js"
-          crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script src="/buttplug-panel.js"></script>
-  <script src="/audio-player.js"></script>
-  <script src="/patreon.js"></script>
-  <script src="/challenge.js"></script>
+      <div class="home-card">
+        <div class="home-card__icon">&#127925;</div>
+        <div class="home-card__title">BambiCloud Audio Player</div>
+        <div class="home-card__body">
+          Post a <strong>bambicloud.com/playlist/…</strong> URL in chat and
+          the built-in audio player loads it instantly. Browse tracks, control
+          playback, and watch the real-time frequency visualiser respond to
+          every word &mdash; all without leaving the page.
+        </div>
+        <a class="home-card__link" href="https://bambicloud.com" target="_blank" rel="noopener">Browse BambiCloud &rarr;</a>
+      </div>
+
+      <div class="home-card">
+        <div class="home-card__icon">&#128268;</div>
+        <div class="home-card__title">Toy Integration</div>
+        <div class="home-card__body">
+          Connect Bluetooth toys via
+          <a href="https://intiface.com/central" target="_blank" rel="noopener">Intiface Central</a>
+          and let the audio drive vibration in real time. Multi-motor devices
+          are fully supported. Community members can also send haptic patterns
+          to each other as a playful social gesture &mdash; always with consent.
+        </div>
+        <a class="home-card__link" href="/chat.html">Try it in chat &rarr;</a>
+      </div>
+
+      <div class="home-card">
+        <div class="home-card__icon">&#127942;</div>
+        <div class="home-card__title">XP &amp; Levelling</div>
+        <div class="home-card__body">
+          Every message, reaction, and active day earns XP. Work your way
+          through 10 levels &mdash; from <em>Bambi Bud</em> all the way to
+          <em>Bambi Legend</em> &mdash; unlock prestige badges, and show off
+          your dedication on your community profile card.
+        </div>
+        <a class="home-card__link" href="/chat.html">Start earning XP &rarr;</a>
+      </div>
+
+      <div class="home-card">
+        <div class="home-card__icon">&#9201;</div>
+        <div class="home-card__title">Good-Girl Challenges</div>
+        <div class="home-card__body">
+          Take on timed challenges issued by the community. Complete them
+          before the clock runs out for bonus XP and bragging rights. A
+          persistent countdown widget keeps your active challenge always
+          visible while you chat.
+        </div>
+        <a class="home-card__link" href="/chat.html">Accept a challenge &rarr;</a>
+      </div>
+
+      <div class="home-card">
+        <div class="home-card__icon">&#128100;</div>
+        <div class="home-card__title">Profiles &amp; Patreon Perks</div>
+        <div class="home-card__body">
+          Set your display name, status, and role. Patreon supporters unlock
+          a verified badge and additional chat colour options as a thank-you
+          for keeping the lights on. Your profile card is shown alongside
+          every message you send.
+        </div>
+        <a class="home-card__link" href="https://www.patreon.com/bambisleepchurch" target="_blank" rel="noopener">Support on Patreon &rarr;</a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── XP LADDER TEASER ───────────────────────────────────────────────────── -->
+  <section class="home-xp">
+    <h2 class="home-xp__heading">&#11088; The XP Ladder</h2>
+    <p class="home-xp__body">
+      Chat, react, and show up daily to climb the ranks. Each level unlocks
+      new profile flair and the respect of the community.
+    </p>
+    <div class="home-xp-ladder">
+      <div class="home-xp-tier"><span class="home-xp-tier__lv">Lv 1</span><span class="home-xp-tier__name">Bambi Bud</span></div>
+      <div class="home-xp-tier"><span class="home-xp-tier__lv">Lv 2</span><span class="home-xp-tier__name">Bambi Friend</span></div>
+      <div class="home-xp-tier"><span class="home-xp-tier__lv">Lv 3</span><span class="home-xp-tier__name">Good Girl</span></div>
+      <div class="home-xp-tier"><span class="home-xp-tier__lv">Lv 4</span><span class="home-xp-tier__name">Sweet Bambi</span></div>
+      <div class="home-xp-tier"><span class="home-xp-tier__lv">Lv 5</span><span class="home-xp-tier__name">Bambi Belle</span></div>
+      <div class="home-xp-tier"><span class="home-xp-tier__lv">Lv 6</span><span class="home-xp-tier__name">Trance Adept</span></div>
+      <div class="home-xp-tier"><span class="home-xp-tier__lv">Lv 7</span><span class="home-xp-tier__name">Deep Dreamer</span></div>
+      <div class="home-xp-tier"><span class="home-xp-tier__lv">Lv 8</span><span class="home-xp-tier__name">Bambi Elite</span></div>
+      <div class="home-xp-tier"><span class="home-xp-tier__lv">Lv 9</span><span class="home-xp-tier__name">Hypno Master</span></div>
+      <div class="home-xp-tier"><span class="home-xp-tier__lv">Lv 10</span><span class="home-xp-tier__name">Bambi Legend</span></div>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ────────────────────────────────────────────────────────────── -->
+  <footer class="home-footer">
+    <p>
+      &copy; BambiSleep Church &mdash; for adults 18+ only &mdash;
+      <a href="/disclaimer.html">Disclaimer</a> &middot;
+      <a href="/terms.html">Terms</a> &middot;
+      <a href="/privacy.html">Privacy</a> &middot;
+      <a href="/help.html">Help</a>
+    </p>
+  </footer>
+
 </body>
 </html>
