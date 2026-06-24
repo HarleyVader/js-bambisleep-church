@@ -1,0 +1,163 @@
+/* ============================================================
+   DEMON CAT CONTRACT PAGE  (contract.html)
+   Reuses .disclaimer-* layout; adds contract-specific styling.
+   ============================================================ */
+
+.contract-wrap {
+  max-width: 860px;
+}
+
+/* ── Hero ─────────────────────────────────────────────────────────────────── */
+.contract-hero__cat {
+  font-size: 3.2rem;
+  line-height: 1;
+  margin-bottom: 10px;
+  animation: contract-cat-bob 3s ease-in-out infinite;
+}
+@keyframes contract-cat-bob {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50%       { transform: translateY(-6px) rotate(3deg); }
+}
+.contract-title {
+  font-family: 'Pacifico', 'Audiowide', cursive;
+  font-size: 2.3rem !important;
+  color: var(--primary-alt);
+  text-shadow: 0 0 18px rgba(255, 105, 180, 0.45);
+  letter-spacing: 0.02em;
+}
+
+/* ── Sections (pink accent on the disclaimer base) ────────────────────────── */
+.contract-section h2 {
+  color: var(--primary-alt);
+}
+.contract-section em {
+  color: var(--nav-alt);
+  font-style: italic;
+}
+.contract-section--safety {
+  border-color: rgba(255, 51, 51, 0.4);
+  background: rgba(255, 51, 51, 0.06);
+}
+.contract-section--safety h2 {
+  color: var(--error);
+  border-bottom-color: rgba(255, 51, 51, 0.4);
+}
+
+/* ── Signature card ───────────────────────────────────────────────────────── */
+.contract-sign {
+  background: var(--surface-strong);
+  border: 1px solid var(--primary-alt);
+  border-radius: var(--border-radius-lg);
+  padding: 28px 30px;
+  margin: 28px 0 8px;
+  box-shadow: 0 0 24px rgba(255, 105, 180, 0.18);
+}
+.contract-sign__heading {
+  font-size: 1.15rem;
+  color: var(--primary-alt);
+  margin: 0 0 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-light);
+}
+.contract-sign__intro {
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  line-height: 1.65;
+  margin: 0 0 20px;
+}
+
+/* ── Acknowledgement checkboxes ───────────────────────────────────────────── */
+.contract-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+  cursor: pointer;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  line-height: 1.55;
+}
+.contract-check input[type="checkbox"] {
+  margin-top: 3px;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary-alt);
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+/* ── Signature input ──────────────────────────────────────────────────────── */
+.contract-signature-label {
+  display: block;
+  margin: 18px 0 8px;
+  color: var(--nav-alt);
+  font-size: 0.85rem;
+  letter-spacing: 0.03em;
+}
+.contract-signature-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 16px;
+  font-family: 'Dancing Script', cursive;
+  font-size: 1.4rem;
+  color: var(--primary-alt);
+  background: var(--surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--border-radius);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.contract-signature-input:focus {
+  border-color: var(--primary-alt);
+  box-shadow: 0 0 10px rgba(255, 105, 180, 0.35);
+}
+
+/* ── Submit button ────────────────────────────────────────────────────────── */
+.contract-submit {
+  margin-top: 22px;
+  width: 100%;
+  padding: 14px 20px;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #fff;
+  background: linear-gradient(135deg, var(--primary-alt), var(--nav-alt));
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.2s, opacity 0.2s;
+}
+.contract-submit:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 105, 180, 0.4);
+}
+.contract-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Status line ──────────────────────────────────────────────────────────── */
+.contract-status {
+  margin: 16px 0 0;
+  text-align: center;
+  font-size: 0.9rem;
+  min-height: 1.2em;
+}
+.contract-status--error { color: var(--error); }
+.contract-status--ok    { color: var(--primary-alt); font-weight: 700; }
+
+/* ── Signed state ─────────────────────────────────────────────────────────── */
+.contract-sign.is-signed {
+  border-color: var(--primary-alt);
+  box-shadow: 0 0 30px rgba(255, 105, 180, 0.32);
+}
+.contract-signed-seal {
+  margin-top: 18px;
+  padding: 16px;
+  text-align: center;
+  border: 1px dashed var(--primary-alt);
+  border-radius: var(--border-radius);
+  color: var(--primary-alt);
+  font-family: 'Dancing Script', cursive;
+  font-size: 1.25rem;
+}
