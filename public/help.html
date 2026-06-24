@@ -38,6 +38,7 @@
 
     <!-- Table of contents -->
     <nav class="toc" aria-label="Jump to section">
+      <a href="#sec-landing">&#127968; Landing Page</a>
       <a href="#sec-chat">&#128172; Chat</a>
       <a href="#sec-media">&#128247; Pics &amp; Vids</a>
       <a href="#sec-avatar">&#128118; Your Avatar</a>
@@ -48,6 +49,35 @@
       <a href="#sec-patreon">&#128279; Patreon</a>
       <a href="#sec-profile">&#9998; Profile</a>
     </nav>
+
+    <!-- ── LANDING PAGE ──────────────────────────────────────────────────────── -->
+    <div class="help-section" id="sec-landing">
+      <div class="help-section__header" role="button" tabindex="0" aria-expanded="false">
+        <span class="help-section__icon">&#127968;</span>
+        <span class="help-section__title">Landing Page &amp; Navigation</span>
+        <span class="help-section__caret">&#9660;</span>
+      </div>
+      <div class="help-section__body">
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-card__title">Welcome page (<code>/</code>)</div>
+            <p>The root URL is now a friendly welcome page explaining what BambiSleep Church is, with feature cards, the full XP tier ladder, and an 18+ consent ribbon. Great for sharing with curious newcomers!</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card__title">Chat lives at <code>/chat.html</code></div>
+            <p>The full chat app (messages, audio player, toy control, challenges) is at <a href="/chat.html" class="help-link">/chat.html</a>. The &ldquo;Church Chat&rdquo; nav link on every page takes you straight there.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card__title">Updated navigation</div>
+            <p>Every page now has a <strong>Church Chat</strong> link pointing to <code>/chat.html</code> and a separate <strong>bambisleep.chat</strong> link for the wider community. Both live in the top nav bar.</p>
+          </div>
+        </div>
+        <div class="tip">
+          <span class="tip-icon">&#128279;</span>
+          <span>Bookmark <code>/chat.html</code> for instant access to the chat, or share <code>/</code> with friends who are new to BambiSleep!</span>
+        </div>
+      </div>
+    </div>
 
     <!-- ── CHAT ────────────────────────────────────────────────────────────── -->
     <div class="help-section open" id="sec-chat">
@@ -238,7 +268,7 @@
           </div>
           <div class="feature-card">
             <div class="feature-card__title">Toy sync</div>
-            <p>Flip on <strong>🔌 Sync</strong> in the audio panel to make your toy buzz along with the music volume. So dreamy!</p>
+            <p>Flip on <strong>&#128268; Sync</strong> in the audio panel. The player analyses the <strong>speech frequency band (100 Hz&nbsp;&ndash; 4 kHz)</strong> using a high-resolution 2&nbsp;048-bin FFT, so buzzing reacts to <em>words and voice</em> rather than bass beats. Output is gentle and word-driven!</p>
           </div>
         </div>
         <div class="tip">
@@ -261,7 +291,7 @@
           <li><span>In the <strong>Toy Control</strong> panel, check the address says <code>ws://localhost:12345</code> and tap <strong>Connect</strong>.</span></li>
           <li><span>Tap <strong>Scan</strong> — your nearby toys pop up in the list!</span></li>
           <li><span>Pick a <strong>buzz pattern</strong> (Pulse, Wave, Surge, Tease, or Throb) and slide the intensity.</span></li>
-          <li><span>Got a toy with lots of motors? Each one gets its own little slider.</span></li>
+          <li><span>Got a toy with lots of motors? Each motor gets its own slider <em>and</em> its own intensity signal &mdash; multi-actuator devices are fully supported now!</span></li>
           <li><span>Tap <strong>All Vibrate</strong> to buzz everything, or <strong>All Stop</strong> to stop. Each toy has mini buttons too!</span></li>
         </ol>
         <div class="feature-grid help-grid-gap">

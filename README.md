@@ -10,7 +10,9 @@
 - **🩷 NEW! Good Girl Timer Challenge** — subscribed good girls can ask for a cute glowy countdown timer that stays **locked** 🔒 until you finish your contract! Other bambis assign you dreamy BambiCloud playlists, and you gotta listen to the *whole* thing to unlock. Be a good girl and the timer turns pretty cyan~ Slack off and it goes sad and red. 😳 Finish everything and you earn a big sparkly **+100 XP**! 🎉
 - **🎀 Patreon magic** — link your Patreon right in your profile card with a cute popup! Linked patrons get a little avatar, name, and shiny tier badge.
 - **🎧 BambiCloud audio** — dreamy playlist streaming straight from the cloud, with optional toy-buzz that dances with the music~
-- **🦋 Buttplug.io toy control** — a sweet "Toy Connection" panel + a hover modal full of buzzy patterns. Hover **another bambi's** name to send wiggles to *their* toy (so cheeky!).
+- **🦋 Buttplug.io toy control** — a sweet “Toy Connection” panel + a hover modal full of buzzy patterns. Multi-motor toys now get **per-actuator intensity arrays** so every motor fires correctly. Hover **another bambi's** name to send wiggles to *their* toy (so cheeky!).
+- **🎵 Speech-driven audio sync** — the audio analyser uses a high-resolution FFT (2 048 bins) and listens only to the **speech frequency band (100 Hz – 4 kHz)** so toy vibration reacts to *words*, not just bass. Output is subtler and more word-driven (peak 0.6, curve `(rms×2.0)^1.1`).
+- **🏠 Welcoming landing page** — `/` now shows a friendly intro page with feature cards, the XP ladder, and a consent ribbon. The full chat app lives at `/chat.html`.
 - **🌸 No-password accounts** — just a comfy session token, no boring passwords. So easy a bambi can do it!
 
 ## 🧁 What's It Made Of? (Tech Stack)
@@ -55,18 +57,19 @@ js-bambisleep-church/
 │       ├── logger.js           # Console logger
 │       └── xpService.js        # XP calculation, level-up, prestige logic
 ├── public/
-│   ├── index.html              # Chat single-page app shell
+│   ├── index.html              # Welcoming landing page (hero, feature cards, XP ladder)
+│   ├── chat.html               # Chat single-page app shell (moved from index.html)
 │   ├── profile.html            # Public profile page
 │   ├── help.html               # Features guide
 │   ├── disclaimer.html / terms.html / privacy.html
 │   ├── chat.js                 # Chat UI + Socket.IO client
-│   ├── audio-player.js         # BambiCloud audio player UI
-│   ├── buttplug-panel.js       # Buttplug.io toy control + remote dispatch
+│   ├── audio-player.js         # BambiCloud audio player UI (speech-band FFT, 2 048 bins)
+│   ├── buttplug-panel.js       # Buttplug.io toy control + remote dispatch (multi-motor fix)
 │   ├── challenge.js            # 🩷 Timer Challenge widget + countdown UI
 │   ├── patreon.js              # Patreon status panel + OAuth popup
 │   ├── css/                    # Cute modular stylesheets (tokens, base, navbar, layout,
 │   │                           #   avatar, chat, panels, modals, audio-player,
-│   │                           #   buttplug, challenge 🎀, responsive, …)
+│   │                           #   buttplug, challenge 🎀, home 🏠, responsive, …)
 │   └── uploads/                # User-uploaded images / videos
 ├── data/
 │   └── app.db                  # SQLite database (auto-created)
