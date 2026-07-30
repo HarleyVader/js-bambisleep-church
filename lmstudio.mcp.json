@@ -4,7 +4,7 @@
       "command": "node",
       "args": ["mcp/server.js"],
       "env": {
-        "BASE_URL": "http://localhost:3000",
+        "BASE_URL": "https://bambisleep.church:7070",
         "SQLITE_PATH": "./data/app.db"
       },
       "agentInstructions": ".github/bambi-church.agent.md"

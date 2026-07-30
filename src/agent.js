@@ -33,7 +33,8 @@ const AGENT_INTERVAL_MS = Number(process.env.AGENT_INTERVAL_MS) || 5 * 60 * 1000
 const AGENT_ENABLED     = process.env.AGENT_ENABLED !== 'false';
 const AGENT_NAME        = process.env.AGENT_NAME          || 'BambiBot';
 let   AGENT_TOKEN       = process.env.AGENT_TOKEN         || null;
-const BASE_URL          = process.env.BASE_URL            || 'http://localhost:3000';
+// Fall back to PORT so the agent always calls the correct local server
+const BASE_URL          = process.env.BASE_URL            || `http://localhost:${process.env.PORT || 3000}`;
 const DB_PATH           = process.env.SQLITE_PATH
   || path.join(__dirname, '../data/app.db');
 
