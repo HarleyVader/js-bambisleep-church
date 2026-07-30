@@ -92,6 +92,7 @@ class ChatController {
       });
 
       // authorToken is never in the returned object — no need to delete it
+      if (this.io) this.io.emit('chatMessage', message);
       res.status(201).json({ message, xpResult });
     } catch (error) {
       logger.error('sendMessage error', error);
