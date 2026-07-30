@@ -475,7 +475,7 @@ function startAgent() {
     return;
   }
   logger.info(
-    `[BambiAgent] starting — model: ${LM_STUDIO_MODEL}, interval: ${AGENT_INTERVAL_MS}ms, ` +
+    `[BambiAgent] starting — model: ${OLLAMA_MODEL}, interval: ${AGENT_INTERVAL_MS}ms, ` +
     `token: ${AGENT_TOKEN ? 'set' : 'NOT SET (read-only mode)'}`
   );
   // First tick 10 s after server boot (give the DB and routes time to initialise)
