@@ -492,5 +492,13 @@ function stopAgent() {
   }
 }
 
-module.exports = { startAgent, stopAgent };
+// Debounced trigger — coalesces rapid messages into one tick
+let _messageDebounce = null;
+function onMessage() {
+  if (!AGENT_ENABLED) return;
+  clearTimeout(_messageDebounce);
+  _messageDebounce = setTimeout(() => agentTick(), 2_000);
+}
+
+module.exports = { startAgent, stopAgent, onMessage };
 

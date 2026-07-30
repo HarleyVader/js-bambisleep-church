@@ -4,6 +4,7 @@ const User = require('../models/UserSqlite');
 const MessageSqlite = require('../models/MessageSqlite');
 const { processSessionEnd } = require('../controllers/userController');
 const logger = require('../utils/logger');
+const { onMessage: agentOnMessage } = require('../agent');
 
 // token → socket map (module-level, shared with controllers)
 const tokenToSocket = new Map();
@@ -61,7 +62,10 @@ const setupSockets = (io) => {
         const id = msg && msg._id;
         if (!id || typeof id !== 'string') return;
         const trusted = MessageSqlite.findById(id);
-        if (trusted) io.emit('chatMessage', trusted);
+        if (trusted) {
+          io.emit('chatMessage', trusted);
+          agentOnMessage();
+        }
       } catch (err) {
         logger.error('chatMessage rebroadcast error', err);
       }
