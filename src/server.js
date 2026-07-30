@@ -22,7 +22,7 @@ chatRoute.setIo(io);
 // Start the server
 server.listen(PORT, () => {
     logger.info(`Server is running on http://localhost:${PORT}`);
-    startAgent();
+    startAgent().catch((e) => logger.error('[BambiAgent] startup error:', e.message));
 });
 
 // Graceful shutdown

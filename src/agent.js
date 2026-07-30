@@ -32,7 +32,7 @@ const OLLAMA_MODEL      = process.env.OLLAMA_MODEL        || 'llama3';
 const AGENT_INTERVAL_MS = Number(process.env.AGENT_INTERVAL_MS) || 5 * 60 * 1000;
 const AGENT_ENABLED     = process.env.AGENT_ENABLED !== 'false';
 const AGENT_NAME        = process.env.AGENT_NAME          || 'BambiBot';
-const AGENT_TOKEN       = process.env.AGENT_TOKEN         || null;
+let   AGENT_TOKEN       = process.env.AGENT_TOKEN         || null;
 const BASE_URL          = process.env.BASE_URL            || 'http://localhost:3000';
 const DB_PATH           = process.env.SQLITE_PATH
   || path.join(__dirname, '../data/app.db');
@@ -466,15 +466,41 @@ async function agentTick() {
   }
 }
 
+// ─── Bot user auto-registration ─────────────────────────────────────────────
+
+async function ensureAgentToken() {
+  if (AGENT_TOKEN) return;
+  try {
+    const db  = getDb();
+    const row = db.prepare('SELECT sessionToken FROM users WHERE username = ? LIMIT 1').get(AGENT_NAME);
+    if (row?.sessionToken) {
+      AGENT_TOKEN = row.sessionToken;
+      logger.info(`[BambiAgent] reused existing bot account for "${AGENT_NAME}"`);
+      return;
+    }
+    // Register a new bot user via the local API
+    const res = await api('POST', '/api/user', { username: AGENT_NAME });
+    if (res?.token) {
+      AGENT_TOKEN = res.token;
+      logger.info(`[BambiAgent] registered new bot account for "${AGENT_NAME}"`);
+    } else {
+      logger.warn('[BambiAgent] bot registration returned no token — will stay read-only');
+    }
+  } catch (e) {
+    logger.warn('[BambiAgent] bot registration failed:', e.message);
+  }
+}
+
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 let _timer = null;
 
-function startAgent() {
+async function startAgent() {
   if (!AGENT_ENABLED) {
     logger.info('[BambiAgent] disabled (set AGENT_ENABLED=true to enable)');
     return;
   }
+  await ensureAgentToken();
   logger.info(
     `[BambiAgent] starting — model: ${OLLAMA_MODEL}, interval: ${AGENT_INTERVAL_MS}ms, ` +
     `token: ${AGENT_TOKEN ? 'set' : 'NOT SET (read-only mode)'}`
