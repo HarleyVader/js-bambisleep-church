@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "bambisleep-church": {
+      "command": "node",
+      "args": ["mcp/server.js"],
+      "env": {
+        "BASE_URL": "http://localhost:3000",
+        "SQLITE_PATH": "./data/app.db"
+      },
+      "agentInstructions": ".github/bambi-church.agent.md"
+    }
+  }
+}

@@ -12,6 +12,8 @@
   <link rel="stylesheet" href="/css/avatar.css" />
   <link rel="stylesheet" href="/css/profile-page.css" />
   <link rel="stylesheet" href="/css/challenge.css" />
+  <link rel="stylesheet" href="/css/audio-player.css" />
+  <link rel="stylesheet" href="/css/buttplug.css" />
   <link rel="stylesheet" href="/css/responsive.css" />
 </head>
 <body class="profile-page">
@@ -93,7 +95,134 @@
     <!-- Good Girl timer challenge contract -->
     <section class="challenge-section" id="challenge-section"></section>
 
+    <!-- Audio player + toy control panels -->
+    <section class="profile-panels-section" id="profile-panels-section">
+
+      <!-- Audio player panel -->
+      <div class="ap-panel" id="ap-panel">
+        <div class="ap-panel-header">
+          <span>&#127925; Bambi Audio</span>
+          <button class="ap-panel-toggle" id="ap-panel-toggle"
+                  type="button" aria-expanded="true" aria-controls="ap-panel-body">&#9660;</button>
+        </div>
+        <div class="ap-panel-body" id="ap-panel-body">
+          <div class="ap-now-playing">
+            <div class="ap-now-title"  id="ap-now-title">No playlist loaded</div>
+            <div class="ap-now-author" id="ap-now-author"></div>
+          </div>
+          <canvas class="ap-visualizer" id="ap-visualizer"
+                  width="240" height="48" aria-hidden="true"></canvas>
+          <div class="ap-progress-row">
+            <span class="ap-time" id="ap-elapsed">0:00</span>
+            <input class="ap-progress" id="ap-progress" type="range"
+                   min="0" max="1000" value="0" aria-label="Playback position" />
+            <span class="ap-time" id="ap-remaining">--:--</span>
+          </div>
+          <div class="ap-controls">
+            <button class="ap-ctrl-btn" id="ap-prev-btn" type="button" aria-label="Previous">&#9664;&#9664;</button>
+            <button class="ap-ctrl-btn ap-play-btn" id="ap-play-btn" type="button" aria-label="Play">&#9654;</button>
+            <button class="ap-ctrl-btn" id="ap-next-btn" type="button" aria-label="Next">&#9654;&#9654;</button>
+          </div>
+          <div class="ap-volume-row">
+            <span class="ap-vol-icon">&#128266;</span>
+            <input class="ap-volume" id="ap-volume" type="range"
+                   min="0" max="100" value="80" aria-label="Volume" />
+          </div>
+          <div class="ap-bp-row">
+            <button class="ap-bp-toggle" id="ap-bp-toggle" type="button">&#128268; Sync: OFF</button>
+            <span class="ap-bp-status" id="ap-bp-status">Vibration sync disabled</span>
+          </div>
+          <div class="ap-track-list" id="ap-track-list">
+            <div class="ap-idle">Post a <strong>bambicloud.com/playlist/&hellip;</strong> URL in chat to auto-load a playlist here.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toy connection panel -->
+      <div class="bp-panel" id="bp-connection-panel">
+        <div class="bp-panel-header">
+          <span>&#128268; Toy Connection</span>
+          <div class="bp-header-actions">
+            <button class="bp-help-btn" id="bp-help-btn"
+                    type="button" aria-label="Intiface setup help"
+                    title="How to connect your toy">?</button>
+          </div>
+        </div>
+        <div class="bp-panel-body bp-connection-body">
+          <p class="bp-hint">
+            Requires <a href="https://intiface.com/central" target="_blank" rel="noopener">Intiface&nbsp;Central</a>
+            running locally.
+          </p>
+          <div class="bp-address-row">
+            <input class="bp-address" id="bp-address" type="text"
+                   value="ws://localhost:12345"
+                   placeholder="ws://localhost:12345"
+                   aria-label="Intiface Central WebSocket address" />
+          </div>
+          <div class="bp-action-row">
+            <button class="bp-btn" id="bp-connect-btn" type="button">Connect</button>
+            <button class="bp-btn" id="bp-scan-btn"    type="button" disabled>Scan</button>
+          </div>
+          <div class="bp-status" id="bp-status">Not connected</div>
+        </div>
+      </div>
+
+    </section><!-- /.profile-panels-section -->
+
   </div><!-- /.profile-content -->
+
+  <!-- Toy Control hover modal (pattern picker) -->
+  <div class="bp-hover-modal" id="bp-hover-modal" hidden>
+    <div class="bp-panel">
+      <div class="bp-panel-header">
+        <span>&#128268; Toy Patterns</span>
+        <div class="bp-header-actions">
+          <button class="bp-panel-toggle" id="bp-panel-toggle"
+                  type="button" aria-expanded="true" aria-controls="bp-panel-body">&#9660;</button>
+        </div>
+      </div>
+      <div class="bp-panel-body" id="bp-panel-body">
+        <div class="bp-device-list" id="bp-device-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Intiface / Buttplug help modal -->
+  <div class="bp-modal-overlay" id="bp-help-modal" role="dialog"
+       aria-modal="true" aria-labelledby="bp-modal-title" hidden>
+    <div class="bp-modal">
+      <div class="bp-modal-header">
+        <h2 id="bp-modal-title">&#128268; Connecting Your Toy</h2>
+        <button class="bp-modal-close" id="bp-modal-close"
+                type="button" aria-label="Close help">&times;</button>
+      </div>
+      <div class="bp-modal-body">
+        <section class="bp-help-section">
+          <h3>What is Intiface Central?</h3>
+          <p><a href="https://intiface.com/central" target="_blank" rel="noopener">Intiface&nbsp;Central</a>
+          is a free desktop app that acts as a local server between your browser and Bluetooth/USB toys.
+          It must be running before you click &ldquo;Connect&rdquo;.</p>
+        </section>
+        <section class="bp-help-section">
+          <h3>Quick-Start</h3>
+          <ol class="bp-help-steps">
+            <li><strong>Download &amp; install</strong> from <a href="https://intiface.com/central" target="_blank" rel="noopener">intiface.com/central</a>.</li>
+            <li><strong>Start the server</strong> &mdash; press the green <em>Start Server</em> button. Default address: <code>ws://localhost:12345</code>.</li>
+            <li><strong>Connect here</strong> &mdash; click <em>Connect</em>, then <em>Scan</em> to find your toy.</li>
+          </ol>
+        </section>
+        <section class="bp-help-section">
+          <h3>Supported toys</h3>
+          <p>Lovense, We-Vibe, Kiiroo, Lelo, Satisfyer, The Handy, and hundreds more &mdash;
+          see <a href="https://iostindex.com" target="_blank" rel="noopener">iostindex.com</a>.</p>
+        </section>
+        <div class="bp-help-links">
+          <a href="https://intiface.com/central" target="_blank" rel="noopener">&#8599; Download Intiface Central</a>
+          <a href="https://iostindex.com" target="_blank" rel="noopener">&#8599; Device compatibility</a>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script>
   (function () {
@@ -393,6 +522,22 @@
       }
 
       renderContract(p);
+
+      // Set globals used by audio-player.js and buttplug-panel.js
+      window._myUsername = p.username;
+      if (typeof io !== 'undefined' && !window._chatSocket) {
+        const tok = localStorage.getItem(TOKEN_KEY) || '';
+        if (tok) {
+          const sock = io({ query: { token: tok }, reconnection: false });
+          window._chatSocket = sock;
+          // Forward incoming bp:remote commands to the local buttplug panel
+          sock.on('bp:remote', function (data) {
+            if (window._bpPanel && typeof window._bpPanel.executeRemote === 'function') {
+              window._bpPanel.executeRemote(data.action, data.payload || {});
+            }
+          });
+        }
+      }
     }
 
     async function load() {
@@ -448,6 +593,12 @@
     }
   }());
   </script>
+  <script src="/socket.io/socket.io.js"></script>
   <script src="/challenge.js"></script>
+  <!-- Buttplug v3 – browser UMD bundle (exposes window.Buttplug) -->
+  <script src="https://cdn.jsdelivr.net/npm/buttplug@3.0.0/dist/web/buttplug.js"
+          crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="/buttplug-panel.js"></script>
+  <script src="/audio-player.js"></script>
 </body>
 </html>

@@ -219,6 +219,9 @@ body.profile-page {
   font-size: 0.82rem;
   color: var(--text-muted);
   cursor: pointer;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
   user-select: none;
 }
 .contract-read-check input[type="checkbox"] {
@@ -367,4 +370,30 @@ body.profile-page {
   .contract-card { padding: 24px 16px; }
   .contract-sign-btn { align-self: stretch; text-align: center; }
   .contract-update-btn { align-self: stretch; text-align: center; }
+}
+
+/* ── Audio + Toy panels ──────────────────────────────────────── */
+.profile-panels-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 40px;
+  align-items: start;
+}
+
+/* Audio panel takes full available width on its side */
+.profile-panels-section .ap-panel,
+.profile-panels-section .bp-panel {
+  width: 100%;
+}
+
+/* Stretch the track list to use available height nicely */
+.profile-panels-section .ap-track-list {
+  max-height: 260px;
+}
+
+@media (max-width: 700px) {
+  .profile-panels-section {
+    grid-template-columns: 1fr;
+  }
 }

@@ -5,6 +5,7 @@ const app = require('./app');
 const { setupSockets } = require('./sockets/chatSocket');
 const chatRoute = require('./routes/chat');
 const logger    = require('./utils/logger');
+const { startAgent, stopAgent } = require('./agent');
 
 const PORT = process.env.PORT;
 
@@ -21,4 +22,10 @@ chatRoute.setIo(io);
 // Start the server
 server.listen(PORT, () => {
     logger.info(`Server is running on http://localhost:${PORT}`);
+    startAgent();
 });
+
+// Graceful shutdown
+const shutdown = () => { stopAgent(); server.close(); };
+process.once('SIGTERM', shutdown);
+process.once('SIGINT',  shutdown);
