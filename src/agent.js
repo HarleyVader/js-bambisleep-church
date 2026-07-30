@@ -386,21 +386,31 @@ async function buildContext() {
 
 // ─── Agent tick ───────────────────────────────────────────────────────────────
 
-async function agentTick() {
+async function agentTick(triggeredByMessage = false) {
   _sendsThisTick = 0; // reset per-tick send counter
 
   try {
-    logger.info('[BambiAgent] tick starting');
+    logger.info(`[BambiAgent] tick starting (trigger: ${triggeredByMessage ? 'message' : 'interval'})`);
+    logger.info(`[BambiAgent] token: ${AGENT_TOKEN ? AGENT_TOKEN.slice(0, 8) + '…' : 'NOT SET'}`);
 
     const context  = await buildContext();
-    const messages = [
-      {
-        role   : 'system',
-        content: loadSystemPrompt(),
-      },
-      {
-        role   : 'user',
-        content: [
+    logger.info(`[BambiAgent] context built:\n${context}`);
+
+    const userPrompt = triggeredByMessage
+      ? [
+          'A community member just sent a message. Read the recent messages below and reply as BambiBot.',
+          'You MUST call send_message to post a reply — do not stay silent.',
+          '',
+          '**Current state:**',
+          '```',
+          context,
+          '```',
+          '',
+          `- Keep your reply concise, warm, and on-theme`,
+          `- You may send at most ${MAX_SENDS_PER_TICK} messages`,
+          '- Do NOT send buttplug commands, assign challenges, or sign contracts',
+        ].join('\n')
+      : [
           'You are running autonomously. Review the current site state below and decide what — if anything — to do.',
           '',
           '**Current state:**',
@@ -415,16 +425,27 @@ async function agentTick() {
           '- Do NOT assign challenges or sign contracts autonomously',
           '- It is perfectly fine to observe and take no action if nothing requires attention',
           '- Be concise and warm in any messages you post',
-        ].join('\n'),
-      },
+        ].join('\n');
+
+    const messages = [
+      { role: 'system', content: loadSystemPrompt() },
+      { role: 'user',   content: userPrompt },
     ];
 
     let response = await callLLM(messages);
     if (!response?.choices?.[0]) {
-      logger.warn('[BambiAgent] no response from LM Studio');
+      logger.warn('[BambiAgent] no response from Ollama');
       return;
     }
-    messages.push(response.choices[0].message);
+    const firstChoice = response.choices[0];
+    logger.info(`[BambiAgent] LLM finish_reason: ${firstChoice.finish_reason}`);
+    if (firstChoice.message?.content) {
+      logger.info(`[BambiAgent] LLM content: ${firstChoice.message.content.slice(0, 200)}`);
+    }
+    if (firstChoice.message?.tool_calls?.length) {
+      logger.info(`[BambiAgent] LLM tool_calls: ${firstChoice.message.tool_calls.map((t) => t.function?.name).join(', ')}`);
+    }
+    messages.push(firstChoice.message);
 
     // Tool-call loop
     let iterations = 0;
@@ -523,7 +544,7 @@ let _messageDebounce = null;
 function onMessage() {
   if (!AGENT_ENABLED) return;
   clearTimeout(_messageDebounce);
-  _messageDebounce = setTimeout(() => agentTick(), 2_000);
+  _messageDebounce = setTimeout(() => agentTick(true), 2_000);
 }
 
 module.exports = { startAgent, stopAgent, onMessage };
