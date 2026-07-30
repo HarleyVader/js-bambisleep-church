@@ -455,12 +455,13 @@ async function agentTick() {
 
   } catch (err) {
     // Non-fatal: log and wait for next tick
-    // Don't log the full stack — connection-refused is expected when LM Studio is off
-    const msg = err.message || String(err);
-    if (msg.includes('ECONNREFUSED')) {
-      logger.warn('[BambiAgent] LM Studio not reachable — skipping tick');
+    // AggregateError wraps dual-stack (IPv4+IPv6) ECONNREFUSED when Ollama is down
+    const isConnRefused = (e) => e.code === 'ECONNREFUSED' || (e.message || '').includes('ECONNREFUSED');
+    const unreachable   = isConnRefused(err) || (Array.isArray(err.errors) && err.errors.some(isConnRefused));
+    if (unreachable) {
+      logger.warn('[BambiAgent] Ollama not reachable — skipping tick');
     } else {
-      logger.error('[BambiAgent] tick error:', msg);
+      logger.error('[BambiAgent] tick error:', err.message || String(err));
     }
   }
 }
