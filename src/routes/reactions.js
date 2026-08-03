@@ -11,15 +11,16 @@ const router = express.Router();
 
 /** Award XP to author and emit socket events so their stats update live. */
 const rewardAuthor = async (authorToken, xpAmount) => {
-  const author = User.findOne({ sessionToken: authorToken });
-  if (!author) return;
-
-  const xpResult = awardXp(author, xpAmount);
-  author.stats.reactionsReceived += 1;
-  await author.save();
-
   try {
-    const { emitToToken } = require('../sockets/chatSocket');
+    const author = User.findOne({ sessionToken: authorToken });
+    if (!author) return;
+
+    const xpResult = awardXp(author, xpAmount);
+    author.stats.reactionsReceived += 1;
+    await author.save();
+
+    try {
+      const { emitToToken } = require('../sockets/chatSocket');
     emitToToken(authorToken, 'xpGained', {
       amount:   xpAmount,
       reason:   'reaction',
@@ -49,20 +50,22 @@ const rewardAuthor = async (authorToken, xpAmount) => {
         prestige: author.progress.prestige,
       },
     });
+    } catch (e) {
+      logger.error('reaction socket emit error', e);
+    }
   } catch (e) {
-    logger.error('reaction socket emit error', e);
+    logger.error('rewardAuthor error', e);
   }
-};
-
-/** Increment reactor's reactionsGiven, award XP, and push their updated stats to their socket. */
+};, award XP, and push their updated stats to their socket. */
 const trackReactorGiven = async (reactorToken) => {
-  const reactor = User.findOne({ sessionToken: reactorToken });
-  if (!reactor) return;
-  reactor.stats.reactionsGiven = (reactor.stats.reactionsGiven || 0) + 1;
-  const xpResult = awardXp(reactor, XP_RATES.REACTION_GIVEN);
-  await reactor.save();
   try {
-    const { emitToToken } = require('../sockets/chatSocket');
+    const reactor = User.findOne({ sessionToken: reactorToken });
+    if (!reactor) return;
+    reactor.stats.reactionsGiven = (reactor.stats.reactionsGiven || 0) + 1;
+    const xpResult = awardXp(reactor, XP_RATES.REACTION_GIVEN);
+    await reactor.save();
+    try {
+      const { emitToToken } = require('../sockets/chatSocket');
     emitToToken(reactorToken, 'xpGained', {
       amount:   XP_RATES.REACTION_GIVEN,
       reason:   'reaction_given',
@@ -93,6 +96,9 @@ const trackReactorGiven = async (reactorToken) => {
     });
   } catch (e) {
     logger.error('reactor socket emit error', e);
+  }
+  } catch (e) {
+    logger.error('trackReactorGiven error', e);
   }
 };
 
