@@ -341,7 +341,9 @@ async function callLLM(messages) {
     tools      : TOOLS_SCHEMA,
     tool_choice: 'auto',
     temperature: 0.7,
-    max_tokens : 1024,
+    max_tokens : 4096,
+    // disable Qwen3 chain-of-thought to avoid burning tokens before tool calls
+    thinking   : { type: 'disabled' },
   });
   if (res.status !== 200) {
     throw new Error(`Ollama returned HTTP ${res.status}: ${JSON.stringify(res.body).slice(0, 200)}`);
@@ -399,7 +401,7 @@ async function agentTick(triggeredByMessage = false) {
 
     const userPrompt = triggeredByMessage
       ? [
-          'A community member just sent a message. Read the recent messages below and reply as BambiBot.',
+          'A community member just sent a message. Read the recent messages below and reply as bimbot. /no_think',
           'You MUST call send_message to post a reply — do not stay silent.',
           '',
           '**Current state:**',
@@ -412,7 +414,7 @@ async function agentTick(triggeredByMessage = false) {
           '- Do NOT send buttplug commands, assign challenges, or sign contracts',
         ].join('\n')
       : [
-          'You are running autonomously. Review the current site state below and decide what — if anything — to do.',
+          'You are running autonomously. Review the current site state below and decide what — if anything — to do. /no_think',
           '',
           '**Current state:**',
           '```',
