@@ -471,8 +471,15 @@ async function agentTick(triggeredByMessage = false) {
       messages.push(response.choices[0].message);
     }
 
+    const sentViaTools = _sendsThisTick > 0;
     const final = response.choices?.[0]?.message?.content;
-    if (final) logger.info(`[BambiAgent] concluded: ${final.slice(0, 200)}`);
+    if (final) {
+      logger.info(`[BambiAgent] concluded: ${final.slice(0, 200)}`);
+      // LLM replied with prose instead of calling send_message — post it directly
+      if (triggeredByMessage && !sentViaTools && AGENT_TOKEN) {
+        await TOOLS.send_message({ content: final });
+      }
+    }
     logger.info('[BambiAgent] tick complete');
 
   } catch (err) {
