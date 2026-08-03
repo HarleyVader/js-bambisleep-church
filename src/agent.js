@@ -501,9 +501,9 @@ async function ensureAgentToken() {
   if (AGENT_TOKEN) return;
   try {
     const db  = getDb();
-    const row = db.prepare('SELECT sessionToken FROM users WHERE username = ? LIMIT 1').get(AGENT_NAME);
-    if (row?.sessionToken) {
-      AGENT_TOKEN = row.sessionToken;
+    const row = db.prepare('SELECT session_token FROM users WHERE username = ? LIMIT 1').get(AGENT_NAME);
+    if (row?.session_token) {
+      AGENT_TOKEN = row.session_token;
       logger.info(`[BambiAgent] reused existing bot account for "${AGENT_NAME}"`);
       return;
     }
