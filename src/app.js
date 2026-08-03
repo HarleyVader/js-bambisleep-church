@@ -1,5 +1,6 @@
 const path = require('path');
 const express = require('express');
+const logger        = require('./utils/logger');
 const { initSqlite }  = require('./config/sqlite');
 const chatRoutes    = require('./routes/chat');
 const userRoutes    = require('./routes/user');
@@ -35,5 +36,11 @@ app.use('/api/challenge', challengeRoutes);
 app.use('/api/patreon', patreonRoutes);
 // Legacy / portal-registered callback path
 app.use('/auth/patreon', patreonRoutes);
+
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  logger.error('Unhandled route error', err);
+  if (!res.headersSent) res.status(500).json({ error: 'Internal server error' });
+});
 
 module.exports = app;

@@ -29,3 +29,8 @@ server.listen(PORT, () => {
 const shutdown = () => { stopAgent(); server.close(); };
 process.once('SIGTERM', shutdown);
 process.once('SIGINT',  shutdown);
+
+// Prevent unhandled promise rejections from crashing the process
+process.on('unhandledRejection', (reason) => {
+  logger.error('Unhandled rejection:', reason);
+});
