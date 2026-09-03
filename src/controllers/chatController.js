@@ -51,6 +51,12 @@ class ChatController {
                 prestiged: xpResult.prestiged,
                 prestigeCount: xpResult.prestigeCount,
               });
+              // Public broadcast so other participants (incl. the agent) can react
+              this.io.emit('memberLevelUp', {
+                username: user.username,
+                newLevel: xpResult.newLevel,
+                prestiged: xpResult.prestiged,
+              });
             }
             // Push updated stats so sidebar counters refresh immediately
             emitToToken(token, 'profile:update', {

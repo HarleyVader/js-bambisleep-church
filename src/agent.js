@@ -7,6 +7,11 @@
  * connects to Ollama's OpenAI-compatible API, and runs an autonomous agent
  * loop: observe site state → decide → call tools → repeat.
  *
+ * The agent is a first-class chat participant: it holds its own Socket.IO
+ * client connection (same as a browser tab), so it shows up in the online
+ * users list and reacts to live events — new messages, @mentions, member
+ * joins, and level-ups — instead of only running on a fixed timer.
+ *
  * Env vars:
  *   OLLAMA_URL         Base URL of Ollama server       (default: http://localhost:11434)
  *   OLLAMA_MODEL       Model name loaded in Ollama     (default: llama3)
@@ -18,12 +23,13 @@
  *   SQLITE_PATH        SQLite DB path                  (default: ./data/app.db)
  */
 
-const http     = require('http');
-const https    = require('https');
-const path     = require('path');
-const fs       = require('fs');
-const Database = require('better-sqlite3');
-const logger   = require('./utils/logger');
+const http       = require('http');
+const https      = require('https');
+const path       = require('path');
+const fs         = require('fs');
+const Database   = require('better-sqlite3');
+const { io: ioClient } = require('socket.io-client');
+const logger     = require('./utils/logger');
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
@@ -387,48 +393,93 @@ async function buildContext() {
   return lines.join('\n');
 }
 
+// ─── Prompt builders per trigger type ─────────────────────────────────────────
+
+function buildUserPrompt(trigger, payload, context) {
+  const header = [
+    '**Current state:**',
+    '```',
+    context,
+    '```',
+    '',
+  ];
+
+  switch (trigger) {
+    case 'message':
+      return [
+        'A community member just sent a message. Read the recent messages below and reply as bimbot. /no_think',
+        'You MUST call send_message to post a reply — do not stay silent.',
+        '',
+        ...header,
+        `- Keep your reply concise, warm, and on-theme`,
+        `- You may send at most ${MAX_SENDS_PER_TICK} messages`,
+        '- Do NOT send buttplug commands, assign challenges, or sign contracts',
+      ].join('\n');
+
+    case 'mention':
+      return [
+        `${payload.sender || 'A member'} just @mentioned you by name in chat. /no_think`,
+        'Read the recent messages below to see what they said and reply directly to them.',
+        'You MUST call send_message to reply — do not stay silent.',
+        '',
+        ...header,
+        '- Keep your reply concise, warm, and on-theme',
+        `- You may send at most ${MAX_SENDS_PER_TICK} messages`,
+        '- Do NOT send buttplug commands, assign challenges, or sign contracts',
+      ].join('\n');
+
+    case 'join':
+      return [
+        `${payload.username || 'A member'} just joined the chat. /no_think`,
+        '',
+        ...header,
+        '- If it feels natural, post one brief, warm welcome for them',
+        '- It is fine to stay silent if a welcome would feel repetitive or out of place',
+        `- You may send at most ${MAX_SENDS_PER_TICK} messages`,
+        '- Do NOT send buttplug commands, assign challenges, or sign contracts',
+      ].join('\n');
+
+    case 'levelup':
+      return [
+        `${payload.username || 'A member'} just leveled up to level ${payload.newLevel ?? '?'}` +
+        `${payload.prestiged ? ' and prestiged' : ''}. /no_think`,
+        '',
+        ...header,
+        '- Consider posting one short, warm congratulations',
+        '- It is fine to stay silent if a similar congratulation was already given recently',
+        `- You may send at most ${MAX_SENDS_PER_TICK} messages`,
+        '- Do NOT send buttplug commands, assign challenges, or sign contracts',
+      ].join('\n');
+
+    default: // 'interval' — autonomous tick
+      return [
+        'You are running autonomously. Review the current site state below and decide what — if anything — to do. /no_think',
+        '',
+        ...header,
+        'Guidelines for autonomous operation:',
+        `- You may send at most ${MAX_SENDS_PER_TICK} chat messages per tick`,
+        '- Prioritise: welcoming new/recently-active members, reacting to messages warmly, checking on members with active challenges',
+        '- Do NOT send buttplug commands autonomously — those require explicit real-time consent',
+        '- Do NOT assign challenges or sign contracts autonomously',
+        '- It is perfectly fine to observe and take no action if nothing requires attention',
+        '- Be concise and warm in any messages you post',
+      ].join('\n');
+  }
+}
+
 // ─── Agent tick ───────────────────────────────────────────────────────────────
 
-async function agentTick(triggeredByMessage = false) {
+async function agentTick(trigger = 'interval', payload = {}) {
   _sendsThisTick = 0; // reset per-tick send counter
 
   try {
-    logger.info(`[BambiAgent] tick starting (trigger: ${triggeredByMessage ? 'message' : 'interval'})`);
+    logger.info(`[BambiAgent] tick starting (trigger: ${trigger})`);
     logger.info(`[BambiAgent] token: ${AGENT_TOKEN ? AGENT_TOKEN.slice(0, 8) + '…' : 'NOT SET'}`);
 
-    const context  = await buildContext();
+    const context    = await buildContext();
     logger.info(`[BambiAgent] context built:\n${context}`);
 
-    const userPrompt = triggeredByMessage
-      ? [
-          'A community member just sent a message. Read the recent messages below and reply as bimbot. /no_think',
-          'You MUST call send_message to post a reply — do not stay silent.',
-          '',
-          '**Current state:**',
-          '```',
-          context,
-          '```',
-          '',
-          `- Keep your reply concise, warm, and on-theme`,
-          `- You may send at most ${MAX_SENDS_PER_TICK} messages`,
-          '- Do NOT send buttplug commands, assign challenges, or sign contracts',
-        ].join('\n')
-      : [
-          'You are running autonomously. Review the current site state below and decide what — if anything — to do. /no_think',
-          '',
-          '**Current state:**',
-          '```',
-          context,
-          '```',
-          '',
-          'Guidelines for autonomous operation:',
-          `- You may send at most ${MAX_SENDS_PER_TICK} chat messages per tick`,
-          '- Prioritise: welcoming new/recently-active members, reacting to messages warmly, checking on members with active challenges',
-          '- Do NOT send buttplug commands autonomously — those require explicit real-time consent',
-          '- Do NOT assign challenges or sign contracts autonomously',
-          '- It is perfectly fine to observe and take no action if nothing requires attention',
-          '- Be concise and warm in any messages you post',
-        ].join('\n');
+    const userPrompt = buildUserPrompt(trigger, payload, context);
 
     const messages = [
       { role: 'system', content: loadSystemPrompt() },
@@ -478,7 +529,7 @@ async function agentTick(triggeredByMessage = false) {
     if (final) {
       logger.info(`[BambiAgent] concluded: ${final.slice(0, 200)}`);
       // LLM replied with prose instead of calling send_message — post it directly
-      if (triggeredByMessage && !sentViaTools && AGENT_TOKEN) {
+      if (trigger !== 'interval' && !sentViaTools && AGENT_TOKEN) {
         await TOOLS.send_message({ content: final });
       }
     }
@@ -494,6 +545,66 @@ async function agentTick(triggeredByMessage = false) {
     } else {
       logger.error('[BambiAgent] tick error:', err.message || String(err));
     }
+  }
+}
+
+// ─── Live socket presence ─────────────────────────────────────────────────────
+//
+// The agent connects to its own server exactly like a browser tab: it shows
+// up in the online-users list and receives the same real-time events, so it
+// can react to messages, @mentions, joins, and level-ups as they happen.
+
+let _socket        = null;
+let _prevOnline     = null;        // baseline online-users snapshot (avoid greeting everyone at boot)
+const _greetedUsers = new Set();   // usernames already greeted this process lifetime
+
+function connectAgentSocket() {
+  if (!AGENT_TOKEN || _socket) return;
+  _socket = ioClient(BASE_URL, {
+    query: { token: AGENT_TOKEN },
+    reconnection: true,
+    reconnectionDelay: 2000,
+  });
+
+  _socket.on('connect',       () => logger.info('[BambiAgent] socket connected — live in chat'));
+  _socket.on('disconnect',    (reason) => logger.warn(`[BambiAgent] socket disconnected: ${reason}`));
+  _socket.on('connect_error', (err) => logger.warn(`[BambiAgent] socket connect_error: ${err.message}`));
+
+  // Live message stream
+  _socket.on('chatMessage', (msg) => {
+    if (!msg || msg.sender === AGENT_NAME) return;
+    scheduleTick('message');
+  });
+
+  // Someone @mentioned the bot by name
+  _socket.on('mention', ({ sender } = {}) => {
+    scheduleTick('mention', { sender });
+  });
+
+  // Public level-up celebrations
+  _socket.on('memberLevelUp', ({ username, newLevel, prestiged } = {}) => {
+    if (!username || username === AGENT_NAME) return;
+    scheduleTick('levelup', { username, newLevel, prestiged });
+  });
+
+  // Greet newly-joined members (the first snapshot after connecting is the
+  // baseline — everyone already online at boot is not "just joined")
+  _socket.on('onlineUsers', (users = []) => {
+    const names = new Set(users.map((u) => u.username));
+    if (_prevOnline === null) { _prevOnline = names; return; }
+    for (const name of names) {
+      if (name === AGENT_NAME || _prevOnline.has(name) || _greetedUsers.has(name)) continue;
+      _greetedUsers.add(name);
+      scheduleTick('join', { username: name });
+    }
+    _prevOnline = names;
+  });
+}
+
+function disconnectAgentSocket() {
+  if (_socket) {
+    _socket.disconnect();
+    _socket = null;
   }
 }
 
@@ -536,6 +647,7 @@ async function startAgent() {
     `[BambiAgent] starting — model: ${OLLAMA_MODEL}, interval: ${AGENT_INTERVAL_MS}ms, ` +
     `token: ${AGENT_TOKEN ? 'set' : 'NOT SET (read-only mode)'}`
   );
+  connectAgentSocket();
   // First tick 10 s after server boot (give the DB and routes time to initialise)
   setTimeout(agentTick, 10_000);
   _timer = setInterval(agentTick, AGENT_INTERVAL_MS);
@@ -547,15 +659,23 @@ function stopAgent() {
     _timer = null;
     logger.info('[BambiAgent] stopped');
   }
+  disconnectAgentSocket();
 }
 
-// Debounced trigger — coalesces rapid messages into one tick
-let _messageDebounce = null;
-function onMessage() {
+// Debounced trigger — coalesces rapid events (messages, mentions, joins,
+// level-ups) into a single tick so the agent doesn't spam replies.
+let _pendingTrigger = null;
+let _tickDebounce   = null;
+function scheduleTick(trigger, payload = {}) {
   if (!AGENT_ENABLED) return;
-  clearTimeout(_messageDebounce);
-  _messageDebounce = setTimeout(() => agentTick(true), 2_000);
+  _pendingTrigger = { trigger, payload };
+  clearTimeout(_tickDebounce);
+  _tickDebounce = setTimeout(() => {
+    const { trigger: t, payload: p } = _pendingTrigger;
+    _pendingTrigger = null;
+    agentTick(t, p);
+  }, 2_000);
 }
 
-module.exports = { startAgent, stopAgent, onMessage };
+module.exports = { startAgent, stopAgent };
 
