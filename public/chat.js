@@ -1,5 +1,15 @@
 'use strict';
 
+// Escape untrusted text (usernames, sender names, etc.) before it is ever
+// interpolated into innerHTML — usernames are attacker-controlled and are
+// broadcast to every connected client, so this closes a stored-XSS hole.
+const escapeHtml = (s) => String(s ?? '')
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
+
 // ── DOM refs ──────────────────────────────────────────────────────────────────
 const messagesList      = document.getElementById('messages');
 const form              = document.getElementById('chat-form');
@@ -377,7 +387,7 @@ socket.on('onlineUsers', (users) => {
     el.dataset.username = u.username;
     el.innerHTML = `
       <span class="online-initial">${initial}</span>
-      <span class="online-name">${u.username}</span>
+      <span class="online-name">${escapeHtml(u.username)}</span>
       <span class="online-level">Lv ${u.level}</span>
     `;
     onlineUsersList.appendChild(el);
@@ -386,7 +396,7 @@ socket.on('onlineUsers', (users) => {
 
 // Flash notification when someone @mentions me
 socket.on('mention', ({ sender }) => {
-  showToast(`🔔 ${sender} mentioned you!`);
+  showToast(`🔔 ${escapeHtml(sender)} mentioned you!`);
   // pulse haptic if a device is connected
   if (window._bpPanel) window._bpPanel.pulse(0.6, 400);
 });
@@ -395,7 +405,10 @@ socket.on('mention', ({ sender }) => {
 socket.on('bp:remote', ({ from, action, payload }) => {
   if (!window._bpPanel || typeof window._bpPanel.executeRemote !== 'function') return;
   window._bpPanel.executeRemote(action, payload || {});
-  showToast(`🔌 ${from || 'Someone'} → ${action}${payload && payload.name ? ` (${payload.name})` : ''}`);
+  const safeFrom   = escapeHtml(from || 'Someone');
+  const safeAction = escapeHtml(action);
+  const safeName   = payload && payload.name ? ` (${escapeHtml(payload.name)})` : '';
+  showToast(`🔌 ${safeFrom} → ${safeAction}${safeName}`);
 });
 
 // ── Messages ──────────────────────────────────────────────────────────────────
@@ -496,12 +509,12 @@ const renderContent = (rawText) => {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
-  // Highlight @username tokens
+  // Highlight @username tokens as clickable profile links
   const mentioned = escaped.replace(
     /@([\w]{1,32})/g,
     (_, name) => {
       const isSelf = myUser && myUser.username === name;
-      return `<span class="mention${isSelf ? ' mention--self' : ''}">@${name}</span>`;
+      return `<a class="mention${isSelf ? ' mention--self' : ''}" href="/profile.html?user=${encodeURIComponent(name)}">@${name}</a>`;
     },
   );
   // Then linkify BambiCloud URLs (operates on already-escaped text)
@@ -539,7 +552,7 @@ const appendMessage = (data) => {
     <div class="msg-initial">${initial}</div>
     <div class="msg-body">
       <div class="msg-header">
-        <strong><a class="msg-sender-link" href="/profile.html?user=${encodeURIComponent(data.sender)}">${data.sender}</a></strong>
+        <strong><a class="msg-sender-link" href="/profile.html?user=${encodeURIComponent(data.sender)}">${escapeHtml(data.sender)}</a></strong>
         <time>${formatDate(data.timestamp)}</time>
       </div>
       <div class="msg-content">${renderedContent}</div>

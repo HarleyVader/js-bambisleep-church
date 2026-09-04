@@ -132,7 +132,7 @@
   color: var(--primary-alt);
 }
 
-/* Highlighted @mention tokens inside messages */
+/* Highlighted @mention tokens inside messages — clickable profile links */
 .mention {
   display: inline-block;
   padding: 0 4px;
@@ -141,7 +141,12 @@
   color: var(--primary-alt);
   font-weight: 600;
   font-size: 0.88em;
+  text-decoration: none;
+  cursor: pointer;
   transition: background var(--transition-fast);
+}
+.mention:hover {
+  background: rgba(204, 1, 116, 0.3);
 }
 .mention--self {
   background: rgba(204, 1, 116, 0.35);
