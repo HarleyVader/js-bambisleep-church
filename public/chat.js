@@ -651,7 +651,7 @@ form.addEventListener('submit', async (e) => {
 
     socket.emit('chatMessage', message);
     if (mentionedNames.length) {
-      socket.emit('mention', { sender, mentionedNames });
+      socket.emit('mention', { sender, mentionedNames, content, messageId: message._id });
     }
     appendMessage(message);
     messagesList.scrollTop = messagesList.scrollHeight;

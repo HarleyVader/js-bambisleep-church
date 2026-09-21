@@ -99,9 +99,11 @@ const setupSockets = (io) => {
     });
 
     // @mention: notify each tagged user via their own socket
-    socket.on('mention', ({ sender, mentionedNames }) => {
+    socket.on('mention', ({ sender, mentionedNames, content, messageId }) => {
       if (!Array.isArray(mentionedNames) || !mentionedNames.length) return;
-      const safeSender = String(sender || '').slice(0, 64);
+      const safeSender  = String(sender || '').slice(0, 64);
+      const safeContent = String(content || '').slice(0, 500);
+      const safeMsgId   = typeof messageId === 'string' ? messageId.slice(0, 64) : null;
       const uniqueNames = [...new Set(mentionedNames.slice(0, 10))]; // cap at 10
       uniqueNames.forEach((username) => {
         try {
@@ -109,7 +111,7 @@ const setupSockets = (io) => {
           if (!user) return;
           const targetSocket = tokenToSocket.get(user.sessionToken);
           if (targetSocket && targetSocket.id !== socket.id) {
-            targetSocket.emit('mention', { sender: safeSender });
+            targetSocket.emit('mention', { sender: safeSender, content: safeContent, messageId: safeMsgId });
           }
         } catch (err) {
           logger.error('mention dispatch error', err);

@@ -735,7 +735,8 @@ function buildUserPrompt(trigger, payload, context) {
     case 'mention':
       return [
         `${payload.sender || 'A member'} just @mentioned you by name in chat. /no_think`,
-        'Read the recent messages below to see what they said and reply directly to them.',
+        payload.content ? `Their message: "${payload.content}"` : 'Read the recent messages below to see what they said.',
+        `Reply directly to ${payload.sender || 'them'} — address them by name and stay on what they said, not the general room.`,
         'You MUST call send_message to reply — do not stay silent.',
         '',
         ...header,
@@ -893,8 +894,8 @@ function connectAgentSocket() {
   });
 
   // Someone @mentioned the bot by name
-  _socket.on('mention', ({ sender } = {}) => {
-    scheduleTick('mention', { sender });
+  _socket.on('mention', ({ sender, content, messageId } = {}) => {
+    scheduleTick('mention', { sender, content, messageId });
   });
 
   // Public level-up celebrations
