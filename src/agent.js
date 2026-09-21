@@ -30,6 +30,7 @@ const fs         = require('fs');
 const Database   = require('better-sqlite3');
 const { io: ioClient } = require('socket.io-client');
 const logger     = require('./utils/logger');
+const { extractPlaylistUuid } = require('./utils/bambicloud');
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
@@ -48,6 +49,8 @@ const DB_PATH           = process.env.SQLITE_PATH
 const MAX_ITERATIONS = 10;
 // Maximum chat messages the agent may send per tick
 const MAX_SENDS_PER_TICK = 2;
+// Named haptic patterns (mirrors public/buttplug-panel.js)
+const BP_PATTERNS = new Set(['pulse', 'wave', 'surge', 'tease', 'throb']);
 
 // ─── DB helper (read-only) ────────────────────────────────────────────────────
 
@@ -110,6 +113,52 @@ function httpJson(rawUrl, method, body) {
 
 const api = (method, p, body) =>
   httpJson(`${BASE_URL}${p}`, method, body).then((r) => r.body);
+
+// ─── Remote toy-control helper ────────────────────────────────────────────────
+//
+// Reuses the agent's own live socket connection when it's already open;
+// otherwise opens a short-lived one just to relay the bp:control event.
+
+function sendBpControl(targetUsername, action, payload) {
+  return new Promise((resolve, reject) => {
+    if (!targetUsername) { reject(new Error('targetUsername is required')); return; }
+
+    if (_socket && _socket.connected) {
+      _socket.emit('bp:control', { targetUsername, action, payload });
+      resolve({ sent: true, targetUsername, action, payload });
+      return;
+    }
+
+    if (!AGENT_TOKEN) { reject(new Error('AGENT_TOKEN is not configured — cannot send toy commands')); return; }
+
+    const tempSocket = ioClient(BASE_URL, {
+      query        : { token: AGENT_TOKEN },
+      reconnection : false,
+      timeout      : 6000,
+      transports   : ['websocket', 'polling'],
+    });
+
+    const guard = setTimeout(() => {
+      tempSocket.disconnect();
+      reject(new Error('Socket connection timed out'));
+    }, 8000);
+
+    tempSocket.once('connect', () => {
+      tempSocket.emit('bp:control', { targetUsername, action, payload });
+      setTimeout(() => {
+        clearTimeout(guard);
+        tempSocket.disconnect();
+        resolve({ sent: true, targetUsername, action, payload });
+      }, 250);
+    });
+
+    tempSocket.once('connect_error', (err) => {
+      clearTimeout(guard);
+      tempSocket.disconnect();
+      reject(new Error(`Socket connect_error: ${err.message}`));
+    });
+  });
+}
 
 // ─── Tool implementations ─────────────────────────────────────────────────────
 
@@ -224,6 +273,78 @@ const TOOLS = {
       token: AGENT_TOKEN,
     });
   },
+
+  async validate_playlist_url({ url }) {
+    const uuid = extractPlaylistUuid(url);
+    if (!uuid) return { valid: false, reason: 'URL must be https://bambicloud.com/playlist/<uuid>' };
+    return { valid: true, uuid, canonical: `https://bambicloud.com/playlist/${uuid}` };
+  },
+
+  async get_user({ token }) {
+    return api('GET', `/api/user/${encodeURIComponent(token)}`);
+  },
+
+  async create_user({ username, token } = {}) {
+    const body = { username };
+    if (token) body.token = token;
+    return api('POST', '/api/user', body);
+  },
+
+  async end_session({ token, durationSeconds }) {
+    return api('POST', `/api/user/${encodeURIComponent(token)}/session-end`, { durationSeconds });
+  },
+
+  async sign_contract({ session, username, password, confirmPassword, contractVersion } = {}) {
+    const tok  = session || AGENT_TOKEN || '';
+    const body = { session: tok, username, password, confirmPassword };
+    if (contractVersion) body.contractVersion = contractVersion;
+    return api('POST', '/api/user/contract', body);
+  },
+
+  async request_challenge({ session, durationSeconds } = {}) {
+    const body = { session: session || AGENT_TOKEN || '' };
+    if (durationSeconds !== undefined) body.durationSeconds = durationSeconds;
+    return api('POST', '/api/challenge/request', body);
+  },
+
+  async assign_task({ username, session, url }) {
+    return api('POST', `/api/challenge/${encodeURIComponent(username)}/task`, {
+      session: session || AGENT_TOKEN || '',
+      url,
+    });
+  },
+
+  async report_progress({ session, username, taskId, listenedSeconds }) {
+    return api('POST', '/api/challenge/progress', {
+      session: session || AGENT_TOKEN || '',
+      username,
+      taskId,
+      listenedSeconds,
+    });
+  },
+
+  async unlink_patreon({ session } = {}) {
+    const tok = session || AGENT_TOKEN || '';
+    return api('POST', `/api/patreon/unlink?session=${encodeURIComponent(tok)}`);
+  },
+
+  async buttplug_vibrate({ targetUsername, intensity }) {
+    return sendBpControl(targetUsername, 'vibrate', { intensity: Math.max(0, Math.min(1, Number(intensity) || 0)) });
+  },
+
+  async buttplug_pattern({ targetUsername, patternName, intensity = 0.8 }) {
+    if (!BP_PATTERNS.has(patternName)) {
+      return { error: `patternName must be one of: ${[...BP_PATTERNS].join(', ')}` };
+    }
+    return sendBpControl(targetUsername, 'pattern', {
+      name: patternName,
+      intensity: Math.max(0, Math.min(1, Number(intensity))),
+    });
+  },
+
+  async buttplug_stop({ targetUsername }) {
+    return sendBpControl(targetUsername, 'stop', {});
+  },
 };
 
 // ─── OpenAI-compatible tools schema ──────────────────────────────────────────
@@ -252,12 +373,80 @@ const TOOLS_SCHEMA = [
   {
     type: 'function',
     function: {
+      name       : 'get_messages',
+      description: 'Fetch the full chat message log via the site API, ordered oldest-first.',
+      parameters : { type: 'object', properties: {}, required: [] },
+    },
+  },
+  {
+    type: 'function',
+    function: {
       name       : 'get_profile',
       description: 'Fetch a community member\'s public profile — level, stats, Patreon tier, contract, and challenge status.',
       parameters : {
         type      : 'object',
         properties: { username: { type: 'string', description: 'Username to fetch' } },
         required  : ['username'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name       : 'get_user',
+      description: 'Fetch a full user record by session token — XP, stats, Patreon info, challenge, and contract fields.',
+      parameters : {
+        type      : 'object',
+        properties: { token: { type: 'string', description: 'Session token' } },
+        required  : ['token'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name       : 'create_user',
+      description: 'Create or update a user session (upsert by username). Returns the user object, session token, and any XP gained.',
+      parameters : {
+        type      : 'object',
+        properties: {
+          username: { type: 'string', description: 'Display name (max 32 chars)' },
+          token   : { type: 'string', description: 'Existing session token to reuse — omit to create a new session' },
+        },
+        required: ['username'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name       : 'end_session',
+      description: 'End a user session and award time-based XP (1 XP per 5 minutes, capped at 3 hours).',
+      parameters : {
+        type      : 'object',
+        properties: {
+          token          : { type: 'string', description: 'Session token' },
+          durationSeconds: { type: 'integer', description: 'Session duration in seconds' },
+        },
+        required: ['token', 'durationSeconds'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name       : 'sign_contract',
+      description: 'Sign the Bambi Covenant for a user. Requires the user to be an active patron OR already have a contract. Only call this with an explicit, informed request from the member themselves — never autonomously.',
+      parameters : {
+        type      : 'object',
+        properties: {
+          session        : { type: 'string', description: 'Session token' },
+          username       : { type: 'string', description: 'Username signing the covenant' },
+          password       : { type: 'string', description: 'New password (min 8 characters)' },
+          confirmPassword: { type: 'string', description: 'Password confirmation (must match password)' },
+          contractVersion: { type: 'string', description: 'Contract version string (optional)' },
+        },
+        required: ['session', 'username', 'password', 'confirmPassword'],
       },
     },
   },
@@ -276,6 +465,54 @@ const TOOLS_SCHEMA = [
   {
     type: 'function',
     function: {
+      name       : 'request_challenge',
+      description: 'Start a Good Girl Timer Challenge for a member. Requires patron (≥200¢) or creator role. Only call with the member\'s explicit request — never autonomously.',
+      parameters : {
+        type      : 'object',
+        properties: {
+          session        : { type: 'string', description: 'Session token of the user requesting the challenge' },
+          durationSeconds: { type: 'integer', description: 'Challenge duration: 3600 (1h), 21600 (6h), or 86400 (24h). Defaults to 86400' },
+        },
+        required: ['session'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name       : 'assign_task',
+      description: 'Assign a BambiCloud playlist as a challenge task to a member. Assigner must be a patron (≥200¢) or creator. Always review the playlist with list_playlist_tracks and confirm consent first.',
+      parameters : {
+        type      : 'object',
+        properties: {
+          username: { type: 'string', description: 'Username to assign the task to' },
+          session : { type: 'string', description: 'Session token of the assigning user' },
+          url     : { type: 'string', description: 'BambiCloud playlist URL to assign as a task' },
+        },
+        required: ['username', 'url'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name       : 'report_progress',
+      description: 'Report listening progress on an active challenge task.',
+      parameters : {
+        type      : 'object',
+        properties: {
+          session        : { type: 'string', description: 'Session token of the user reporting progress' },
+          username       : { type: 'string', description: 'Username whose task is being updated' },
+          taskId         : { type: 'string', description: 'Task UUID' },
+          listenedSeconds: { type: 'integer', description: 'Total seconds listened on this task so far' },
+        },
+        required: ['username', 'taskId', 'listenedSeconds'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
       name       : 'fetch_playlist',
       description: 'Fetch a BambiCloud playlist by URL — returns metadata and all tracks.',
       parameters : {
@@ -288,8 +525,44 @@ const TOOLS_SCHEMA = [
   {
     type: 'function',
     function: {
+      name       : 'list_playlist_tracks',
+      description: 'Fetch a BambiCloud playlist and return only the playable (non-locked) tracks — use this to review content before assigning a challenge task.',
+      parameters : {
+        type      : 'object',
+        properties: { url: { type: 'string', description: 'BambiCloud playlist URL' } },
+        required  : ['url'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name       : 'validate_playlist_url',
+      description: 'Check whether a URL is a valid BambiCloud playlist URL and extract its UUID.',
+      parameters : {
+        type      : 'object',
+        properties: { url: { type: 'string', description: 'URL to validate' } },
+        required  : ['url'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
       name       : 'get_patreon_status',
       description: 'Check Patreon patron status for a member.',
+      parameters : {
+        type      : 'object',
+        properties: { session: { type: 'string', description: 'Session token (optional — defaults to agent token)' } },
+        required  : [],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name       : 'unlink_patreon',
+      description: 'Unlink the Patreon account from a member\'s session. Only call with the member\'s explicit request.',
       parameters : {
         type      : 'object',
         properties: { session: { type: 'string', description: 'Session token (optional — defaults to agent token)' } },
@@ -333,6 +606,49 @@ const TOOLS_SCHEMA = [
           emoji: { type: 'string', description: 'Emoji character to react with' },
         },
         required: ['id', 'emoji'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name       : 'buttplug_vibrate',
+      description: 'Send a constant vibration command to a connected member\'s toy. The target must be online with a device connected to Intiface Central. Requires explicit prior consent from the target — confirm before every use.',
+      parameters : {
+        type      : 'object',
+        properties: {
+          targetUsername: { type: 'string', description: 'Username of the member whose toy to vibrate' },
+          intensity     : { type: 'number', description: 'Vibration intensity from 0.0 (off) to 1.0 (maximum)' },
+        },
+        required: ['targetUsername', 'intensity'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name       : 'buttplug_pattern',
+      description: 'Send a named haptic pattern to a connected member\'s toy: pulse (short bursts), wave (rising wave), surge (slow build to peak), tease (stop-start), throb (deep rhythmic pulse). Requires explicit prior consent — confirm before every use.',
+      parameters : {
+        type      : 'object',
+        properties: {
+          targetUsername: { type: 'string', description: 'Username of the target member' },
+          patternName   : { type: 'string', enum: ['pulse', 'wave', 'surge', 'tease', 'throb'], description: 'Named haptic pattern to run' },
+          intensity     : { type: 'number', description: 'Master intensity multiplier 0.0–1.0 (default 0.8)' },
+        },
+        required: ['targetUsername', 'patternName'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name       : 'buttplug_stop',
+      description: 'Immediately stop all vibration on a connected member\'s toy.',
+      parameters : {
+        type      : 'object',
+        properties: { targetUsername: { type: 'string', description: 'Username of the member whose toy to stop' } },
+        required  : ['targetUsername'],
       },
     },
   },
